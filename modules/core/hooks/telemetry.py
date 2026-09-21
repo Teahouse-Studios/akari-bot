@@ -1,6 +1,4 @@
-"""
-通过 parser 观察入口写入 AnalyticsData 与 Info 计数。
-"""
+"""通过 parser 观察入口写入 AnalyticsData 与 Info 计数。"""
 
 from __future__ import annotations
 
@@ -26,7 +24,6 @@ telemetry = module("_telemetry", hidden=True, load=True, base=True)
 
 @telemetry.hook(point=HookPoint.EXECUTION_FINISHED, priority=50, name="record", server_scope=True)
 async def _(ctx: "Bot.ParserHookContext"):
-    """命令/正则执行结束后的解析计数与入库。"""
     Info.command_parsed += 1
     if not _enable_analytics():
         return None
@@ -48,7 +45,6 @@ async def _(ctx: "Bot.ParserHookContext"):
 
 @telemetry.hook(point=HookPoint.FINISHED, priority=50, name="message_parsed", server_scope=True)
 async def _(ctx: "Bot.ParserHookContext"):
-    """parser 主流程 finally：消息级计数。"""
     Info.message_parsed += 1
 
 

@@ -5,7 +5,6 @@ from core.tester import func_case, Tester
 
 
 async def _test_not_triggered_before_mark():
-    """测试单次触发 - 标记前判定为未触发"""
     try:
         regex_once_cache.clear()
         return not regex_once_triggered("merge", 0, "QQ|Group|1")
@@ -15,7 +14,6 @@ async def _test_not_triggered_before_mark():
 
 
 async def _test_triggered_after_mark():
-    """测试单次触发 - 标记后判定为已触发"""
     try:
         regex_once_cache.clear()
         mark_regex_once("merge", 0, "QQ|Group|1")
@@ -26,7 +24,6 @@ async def _test_triggered_after_mark():
 
 
 async def _test_other_target_unaffected():
-    """测试单次触发 - 标记不影响其他场景"""
     try:
         regex_once_cache.clear()
         mark_regex_once("merge", 0, "QQ|Group|1")
@@ -37,7 +34,6 @@ async def _test_other_target_unaffected():
 
 
 async def _test_other_index_unaffected():
-    """测试单次触发 - 同模块的另一条正则互不影响"""
     try:
         regex_once_cache.clear()
         mark_regex_once("merge", 0, "QQ|Group|1")

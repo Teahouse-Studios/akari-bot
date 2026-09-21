@@ -22,7 +22,6 @@ from core.types.module.component_meta import CommandMeta
 
 
 def _test_argument_pattern():
-    """测试 ArgumentPattern 创建"""
     try:
         pattern = ArgumentPattern("<name>")
         if pattern.name != "<name>":
@@ -35,7 +34,6 @@ def _test_argument_pattern():
 
 
 def _test_desc_pattern():
-    """测试 DescPattern 创建"""
     try:
         pattern = DescPattern("This is a description")
         if pattern.text != "This is a description":
@@ -48,7 +46,6 @@ def _test_desc_pattern():
 
 
 def _test_template():
-    """测试 Template 创建"""
     try:
         template = Template([ArgumentPattern("<arg1>"), ArgumentPattern("<arg2>")])
         if len(template.args) != 2:
@@ -61,7 +58,6 @@ def _test_template():
 
 
 def _test_template_priority():
-    """测试 Template 优先级"""
     try:
         template = Template([ArgumentPattern("<arg>")], priority=5)
         if template.priority != 5:
@@ -72,7 +68,6 @@ def _test_template_priority():
 
 
 def _test_optional_pattern():
-    """测试 OptionalPattern 创建"""
     try:
         pattern = OptionalPattern("-o", [Template([ArgumentPattern("<output>")])])
         if pattern.flag != "-o":
@@ -85,7 +80,6 @@ def _test_optional_pattern():
 
 
 def _test_split_multi_arguments():
-    """测试 split_multi_arguments 函数"""
     try:
         result = split_multi_arguments(["hello(world|earth)"])
         if set(result) != {"helloworld", "helloearth"}:
@@ -106,7 +100,6 @@ def _test_split_multi_arguments():
 
 
 def _test_parse_template_simple():
-    """测试 parse_template 简单命令"""
     try:
         templates = parse_template(["<arg1> <arg2>"])
         if len(templates) != 1:
@@ -122,7 +115,6 @@ def _test_parse_template_simple():
 
 
 def _test_parse_template_optional():
-    """测试 parse_template 可选参数"""
     try:
         templates = parse_template(["<arg> [-o <output>]"])
         if len(templates) != 1:
@@ -140,7 +132,6 @@ def _test_parse_template_optional():
 
 
 def _test_parse_template_rejects_multi_character_short_option():
-    """短选项不能包含多个字符。"""
     try:
         parse_template(["[-abc]"])
     except InvalidTemplatePattern:
@@ -151,7 +142,6 @@ def _test_parse_template_rejects_multi_character_short_option():
 
 
 def _test_parse_template_description():
-    """测试 parse_template 描述"""
     try:
         templates = parse_template(["<arg> {This is a description}"])
         if len(templates) != 1:
@@ -166,7 +156,6 @@ def _test_parse_template_description():
 
 
 def _test_parse_template_variadic():
-    """测试 parse_template 可变长参数"""
     try:
         templates = parse_template(["<command> ..."])
         if len(templates) != 1:
@@ -181,7 +170,6 @@ def _test_parse_template_variadic():
 
 
 def _test_parse_template_multiple():
-    """测试 parse_template 多个模板"""
     try:
         templates = parse_template(["<arg1>", "<arg1> <arg2>"])
         if len(templates) != 2:
@@ -192,7 +180,6 @@ def _test_parse_template_multiple():
 
 
 def _test_templates_to_str():
-    """测试 templates_to_str 函数"""
     try:
         templates = parse_template(["<source> [-o <destination>]"])
         result = templates_to_str(templates)
@@ -206,7 +193,6 @@ def _test_templates_to_str():
 
 
 def _test_templates_to_str_with_desc():
-    """测试 templates_to_str 带描述"""
     try:
         templates = parse_template(["<arg> {Description}"])
         result = templates_to_str(templates, with_desc=True)
@@ -220,7 +206,6 @@ def _test_templates_to_str_with_desc():
 
 
 def _test_default_command_help_doc():
-    """测试无文档模块的默认命令会出现在帮助信息中"""
     module = Module.assign(module_name="self-command", alias=None, recommend_modules=None, developers=None)
     module.command_list.add(CommandMeta())
     parser = CommandParser(module, ["~"], module_name=module.module_name)
@@ -232,7 +217,6 @@ def _test_default_command_help_doc():
 
 
 def _test_command_parser_preserves_backslashes():
-    """命令参数中的反斜杠应原样传递给下游。"""
     module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
     module.command_list.add(CommandMeta(command_template=parse_template(["add-regex <pattern>"])))
     parser = CommandParser(module, ["~"], module_name=module.module_name)
@@ -247,7 +231,6 @@ def _test_command_parser_preserves_backslashes():
 
 
 def _test_command_parser_preserves_quotes():
-    """命令参数中的成套引号应原样传递给下游。"""
     module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
     module.command_list.add(CommandMeta(command_template=parse_template(["target data edit <k> <v>"])))
     parser = CommandParser(module, ["~"], module_name=module.module_name)
@@ -266,7 +249,6 @@ def _test_command_parser_preserves_quotes():
 
 
 def _build_option_parser():
-    """构造带选项模板的命令解析器（search / rc 两个子命令）。"""
     module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
     module.command_list.add(
         CommandMeta(command_template=parse_template(["search <keyword> [-p <page>]", "rc [--legacy]"]))
@@ -275,7 +257,6 @@ def _build_option_parser():
 
 
 def _test_command_parser_option_terminator():
-    """`--` 之后的 token 应作为操作数，不再被识别为选项。"""
     parser = _build_option_parser()
 
     escaped = parser.parse("parser-test search -- -p")[1]
@@ -293,7 +274,6 @@ def _test_command_parser_option_terminator():
 
 
 def _test_command_parser_option_inline_value():
-    """`--flag=value` / `-p=value` 内联值应等价于「标志 + 值」。"""
     parser = _build_option_parser()
 
     plain = parser.parse("parser-test search hello -p 3")[1]
@@ -313,7 +293,6 @@ def _test_command_parser_option_inline_value():
 
 
 def _test_command_parser_option_missing_value():
-    """选项子参数缺失时按未启用处理，标志作为普通操作数留给值参数；布尔标志不识别内联值。"""
     parser = _build_option_parser()
 
     missing = parser.parse("parser-test search hello -p")[1]
@@ -329,7 +308,6 @@ def _test_command_parser_option_missing_value():
 
 
 def _test_split_command_quotes():
-    """命令分词：引号包裹整段参数时作为分组符号，其余引号原样保留。"""
     return (
         _split_command('parser-test add-regex "multi word" -t') == ["parser-test", "add-regex", "multi word", "-t"]
         and _split_command('parser-test add-regex {"a": "b"}') == ["parser-test", "add-regex", '{"a":', '"b"}']
@@ -346,7 +324,6 @@ def _test_split_command_quotes():
 
 
 def _test_split_command_option_quotes():
-    """命令分词：选项内联值处的引号作为分组符号，普通参数中的引号原样保留。"""
     return (
         _split_command('parser-test search --foo="a b"') == ["parser-test", "search", "--foo=a b"]
         and _split_command("parser-test search --lang='zh cn'") == ["parser-test", "search", "--lang=zh cn"]
@@ -358,7 +335,6 @@ def _test_split_command_option_quotes():
 
 
 async def _test_error_detail_markdown_format():
-    """支持 Markdown 的平台应将错误详情包装为安全的代码块。"""
     session_info = SimpleNamespace(support_markdown=True)
     chain = await Bot.Hook.trigger(
         "parser_errors.format_error_detail",
@@ -374,7 +350,6 @@ async def _test_error_detail_markdown_format():
 
 
 def _test_unwrap_option_value():
-    """选项子参数解包：仅有一个子参数时取该子参数的值，其余原样返回。"""
     return (
         _unwrap_option_value({"<bar>": "baz"}) == "baz"
         and _unwrap_option_value({}) == {}
@@ -385,7 +360,6 @@ def _test_unwrap_option_value():
 
 
 def _test_resolve_parsed_value():
-    """命令参数取值：位置参数、标志、带杠选项与选项子参数的映射。"""
     cases = [
         ({"<pagename>": "abc"}, "pagename", (True, "abc")),
         ({"list": True}, "list", (True, True)),
@@ -405,7 +379,6 @@ def _test_resolve_parsed_value():
 
 
 def _test_build_command_kwargs():
-    """命令参数构建：带杠选项注入函数参数、类型转换与默认值回退。"""
 
     class FakeBot:
         class MessageSession:

@@ -272,20 +272,14 @@ class _GlobalURLRuleList:
 
     @classmethod
     def user_rules(cls) -> tuple[URLRule, ...]:
-        """取用户自定义文件中的规则，保留文件内的书写顺序与重复项。"""
         return tuple(rule for rule, _ in cls._read_rules(cls.user_path, "user"))
 
     @classmethod
     def file_signature(cls, path: Path) -> tuple[str, int | None, int | None]:
-        """取文件的路径与元信息签名，供接口计算版本号与展示文件状态。"""
         return cls._path_signature(path)
 
     @classmethod
     def replace_user_rules(cls, serialized_rules: Iterable[str]) -> list[str]:
-        """整体替换用户规则文件，逐条校验并去重，返回写入的序列化规则。
-
-        :raises URLRuleError: 任一条规则非法，或总规则数、正则数、文件体积超限。
-        """
         parsed: list[URLRule] = []
         seen: set[str] = set()
         for serialized in serialized_rules:
@@ -356,7 +350,6 @@ class _GlobalURLRuleList:
 
     @classmethod
     def import_user_rules(cls, serialized_rules: Iterable[str]) -> int:
-        """将旧存储中的序列化规则幂等迁入用户规则文件。"""
         imported = 0
         for serialized in serialized_rules:
             rule, _ = parse_rule(serialized)

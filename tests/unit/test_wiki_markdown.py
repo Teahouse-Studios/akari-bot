@@ -13,7 +13,6 @@ from modules.wiki.wiki import query_pages
 
 
 async def _capture_page_desc(support_markdown: bool):
-    """执行一次页面查询并返回摘要元素。"""
     session = MessageSession(
         session_info=SessionInfo(
             target_id=f"TEST|Group|wiki-markdown-{support_markdown}",
@@ -58,13 +57,11 @@ async def _capture_page_desc(support_markdown: bool):
 
 
 async def _test_markdown_page_desc_uses_blockquote():
-    """支持 Markdown 时，摘要须逐行置于引用块内并保留兼容尾换行。"""
     element = await _capture_page_desc(support_markdown=True)
     return isinstance(element, MarkdownElement) and element.text == "> 第一行\n>\n> 第二行\n"
 
 
 async def _test_plain_page_desc_is_unchanged():
-    """不支持 Markdown 时，摘要须保持普通文本。"""
     element = await _capture_page_desc(support_markdown=False)
     return (
         isinstance(element, PlainElement)

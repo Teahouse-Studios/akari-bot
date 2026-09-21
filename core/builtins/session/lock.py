@@ -1,9 +1,4 @@
-"""
-执行锁模块 - 用于管理消息执行锁，防止同一用户的多个命令并发执行。
-
-此模块提供了 ExecutionLockList 类，用于跟踪和控制正在执行的用户命令，
-确保同一用户的命令执行顺序和隔离性。
-"""
+"""执行锁模块 - 用于管理消息执行锁，防止同一用户的多个命令并发执行。"""
 
 import asyncio
 import uuid
@@ -16,12 +11,7 @@ if TYPE_CHECKING:
 
 
 class ExecutionState:
-    """仅存在于 Server 进程中的一次命令执行状态。
-
-    同一条命令通过 ``wait_*`` 取得的新 :class:`MessageSession` 会共享此对象，
-    因而无论模块后续使用原会话还是回复会话继续等待，操作的都是同一把执行锁。
-    ``held_contexts`` 则由原始 parser 执行域在结束时统一释放。
-    """
+    """仅存在于 Server 进程中的一次命令执行状态。"""
 
     __slots__ = ("held_contexts", "lock_owner_task", "lock_subject", "lock_token")
 
@@ -39,13 +29,7 @@ class ExecutionState:
 
 
 class ExecutionLockList:
-    """执行锁列表 - 管理正在执行的消息会话。
-
-    每把锁都是一个带随机所有者 token 的 lease，值为获取时该用户的
-    Union ID、当前物理账号以及 Union 中的全部绑定账号。检查新会话时
-    会重新展开其当前 Union，因此即使等待期间发生 merge／unbind，只要新旧
-    身份仍共享任一物理账号，两段执行就不会并发。
-    """
+    """执行锁列表 - 管理正在执行的消息会话。"""
 
     # token -> 该 lease 覆盖的 Union／物理账号键。保留 ``_list`` 名称以兼容
     # 运行时调试和旧测试中的 clear()。
@@ -69,12 +53,10 @@ class ExecutionLockList:
 
     @classmethod
     def _subject(cls, msg: "MessageSession") -> "MessageSession":
-        """返回该命令执行域稳定的锁主体。"""
         return cls.state(msg).lock_subject or msg
 
     @staticmethod
     def _local_keys(msg: "MessageSession") -> set[str]:
-        """返回无需 I/O 即可确定的身份键。"""
         msg = ExecutionLockList._subject(msg)
         keys = set()
         if msg.session_info.sender_union_id:
@@ -85,7 +67,6 @@ class ExecutionLockList:
 
     @classmethod
     async def _current_keys(cls, msg: "MessageSession") -> set[str]:
-        """展开会话当前 Union 的全部物理账号。"""
         msg = cls._subject(msg)
         sender_id = msg.session_info.sender_id
         keys = {sender_id} if sender_id else set()
@@ -121,7 +102,6 @@ class ExecutionLockList:
 
     @classmethod
     def _bind_owner_task(cls, state: ExecutionState) -> None:
-        """把执行域绑定到当前根任务，并为非正常退出安装兜底清理。"""
         task = asyncio.current_task()
         if task is None or state.lock_owner_task is task:
             return
@@ -136,7 +116,6 @@ class ExecutionLockList:
 
     @classmethod
     def _release_finished_owner(cls, state: ExecutionState, finished: asyncio.Task) -> None:
-        """在 lease 所属任务结束后同步回收仍遗留的 token。"""
         if state.lock_owner_task is not finished:
             return
         state.lock_owner_task = None
@@ -198,12 +177,7 @@ class ExecutionLockList:
 
     @classmethod
     async def reserve(cls, msg: "MessageSession", keys: set[str]) -> bool:
-        """扩展当前 lease 并等待与扩展身份域冲突的其它命令结束。
-
-        Union 合并必须先把双方身份全部加入当前 lease，才能在等待旧命令时
-        阻止新的命令进入任一侧。扩展到重叠状态后当前命令只等待，不执行
-        合并写入；其它 lease 释放后才取得该身份域的独占权。
-        """
+        """扩展当前 lease 并等待与扩展身份域冲突的其它命令结束。"""
         if not cls._owns_active_lease(msg) and not await cls.acquire(msg, wait=True):
             return False
         state = cls.state(msg)
@@ -246,10 +220,7 @@ class ExecutionLockList:
 
     @classmethod
     def add(cls, msg: "MessageSession") -> None:
-        """兼容无 I/O 的旧调用点，仅使用会话已有的 Union 和物理 ID。
-
-        生产 parser 应使用 :meth:`acquire`，因为只有它会查询最新绑定集。
-        """
+        """兼容无 I/O 的旧调用点，仅使用会话已有的 Union 和物理 ID。"""
         if cls._owns_active_lease(msg):
             return
         cls.state(msg).lock_token = None

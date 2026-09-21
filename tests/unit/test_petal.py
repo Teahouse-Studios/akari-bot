@@ -8,7 +8,6 @@ from core.tester.mock.session import MockMessageSession
 
 
 async def _test_petal_functions_no_throw():
-    """测试花瓣函数 - 不抛出异常"""
     try:
         from core.utils.petal import gained_petal, lost_petal, cost_petal
 
@@ -26,7 +25,6 @@ async def _test_petal_functions_no_throw():
 
 
 async def _test_cost_petal_returns_bool():
-    """测试 cost_petal - 返回布尔值"""
     try:
         from core.utils.petal import cost_petal
 
@@ -44,7 +42,6 @@ async def _test_cost_petal_returns_bool():
 
 
 async def _test_gained_petal_with_mock():
-    """测试 gained_petal - Mock Config 启用花瓣系统"""
     try:
         from core.utils.petal import gained_petal
 
@@ -53,8 +50,6 @@ async def _test_gained_petal_with_mock():
         await msg.async_init("~test")
 
         class MockConfig:
-            """替换 CoreConfig 的桩，仅提供被测代码读取的字段。"""
-
             enable_petal = True
             enable_get_petal = True
             petal_gained_limit = 100
@@ -70,7 +65,6 @@ async def _test_gained_petal_with_mock():
 
 
 async def _test_cost_petal_insufficient_with_mock():
-    """测试 cost_petal - 花瓣不足时返回 False"""
     try:
         from core.utils.petal import cost_petal
 
@@ -79,8 +73,6 @@ async def _test_cost_petal_insufficient_with_mock():
         await msg.async_init("~test")
 
         class MockConfig:
-            """替换 CoreConfig 的桩，仅提供被测代码读取的字段。"""
-
             enable_petal = True
 
         with patch("core.utils.petal.CoreConfig", MockConfig):
@@ -94,7 +86,6 @@ async def _test_cost_petal_insufficient_with_mock():
 
 
 async def _test_petal_session_balance_stays_in_sync():
-    """测试花瓣变更后会话快照与实际余额一致。"""
     from core.database.models import SenderUnionInfo
     from core.utils.petal import gained_petal, lost_petal, cost_petal
 
@@ -118,7 +109,6 @@ async def _test_petal_session_balance_stays_in_sync():
 
 
 async def _test_sign_petal_once_per_day():
-    """测试 sign_get_petal - 同一 union 每日仅可签到一次，跨日（服务器 0 点）重置。"""
     from core.database.models import SenderUnionInfo, StoredData
     from core.utils.petal import sign_get_petal
 
@@ -127,8 +117,6 @@ async def _test_sign_petal_once_per_day():
     await msg.async_init("~test")
 
     class MockConfig:
-        """替换 CoreConfig 的桩，固定签到收益以便断言。"""
-
         enable_petal = True
         petal_sign_min = 5
         petal_sign_max = 5
@@ -157,7 +145,6 @@ async def _test_sign_petal_once_per_day():
 
 
 async def _test_petal_settlement_applies_rebate():
-    """测试周期结算按返点比例保留余额。"""
     from core.database.models import SenderUnionInfo
     from core.utils.petal import settle_petals
 

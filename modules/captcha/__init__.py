@@ -80,7 +80,6 @@ async def _release_restriction_after_delivery_failure(
     session: Bot.MessageSession,
     challenge: CaptchaChallenge,
 ) -> bool:
-    """验证码无法投递时尝试解禁，并保守记录仍可能存在的平台限制。"""
     # 先写成活跃失败状态：若解禁调用抛错、取消或进程在结果落库前退出，Union 删除和
     # 解绑逻辑仍会保留这条真实平台限制的归属，不会把受限成员遗失在无引用状态。
     challenge.status = "failed"

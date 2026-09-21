@@ -41,7 +41,6 @@ _ignored_msg_startswith = [
 
 
 def _message_application_ids(message) -> tuple[str | None, str | None]:
-    """读取消息场景中的当前消息 ID 和被引用消息 ID。"""
     application_id = None
     reply_id = None
     # QQ 官方 SDK 中该字段名为 message_scene。
@@ -66,7 +65,6 @@ def _message_application_ids(message) -> tuple[str | None, str | None]:
 
 
 def _record_message_ids(message) -> str | None:
-    """登记入站消息的两类 ID，并返回供应用层比较的引用 ID。"""
     application_id, reply_id = _message_application_ids(message)
     cache_message_id_pair(application_id, getattr(message, "id", None))
     return reply_id

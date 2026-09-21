@@ -27,7 +27,6 @@ def _url_rule_details(msg: Bot.MessageSession, rules) -> str:
 
 
 async def _resolve_wiki_api(msg: Bot.MessageSession, wikiurl: str, *, error_action: str) -> str:
-    """将 Wiki 页面、站点或 API 地址解析为规范 API URL。"""
     try:
         check = await WikiLib(wikiurl).check_wiki_available()
     except BlockedWikiError as exc:
@@ -42,7 +41,6 @@ async def _resolve_wiki_api(msg: Bot.MessageSession, wikiurl: str, *, error_acti
 
 
 async def _resolve_cached_wiki_api(wikiurl: str) -> str:
-    """移除规则时优先使用缓存，以兼容已不可访问的 Wiki。"""
     check = await WikiLib(wikiurl).check_wiki_info_from_database_cache()
     return check.value.api if check.available else wikiurl
 

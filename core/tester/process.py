@@ -23,7 +23,7 @@ FUNCTION_TEST_CANCEL_TIMEOUT = 1.0
 
 
 class _FunctionTestNoProgress(Exception):
-    """Raised only when the func_case watchdog observes no completed subtest."""
+    pass
 
 
 def _consume_task_result(task: asyncio.Task) -> None:
@@ -36,7 +36,6 @@ def _consume_task_result(task: asyncio.Task) -> None:
 
 
 async def _cancel_task(task: asyncio.Task) -> bool:
-    """Cancel a task without allowing cancellation cleanup to block the runner."""
     if task.done():
         await asyncio.gather(task, return_exceptions=True)
         return True
@@ -51,13 +50,6 @@ async def _cancel_task(task: asyncio.Task) -> bool:
 
 
 async def _cancel_orphan_tasks(baseline: set[asyncio.Task] | None = None) -> bool:
-    """Cancel detached tasks created by a function-test entry.
-
-    Function tests share an event loop but rebuild their in-memory SQLite context
-    between entries. A detached task using the old context can otherwise retain
-    locks or resume during the next entry. Cleanup is bounded for the same reason
-    as watchdog cancellation: a task that ignores cancellation must not stall CI.
-    """
     current = asyncio.current_task()
     tasks = [
         task
@@ -74,7 +66,6 @@ async def _cancel_orphan_tasks(baseline: set[asyncio.Task] | None = None) -> boo
 
 
 def _infrastructure_error(input_, expected, message: str) -> list[dict]:
-    """把测试基础设施故障转换为可被 runner 计入失败的结果。"""
     return [{"input": input_, "expected": expected, "traceback": message, "action": []}]
 
 

@@ -1,11 +1,4 @@
-"""Cross-platform bot membership and permission state.
-
-Platform adapters expose different state models. ``BotState`` deliberately
-keeps the common fields small and nullable: ``None`` means that a platform
-does not expose (or the adapter could not determine) the condition. Adapter
-specific fields remain available in ``permissions`` and ``raw`` so modules
-can make a platform-aware decision without another RPC call.
-"""
+"""Cross-platform bot membership and permission state."""
 
 from typing import Any
 

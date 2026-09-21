@@ -8,7 +8,6 @@ from core.utils.container import TokenBucket, ExpiringTempDict
 
 
 def _test_token_bucket_basic():
-    """测试 TokenBucket 基本功能"""
     try:
         bucket = TokenBucket(capacity=10, refill_interval=10)
         if bucket.capacity != 10:
@@ -33,7 +32,6 @@ def _test_token_bucket_basic():
 
 
 def _test_token_bucket_refill():
-    """测试 TokenBucket 补充功能"""
     try:
         bucket = TokenBucket(capacity=10, refill_interval=10)
         bucket.consume(10)
@@ -49,7 +47,6 @@ def _test_token_bucket_refill():
 
 
 def _test_token_bucket_wait_time():
-    """测试 TokenBucket 等待时间"""
     try:
         bucket = TokenBucket(capacity=10, refill_interval=10)
         if bucket.wait_time(5) != 0.0:
@@ -63,7 +60,6 @@ def _test_token_bucket_wait_time():
 
 
 def _test_token_bucket_bool():
-    """测试 TokenBucket bool 转换"""
     try:
         clock = iter([100.0, 100.0, 100.0, 100.000001, 101.0])
         with patch("core.utils.container.time.time", side_effect=lambda: next(clock)):
@@ -81,7 +77,6 @@ def _test_token_bucket_bool():
 
 
 def _test_expiring_dict_basic():
-    """测试 ExpiringTempDict 基本 CRUD"""
     try:
         d = ExpiringTempDict(exp=3600)
         d["key1"] = "value1"
@@ -107,7 +102,6 @@ def _test_expiring_dict_basic():
 
 
 def _test_expiring_dict_expiry():
-    """测试 ExpiringTempDict 过期检查"""
     try:
         d = ExpiringTempDict(exp=0, ts=time.time() - 10)
         if d.is_expired() is not True:
@@ -121,7 +115,6 @@ def _test_expiring_dict_expiry():
 
 
 def _test_expiring_dict_nested():
-    """测试 ExpiringTempDict 嵌套访问"""
     try:
         d = ExpiringTempDict(exp=3600)
         nested = d["sub"]
@@ -136,7 +129,6 @@ def _test_expiring_dict_nested():
 
 
 def _test_expiring_dict_get():
-    """测试 ExpiringTempDict get 方法"""
     try:
         d = ExpiringTempDict(exp=3600)
         d["key"] = "value"
@@ -152,7 +144,6 @@ def _test_expiring_dict_get():
 
 
 def _test_expiring_dict_copy():
-    """测试 ExpiringTempDict copy 方法"""
     try:
         d = ExpiringTempDict(exp=3600)
         d["key"] = "value"
@@ -168,7 +159,6 @@ def _test_expiring_dict_copy():
 
 
 def _test_expiring_dict_operations():
-    """测试 ExpiringTempDict 操作方法"""
     try:
         d = ExpiringTempDict(exp=3600)
         d["a"] = 1
@@ -196,7 +186,6 @@ def _test_expiring_dict_operations():
 
 
 def _test_expiring_dict_bool():
-    """测试 ExpiringTempDict bool 转换"""
     try:
         d = ExpiringTempDict(exp=3600)
         if bool(d) is not False:
@@ -210,7 +199,6 @@ def _test_expiring_dict_bool():
 
 
 def _test_expiring_dict_serialization():
-    """测试 ExpiringTempDict 序列化"""
     try:
         d = ExpiringTempDict(exp=3600)
         d["key"] = "value"

@@ -26,7 +26,6 @@ class MatrixContextManager(ContextManager):
 
     @staticmethod
     def _response_succeeded(response, operation: str) -> bool:
-        """Matrix SDK 会以错误响应对象表示协议失败，而不一定抛异常。"""
         if isinstance(response, nio.ErrorResponse):
             Logger.error(f"Failed to {operation}: {response}")
             return False
@@ -34,9 +33,6 @@ class MatrixContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-        # 这里可以添加权限检查的逻辑
         ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] | None = cls.context.get(session_info.session_id)
         if ctx:
             room, event = ctx
@@ -204,8 +200,6 @@ class MatrixContextManager(ContextManager):
         quote: bool = True,
         msg_ids: list[str] | None = None,
     ) -> list[str]:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
 
         if msg_ids is None:
             msg_ids = []
@@ -231,9 +225,7 @@ class MatrixContextManager(ContextManager):
                     reply_to_user = f"@{session_info.get_common_sender_id()}"
 
                 if reply_to:
-                    # rich reply
                     content["m.relates_to"] = {"m.in_reply_to": {"event_id": reply_to}}
-                    # mention target user
                     content["m.mentions"] = {"user_ids": [reply_to_user]}
                     if content.get("msgtype") == "m.notice" and isinstance(event, nio.RoomMessageFormatted):
                         # https://spec.matrix.org/v1.9/client-server-api/#fallbacks-for-rich-replies
@@ -258,10 +250,8 @@ class MatrixContextManager(ContextManager):
                 if isinstance(event, nio.RoomMessageFormatted) and "m.relates_to" in event.source.get("content", {}):
                     relates_to = event.source["content"].get("m.relates_to", {})
                     if "rel_type" in relates_to and relates_to.get("rel_type") == "m.thread":
-                        # replying in thread
                         thread_root = relates_to.get("event_id")
                         if reply_to:
-                            # reply to msg replying in thread
                             content["m.relates_to"] = {
                                 "rel_type": "m.thread",
                                 "event_id": thread_root,
@@ -269,7 +259,6 @@ class MatrixContextManager(ContextManager):
                                 "m.in_reply_to": {"event_id": reply_to},
                             }
                         else:
-                            # reply in thread
                             content["m.relates_to"] = {
                                 "rel_type": "m.thread",
                                 "event_id": thread_root,
@@ -286,8 +275,6 @@ class MatrixContextManager(ContextManager):
                     Logger.error(f"Error while sending message: {str(resp)}")
                 else:
                     msg_ids.append(resp.event_id)
-                # reply_to = None
-                # reply_to_user = None
 
             if isinstance(x, PlainElement):
                 if x.allow_parse:
@@ -470,7 +457,6 @@ class MatrixContextManager(ContextManager):
     async def _resolve_matrix_room_(session_info: SessionInfo) -> nio.MatrixRoom | None:
         target_id: str = session_info.get_common_target_id()
         if target_id.startswith("@"):
-            # find private messaging room
             for room in matrix_bot.rooms:
                 room = matrix_bot.rooms[room]
                 if room.join_rule == "invite" and (
@@ -540,8 +526,6 @@ class MatrixContextManager(ContextManager):
         if not isinstance(message_id, list):
             raise TypeError("Message ID must be a list or str")
 
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
         for m in message_id:
             try:
                 response = await matrix_bot.room_redact(session_info.get_common_target_id(), m, reason)

@@ -1,12 +1,4 @@
-"""帮助页布局与可点击模块列表的单元测试。
-
-`~help` 与 `~module list` 列出的模块名，在具备指令操作能力的平台上做成可点击标签，
-点击即把 `~help <模块名>` 填入输入框。此处把关三件事：元素序列的交错排布、标题
-末尾的换行，以及经适配器渲染后的分行结果。
-
-标题的换行是易错点：适配器会把指令操作无条件拼入上一项，标题若不自带换行，
-模块列表会被挤到标题同一行，与既有的纯文本版排版不符。
-"""
+"""帮助页布局与可点击模块列表的单元测试。"""
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -53,16 +45,6 @@ def _test_help_about_button_replaces_donate():
 
 
 def _render_lines(session_info, parts) -> list[str]:
-    """把元素列表按适配器的规则折成行。
-
-    复刻 ``bots/qqbot/context.py`` 中 send_msg_markdown() 的拼接：指令操作并入上一项，
-    且其后紧随的文本同样并入上一项，最后以换行连接各项。该函数绑在平台 SDK 上，
-    测试无从直接调用，故按同样的规则建模。
-
-    :param session_info: 会话信息，用于将消息链转为可发送形态。
-    :param parts: 待折行的消息元素。
-    :return: 折行后的文本行，不过滤空行。
-    """
     texts, inline_pending = [], False
     for x in MessageChain.assign(parts).as_sendable(session_info).values:
         if isinstance(x, ButtonFrameElement):
@@ -85,12 +67,6 @@ def _render_lines(session_info, parts) -> list[str]:
 
 
 async def _session(target_suffix: str, support_action_text: bool = True):
-    """构造一个用于消息链转换的会话。
-
-    :param target_suffix: 场景 ID 后缀，各用例互不相同以免共用 union。
-    :param support_action_text: 会话是否支持指令操作。
-    :return: 会话信息。
-    """
     return await SessionInfo.assign(
         target_id=f"TEST|Group|{target_suffix}",
         target_from="TEST|Group",
@@ -105,8 +81,6 @@ async def _session(target_suffix: str, support_action_text: bool = True):
 
 
 class _FakeSession:
-    """只提供 build_clickable_modules 用到的两个属性。"""
-
     def __init__(self, session_info):
         self.session_info = session_info
 
@@ -167,7 +141,6 @@ def _module(name: str, *, base: bool = False, rss: bool = False, unsupported: bo
 
 
 async def _test_image_help_precedes_action_text_fallback():
-    """不支持 Markdown 表格时，即使支持 ActionText 也应优先生成图片帮助。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_image_priority",
         target_from="TEST|Group",
@@ -196,7 +169,6 @@ async def _test_image_help_precedes_action_text_fallback():
 
 
 async def _test_discord_detail_help_does_not_use_markdown_table():
-    """Discord 支持普通 Markdown 和 ActionText，但不应进入详细帮助的表格分支。"""
     msg = SimpleNamespace(session_info=discord_features)
     return (
         discord_features.support_markdown
@@ -206,7 +178,6 @@ async def _test_discord_detail_help_does_not_use_markdown_table():
 
 
 async def _test_image_flag_overrides_markdown_table():
-    """--img 应在支持 Markdown 表格的平台上仍强制生成图片帮助。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_force_image",
         target_from="TEST|Group",
@@ -236,7 +207,6 @@ async def _test_image_flag_overrides_markdown_table():
 
 
 async def _test_image_template_omits_help_command():
-    """图片帮助页不内嵌查看详情命令，并以色块图例说明模块类型。"""
     locale = (await _session("help_image_template")).locale
     rendered = await env.get_template("module_list.html").render_async(
         msg=SimpleNamespace(session_info=SimpleNamespace(prefixes=["~"])),
@@ -267,7 +237,6 @@ async def _test_image_template_omits_help_command():
 
 
 async def _test_help_doc_template_marks_module_type_with_swatch():
-    """模块详细帮助使用色块与类型名称标识当前模块。"""
     locale = (await _session("help_doc_template")).locale
     module = SimpleNamespace(base=True, rss=False, desc="", alias={}, developers=[])
     help_ = SimpleNamespace(args={}, return_formatted_help_doc=lambda: "")
@@ -287,7 +256,6 @@ async def _test_help_doc_template_marks_module_type_with_swatch():
 
 
 async def _test_markdown_help_marks_module_type_with_emoji():
-    """Markdown 模块详情使用 emoji 色块与类型名称标识当前模块。"""
     locale = (await _session("help_markdown_type")).locale
     module_types = (
         (SimpleNamespace(base=True, rss=False), "🟧 基础模块"),
@@ -319,7 +287,6 @@ async def _test_help_doc_template_includes_regex_disable_tip():
 
 
 async def _test_element_sequence():
-    """测试标题、指令操作与分隔符的交错排布"""
     try:
         msg = _FakeSession(await _session("help_seq"))
         parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki", "maimai"])])
@@ -335,10 +302,6 @@ async def _test_element_sequence():
 
 
 async def _test_title_ends_with_newline():
-    """测试标题自带换行
-
-    适配器把指令操作无条件拼入上一项，标题不带换行会让列表挤到同一行。
-    """
     try:
         msg = _FakeSession(await _session("help_nl"))
         parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki"])])
@@ -356,7 +319,6 @@ async def _test_title_ends_with_newline():
 
 
 async def _test_action_text_payload():
-    """测试标签的填入命令与展示文案"""
     try:
         session_info = await _session("help_payload")
         msg = _FakeSession(session_info)
@@ -374,7 +336,6 @@ async def _test_action_text_payload():
 
 
 async def _test_module_toggle_payloads():
-    """测试普通与订阅模块的锁图标及 enable/disable 填入命令。"""
     session_info = await _session("help_toggle")
     msg = _FakeSession(session_info)
     prefix = session_info.prefixes[0]
@@ -397,7 +358,6 @@ async def _test_module_toggle_payloads():
 
 
 async def _test_unsupported_module_strikethrough():
-    """测试缺少 QQBot 权限的模块以删除线展示，状态按钮仍可点击。"""
     session_info = await _session("help_strikethrough")
     msg = _FakeSession(session_info)
     entry = ModuleListEntry("wikilog", False, subscription=True, unsupported=True)
@@ -408,7 +368,6 @@ async def _test_unsupported_module_strikethrough():
 
 
 async def _test_module_table_group_legends():
-    """管理员模块表在扩展模块标题右侧展示开关图例，普通列表不展示。"""
     session_info = await _session("help_group_legends")
     msg = _FakeSession(session_info)
     locale = session_info.locale
@@ -450,7 +409,6 @@ async def _test_module_table_group_legends():
 
 
 async def _test_markdown_help_header():
-    """测试 Markdown help 顶栏使用四个真实单元格，并与模块列表处于同一张表。"""
     session_info = await _session("help_header")
     session_info.bot_name = "小可测试版"
     msg = _FakeSession(session_info)
@@ -486,7 +444,6 @@ async def _test_markdown_help_header():
 
 
 async def _test_markdown_help_header_permissions_and_width():
-    """测试三种权限文案，并确保宽表顶栏使用空单元格补齐而非合并。"""
     session_info = await _session("help_header_permissions")
     msg = _FakeSession(session_info)
     names = [f"m{i}" for i in range(41)]
@@ -518,7 +475,6 @@ async def _test_markdown_help_header_permissions_and_width():
 
 
 async def _test_qqbot_admin_help_includes_disabled_modules():
-    """测试 QQBot 管理员的 help 合并 module list，并移除模块列表按钮。"""
     session_info = await SessionInfo.assign(
         target_id="QQBot|Group|help_admin",
         target_from="QQBot|Group",
@@ -559,7 +515,6 @@ async def _test_qqbot_admin_help_includes_disabled_modules():
 
 
 async def _test_qqbot_superuser_help_header():
-    """测试超级用户权限高于场景管理员，顶栏显示最高权限。"""
     session_info = await SessionInfo.assign(
         target_id="QQBot|Group|help_superuser",
         target_from="QQBot|Group",
@@ -584,7 +539,6 @@ async def _test_qqbot_superuser_help_header():
 
 
 async def _test_qqbot_non_admin_help_keeps_module_list_button():
-    """测试 QQBot 非管理员的 help 只展示已开启模块，并保留 module list 按钮。"""
     session_info = await SessionInfo.assign(
         target_id="QQBot|Group|help_member",
         target_from="QQBot|Group",
@@ -621,7 +575,6 @@ async def _test_qqbot_non_admin_help_keeps_module_list_button():
 
 
 async def _test_help_hides_admin_modules_from_non_admin():
-    """普通用户的 help 概览不展示仅管理员可用的模块，顶栏显示普通用户。"""
     session_info = await _session("help_permission_non_admin")
     msg = _OverviewSession(session_info, is_admin=False)
     modules = {
@@ -638,7 +591,6 @@ async def _test_help_hides_admin_modules_from_non_admin():
 
 
 async def _test_help_shows_admin_modules_and_header_for_platform_admin():
-    """平台管理员在非 QQBot 平台上同样能看到管理员模块，顶栏显示场景管理员。"""
     session_info = await _session("help_permission_admin")
     msg = _OverviewSession(session_info, is_admin=True)
     modules = {
@@ -655,7 +607,6 @@ async def _test_help_shows_admin_modules_and_header_for_platform_admin():
 
 
 async def _test_command_parser_hides_admin_commands_for_non_admin():
-    """CommandParser 在 is_admin=False 时从帮助文档中剔除管理员命令，管理员仍可见。"""
     session_info = await _session("help_cmd_admin_filter")
     msg = _FakeSession(session_info)
     module_ = Module.assign(
@@ -684,7 +635,6 @@ async def _test_command_parser_hides_admin_commands_for_non_admin():
 
 
 async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
-    """不要求启用模块时，普通用户的 help 展示全部模块但不提供管理开关。"""
     session_info = await SessionInfo.assign(
         target_id="TEST|Group|help_without_enable_requirement",
         target_from="TEST|Group",
@@ -721,7 +671,6 @@ async def _test_help_without_enable_requirement_shows_all_modules_as_enabled():
 
 
 async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
-    """测试显式 --legacy 仍只展示已开启模块，不启用管理合并样式。"""
     session_info = await SessionInfo.assign(
         target_id="QQBot|Group|help_admin_legacy",
         target_from="QQBot|Group",
@@ -751,7 +700,6 @@ async def _test_qqbot_admin_legacy_help_keeps_legacy_scope():
 
 
 async def _test_qqbot_module_list_hides_toggles_from_non_admin():
-    """测试 QQBot 普通用户的 module list 隐藏开关，底部只保留在线文档按钮。"""
     session_info = await SessionInfo.assign(
         target_id="QQBot|Group|module_list_member",
         target_from="QQBot|Group",
@@ -793,7 +741,6 @@ async def _test_qqbot_module_list_hides_toggles_from_non_admin():
 
 
 async def _test_qqbot_module_list_keeps_toggles_for_admin():
-    """测试 QQBot 场景管理员的 module list 仍提供模块开关。"""
     session_info = await SessionInfo.assign(
         target_id="QQBot|Group|module_list_admin",
         target_from="QQBot|Group",
@@ -822,7 +769,6 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
 
 
 async def _test_single_module_no_separator():
-    """测试只有一个模块时不产出多余分隔符"""
     try:
         msg = _FakeSession(await _session("help_single"))
         parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki"])])
@@ -836,7 +782,6 @@ async def _test_single_module_no_separator():
 
 
 async def _test_empty_returns_nothing():
-    """测试传入空列表时返回空片段，空态文案由调用方负责"""
     try:
         msg = _FakeSession(await _session("help_empty"))
         parts = build_clickable_modules(msg, [("core.message.help.legacy.base", [])])
@@ -846,10 +791,6 @@ async def _test_empty_returns_nothing():
 
 
 async def _test_disable_joke():
-    """测试标题与分隔符均不参与玩笑替换
-
-    模块名是标识符，被替换后就无法照着输入了。
-    """
     try:
         msg = _FakeSession(await _session("help_joke"))
         parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki", "maimai"])])
@@ -862,7 +803,6 @@ async def _test_disable_joke():
 
 
 async def _test_rendered_layout():
-    """测试经适配器渲染后，标题独占一行而列表各项同处一行"""
     try:
         session_info = await _session("help_layout")
         msg = _FakeSession(session_info)
@@ -879,10 +819,6 @@ async def _test_rendered_layout():
 
 
 async def _test_degraded_keeps_module_names():
-    """测试不支持的平台上降级后仍能读出模块名
-
-    该分支只在支持指令操作时构造，降级路径本不可达，此处仅作防御性把关。
-    """
     try:
         session_info = await _session("help_degrade", support_action_text=False)
         msg = _FakeSession(session_info)
@@ -897,11 +833,6 @@ async def _test_degraded_keeps_module_names():
 
 
 async def _test_multi_group_separation():
-    """测试第二组起的标题带前导换行
-
-    上一组末尾是指令操作，适配器会把紧随其后的文本拼入同一项，后续组的标题
-    若不带前导换行，就会紧贴在上一组最后一个标签之后。
-    """
     try:
         session_info = await _session("help_groups")
         msg = _FakeSession(session_info)
@@ -932,11 +863,6 @@ async def _test_multi_group_separation():
 
 
 async def _test_hint_not_glued_to_module_list():
-    """测试列表之后追加的提示语不会被粘在最后一个模块名后面
-
-    可点击列表以指令操作收尾，适配器会把紧随其后的文本并入同一行。~help 与 ~module list
-    都会在列表之后追加「使用……查看详细信息」一类的提示，不加收尾就会挤成一行。
-    """
     session_info = await _session("help_hint")
     msg = _FakeSession(session_info)
     prefix = session_info.prefixes[0]
@@ -969,7 +895,6 @@ async def _test_hint_not_glued_to_module_list():
 
 
 async def _test_table_shape():
-    """在扩列边界前后同时校验高度、列数和末行补齐。"""
     session_info = await _session("help_table_shape")
     msg = _FakeSession(session_info)
     cases = {
@@ -1012,11 +937,6 @@ async def _test_table_shape():
 
 
 async def _test_table_cells_are_clickable():
-    """测试单元格里的模块名是可点击标签，且填入的命令正确
-
-    标签能落在单元格中间，靠的是适配器把指令操作及其后的文本并入同一项；这一条同时守住
-    表格未被拆成多个元素——一旦拆开，竖线与标签会各自成行，表格随即散架。
-    """
     session_info = await _session("help_table_click")
     msg = _FakeSession(session_info)
     parts = build_module_table(msg, [(TABLE_TITLE_KEY, ["wiki", "dice", "coin"])])
@@ -1035,7 +955,6 @@ async def _test_table_cells_are_clickable():
 
 
 async def _test_table_empty_returns_nothing():
-    """测试传入空列表时返回空片段，空态文案由调用方负责"""
     msg = _FakeSession(await _session("help_table_empty"))
     if build_module_table(msg, [(TABLE_TITLE_KEY, [])]) != []:
         Logger.error("An empty module list should produce no table at all")
@@ -1044,12 +963,6 @@ async def _test_table_empty_returns_nothing():
 
 
 async def _test_table_is_fenced_by_blank_lines():
-    """测试表格前后各有一个空行
-
-    markdown 表格靠空行终结：末尾少了它，其后的「模块作者」等行会被某些客户端的解析器
-    吸进表格；开头少了它，表头会被并进上一段，表格根本不成立。两侧的表现又随客户端而异，
-    正是本用例要钉死的东西。
-    """
     session_info = await _session("help_table_fence")
     msg = _FakeSession(session_info)
     doc = {"args": [{"args": "~m c", "desc": "说明"}], "options": []}
@@ -1073,10 +986,6 @@ async def _test_table_is_fenced_by_blank_lines():
 
 
 async def _test_table_does_not_end_inline():
-    """测试表格以纯文本收尾
-
-    收尾若是指令操作，调用方随后追加的元素会被并入最后一个单元格所在的行。
-    """
     msg = _FakeSession(await _session("help_table_tail"))
     parts = build_module_table(msg, [(TABLE_TITLE_KEY, ["wiki", "dice"])])
     if isinstance(parts[-1], ActionTextElement):
@@ -1089,11 +998,6 @@ async def _test_table_does_not_end_inline():
 
 
 async def _test_strip_command_arguments():
-    """测试填入输入框的命令已去掉参数占位符
-
-    占位符照原样填进去还得用户自行删掉，反倒碍事。可选项会嵌套（如 [-l <lang>]、[<lang>]），
-    用正则逐个匹配会留下孤立的方括号，故按括号深度剔除。
-    """
     cases = {
         # 不带参数的原样返回，点击后可直接发出
         "~setup list target": "~setup list target",
@@ -1118,7 +1022,6 @@ async def _test_strip_command_arguments():
 
 
 async def _test_command_table_fills_stripped_command():
-    """测试表格里展示完整模板、填入的却是去掉参数后的主体"""
     session_info = await _session("help_cmd_strip")
     msg = _FakeSession(session_info)
     doc = {"args": [{"args": "~wiki <pagename> [-l <lang>]", "desc": "查询页面"}], "options": []}
@@ -1137,10 +1040,6 @@ async def _test_command_table_fills_stripped_command():
 
 
 async def _test_command_table_escapes_pipes():
-    """测试单元格里的竖线被转义
-
-    正则中就有 ≺(.*?)≻\\|⧼(.*?)⧽ 这类内容，不转义会把该行拆出多余的列、整张表错位。
-    """
     session_info = await _session("help_cmd_pipe")
     msg = _FakeSession(session_info)
     parts = build_command_table(msg, {"args": [], "options": []}, [("a|b", "说明|带竖线")])
@@ -1152,11 +1051,6 @@ async def _test_command_table_escapes_pipes():
 
 
 async def _test_command_table_expands_columns():
-    """测试命令多时由列数吸收，高度不越界
-
-    一「列」是「命令 + 说明」一对，故实际列数为对数的两倍。命令多的模块若仍一行一条，
-    表格会长到二十余行。
-    """
     session_info = await _session("help_cmd_wide")
     msg = _FakeSession(session_info)
     for count, pairs in ((5, 1), (10, 1), (11, 2), (22, 3)):
@@ -1173,10 +1067,6 @@ async def _test_command_table_expands_columns():
 
 
 async def _test_command_table_rows_are_uniform():
-    """测试各行列数一致，末行补空的成对单元格
-
-    区隔行同样要铺满整行的列数，否则该行连同表格一并渲染失败。
-    """
     session_info = await _session("help_cmd_uniform")
     msg = _FakeSession(session_info)
     for count in (1, 3, 7, 12, 23):
@@ -1193,10 +1083,6 @@ async def _test_command_table_rows_are_uniform():
 
 
 async def _test_regex_is_wrapped_in_code():
-    """测试正则包进行内代码，且不再逐字符反斜杠转义
-
-    正则满是 * _ [] () 一类字符，直接放进单元格会被当作格式标记渲染。
-    """
     session_info = await _session("help_regex_code")
     msg = _FakeSession(session_info)
     pattern = r"\[\[(.*?)\]\]"
@@ -1209,7 +1095,6 @@ async def _test_regex_is_wrapped_in_code():
 
 
 def _test_format_table_code_edge_cases() -> bool:
-    """测试行内代码的三处边界：竖线、反引号、换行"""
     cases = {
         # 竖线仍须转义：表格先按竖线切分单元格，代码块拦不住它
         "a|b": "`a\\|b`",
@@ -1232,7 +1117,6 @@ def _test_format_table_code_edge_cases() -> bool:
 
 
 async def _test_empty_group_skipped():
-    """测试模块名为空的组被整组跳过，不留下孤零零的标题"""
     try:
         msg = _FakeSession(await _session("help_skip"))
         parts = build_clickable_modules(

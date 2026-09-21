@@ -9,7 +9,6 @@ from core.tester import func_case, Tester
 
 
 def _test_url_pattern_match():
-    """url_pattern: 应匹配标准 URL"""
     try:
         from core.utils.http import url_pattern
 
@@ -27,7 +26,6 @@ def _test_url_pattern_match():
 
 
 def _test_url_pattern_no_match():
-    """url_pattern: 不应匹配普通文本"""
     try:
         from core.utils.http import url_pattern
 
@@ -41,7 +39,6 @@ def _test_url_pattern_no_match():
 
 
 async def _test_private_ip_check_blocks_non_global():
-    """private_ip_check: 应拒绝全部非公网 IP 网段"""
     try:
         from core.utils.http import private_ip_check
 
@@ -70,7 +67,6 @@ async def _test_private_ip_check_blocks_non_global():
 
 
 async def _test_private_ip_check_blocks_mapped_ipv6():
-    """private_ip_check: IPv4-mapped IPv6 不应绕过私网检查"""
     try:
         from core.utils.http import private_ip_check
 
@@ -84,7 +80,6 @@ async def _test_private_ip_check_blocks_mapped_ipv6():
 
 
 async def _test_private_ip_check_checks_all_dns_results():
-    """private_ip_check: DNS 任一结果非公网时均应拒绝"""
     try:
         import core.utils.http as http_module
 
@@ -102,7 +97,6 @@ async def _test_private_ip_check_checks_all_dns_results():
 
 
 async def _test_private_ip_check_allows_global_dns_results():
-    """private_ip_check: DNS 全部为公网地址时应放行"""
     try:
         import core.utils.http as http_module
 
@@ -116,7 +110,6 @@ async def _test_private_ip_check_allows_global_dns_results():
 
 
 async def _test_private_ip_check_blocks_empty_dns_results():
-    """private_ip_check: DNS 未返回地址时应失败关闭"""
     try:
         import core.utils.http as http_module
 
@@ -134,7 +127,6 @@ async def _test_private_ip_check_blocks_empty_dns_results():
 
 
 async def _test_request_url_checks_redirect_before_sending():
-    """request_url: 重定向到私网时应在第二跳发送前拒绝"""
     try:
         import core.utils.http as http_module
 
@@ -175,7 +167,6 @@ async def _test_request_url_checks_redirect_before_sending():
 
 
 async def _test_request_url_private_ip_opt_outs():
-    """request_url: 请求级和全局私网放行开关应保持有效"""
     try:
         import core.utils.http as http_module
 

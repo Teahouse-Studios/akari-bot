@@ -17,7 +17,6 @@ from core.utils.session import inject_features
 
 
 def _session(session_id: str) -> SessionInfo:
-    """构造一个 OneBot 群聊会话，并注入平台能力位。"""
     session = SessionInfo(
         target_id=f"{target_group_prefix}|123456",
         target_from=target_group_prefix,
@@ -32,7 +31,6 @@ def _session(session_id: str) -> SessionInfo:
 
 
 def _client() -> SimpleNamespace:
-    """构造带发送接口的 aiocqhttp 替身。"""
     return SimpleNamespace(
         send_group_msg=AsyncMock(return_value={"message_id": 42}),
         send_private_msg=AsyncMock(return_value={"message_id": 42}),
@@ -41,7 +39,6 @@ def _client() -> SimpleNamespace:
 
 
 async def _test_unavailable_media_elements_are_skipped() -> bool:
-    """图片/音频/视频均不可得时不发送空消息。"""
     session = _session("onebot-unavailable-media")
     client = _client()
     message = MessageChain.assign(
@@ -57,7 +54,6 @@ async def _test_unavailable_media_elements_are_skipped() -> bool:
 
 
 async def _test_unavailable_media_keeps_remaining_text() -> bool:
-    """媒体元素不可得时仍发送其余文本内容。"""
     session = _session("onebot-unavailable-media-text")
     client = _client()
     message = MessageChain.assign([Plain("hello"), Image("missing-image-fixture.png")])

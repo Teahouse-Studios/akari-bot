@@ -1,19 +1,4 @@
-"""
-配置文件生成脚本。
-
-该脚本的功能：
-1. 首次运行时自动生成配置文件框架
-2. 扫描所有机器人和模块，为其生成配置项
-3. 支持多语言配置生成
-4. 使用多进程并行生成各语言配置，提高效率
-5. 自动检测并重新生成有变化的配置
-6. 配置文件打包为 zip 格式便于分发
-
-主要用途：
-- 初始化时自动生成默认配置
-- 添加新模块后更新配置文件
-- 支持多语言配置的生成和维护
-"""
+"""配置文件生成脚本。"""
 
 import importlib
 import multiprocessing
@@ -33,17 +18,6 @@ from core.utils.func import is_int
 
 
 def generate_config(dir_path: Path, language: str):
-    """为指定语言生成配置文件。
-
-    该函数会：
-    1. 加载本地化文件
-    2. 创建目录和空的配置文件
-    3. 写入配置文件头注释和默认配置
-    4. 扫描所有机器人和模块配置，自动加载并生成配置项
-
-    :param dir_path: 配置文件保存的目录路径
-    :param language: 语言代码（如"zh_cn"、"en_us"等）
-    """
     # 加载本地化语言文件
     build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
     connect_locale_snapshot("akari-bot")
@@ -190,13 +164,6 @@ if __name__ == "__main__":
     import difflib
 
     def zip_language_folders(config_store_path: Path, config_store_packed_path):
-        """将各语言的配置文件夹打包为 zip 文件。
-
-        将每个语言的配置目录压缩为单个 zip 文件，便于分发和备份。
-
-        :param config_store_path: 配置存储根目录（包含各语言子目录）
-        :param config_store_packed_path: 压缩文件的输出目录
-        """
         # 遍历配置目录下的所有语言文件夹
         for lang in [c.name for c in config_store_path.iterdir()]:
             lang_path = config_store_path / lang

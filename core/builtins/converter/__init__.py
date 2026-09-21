@@ -1,9 +1,4 @@
-"""
-类型转换模块 - 提供对象序列化和反序列化的通用机制。
-
-使用 cattrs 库进行类型转换，为各种自定义类型注册
-序列化和反序列化钩子，使其能够与 JSON 格式互相转换。
-"""
+"""类型转换模块 - 提供对象序列化和反序列化的通用机制。"""
 
 from datetime import timedelta
 
@@ -18,14 +13,9 @@ from core.i18n import Locale
 from core.logger import Logger
 from core.exports import exports
 
-# 创建类型转换器实例
 converter = Converter()
 
-# ========== 注册 unstructure 钩子（对象 -> 字典）==========
 
-
-# 消息元素类型的反结构化处理
-# 将任何 MessageElement 对象转换为字典，添加 _type 字段标记类型
 def elements_to_kwargs(kwargs):
     Logger.trace(f"kwargs before unstructured: {kwargs}")
     for k in kwargs:
@@ -54,31 +44,21 @@ converter.register_unstructure_hook(
 )
 
 
-# 会话信息的反结构化处理
 # 将 TargetUnionInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
 converter.register_unstructure_hook(
     TargetUnionInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id}
 )
 
-# 用户信息的反结构化处理
 # 将 SenderUnionInfo 对象转换为字典，由于序列化需要从数据库重新异步获取，只保留 _type 和 union_id 字段
 converter.register_unstructure_hook(
     SenderUnionInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id}
 )
 
-# 地区 / 语言信息的反结构化处理
-# 将 Locale 对象转换为字典，保存其 locale 字符串值
 converter.register_unstructure_hook(Locale, lambda obj: {"_type": "Locale", "locale": obj.locale})
 
-# 时间间隔的反结构化处理
-# 将 timedelta 对象转换为字典，以秒为单位保存时长
 converter.register_unstructure_hook(timedelta, lambda obj: {"_type": "timedelta", "seconds": obj.total_seconds()})
 
-# ========== 注册 structure 钩子（字典 -> 对象）==========
 
-
-# 消息元素类型的结构化处理
-# 从字典恢复为对应的 MessageElement 子类对象
 def kwargs_to_elements(o):
     Logger.trace(f"kwargs before structure: {o}")
     if o["_type"] == "ButtonElement" and "rows" in o:
@@ -110,20 +90,14 @@ def kwargs_to_elements(o):
 
 converter.register_structure_hook(MessageElement, lambda o, _: kwargs_to_elements(o))
 
-# 场景信息的结构化处理
 # 从字典恢复为 TargetUnionInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(TargetUnionInfo, lambda o, _: TargetUnionInfo)
 
-# 用户信息的结构化处理
 # 从字典恢复为 SenderUnionInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(SenderUnionInfo, lambda o, _: SenderUnionInfo)
 
-# 地区/语言信息的结构化处理
-# 从字典恢复为 Locale 对象，使用保存的 locale 字符串
 converter.register_structure_hook(Locale, lambda o, _: Locale(o["locale"]))
 
-# 时间间隔的结构化处理
-# 从字典恢复为 timedelta 对象，使用保存的秒数值
 converter.register_structure_hook(timedelta, lambda o, _: timedelta(seconds=o["seconds"]))
 
 # EventName 的 Literal 分支只用于类型提示；反序列化时保留任意自定义事件名。

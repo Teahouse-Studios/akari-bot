@@ -19,32 +19,13 @@ class dataTypeAbstract:
 class Bit:
     @staticmethod
     def read(data: int, index: int) -> int:
-        """
-        读取一个整数中指定索引的比特位值
-
-        参数:
-            data (int): 要读取的整数值
-            index (int): 比特位索引 (0 到 7，其中 0 表示最低位)
-
-        返回:
-            (int): 指定索引的比特位值 (1 或 0)
-        """
+        """读取一个整数中指定索引的比特位值"""
         # return 1 if bool(data & (1 << index)) else 0
         return (data >> index) & 1
 
     @staticmethod
     def write(data: int, index: int, value: int) -> int:
-        """
-        修改一个整数中指定索引的比特位值
-
-        参数:
-            data (int): 要修改的整数值
-            index (int): 比特位索引 (0 到 7，其中 0 表示最低位)
-            value (int): 要设置的比特位值 (1 或 0)
-
-        返回:
-            (int): 修改后的整数值
-        """
+        """修改一个整数中指定索引的比特位值"""
         mask = 1 << index
         return (data & ~mask) | ((value & 1) << index)
         # if value == 0:
@@ -58,16 +39,7 @@ class Bits(dataTypeAbstract):
 
     @staticmethod
     def read(data: bytes, pos: int) -> tuple[str, int]:
-        """
-        读取一个整数的所有比特位值 (1 字节)
-
-        参数:
-            data (bytes): 要读取的字节数据
-            pos (int): 数据在字节中的位置
-
-        返回:
-            (tuple[str, int]): 包含每个比特位的值 (1 或 0) 的列表以及下一个字节的位置
-        """
+        """读取一个整数的所有比特位值 (1 字节)"""
         bits: list[int] = []
         for i in range(8):  # 一个字节有 8 位
             bit = Bit.read(data[pos], i)
@@ -77,16 +49,7 @@ class Bits(dataTypeAbstract):
 
     @staticmethod
     def write(data: bytearray, value: str) -> bytearray:
-        """
-        根据给定的比特位值列表构建一个整数
-
-        参数:
-            data (bytearray): 存储结果的字节数组
-            value (list[int]): 每个比特位的值 (1 或 0) 的列表
-
-        返回:
-            (bytearray): 更新后的数据序列
-        """
+        """根据给定的比特位值列表构建一个整数"""
         _value = ast.literal_eval(value)
 
         if not isinstance(_value, list):
@@ -108,23 +71,10 @@ class Bits(dataTypeAbstract):
 
 
 class _Bits(dataTypeAbstract):
-    """比特位 (1 字节，带长度截取)"""
-
     def __init__(self, _len: int = 8):
-        """比特位 (1 字节，带长度截取)"""
         self._len = _len
 
     def read(self, data: bytes, pos: int) -> tuple[str, int]:
-        """
-        读取一个整数的所有比特位值 (1 字节，带长度截取)
-
-        参数:
-            data (bytes): 要读取的字节数据
-            pos (int): 数据在字节中的位置
-
-        返回:
-            (tuple[str, int]): 包含每个比特位的值 (1 或 0) 的列表以及下一个字节的位置
-        """
         bits: list[int] = []
         for i in range(self._len):
             bit = Bit.read(data[pos], i)
@@ -134,16 +84,6 @@ class _Bits(dataTypeAbstract):
 
     @staticmethod
     def write(data: bytearray, value: str) -> bytearray:
-        """
-        根据给定的比特位值列表构建一个整数
-
-        参数:
-            data (bytearray): 存储结果的字节数组
-            value (str): 每个比特位的值 (1 或 0) 的列表
-
-        返回:
-            (bytearray): 更新后的数据序列
-        """
         _value = ast.literal_eval(value)
 
         if not isinstance(_value, list):
@@ -166,30 +106,12 @@ class Byte(dataTypeAbstract):
 
     @staticmethod
     def read(data: bytes, pos: int):
-        """
-        读取一个字节的数据 (1 字节)
-
-        参数:
-            data (bytes): 包含数据的字节序列
-            pos (int): 当前数据的字节位置
-
-        返回:
-            (tuple[int, int]): 包含读取的字节和下一个数据的位置
-        """
+        """读取一个字节的数据 (1 字节)"""
         return data[pos], pos + 1
 
     @staticmethod
     def write(data: bytearray, value):
-        """
-        将一段字节写入字节序列
-
-        参数:
-            data (bytearray): 包含数据的字节序列
-            value (Any): 要写入的字节值
-
-        返回:
-            (bytearray): 修改后的数据序列
-        """
+        """将一段字节写入字节序列"""
         if isinstance(value, int):
             data.append(value)
         else:
@@ -203,64 +125,24 @@ class ShortInt(dataTypeAbstract):
 
     @staticmethod
     def read(data: bytes, pos: int):
-        """
-        读取一个短整型的数据 (2 字节)
-
-        参数:
-            data (bytes): 包含数据的字节序列
-            pos (int): 当前数据的字节位置
-
-        返回:
-            (tuple[int, int]): 包含读取的短整型数据和下一个数据的位置
-        """
+        """读取一个短整型的数据 (2 字节)"""
         return unpack("<H", data[pos : pos + 2])[0], pos + 2
 
     @staticmethod
     def write(data: bytearray, value: int):
-        """
-        将短整型数据写入字节序列
-
-        参数:
-            data (bytearray): 用于存储数据的字节序列
-            value (int): 待写入的短整型数据
-
-        返回:
-            (bytearray): 更新后的字节序列
-        """
+        """将短整型数据写入字节序列"""
         data.extend(pack("<H", value))
 
         return data
 
 
 class Int(dataTypeAbstract):
-    """整型 (4 字节)"""
-
     @staticmethod
     def read(data: bytes, pos: int):
-        """
-        读取一个整型的数据 (4 字节)
-
-        参数:
-            data (bytes): 包含数据的字节序列
-            pos (int): 当前数据的字节位置
-
-        返回:
-            (tuple[int, int]): 包含读取的整型数据和下一个数据的位置
-        """
         return unpack("<I", data[pos : pos + 4])[0], pos + 4
 
     @staticmethod
     def write(data: bytearray, value: int):
-        """
-        将一个整型值写入到字节序列
-
-        参数:
-            data (bytearray): 存储数据的字节序列
-            value (int): 需要写入的整型值
-
-        返回:
-            (bytearray): 更新后的字节序列
-        """
         data.extend(pack("<I", value))
 
         return data
@@ -271,30 +153,12 @@ class Float(dataTypeAbstract):
 
     @staticmethod
     def read(data: bytes, pos: int):
-        """
-        读取一个浮点型数据 (4 字节)
-
-        参数:
-            data (bytes): 包含数据的字节序列
-            pos (int): 当前数据的字节位置
-
-        返回:
-            (tuple[int, int]): 包含读取的浮点型数据和下一个数据的位置
-        """
+        """读取一个浮点型数据 (4 字节)"""
         return unpack("<f", data[pos : pos + 4])[0], pos + 4
 
     @staticmethod
     def write(data: bytearray, value: float):
-        """
-        将浮点型数据写入字节序列
-
-        参数:
-            data (bytearray): 存储数据的字节序列
-            value (float): 需要写入的浮点型数据
-
-        返回:
-            (bytearray): 包含写入数据后的字节序列
-        """
+        """将浮点型数据写入字节序列"""
         data.extend(pack("<f", value))
 
         return data
@@ -305,16 +169,7 @@ class VarInt(dataTypeAbstract):
 
     @staticmethod
     def read(data: bytes, pos: int):
-        """
-        读取一个变长整型数据 (1-2 字节)
-
-        参数:
-            data (bytes): 包含数据的字节序列
-            pos (int): 当前数据的字节位置
-
-        返回:
-            (tuple[int, int]): 包含读取的变长整型数据和下一个数据的位置
-        """
+        """读取一个变长整型数据 (1-2 字节)"""
         if data[pos] > 127:  # 最高位为 1 表示该整数占两个字节
             pos += 2
             # 低字节取低 7 位，高字节左移 7 位后拼接
@@ -327,16 +182,7 @@ class VarInt(dataTypeAbstract):
 
     @staticmethod
     def write(data: bytearray, value: int):
-        """
-        将变长整型数据写入字节序列
-
-        参数:
-            data (bytearray): 用于存储数据的字节序列
-            value (int): 需要写入的变长整型数据
-
-        返回:
-            (bytearray): 更新后的字节序列
-        """
+        """将变长整型数据写入字节序列"""
         if value > 127:  # 大于 127 时写入两个字节：先写低 7 位并置延续标记，再写高位字节
             data = Byte.write(data, (value & 0b01111111) | 0b10000000)
             data = Byte.write(data, value >> 7)
@@ -351,16 +197,7 @@ class String(dataTypeAbstract):
 
     @staticmethod
     def read(data: bytes, pos: int):
-        """
-        读取一个字符串数据
-
-        参数:
-            data (bytes): 包含数据的字节序列
-            pos (int): 当前数据的字节位置
-
-        返回:
-            (tuple[int, int]): 包含读取的字符串和下一个数据的位置
-        """
+        """读取一个字符串数据"""
         string_len, pos = VarInt.read(data, pos)  # 读取当前位置的变长整数，代表后续字节长度
         string_val = data[pos : pos + string_len].decode()  # 读取对应长度的字节并以 UTF-8 解码
 
@@ -368,16 +205,7 @@ class String(dataTypeAbstract):
 
     @staticmethod
     def write(data: bytearray, value: str):
-        """
-        将字符串数据写入字节序列
-
-        参数:
-            data (bytearray): 用于存储数据的字节序列
-            value (str): 需要写入的字符串数据
-
-        返回:
-            (bytearray): 更新后的字节序列
-        """
+        """将字符串数据写入字节序列"""
         encoded_string = value.encode("utf-8")
         data = VarInt.write(data, len(encoded_string))
         data.extend(encoded_string)
@@ -535,13 +363,7 @@ class Reader:
     """反序列化存档数据的操作类"""
 
     def __init__(self, data: Union[bytes, bytearray], pos: int = 0):
-        """
-        反序列化存档数据的操作类
-
-        参数:
-            data (bytes | bytearray): 要读取的二进制数据
-            pos (int): 当前读写位置。默认为 0
-        """
+        """反序列化存档数据的操作类"""
         self.data = data
         self.pos = pos
         self.bit_read = [bytes(), False, 0]
@@ -549,15 +371,7 @@ class Reader:
         self.read_dict = {}
 
     def type_read(self, type_class) -> Any:
-        """
-        使用数据类型提供的 read() 方法反序列化数据
-
-        参数:
-            type_class (class): 定义了 read() 方法的数据类型
-
-        返回:
-            (Any): 反序列化的数据
-        """
+        """使用数据类型提供的 read() 方法反序列化数据"""
         if type_class == Bit:
             if not self.bit_read[1]:
                 self.bit_read[0], self.pos = Byte.read(self.data, self.pos)
@@ -576,15 +390,7 @@ class Reader:
         return read_data
 
     def parseStructure(self, structure) -> Dict[str, Any]:
-        """
-        按照数据结构类定义的结构反序列化数据
-
-        参数:
-            structure (class): 数据结构类
-
-        返回:
-            (dict[str, Any]): 反序列化的数据
-        """
+        """按照数据结构类定义的结构反序列化数据"""
         obj = structure()
 
         if not isinstance(obj, dataTypeAbstract):
@@ -609,12 +415,7 @@ class Reader:
         return self.read_dict
 
     def remaining(self) -> int:
-        """
-        返回剩余未反序列化的数据长度
-
-        返回:
-            (int): 剩余未反序列化的数据长度
-        """
+        """返回剩余未反序列化的数据长度"""
         return len(self.data) - self.pos
 
 
@@ -622,12 +423,7 @@ class Writer:
     """序列化存档数据的操作类"""
 
     def __init__(self, data: Optional[Union[bytearray, bytes]] = None):
-        """
-        序列化存档数据的操作类
-
-        参数:
-            data (bytes | bytearray | None): 若不为空，则基于此数据向后拼接序列化数据
-        """
+        """序列化存档数据的操作类"""
         if data is None:
             self.data = bytearray()
 
@@ -643,13 +439,7 @@ class Writer:
         self.bit_temp = [0, False, 0]
 
     def type_write(self, type_fc, value):
-        """
-        使用数据类型提供的 write() 方法序列化数据
-
-        参数:
-            type_fc (class): 定义了 write() 方法的数据类型
-            value (Any): 要序列化的数据
-        """
+        """使用数据类型提供的 write() 方法序列化数据"""
         if type_fc == Bit:
             if not self.bit_temp[1]:
                 self.bit_temp[0] = 0
@@ -667,15 +457,7 @@ class Writer:
             self.data = type_fc.write(self.data, value)
 
     def buildStructure(self, structure, data: dict) -> bytearray:
-        """
-        按照数据结构类定义的结构序列化数据
-
-        参数:
-            structure (class): 数据结构类
-
-        返回:
-            (bytearray): 序列化后的二进制数据
-        """
+        """按照数据结构类定义的结构序列化数据"""
         obj = structure()
 
         if not isinstance(obj, dataTypeAbstract):
@@ -694,10 +476,5 @@ class Writer:
         return self.data
 
     def get_data(self) -> bytearray:
-        """
-        返回已经序列化的数据
-
-        返回:
-            (bytearray): 已序列化的数据
-        """
+        """返回已经序列化的数据"""
         return self.data

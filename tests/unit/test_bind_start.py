@@ -26,9 +26,6 @@ async def _session(prefix: str, is_private: bool) -> MessageSession:
 
 
 def _issue_private_code(msg: MessageSession) -> dict:
-    """
-    以私聊身份生成一枚绑定码并立即取出，返回绑定码携带的信息。
-    """
     code = generate_code(
         bind._sender_bind_codes,
         msg.session_info.sender_union_info.union_id,
@@ -39,14 +36,10 @@ def _issue_private_code(msg: MessageSession) -> dict:
 
 
 def _answer_confirm(result: bool):
-    """
-    把 wait_confirm 固定成给定答复，绕开交互。
-    """
     return patch.object(MessageSession, "wait_confirm", new=lambda self, *a, **k: asyncio.sleep(0, result=result))
 
 
 async def _test_private_binds_both_unions():
-    """测试 bind start - 私聊绑定须同时并入账号组与场景组"""
     try:
         initiator = await _session("BINDA", True)
         entry = _issue_private_code(initiator)
@@ -74,7 +67,6 @@ async def _test_private_binds_both_unions():
 
 
 async def _test_cancel_leaves_nothing_bound():
-    """测试 bind start - 取消确认时两侧都不应发生变动"""
     try:
         initiator = await _session("BINDC", True)
         current = await _session("BINDD", True)
@@ -105,7 +97,6 @@ async def _test_cancel_leaves_nothing_bound():
 
 
 async def _test_context_mismatch_rejected():
-    """测试 bind start - 私聊码与群组码不得跨场景兑换"""
     try:
         entry = _issue_private_code(await _session("BINDE", True))
         # 群组场景兑换私聊码会把整个群的数据并进对方的私聊，必须拦下

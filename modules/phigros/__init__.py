@@ -53,10 +53,6 @@ PUBLIC_TARGETS = [
 
 
 async def _require_bind(msg: Bot.MessageSession):
-    """取绑定信息，未绑定则终止命令。
-
-    :param msg: 消息会话。
-    """
     bind_info = await PhigrosBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info:
         await msg.finish(
@@ -69,10 +65,6 @@ async def _require_bind(msg: Bot.MessageSession):
 
 
 async def _require_song_info(msg: Bot.MessageSession) -> dict:
-    """读取曲目信息，尚未初始化或格式过时则终止命令。
-
-    :param msg: 消息会话。
-    """
     if not song_info_exists():
         await msg.finish(
             I18NContext(
@@ -93,11 +85,6 @@ async def _require_song_info(msg: Bot.MessageSession) -> dict:
 
 
 async def _fetch_save(msg: Bot.MessageSession, bind_info):
-    """取存档，令牌失效时给出可操作的提示。
-
-    :param msg: 消息会话。
-    :param bind_info: 绑定信息记录。
-    """
     try:
         return await get_save(msg, bind_info)
     except Exception as e:
@@ -113,11 +100,6 @@ async def _fetch_save(msg: Bot.MessageSession, bind_info):
 
 
 def _song_chain(song_id: str, info: dict) -> MessageChain:
-    """组装曲目资料。
-
-    :param song_id: 曲目 id。
-    :param info: 该曲目的信息结构。
-    """
     chain = MessageChain.assign()
     illustration = illustration_path(song_id)
     if illustration:

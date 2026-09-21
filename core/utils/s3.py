@@ -75,7 +75,6 @@ class S3StorageAPI:
         Logger.info(f"[S3] Initialized storage client for bucket: {bucket}")
 
     async def _run_sync(self, func, *args, **kwargs):
-        """在 S3 专用线程池执行同步 SDK 调用，并限制调用方的最长等待时间。"""
         loop = asyncio.get_running_loop()
         future = loop.run_in_executor(self._executor, partial(func, *args, **kwargs))
         try:
@@ -185,10 +184,6 @@ class S3StorageAPI:
         await self._run_sync(self._write_manifest_sync, prefix, files)
 
     async def _update_manifest(self, prefix: str, updater):
-        """在锁保护下读取 manifest、执行 updater(files)、写回（防止并发覆盖）。
-
-        updater 可为同步或异步函数；返回新列表时写入新列表，返回 None 时保留原地修改后的列表。
-        """
         lock = self._manifest_locks.setdefault(prefix, asyncio.Lock())
         async with lock:
             files = await self._read_manifest(prefix)
@@ -277,7 +272,6 @@ class S3StorageAPI:
             Logger.exception("[S3] Failed to update temporary-file manifest: ")
 
     async def _key_exists(self, key: str) -> bool:
-        """检查指定 key 是否已存在于桶中（使用 head_object）。"""
         try:
             await self._run_sync(self._client.head_object, Bucket=self.bucket, Key=key)
             return True
@@ -295,10 +289,6 @@ class S3StorageAPI:
 
     @staticmethod
     def _compute_hash(file_path: str | Path) -> str:
-        """计算文件的 SHA256 哈希，返回前 HASH_LENGTH 位 hex 字符串。
-
-        :param file_path: 本地文件路径。
-        """
         sha = hashlib.sha256()
         with open(file_path, "rb") as f:
             while chunk := f.read(8192):
@@ -306,7 +296,6 @@ class S3StorageAPI:
         return sha.hexdigest()[: S3StorageAPI.HASH_LENGTH]
 
     async def _ensure_temp_quota(self):
-        """确保 temp 文件夹文件数不超过上限，超出则删除最旧的文件。"""
 
         async def _cleanup(files):
             while len(files) >= self.temp_max_count:
@@ -328,10 +317,6 @@ class S3StorageAPI:
 
     @staticmethod
     def _build_key(prefix: str, file_path: str | Path, object_key: str | None, file_hash: str) -> str:
-        """构建 S3 对象 key，将 hash 嵌入文件名（在扩展名之前）。
-
-        例: ("persist", "/tmp/data.txt", None, "a1b2c3") → "persist/data_a1b2c3.txt"
-        """
         name = (object_key or Path(file_path).name).lstrip("/")
         stem, sep, ext = name.rpartition(".")
         if sep and stem:

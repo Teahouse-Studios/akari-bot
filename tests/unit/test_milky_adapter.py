@@ -24,10 +24,6 @@ from core.utils.session import inject_features
 
 
 def _png_file() -> str:
-    """生成一个内容合法的临时 PNG 文件，供图片段用例使用。
-
-    :return: 临时文件路径，调用方负责清理。
-    """
     buffer = BytesIO()
     PILImage.new("RGB", (2, 2), "red").save(buffer, format="PNG")
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as image_file:
@@ -36,7 +32,6 @@ def _png_file() -> str:
 
 
 def _session(session_id: str, message_id: str | None = None) -> SessionInfo:
-    """构造一个 Milky 群聊会话，并注入平台能力位。"""
     session = SessionInfo(
         target_id=f"{target_group_prefix}|123456",
         target_from=target_group_prefix,
@@ -52,7 +47,6 @@ def _session(session_id: str, message_id: str | None = None) -> SessionInfo:
 
 
 def _client() -> SimpleNamespace:
-    """构造带发送接口的 Milky 协议端替身。"""
     return SimpleNamespace(
         send_group_message=AsyncMock(return_value=SimpleNamespace(message_seq=42)),
         send_private_message=AsyncMock(return_value=SimpleNamespace(message_seq=42)),
@@ -60,12 +54,10 @@ def _client() -> SimpleNamespace:
 
 
 def _segment_types(segments: list) -> list[str]:
-    """取出出站消息段的类型序列。"""
     return [segment.type for segment in segments]
 
 
 async def _test_unavailable_media_elements_are_skipped() -> bool:
-    """图片/音频/视频均不可得时不发送空消息。"""
     session = _session("milky-unavailable-media")
     client = _client()
     message = MessageChain.assign(
@@ -81,7 +73,6 @@ async def _test_unavailable_media_elements_are_skipped() -> bool:
 
 
 async def _test_unavailable_media_keeps_remaining_text() -> bool:
-    """媒体元素不可得时仍发送其余文本内容。"""
     session = _session("milky-unavailable-media-text")
     client = _client()
     message = MessageChain.assign([Plain("hello"), Image("missing-image-fixture.png")])
@@ -93,7 +84,6 @@ async def _test_unavailable_media_keeps_remaining_text() -> bool:
 
 
 async def _test_atcode_converts_to_mention_segments() -> bool:
-    """统一 AT 码转换为提及段，非本平台 AT 码保留为文本。"""
     session = _session("milky-atcode")
     mention_segments = await convert_chain_to_segments(
         session, MessageChain.assign("hi <AT:QQ|10001> bye"), quote=False
@@ -117,7 +107,6 @@ async def _test_atcode_converts_to_mention_segments() -> bool:
 
 
 async def _test_block_elements_are_separated_by_newline() -> bool:
-    """块级元素之间另起一行，仅文本流内部的 AT 码沿用所在行。"""
     session = _session("milky-newline")
     block_segments = await convert_chain_to_segments(
         session, MessageChain.assign([Plain("first"), Plain("second")]), quote=False
@@ -129,7 +118,6 @@ async def _test_block_elements_are_separated_by_newline() -> bool:
 
 
 async def _test_image_segment_uses_normal_subtype_and_newline() -> bool:
-    """图片段带必填的 sub_type，且与前置文本以换行分隔。"""
     image_path = _png_file()
     try:
         session = _session("milky-image-newline")
@@ -147,7 +135,6 @@ async def _test_image_segment_uses_normal_subtype_and_newline() -> bool:
 
 
 async def _test_quote_uses_message_seq() -> bool:
-    """引用发送时以触发消息的序列号构造回复段。"""
     session = _session("milky-quote", message_id="1024")
     session.messages = MessageChain.assign("trigger")
     segments = await convert_chain_to_segments(session, MessageChain.assign("reply"), quote=True)
@@ -155,7 +142,6 @@ async def _test_quote_uses_message_seq() -> bool:
 
 
 async def _test_group_reaction_targets_message_seq() -> bool:
-    """表情回应只作用于群聊消息序列号，私聊与非法 ID 均不发请求。"""
     session = _session("milky-reaction", message_id="1024")
     private_session = SessionInfo(
         target_id="QQ|Private|10001",
@@ -189,7 +175,6 @@ async def _test_group_reaction_targets_message_seq() -> bool:
 
 
 def _group_message_event(segments: list[dict], sender_id: int = 10001) -> dict:
-    """构造一个群聊消息事件。"""
     return {
         "event_type": "message_receive",
         "time": 1700000000,
@@ -208,7 +193,6 @@ def _group_message_event(segments: list[dict], sender_id: int = 10001) -> dict:
 
 
 async def _test_message_dispatch_builds_session() -> bool:
-    """消息事件被解析为会话，并剥离指向机器人的提及。"""
     import bots.milky.bot as bot_module
 
     captured = {}
@@ -246,7 +230,6 @@ async def _test_message_dispatch_builds_session() -> bool:
 
 
 async def _test_group_message_ignored_when_not_addressed() -> bool:
-    """群聊未 @ 机器人时按 mention_required 忽略，自身消息默认忽略。"""
     import bots.milky.bot as bot_module
 
     process = AsyncMock()
@@ -268,7 +251,6 @@ async def _test_group_message_ignored_when_not_addressed() -> bool:
 
 
 async def _test_sdk_message_model_is_supported() -> bool:
-    """入站消息兼容 SDK 模型形态（SSE 事件为字典，模型路径亦须可用）。"""
     from bots.milky.utils import to_message_chain
     from milky.models import parse_incoming_message
 

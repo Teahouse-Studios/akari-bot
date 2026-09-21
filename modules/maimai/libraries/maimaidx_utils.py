@@ -19,15 +19,6 @@ total_list = TotalList()
 
 
 async def get_diving_prober_bind_info(msg: Bot.MessageSession, **kwargs):
-    """取得公开端点所需的用户标识。
-
-    `B50`、分数排行等端点并未随 OAuth 一并未废弃，它们仍只接受 `qq` 或 `username`；
-    由令牌决定查询对象的端点不使用本函数的返回值，故落雪数据源下无需强制绑定水鱼。
-
-    :param msg: 消息会话。
-    :param kwargs: 追加到载荷中的参数，如 `b50=True`。
-    :return: 含 `qq` 或 `username` 的载荷。
-    """
     if pick_source(msg, GAME_MAIMAI) == SOURCE_LXNS:
         return dict(kwargs)
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)

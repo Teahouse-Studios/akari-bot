@@ -72,15 +72,7 @@ class ScheduleMeta(ModuleMeta):
 
 @define
 class HookMeta(ModuleMeta):
-    """模块 hook 元数据。
-
-    两种用法：
-    - 具名能力：``.hook("reload")``，经 ``Bot.Hook.trigger`` 调用，一名一函数。
-    - 入口订阅：``.hook(point=HookPoint.COMMAND_PREPARE)``，经 ParserHookExecutor 分发。
-
-    ``point`` 与具名能力共用订阅元数据：有 ``point`` 时进入 parser 入口索引；否则进入具名索引。
-    ``name`` 在入口订阅中作为稳定订阅 ID 后缀。
-    """
+    """模块 hook 元数据。"""
 
     function: Callable = field(default=None)
     name: str | None = None

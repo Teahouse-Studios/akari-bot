@@ -1,9 +1,4 @@
-"""
-机器人内置模块 - 提供核心的机器人功能接口和会话管理。
-
-该模块定义了 Bot 类，作为系统与各种通讯平台的主要接口，
-负责消息处理、会话管理、上下文管理等核心功能。
-"""
+"""机器人内置模块 - 提供核心的机器人功能接口和会话管理。"""
 
 import asyncio
 from typing import Any, Awaitable, Callable
@@ -40,22 +35,12 @@ enable_analytics = CoreConfig.enable_analytics
 
 
 class Bot:
-    """
-    机器人核心类。
+    """机器人核心类。"""
 
-    提供了机器人的主要功能接口，包括消息处理、会话管理、上下文管理、
-    模块钩子执行等。作为系统的中心枢纽，协调各个通讯平台客户端和
-    核心业务逻辑的交互。
-    """
-
-    # ========== 核心类型引用 ==========
-    # 消息会话类型 - 用于处理常规消息
     MessageSession = MessageSession
 
-    # 抓取消息会话类型 - 用于主动获取和发送消息
     FetchedMessageSession = FetchedMessageSession
 
-    # 模块钩子上下文类型 - 用于模块钩子函数的参数传递
     ModuleHookContext = ModuleHookContext
 
     # Parser 入口 hook 上下文；控制结果类型可通过 ``ctx.Stop`` 等访问。
@@ -63,74 +48,54 @@ class Bot:
 
     EventInfo = EventInfo
 
-    # 执行锁列表 - 防止同一用户并发执行命令
     ExecutionLockList = ExecutionLockList
 
-    # 系统信息 - 包含版本、构建信息等
     Info = Info
 
-    # 临时存储 - 用于会话生命周期内的临时数据
     Temp = Temp
 
-    # 私有资源路径 - 用于存储特定客户端的私有资源
     PrivateData = PrivateData
 
-    # 上下文管理器列表 - 存储注册的各个通讯平台的上下文管理器
     ContextSlots: list[ContextManager] = []
 
-    # 主动获取消息会话的上下文管理器索引
     fetched_session_ctx_slot = 0
 
     # 平台 SDK 的消息回调不可被 Server 处理耗时阻塞，因此消息以后台任务投递；
     # 显式持有任务既避免异常无人取回，也便于平台关闭时统一取消。
     _message_tasks: set[asyncio.Task[None]] = set()
 
-    # 超级用户列表 - 拥有最高权限的用户 ID 列表
     base_superuser_list = CoreConfig.base_superuser
     if isinstance(base_superuser_list, str):
         base_superuser_list = [base_superuser_list]
 
     @classmethod
     async def process_message(cls, session_info: SessionInfo, ctx: Any, features_override: Features | None = None):
-        """
-        处理接收到的消息。
-
-        这是消息处理的入口点。将消息会话信息和平台特定的上下文（如对应框架下的消息实例）进行关联，
-        然后发送给消息队列处理器进行异步处理。
+        """处理接收到的消息。
 
         :param session_info: 会话信息对象，包含消息、用户、平台等信息
         :param ctx: 平台特定的上下文对象（如 QQ 机器人实例）
         :param features_override: 可选的功能特性覆盖对象，用于替代平台默认特性
         :raises TypeError: 如果 session_info 不是 SessionInfo 类型
         """
-        # 验证 session_info 的类型
         if not isinstance(session_info, SessionInfo):
             raise TypeError("session_info must be a SessionInfo")
 
-        # 获取该会话对应的上下文管理器
         ctx_manager = cls.ContextSlots[session_info.ctx_slot]
 
-        # 从上下文管理器获取平台支持的功能特性
         features = ctx_manager.features if not features_override else features_override
 
-        # 将各项功能特性标志设置到会话信息中
         session_info = inject_features(session_info, features)
 
         async def _process_msg():
-            """内部异步处理函数 - 管理消息处理的生命周期"""
-            # 添加上下文到管理器（存储 session_id 和对应的上下文对象）
             ctx_manager.add_context(session_info, ctx)
             try:
-                # 获取消息队列客户端并发送消息给服务器处理
                 await ServerAPI.receive_message(session_info)
 
-                # 等待 1 秒后清理上下文（防止删除过快导致的错误）
                 await asyncio.sleep(1)
             finally:
                 # 队列异常或任务被取消时也必须释放平台 SDK 消息对象。
                 ctx_manager.del_context(session_info)
 
-        # 创建异步任务处理消息，并在完成时取回异常、移出有界任务集合。
         task = asyncio.create_task(_process_msg(), name=f"process-message-{session_info.session_id or 'unknown'}")
         cls._message_tasks.add(task)
 
@@ -181,10 +146,7 @@ class Bot:
     async def fetch_target(
         cls, target_id: str, sender_id: str | None = None, create: bool = False, is_private: bool = False
     ) -> FetchedSessionInfo | None:
-        """
-        根据场景 ID 获取消息会话信息。
-
-        用于主动获取和向特定场景发送消息。
+        """根据场景 ID 获取消息会话信息。
 
         :param target_id: 场景 ID
         :param sender_id: 用户 ID（可选）
@@ -195,7 +157,6 @@ class Bot:
         """
         try:
             Logger.trace(f"Fetching target {target_id}")
-            # 创建抓取的会话信息
             session = await FetchedSessionInfo.assign(
                 target_id=target_id, sender_id=sender_id, fetch=True, create=create, is_private=is_private
             )
@@ -215,21 +176,15 @@ class Bot:
         """
         fetched = []
         for x in target_list:
-            # 如果是字符串，转换为会话对象
             if isinstance(x, str):
                 x = await cls.fetch_target(x, create=create)
-            # 只添加成功获取的会话
             if isinstance(x, FetchedSessionInfo):
                 fetched.append(x)
         return fetched
 
     @classmethod
     async def resolve_union_targets(cls, target_list: list[str]) -> list[str]:
-        """
-        将场景 ID 归一为其所属场景组的 union ID。
-
-        便于按场景组配置的去处（如上报）兼收两种写法：既可直接填场景组 ID，也可填组内任一
-        平台场景 ID。尚未登记 union 的场景无从解析，径直略去——这类场景同样取不到会话。
+        """将场景 ID 归一为其所属场景组的 union ID。
 
         :param target_list: 场景组 ID 或平台场景 ID 的列表，两种写法可以混用。
         :return: 去重后的场景组 ID 列表，保持传入顺序。
@@ -251,11 +206,7 @@ class Bot:
     async def fetch_union_target_list(
         cls, target_list: str | list[str], create: bool = False
     ) -> list[FetchedSessionInfo]:
-        """
-        将场景 ID 按场景组展开后，批量获取会话信息。
-
-        只取配置项所指的那一个平台场景，其所属场景组内的其余入口便不参与，该客户端掉线时
-        消息即无处可去。展开后交由 :meth:`pick_channel_heads` 归拢，同一通道内的成员互为后备。
+        """将场景 ID 按场景组展开后，批量获取会话信息。
 
         :param target_list: 场景组 ID 或平台场景 ID，两种写法可以混用，可一次传入多个。
         :param create: 如果场景不存在是否创建
@@ -270,11 +221,7 @@ class Bot:
     async def group_sessions_by_channel(
         session_list: list[FetchedSessionInfo],
     ) -> list[list[FetchedSessionInfo]]:
-        """
-        将待推送的会话按「场景组 + 消息通道」归拢。
-
-        同组同通道的会话对应同一个现实场景（例如一个群内同时存在 OneBot 与 QQ 官方机器人），
-        逐个推送会使该场景收到多条重复消息。归拢后每组仅推送一次。
+        """将待推送的会话按「场景组 + 消息通道」归拢。
 
         :param session_list: 待推送的会话列表
         :return: 分组后的会话列表，每组内部保持原有顺序
@@ -295,12 +242,7 @@ class Bot:
 
     @classmethod
     async def pick_channel_heads(cls, session_list: list[FetchedSessionInfo]) -> list[FetchedSessionInfo]:
-        """
-        按消息通道归拢一批会话，取出各通道实际承担发送的那一个。
-
-        同组同通道的会话对应同一个现实场景，只应由其中一个承担发送，其余写入队首的 ``next_hops``，
-        供队首发送失败时由客户端回调服务端换用下一跳。凡是拿着一批会话逐个发送的去处，都应当先
-        经此归拢，否则同一个现实场景会收到多条重复消息。
+        """按消息通道归拢一批会话，取出各通道实际承担发送的那一个。
 
         :param session_list: 待发送的会话列表。
         :return: 各通道的队首会话，全员掉线的通道不在其中。
@@ -326,11 +268,7 @@ class Bot:
         session_list: list[FetchedSessionInfo] | None = None,
         **kwargs: dict[str, Any],
     ):
-        """
-        发送消息到开启此模块的场景。
-
-        支持向多个会话发送消息，并可根据不同客户端类型发送不同格式的消息。
-        同一条消息通道内的会话仅推送一次：先推送队首，队首发送失败时由客户端回调服务端换用下一跳。
+        """发送消息到开启此模块的场景。
 
         :param module_name: 模块名称（用于权限检查和分析统计，"*" 表示全局）
         :param message: 消息内容，支持字符串或字典
@@ -340,18 +278,14 @@ class Bot:
                            如果为 None，自动获取开启了该模块的所有场景
         :param kwargs: 其他参数（保留用）
         """
-        # 如果未指定会话列表，获取开启了此模块的所有场景
         if session_list is None:
             session_list = await Bot.get_enabled_this_module(module_name)
 
         # 同一条消息通道仅推送一次，其余会话作为发送失败时的后备
         for session_ in await cls.pick_channel_heads(session_list):
-            # 将消息转换为该会话支持的消息链格式
             chain = get_message_chain(session_, message)
 
-            # 选择正确格式的消息（根据客户端类型）
             if isinstance(chain, dict):
-                # 优先使用客户端特定的消息，否则使用默认消息
                 if session_.client_name in chain:
                     post_message = chain[session_.client_name]
                 else:
@@ -377,7 +311,6 @@ class Bot:
             if post_message is None:
                 continue
 
-            # 发送消息
             try:
                 await PlatformAPI.post_message.submit(session_, post_message, module_name)
             except RpcUnavailableError:
@@ -397,7 +330,6 @@ class Bot:
                     module_type="schedule",
                 )
 
-    # 别名定义 - 提供兼容的小驼峰命名方式
     postMessage = post_message
     postGlobalMessage = post_global_message
 
@@ -434,12 +366,9 @@ class Bot:
         :param fetch_session: 是否将此管理器用于抓取会话
         :return: 该管理器在 ContextSlots 中的索引
         """
-        # 添加管理器到列表
         cls.ContextSlots.append(ctx_manager)
-        # 获取该管理器的索引
         slot_num = len(cls.ContextSlots) - 1
 
-        # 如果标记为抓取会话管理器，保存其索引
         if fetch_session:
             cls.fetched_session_ctx_slot = slot_num
 
@@ -447,22 +376,17 @@ class Bot:
 
     @classmethod
     def register_bot(cls, client_name: str | None = None, private_data_path: str | None = None):
-        """
-        注册机器人实例。
-
-        设置客户端名称和私有资源路径。
+        """注册机器人实例。
 
         :param client_name: 客户端名称（如 "qq"、"discord" 等）
         :param private_data_path: 私有资源文件夹路径
                                   如果为 None，自动使用 `data/private/{client_name}` 路径
         """
-        # 设置私有资源路径
         if private_data_path:
             PrivateData.set(private_data_path)
         else:
             PrivateData.set(data_path / "private" / client_name.lower())
 
-        # 设置系统信息中的客户端名称
         Info.client_name = client_name
 
     @classmethod
@@ -479,25 +403,20 @@ class Bot:
         :param message: 消息内容
         :param disable_secret_check: 是否禁用敏感内容检查
         """
-        # 如果传入的是场景 ID 字符串，先抓取会话
         if isinstance(target, str):
             target = await cls.fetch_target(target)
 
-        # 如果是会话信息，转换为消息会话对象
         if isinstance(target, (SessionInfo, FetchedSessionInfo)):
             target = await FetchedMessageSession.from_session_info(target)
 
-        # 发送消息
         if isinstance(target, (FetchedMessageSession, MessageSession)):
             ...
 
         if not target:
             raise ValueError("Target not found.")
 
-        # 转换消息格式
         message = get_message_chain(target.session_info, message)
 
-        # 发送直接消息
         await target.send_direct_message(
             message_chain=message,
             disable_secret_check=disable_secret_check,
@@ -510,16 +429,7 @@ class Bot:
         message: Chainable | Callable[[FetchedSessionInfo], Awaitable[Chainable | None]],
         disable_secret_check: bool = False,
     ) -> None:
-        """
-        向一个场景组绑定的会话发送消息，同一条消息通道只发一次。
-
-        union 只表示若干平台场景共享同一份数据，其中通道号相同的才是现实中的同一个场景
-        （例如一个群内同时接入了 OneBot 与 QQ 官方机器人）。逐个会话发送会使该场景收到多条
-        重复消息，故此处按通道归拢，仅由队首承担推送，其余会话降为发送失败时的下一跳。
-
-        消息内容取决于目标会话时（如须按会话渲染 i18n 或做敏感词检查），传入接受会话、返回
-        消息的异步工厂：归拢选出队首之后才会调用它，每条通道各算一次。工厂返回 None 即本条
-        通道不发送，须发多条消息的调用方可借此在工厂内自行发送，不必为每条消息重跑一遍归拢。
+        """向一个场景组绑定的会话发送消息，同一条消息通道只发一次。
 
         :param union_id: 场景组的 union ID，可一次传入多个。
         :param message: 消息内容，或接受队首会话、返回消息内容的异步工厂，工厂返回 None 表示不发送。
@@ -544,10 +454,7 @@ class Bot:
         message: Chainable,
         user_id: str | None = None,
     ) -> list[str]:
-        """
-        向指定用户单独发送私聊消息。
-
-        消息不会发往 session_info 所指的场景，该会话仅用于确定平台与消息渲染上下文。
+        """向指定用户单独发送私聊消息。
 
         :param session_info: 会话信息
         :param message: 消息内容
@@ -585,7 +492,6 @@ class Bot:
         lst = filter_retired_targets(lst)
         fetched = []
 
-        # 逐个抓取这些场景的会话信息
         for target_id in lst:
             x = await cls.fetch_target(target_id)
             if isinstance(x, FetchedSessionInfo):
@@ -593,9 +499,7 @@ class Bot:
         return fetched
 
     class Hook:
-        """
-        钩子系统 - 用于在特定事件触发时执行模块代码。
-        """
+        """钩子系统 - 用于在特定事件触发时执行模块代码。"""
 
         @staticmethod
         async def trigger(
@@ -604,10 +508,7 @@ class Bot:
             args=None,
             timeout: float | None = None,
         ) -> Any:
-            """
-            触发模块钩子或自定义钩子。
-
-            钩子可以在特定事件发生时执行，如 Discord Slash 命令需要 Autocomplete 时。
+            """触发模块钩子或自定义钩子。
 
             :param module_or_hook_name: 模块名称或钩子名称
                                       如果包含 `.`，视为自定义钩子名；否则视为模块名
@@ -627,7 +528,6 @@ class Bot:
             )
 
 
-# 将 Bot 类导出到系统的导出列表中
 add_export(Bot)
 
 __all__ = ["Bot"]

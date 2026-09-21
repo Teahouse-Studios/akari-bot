@@ -31,7 +31,6 @@ UNSAFE_KECODE = MessageChain.assign(I18NContext("error.message.chain.unsafe")).t
 
 @contextmanager
 def _secret_registered(value: str = SECRET):
-    """临时登记一个敏感字符串，结束后恢复全局密钥集合。"""
     saved = set(Secret.data)
     Secret.add(value)
     try:
@@ -54,14 +53,12 @@ def _make_session_info() -> SessionInfo:
 
 @contextmanager
 def _patched_hooks():
-    """让出站 hook 分发使用空订阅，不依赖真实模块管理器。"""
     manager = SimpleNamespace(modules={}, parser_hook_subscriptions={})
     with patch.object(hook_dispatch, "_executor", ParserHookExecutor(manager)):
         yield
 
 
 def _leaking_chains():
-    """覆盖所有会在客户端渲染出文本的元素类型。"""
     return {
         "plain": MessageChain.assign(Plain(f"ip {SECRET}")),
         "markdown": MessageChain.assign(Markdown(f"ip {SECRET}")),
@@ -80,7 +77,6 @@ def _leaking_chains():
 
 
 def _test_is_safe_covers_rendered_elements():
-    """is_safe 须覆盖延迟渲染的多语言参数、指令操作、按钮与原始元素。"""
     try:
         if not MessageChain.assign("Hello").is_safe:
             return False
@@ -94,7 +90,6 @@ def _test_is_safe_covers_rendered_elements():
 
 
 async def _test_send_message_replaces_leaking_chains():
-    """常规发送路径命中敏感信息时须替换为安全提示。"""
     session = MessageSession(_make_session_info())
     try:
         with _patched_hooks(), _secret_registered():
@@ -125,7 +120,6 @@ async def _test_send_message_replaces_leaking_chains():
 
 
 async def _test_post_message_replaces_leaking_chains():
-    """主动推送路径同样须在服务端拦截敏感信息。"""
     session_info = _make_session_info()
     try:
         with _patched_hooks(), _secret_registered():
@@ -148,7 +142,6 @@ async def _test_post_message_replaces_leaking_chains():
 
 
 async def _test_bot_send_private_message_replaces_leaking_chains():
-    """Bot.send_private_message 须与 MessageSession 私信路径同样拦截。"""
     session_info = _make_session_info()
     try:
         with _patched_hooks(), _secret_registered():
@@ -169,7 +162,6 @@ async def _test_bot_send_private_message_replaces_leaking_chains():
 
 
 def _test_secret_update_registers_batch():
-    """Secret.update 须真正登记批量密钥，union 的返回值不可丢弃。"""
     saved = set(Secret.data)
     try:
         Secret.data.clear()

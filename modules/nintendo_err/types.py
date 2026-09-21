@@ -75,9 +75,7 @@ class ConsoleErrorField:
 
 
 class ConsoleErrorInfo:
-    """
-    Holds the console name, the embed fields by an iteration of the parsed error or support code
-    """
+    """Holds the console name, the embed fields by an iteration of the parsed error or support code"""
 
     def __init__(
         self,

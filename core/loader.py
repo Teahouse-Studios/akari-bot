@@ -136,7 +136,6 @@ class ModulesManager:
 
     @classmethod
     def _sync_config_fields(cls, py_module: str) -> list[str]:
-        """Create missing module config fields through the authorized config writer."""
         config_module_name = f"{py_module}.config"
         config_module = sys.modules.get(config_module_name)
         if config_module is None:
@@ -168,7 +167,6 @@ class ModulesManager:
 
     @classmethod
     def _stable_schema_value(cls, value):
-        """Convert Tortoise schema metadata to a reload-stable hashable value."""
         if value is None or isinstance(value, (bool, int, float, str, bytes)):
             return value
         if isinstance(value, type):
@@ -207,7 +205,6 @@ class ModulesManager:
 
     @classmethod
     def _model_schema_fingerprint(cls, py_module: str) -> tuple[tuple, ...]:
-        """Return a stable structural fingerprint for a module's ORM models."""
         models_module = f"{py_module}.database.models"
         try:
             spec = importlib.util.find_spec(models_module)
@@ -514,7 +511,6 @@ class ModulesManager:
 
     @classmethod
     def _reload_closure(cls, py_module: str) -> list[str]:
-        """Return the dependency-first package reload closure for ``py_module``."""
         cls._rebuild_dependency_graph()
         dependents: dict[str, set[str]] = {package_name: set() for package_name in cls._dependency_graph}
         for package_name, dependencies in cls._dependency_graph.items():
@@ -617,9 +613,7 @@ class ModulesManager:
 
     @classmethod
     async def load_module(cls, module_name: str):
-        """
-        全域加载该机器人模块。
-        """
+        """全域加载该机器人模块。"""
         if module_name in cls.modules:
             module = cls.modules[module_name]
             old_load = module._db_load
@@ -647,9 +641,7 @@ class ModulesManager:
 
     @classmethod
     async def unload_module(cls, module_name: str):
-        """
-        全域卸载该机器人模块。
-        """
+        """全域卸载该机器人模块。"""
         if module_name in cls.modules:
             from core.queue.server import JobQueueServer
 
@@ -681,9 +673,7 @@ class ModulesManager:
 
     @classmethod
     async def reload_module(cls, module_name: str):
-        """
-        重载该机器人模块（以及该模块所在文件的其它模块）
-        """
+        """重载该机器人模块（以及该模块所在文件的其它模块）"""
         # 此处不能等待另一个重载释放锁：先进入数据库维护的重载会等待其它
         # JobQueue action 收尾，而第二个 action 若阻塞在本锁上，双方会形成死锁。
         # 忙碌时直接失败也能保证第二次请求尚未改动模块注册表。
@@ -977,9 +967,7 @@ class ModulesManager:
 
     @classmethod
     def reload_py_module(cls, module_name: str):
-        """
-        重载该Python模块
-        """
+        """重载该Python模块"""
         module_names = [name for name in sys.modules if name == module_name or name.startswith(f"{module_name}.")]
         if module_name not in module_names:
             Logger.error(f"Cannot reload unknown Python module {module_name}.")

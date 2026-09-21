@@ -53,7 +53,6 @@ def _make_module(name: str) -> Module:
 
 
 def _test_draft_isolation_and_commit():
-    """草稿修改不影响正式对象，commit 后才写回"""
     try:
         msg = _FakeMsg()
         draft = build_session_draft(msg.session_info)
@@ -75,7 +74,6 @@ def _test_draft_isolation_and_commit():
 
 
 async def _test_draft_failure_discard():
-    """失败 hook 的草稿不提交"""
     try:
         msg = _FakeMsg()
 
@@ -112,7 +110,6 @@ async def _test_draft_failure_discard():
 
 
 async def _test_outgoing_before_send_modifies_and_stops():
-    """before_send 可改写 chain；Stop 取消发送"""
     try:
         msg = _FakeMsg()
         calls = []
@@ -156,7 +153,6 @@ async def _test_outgoing_before_send_modifies_and_stops():
 
 
 def _test_draft_rejects_double_commit():
-    """重复 commit / revoke 后 commit 报错"""
     try:
         msg = _FakeMsg()
         draft = SessionDraft(msg.session_info)
@@ -178,7 +174,6 @@ def _test_draft_rejects_double_commit():
 
 
 def _test_commit_only_dirty_fields():
-    """未改动的字段不应被 commit 重写"""
     try:
         msg = _FakeMsg()
         msg.session_info.prefixes = ["~"]
@@ -196,7 +191,6 @@ def _test_commit_only_dirty_fields():
 
 
 def _test_draft_session_info_readonly():
-    """draft.session_info 为只读视图"""
     try:
         from core.builtins.parser.hooks import SessionInfoView
 
@@ -231,7 +225,6 @@ async def test_session_draft_outgoing(tester: Tester):
 
 
 def _test_readonly_containers_detached():
-    """权限、路由、新增字段和嵌套容器均不得通过只读视图修改正式会话。"""
     info = _FakeInfo()
     info.enabled_modules = ["safe"]
     info.next_hops = ["TEST|next"]
@@ -253,7 +246,6 @@ def _test_readonly_containers_detached():
 
 
 def _test_readonly_union_methods_hidden():
-    """真实 ORM 及嵌套 bind 只读；新增 callable 也默认拒绝，不依赖方法黑名单。"""
     from core.builtins.session.info import SessionInfo
     from core.database.models import SenderUnionInfo, TargetUnionBind, TargetUnionInfo
 
@@ -294,7 +286,6 @@ def _test_readonly_union_methods_hidden():
 
 
 def _test_readonly_message_copy_failure():
-    """消息复制失败须拒绝读取，不能将原链作为容错返回值。"""
     from core.builtins.message.chain import MessageChain
 
     class UncopyableChain(MessageChain):
@@ -313,7 +304,6 @@ def _test_readonly_message_copy_failure():
 
 
 def _test_draft_locale_requires_nonempty_string():
-    """无效语言写入既不标脏也不改变原语言，有效语言仍能正常提交。"""
     msg = _FakeMsg()
     original_locale = msg.session_info.locale
     draft = SessionDraft(msg.session_info)
@@ -343,7 +333,6 @@ def _test_draft_locale_requires_nonempty_string():
 
 
 async def _test_outgoing_message_nodes_isolated():
-    """失败 hook 修改 MessageNodes 节点文本不得污染正式 payload。"""
     try:
         from core.builtins.message.chain import MessageChain, MessageNodes
 
@@ -375,7 +364,6 @@ async def _test_outgoing_message_nodes_isolated():
 
 
 async def _test_apply_from_detaches_draft_reference():
-    """成功 hook 保留草稿链后，后续修改不得污染已提交的正式结果。"""
     try:
         from core.builtins.message.chain import MessageChain
 
@@ -414,7 +402,6 @@ async def _test_apply_from_detaches_draft_reference():
 
 
 def _test_draft_messages_type_validated():
-    """draft.messages 拒绝任意类型；非法值在写入时报错且不发布。"""
     try:
         msg = _FakeMsg()
         draft = SessionDraft(msg.session_info)

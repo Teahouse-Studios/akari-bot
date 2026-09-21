@@ -31,7 +31,6 @@ MAX_RESEARCH_SUGGESTIONS = 5
 
 
 def _has_manual_anchor(html: str, section: str) -> bool:
-    """检查渲染正文中是否存在与 URL 片段匹配的手动锚点。"""
     normalized = urllib.parse.unquote(section).replace(" ", "_")
     soup = BeautifulSoup(html, "html.parser")
     for anchor in soup.find_all("span", id=True):
@@ -41,7 +40,6 @@ def _has_manual_anchor(html: str, section: str) -> bool:
 
 
 def _merge_research_suggestions(search_results, limit: int = MAX_RESEARCH_SUGGESTIONS) -> list[str]:
-    """Merge ordered search-mode results into a unique, bounded suggestion list."""
     suggestions = []
     for titles, _invalid_namespace in search_results:
         for title in titles:
@@ -375,9 +373,7 @@ class WikiLib:
         )
 
     async def check_wiki_info_from_database_cache(self):
-        """
-        check wiki_info from database cache, the result maybe incorrect since some wiki that distinguish languages by url path
-        """
+        """check wiki_info from database cache, the result maybe incorrect since some wiki that distinguish languages by url path"""
         parse_url = urllib.parse.urlparse(self.url)
         get = await WikiSiteInfo.get_like_this(parse_url.scheme + "://" + parse_url.netloc)
         if get:
@@ -392,9 +388,7 @@ class WikiLib:
         return WikiStatus(available=False, value=False, message="")
 
     async def fixup_wiki_info(self):
-        """
-        autofill missing required information for wiki_info
-        """
+        """autofill missing required information for wiki_info"""
         if not self.wiki_info.api:
             wiki_info = await self.check_wiki_available()
             if wiki_info.available:
@@ -404,7 +398,6 @@ class WikiLib:
 
     @staticmethod
     def _title_from_article_url(article_url: str, articlepath: str) -> str | None:
-        """按目标 Wiki 的 articlepath 从完整页面 URL 中还原标题。"""
 
         def extract(template: str, value: str) -> str | None:
             if "$1" not in template:
@@ -430,7 +423,6 @@ class WikiLib:
         return None
 
     async def _resolve_interwiki_target_title(self, fallback_title: str) -> str:
-        """发现 Interwiki 目标 API，并从其 articlepath 还原实际页面标题。"""
         await self.fixup_wiki_info()
         return self._title_from_article_url(self.url, self.wiki_info.articlepath) or fallback_title
 
@@ -441,9 +433,7 @@ class WikiLib:
         return await self.get_json_from_api(self.wiki_info.api, _no_login=_no_login, **kwargs)
 
     async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
-        """
-        return formatted api links with kwargs
-        """
+        """return formatted api links with kwargs"""
         await self.fixup_wiki_info()
         api = self.wiki_info.api
         if api in redirect_list:
@@ -457,15 +447,11 @@ class WikiLib:
 
     @staticmethod
     def parse_text(text):
-        """
-        parse text to get a short description
-        """
+        """parse text to get a short description"""
         return truncate_summary(text)
 
     async def get_html_to_text(self, page_name, section=None):
-        """
-        get html and convert to text
-        """
+        """get html and convert to text"""
         await self.fixup_wiki_info()
         get_parse = await self.get_json(action="parse", page=page_name, prop="text")
         h = html2text.HTML2Text()
@@ -504,15 +490,6 @@ class WikiLib:
 
     @staticmethod
     def _get_revision_content(page_raw: dict) -> str:
-        """
-        从查询结果中取出页面的 Wikitext。
-
-        MediaWiki 1.32 起内容置于 slots 结构下，更低版本直接置于 revision 上，
-        两种结构都要认。
-
-        :param page_raw: 查询结果中单个页面的原始数据。
-        :returns: 页面的 Wikitext；无修订内容时返回空字符串。
-        """
         revisions = page_raw.get("revisions")
         if not revisions:
             return ""
@@ -583,12 +560,7 @@ class WikiLib:
         return parse_head_html.body["class"]
 
     async def check_page_renderable(self, page_name: str, *, content_mode: bool = False) -> bool:
-        """Check the rendered page HTML before exposing a WebRender button.
-
-        WebRender selects elements from the rendered page, so checking the wikitext alone
-        cannot tell whether a page actually contains a renderable target.  MediaWiki's
-        ``parse`` endpoint gives us the same HTML structure without opening a browser.
-        """
+        """Check the rendered page HTML before exposing a WebRender button."""
         try:
             parsed = await self.get_json(action="parse", page=page_name, prop="text|headhtml")
             parse_data = parsed.get("parse", {})

@@ -1,18 +1,4 @@
-"""WebRender Mock 工具 - 为依赖无头浏览器的模块提供替身。
-
-部分模块（arcaea、mcmod 等）不通过 `core.utils.http` 取数据，而是调用
-`web_render.source()` 由外部无头浏览器服务渲染页面。该链路不经过 HTTPMock，
-测试环境中浏览器亦未初始化，因此这些模块在测试里必然失败。
-
-此处以固定语料替换 `web_render.source`，使测试得以覆盖"协议之外"的部分：
-URL 拼接、响应解析、结果格式化与错误分支。真实的渲染行为不在测试范围内。
-
-语料存放于 tests/fixtures/webrender/，每个文件形如：
-{
-    "url": "请求的 URL",
-    "text": "渲染得到的源码"
-}
-"""
+"""WebRender Mock 工具 - 为依赖无头浏览器的模块提供替身。"""
 
 from __future__ import annotations
 
@@ -32,7 +18,6 @@ PLACEHOLDER_PNG_B64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42
 
 
 def _url_to_filename(url: str) -> str:
-    """将 URL 转换为安全的文件名。"""
     url_hash = hashlib.sha256(url.encode("utf-8")).hexdigest()[:16]
     try:
         domain = (urlparse(url).hostname or "unknown").replace(".", "_")[:30]
@@ -99,14 +84,7 @@ class WebRenderMock:
 
     @classmethod
     def enable(cls):
-        """接管 web_render 的取数方法。
-
-        模块在导入时绑定的是 web_render 实例本身，因此替换实例上的方法即可对
-        全部调用方生效，无需逐个模块打补丁。
-
-        接管范围覆盖 source（取页面源码）、get_raw（取原始资源）与各类截图方法。
-        截图返回占位图，仅用于让依赖截图的分支得以继续执行，不校验渲染结果。
-        """
+        """接管 web_render 的取数方法。"""
         if cls._enabled:
             return
         from core.utils.web_render import web_render

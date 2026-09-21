@@ -19,9 +19,6 @@ CASES = (
 
 
 def _max_overflow(data_y: list[int], figsize: tuple[float, float]) -> float:
-    """
-    按 analytics 折线图的画法出图，返回标注顶端超出坐标区上沿的最大像素数。
-    """
     data_x = [str(i) for i in range(1, len(data_y) + 1)]
     figure = plt.figure(figsize=figsize)
     try:
@@ -39,7 +36,6 @@ def _max_overflow(data_y: list[int], figsize: tuple[float, float]) -> float:
 
 
 def _test_annotation_stays_inside_axes():
-    """测试 analytics 折线图 - 最高点的数值标注不应顶出坐标区"""
     try:
         # 标注按像素偏移放置，不参与坐标轴自动缩放，因此要覆盖不同数据量级与图幅。
         return all(_max_overflow(data_y, figsize) < 0 for data_y in CASES for figsize in FIGSIZES)

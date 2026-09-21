@@ -14,9 +14,6 @@ def hn(tag: str) -> int:
 
 
 def dumb_property_dict(style: str) -> dict[str, str]:
-    """
-    :returns: A hash of css attributes
-    """
     return {x.strip().lower(): y.strip().lower() for x, y in [z.split(":", 1) for z in style.split(";") if ":" in z]}
 
 
@@ -185,9 +182,7 @@ def escape_md(text: str) -> str:
 
 
 def escape_md_section(text: str, snob: bool = False) -> str:
-    """
-    Escapes markdown-sensitive characters across whole document sections.
-    """
+    """Escapes markdown-sensitive characters across whole document sections."""
     text = config.RE_MD_BACKSLASH_MATCHER.sub(r"\\\1", text)
 
     if snob:
@@ -201,10 +196,6 @@ def escape_md_section(text: str, snob: bool = False) -> str:
 
 
 def reformat_table(lines: list[str], right_margin: int) -> list[str]:
-    """
-    Given the lines of a table
-    padds the cells and returns the new lines
-    """
     # find the maximum width of the columns
     max_width = [len(x.rstrip()) + right_margin for x in lines[0].split("|")]
     max_cols = len(max_width)
@@ -236,9 +227,7 @@ def reformat_table(lines: list[str], right_margin: int) -> list[str]:
 
 
 def pad_tables_in_text(text: str, right_margin: int = 1) -> str:
-    """
-    Provide padding for tables in the text
-    """
+    """Provide padding for tables in the text"""
     lines = text.split("\n")
     table_buffer = []  # type: list[str]
     table_started = False

@@ -1,9 +1,4 @@
-"""wiki 模块高级集成测试 - search、iw、headers、prefix。
-
-wiki 模块的绝大多数子命令都要求当前场景已设置默认 Wiki，否则一律直接返回提示。
-每个 func_case 运行前数据库都会重建，场景状态不会跨用例保留，因此每个用例都需
-自行完成设置。相关请求由 tests/fixtures/http/ 下的录制响应提供，不依赖实时网络。
-"""
+"""wiki 模块高级集成测试 - search、iw、headers、prefix。"""
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -137,11 +132,7 @@ async def test_wiki_not_found(tester: Tester):
 
 @func_case
 async def test_wiki_start_wiki_not_set(tester: Tester):
-    """未设置默认 Wiki 提示测试
-
-    推荐绑定的按钮只在 QQ 官方机器人上附加，测试会话的客户端名恒为 TEST，
-    故此处只求证提示本身照常发出，按钮相关的判据见 tests/unit/test_wiki_recommend.py。
-    """
+    """未设置默认 Wiki 提示测试"""
     await tester.integrate("~wiki Minecraft", Contains("没有设置默认 Wiki"), "wiki 查询应提示未设置")
     await tester.integrate("~wiki search Minecraft", Contains("没有设置默认 Wiki"), "wiki search 应提示未设置")
     return tester

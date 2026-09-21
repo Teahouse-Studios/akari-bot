@@ -87,8 +87,6 @@ class Module:
     def unsupported_reason(self, session_info) -> str | None:
         """判断该模块在给定会话中是否受平台能力或权限所限。
 
-        返回成因标识而非文案键，以免此处依赖 modules/core 的本地化键名。
-
         :param session_info: 会话信息，须具备 support_rss 与 read_all_messages 两项标志。
         :return: 受限时返回成因（``rss``、``regex`` 或 ``event``），不受限时返回 None。
         """

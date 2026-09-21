@@ -27,12 +27,6 @@ PROBE_PATTERN = re.compile(r"bind channel (probe|confirm) (\S+)")
 
 
 async def _session(target_id: str, text: str = "", sender: str = "admin") -> MockMessageSession:
-    """
-    构造一条指定场景的消息，模拟同一个现实场景中来自不同平台的机器人。
-
-    :param sender: 消息的发送者。握手口令由对方机器人发出，而非管理员发出，
-                   而机器人账号仅在接收方所在平台的命名空间内有意义，故前缀取接收方的。
-    """
     msg = MockMessageSession(text, is_ci=True)
     await msg.async_init(text)
     client = target_id.split("|")[0]
@@ -57,15 +51,6 @@ async def _session(target_id: str, text: str = "", sender: str = "admin") -> Moc
 
 
 async def _run(target_id: str, handler, *args, sender: str = "admin") -> list[str]:
-    """
-    以指定场景执行一步握手，返回该场景产生的输出行。
-
-    此处直接调用握手函数而不经 parser：自动配对默认关闭，其命令并未注册，
-    经 parser 触发将取决于配置，而本组用例考察的是握手本身的收敛与防重放。
-
-    :param handler: 握手函数，形如 ``handler(msg, *args)``。
-    :param sender: 消息的发送者，用于区分对端机器人与照抄口令的用户。
-    """
     msg = await _session(target_id, sender=sender)
     try:
         await handler(msg, *args)
@@ -75,9 +60,6 @@ async def _run(target_id: str, handler, *args, sender: str = "admin") -> list[st
 
 
 def _tokens(lines: list[str], kind: str) -> list[str]:
-    """
-    从输出中提取握手口令。
-    """
     found = []
     for line in lines:
         match = PROBE_PATTERN.search(str(line))
@@ -87,12 +69,6 @@ def _tokens(lines: list[str], kind: str) -> list[str]:
 
 
 async def _handshake(prefix: str) -> tuple[str, str]:
-    """
-    完整执行一遍两个机器人同时响应 ``~bind auto`` 的过程，返回双方的 target_id。
-
-    实际情形即是如此：绑定尚未建立，通道去重与互认记录均未生效，
-    同一场景内的每个机器人都会将该命令视作发给自己的，于是各自发起一轮握手。
-    """
     a, b = f"{prefix}A|Group|1", f"{prefix}B|Group|1"
 
     token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
@@ -110,9 +86,6 @@ async def _handshake(prefix: str) -> tuple[str, str]:
 
 
 async def _orphan_unions() -> int:
-    """
-    统计没有任何场景指向的场景组。重复合并会遗留此类孤儿组，写入其中的数据将无法被读取。
-    """
     bound = set(await TargetUnionBind.all().values_list("union_id", flat=True))
     return sum(
         1 for union_id in await TargetUnionInfo.all().values_list("union_id", flat=True) if union_id not in bound
@@ -120,7 +93,6 @@ async def _orphan_unions() -> int:
 
 
 async def _test_only_one_round_survives():
-    """测试 bind auto - 两轮握手交叉时仅有一轮进入 confirm"""
     try:
         a, b = "ONEROUND1|Group|1", "ONEROUND2|Group|1"
         token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
@@ -136,7 +108,6 @@ async def _test_only_one_round_survives():
 
 
 async def _test_concurrent_completion_merges_once():
-    """测试 bind auto - 两轮握手同时闭合时仅合并一次"""
     try:
         a, b = "RACE1|Group|1", "RACE2|Group|1"
         await TargetUnionInfo.resolve_union(a)
@@ -171,7 +142,6 @@ async def _test_concurrent_completion_merges_once():
 
 
 async def _test_concurrent_auto_records_bots_id():
-    """测试 bind auto - 机器人账号记录在实际生效的组上"""
     try:
         a, b = await _handshake("BOTSID")
 
@@ -186,7 +156,6 @@ async def _test_concurrent_auto_records_bots_id():
 
 
 async def _test_unbind_forgets_peer_bots():
-    """测试 bind auto - 解绑后互认记录被清除，可重新建立关联"""
     try:
         a, b = await _handshake("FORGET")
         target = await TargetUnionInfo.resolve_union(a)
@@ -206,11 +175,6 @@ async def _test_unbind_forgets_peer_bots():
 
 
 async def _test_rebind_after_unbind():
-    """测试 bind auto - 解绑后重新执行握手仍能成立
-
-    仅覆盖流程本身。「因屏蔽而无法重新绑定」实际发生在 core/builtins/parser/message.py，
-    而测试使用的是不执行该屏蔽的 mock parser，该判定条件由上面的清除用例覆盖。
-    """
     try:
         a, b = await _handshake("REBIND")
         target = await TargetUnionInfo.resolve_union(a)
@@ -232,7 +196,6 @@ async def _test_rebind_after_unbind():
 
 
 async def _test_peer_bots_scoped_per_target():
-    """测试 bind auto - 互认记录按观察方分开存放，各自只读取本方的记录"""
     try:
         a, b = await _handshake("SCOPE")
         target = await TargetUnionInfo.resolve_union(a)
@@ -245,7 +208,6 @@ async def _test_peer_bots_scoped_per_target():
 
 
 async def _test_second_handshake_is_noop():
-    """测试 bind auto - 已处于同组同通道时重复执行不会再次合并"""
     try:
         a, b = await _handshake("REPEAT")
         before = await TargetUnionInfo.resolve_union(a)
@@ -262,7 +224,6 @@ async def _test_second_handshake_is_noop():
 
 
 async def _test_probe_token_single_use():
-    """测试 bind auto - probe 口令认领后即作废，重复发送不再换出口令"""
     try:
         a, b = "REPLAY1|Group|1", "REPLAY2|Group|1"
         token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
@@ -278,7 +239,6 @@ async def _test_probe_token_single_use():
 
 
 async def _test_confirm_rejects_other_session():
-    """测试 bind auto - confirm 口令转贴至其它场景不予受理"""
     try:
         a, b, outsider = "XSESS1|Group|1", "XSESS2|Group|1", "XSESS1|Group|2"
         token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
@@ -298,7 +258,6 @@ async def _test_confirm_rejects_other_session():
 
 
 async def _test_replayed_token_not_recorded_as_bot():
-    """测试 bind auto - 照抄握手口令的用户不会被记作机器人"""
     try:
         a, b = "IMPOST1|Group|1", "IMPOST2|Group|1"
         token_a = _tokens(await _run(a, _start_handshake), "probe")[0]
@@ -319,7 +278,6 @@ async def _test_replayed_token_not_recorded_as_bot():
 
 
 async def _test_probe_send_failure_cleans_state_and_releases():
-    """测试 bind auto - probe 发送失败时不遗留口令或 held context"""
     msg = await _session("FAILPROBE|Group|1")
     before = set(_pending_probes)
     held = 0
@@ -347,7 +305,6 @@ async def _test_probe_send_failure_cleans_state_and_releases():
 
 
 async def _test_confirm_send_failure_cleans_state_and_releases():
-    """测试 bind auto - confirm 发送失败时允许 probe 重试并释放响应方上下文"""
     token = "confirm-send-failure"
     initiator = await _session("FAILCONFIRM1|Group|1")
     responder = await _session("FAILCONFIRM2|Group|1", sender="peer_bot")
@@ -383,7 +340,6 @@ async def _test_confirm_send_failure_cleans_state_and_releases():
 
 
 async def _test_completion_releases_both_contexts_when_one_release_fails():
-    """测试 bind auto - 任一 release 失败都不会阻止另一侧上下文释放"""
     initiator_release = AsyncMock(side_effect=ValueError("first release failed"))
     responder_release = AsyncMock()
     initiator = SimpleNamespace(
@@ -400,7 +356,6 @@ async def _test_completion_releases_both_contexts_when_one_release_fails():
 
 
 async def _test_expiry_task_creation_failure_rolls_back_handshake():
-    """测试 bind auto - 超时任务创建失败时回滚口令与 held context"""
     msg = await _session("FAILTASK|Group|1")
     before = set(_pending_probes)
     msg.hold = AsyncMock()
@@ -415,7 +370,6 @@ async def _test_expiry_task_creation_failure_rolls_back_handshake():
 
 
 async def _test_handshake_cleanup_cancels_expiry_and_releases():
-    """测试 bind auto - 生命周期清理取消超时任务并释放 pending context"""
     await cleanup_bind_handshake_state()
     msg = await _session("CANCELTASK|Group|1")
     msg.hold = AsyncMock()

@@ -10,10 +10,7 @@ from core.tester import (
 
 @func_case
 async def test_locale_set(tester: Tester):
-    """locale 设置语言测试
-
-    切换生效后的回执使用目标语言，因此两步需分别以对应语言的文案断言。
-    """
+    """locale 设置语言测试"""
     await tester.integrate("~locale en_us", Contains("Success"), "locale 切换英文后应以英文回执")
     await tester.integrate("~locale zh_cn", Contains("成功"), "locale 恢复中文后应以中文回执")
     return tester
@@ -28,10 +25,7 @@ async def test_petal_sign(tester: Tester):
 
 @func_case
 async def test_say(tester: Tester):
-    """say 命令测试
-
-    反斜杠在命令解析后即为普通字符，须原样发出；发送者 ID 的 AT 码转换亦须照旧。
-    """
+    """say 命令测试"""
     await tester.integrate(r"~say a\b", Match(r"a\b"), "say 应原样发出单个反斜杠")
     await tester.integrate(r"~say a\\b", Match(r"a\\b"), "say 应原样发出连续的两个反斜杠")
     await tester.integrate(r"~say \d+", Match(r"\d+"), "say 应原样发出正则式反斜杠")

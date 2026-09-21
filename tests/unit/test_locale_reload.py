@@ -18,7 +18,6 @@ def _write_locale(path: Path, value: str) -> None:
 
 
 def _test_locale_snapshot_reload():
-    """测试语言重载 - 发布新快照并保留上一份可用快照。"""
     namespace = f"akari-bot-test-{uuid4().hex}"
     try:
         with (

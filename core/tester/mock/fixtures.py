@@ -1,20 +1,4 @@
-"""HTTP Fixture 工具 - 从本地文件加载 mock 响应数据。
-
-使用方式：
-    1. 运行 capture_http_fixtures.py 捕获真实响应
-    2. 在测试中调用 load_http_fixtures() 加载缓存
-    3. HTTPMock 会自动拦截 request_url 中的请求
-
-Fixture 文件存储在 tests/fixtures/http/ 目录下，文件名为 URL 的 hash。
-每个文件包含 JSON 格式的响应数据：
-{
-    "url": "原始 URL",
-    "status_code": 200,
-    "text": "响应文本",
-    "headers": {"Content-Type": "application/json"},
-    "content_base64": "二进制内容的 base64 编码"
-}
-"""
+"""HTTP Fixture 工具 - 从本地文件加载 mock 响应数据。"""
 
 from __future__ import annotations
 
@@ -31,10 +15,6 @@ FIXTURE_DIR = Path(__file__).parent.parent.parent.parent / "tests" / "fixtures" 
 
 
 def _url_to_filename(url: str, method: str | None = None, body_digest: str | None = None) -> str:
-    """将请求特征转换为安全的文件名（使用 SHA256 hash）。
-
-    文件名需覆盖 method 与请求体，否则同一 URL 上请求体不同的调用会互相覆盖。
-    """
     key = url
     if method:
         key = f"{method.upper()} {key}"

@@ -1,12 +1,4 @@
-"""
-服务器初始化模块。
-
-该模块负责服务器启动时的初始化工作，包括：
-- 数据库初始化
-- 模块加载和注册
-- 调度器启动
-- 密钥和提示信息加载
-"""
+"""服务器初始化模块。"""
 
 import asyncio
 import logging
@@ -36,20 +28,11 @@ RESTART_PROMPT_TIMEOUT = 60
 async def init_async(start_scheduler=True, send_prompt=True) -> None:
     """初始化服务器。
 
-    执行服务器启动的所有初始化步骤：
-    1. 设置客户端信息和日志
-    2. 初始化数据库
-    3. 加载所有模块
-    4. 初始化定时任务
-    5. 初始化后台任务
-    6. 加载密钥和启动提示
-
     Args:
         start_scheduler: 是否启动定时任务（默认True）
         send_prompt: 是否发送重启提示（默认True）。提示须等目标客户端重新注册为 ready 方能投递，
                      故由调用方在数据库和队列启动后自行调用 `load_prompt`
     """
-    # 设置客户端信息为 "Server"
     Info.client_name = "Server"
     JobQueueServer.configure_backend(create_jobqueue_backend())
     JobQueueServer.configure_peer(
@@ -59,7 +42,6 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
     )
     Logger.rename(Info.client_name)
 
-    # 读取版本信息
     version_path = assets_path / ".version"
     if version_path.exists():
         with open(version_path, "r") as f:
@@ -70,14 +52,12 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
             Info.version = f"git:{commit_hash}"
         else:
             Logger.warning("Failed to get Git commit hash, is it a Git repository?")
-    # 初始化数据库
     Logger.info("Initializing database...")
     if not await init_db(generate_schemas=False):
         # pre-init 已统一完成建表；Server 初始化只负责注册连接和全部模块模型。
         raise RuntimeError("Failed to initialize server database.")
     Logger.success("Database initialized successfully.")
 
-    # 加载所有模块
     await load_modules()
     modules = ModulesManager.return_modules_list()
 
@@ -90,25 +70,17 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
         hourly_background_task,
         IntervalTrigger(minutes=60),
     )
-    # 初始化后台任务（如 IP 查询、WebRender 等）
     start_background_task()
 
-    # 启动调度器
     if start_scheduler:
         SchedulerLifecycle.start()
     logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
 
-    # 加载密钥和启动提示
     await load_secret()
     Logger.info(f"Hello, {Info.client_name}!")
 
 
 async def load_secret():
-    """从配置文件中加载所有密钥信息。
-
-    扫描配置中所有带有 "secret" 后缀的配置项，
-    将非占位符的值添加到密钥管理系统中，用于内容过滤。
-    """
     for x in CFGManager.values:
         for y in CFGManager.values[x].keys():
             if y == "secret" or y.endswith("_secret"):
@@ -126,13 +98,6 @@ async def _wait_for_client_online(
     timeout: float,
     previous_peer_id: str | None = None,
 ) -> str | None:
-    """等待客户端的新进程实例注册为 ready。
-
-    :param client_name: 目标客户端名称
-    :param timeout: 等待的秒数上限
-    :param previous_peer_id: 重启前绑定的客户端实例 ID；该实例必须排除
-    :return: 新客户端实例 ID，超时则返回 None
-    """
 
     from core.queue.peer import PeerSelector
 
@@ -156,12 +121,6 @@ async def _wait_for_client_online(
 
 async def load_prompt(locale_load_error, timeout: float | None = None) -> None:
     """加载并发送启动提示信息。
-
-    如果存在缓存的发送重启命令的对象信息，发送加载成功或失败的提示。
-    清理缓存文件。
-
-    本地拓扑缓存随 server 进程内存一并清空，重启后须以 Peer Registry 确认目标客户端
-    已注册为 ready 方能投递提示，否则平台 RPC 会因客户端尚未上线而失败。
 
     :param locale_load_error: 语言文件加载过程中产生的错误信息
     :param timeout: 等待目标客户端上线的秒数上限，默认为 `RESTART_PROMPT_TIMEOUT`

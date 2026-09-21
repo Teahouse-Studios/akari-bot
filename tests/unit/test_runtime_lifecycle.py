@@ -20,7 +20,6 @@ from core.tester import Tester, func_case
 
 
 async def _test_server_init_failure_still_cleans_up() -> bool:
-    """初始化中途失败也必须走统一关闭流程。"""
     cleanup = AsyncMock()
     server_run.stop_event.clear()
     with (
@@ -37,7 +36,6 @@ async def _test_server_init_failure_still_cleans_up() -> bool:
 
 
 async def _test_server_notices_dead_queue_poller() -> bool:
-    """队列轮询异常退出时 Server 应失败退出，交由守护进程重启。"""
     cleanup = AsyncMock()
     server_run.stop_event.clear()
 
@@ -63,7 +61,6 @@ async def _test_server_notices_dead_queue_poller() -> bool:
 
 
 async def _test_server_keeps_queue_poller_alive_for_cleanup() -> bool:
-    """统一清理需要先使用 Queue 释放后台 context，再停止轮询器。"""
     queue_started = asyncio.Event()
     queue_stopped = asyncio.Event()
     cleanup_saw_live_queue = False
@@ -99,7 +96,6 @@ async def _test_server_keeps_queue_poller_alive_for_cleanup() -> bool:
 
 
 async def _test_shutdown_cancels_background_initialization() -> bool:
-    """关闭 Server 时必须取消并等待尚未完成的 WebRender/IP 初始化。"""
     started = asyncio.Event()
     stopped = asyncio.Event()
     release = asyncio.Event()
@@ -149,7 +145,6 @@ async def _test_shutdown_cancels_background_initialization() -> bool:
 
 
 async def _test_background_init_cancels_failed_sibling() -> bool:
-    """一项后台初始化异常时，另一项必须被取消并等待，不能脱离父任务继续运行。"""
     render_started = asyncio.Event()
     render_stopped = asyncio.Event()
     release = asyncio.Event()
@@ -181,7 +176,6 @@ async def _test_background_init_cancels_failed_sibling() -> bool:
 
 
 async def _test_remote_only_webrender_uses_remote_health() -> bool:
-    """remote_only 只能检查远端状态，不能启动或关闭本地浏览器。"""
     browser_init = AsyncMock(return_value=True)
     browser_close = AsyncMock(return_value=True)
     remote_status = AsyncMock(return_value={"browser_initialized": True, "remote_only": True})
@@ -206,7 +200,6 @@ async def _test_remote_only_webrender_uses_remote_health() -> bool:
 
 
 async def _test_background_init_uses_configured_webrender_health() -> bool:
-    """后台状态必须来自统一健康检查，而不是只读取本地浏览器。"""
     previous_status = background_tasks.Info.web_render_status
     try:
         with (
@@ -221,7 +214,6 @@ async def _test_background_init_uses_configured_webrender_health() -> bool:
 
 
 async def _test_client_queue_poller_recovers_from_transient_failure() -> bool:
-    """客户端队列轮询遇到一次异常后应自动恢复，而不是永久失联。"""
     calls = 0
     restarted = asyncio.Event()
     release = asyncio.Event()
@@ -268,7 +260,6 @@ async def _test_client_queue_poller_recovers_from_transient_failure() -> bool:
 
 
 async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
-    """消息后台任务失败后应记录异常、释放 Context，并从任务集合移除。"""
     deleted = asyncio.Event()
 
     class FakeContextManager:
@@ -318,7 +309,6 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
 
 
 async def _test_shutdown_waits_for_inflight_queue_handlers() -> bool:
-    """关闭时须取消并等待已领取、仍在执行的队列 action。"""
     process_tasks = getattr(server_run.JobQueueServer, "_process_tasks", None)
     if process_tasks is None:
         return False
@@ -355,7 +345,6 @@ async def _test_shutdown_waits_for_inflight_queue_handlers() -> bool:
 
 
 async def _test_shutdown_prevents_new_queue_claims() -> bool:
-    """清理队列和关闭数据库期间，仍存活的轮询器不得领取新的 action。"""
     queue = server_run.JobQueueServer
     old_running = queue.is_running
     queue.is_running = False
@@ -413,7 +402,6 @@ async def _test_shutdown_prevents_new_queue_claims() -> bool:
 
 
 async def _test_background_cleanup_registry_is_generic_and_reload_safe() -> bool:
-    """任意组件可注册清理，同一稳定 key 的热重载只保留最新回调。"""
     calls = []
 
     async def old_cleanup():
@@ -437,7 +425,6 @@ async def _test_background_cleanup_registry_is_generic_and_reload_safe() -> bool
 
 
 async def _test_background_cleanup_isolates_failure_and_timeout() -> bool:
-    """单项清理失败或超时不得阻断后续组件关闭。"""
     calls = []
     timed_out = asyncio.Event()
 
@@ -472,7 +459,6 @@ async def _test_background_cleanup_isolates_failure_and_timeout() -> bool:
 
 
 async def _test_shutdown_cleanup_keeps_result_pump_without_new_claims() -> bool:
-    """模块清理期间 Queue 只回收远端结果，不再领取新的 action。"""
     queue = server_run.JobQueueServer
     old_running = queue.is_running
     old_shutting_down = queue._shutting_down
@@ -528,7 +514,6 @@ async def _test_shutdown_cleanup_keeps_result_pump_without_new_claims() -> bool:
 
 
 async def _test_shutdown_runs_registered_cleanup_before_queue_stop() -> bool:
-    """通用后台清理必须在新任务入口和生产者停止后、Queue 停止前执行。"""
     calls = []
 
     def begin_scheduler_shutdown():

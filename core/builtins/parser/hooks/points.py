@@ -1,9 +1,4 @@
-"""Parser / 出站生命周期入口点。
-
-入口用显式常量，与旧式具名 hook（``.hook("name")``）正交：
-具名 hook 走 ``Bot.Hook.trigger`` 的请求/返回语义；
-入口订阅走 ``ParserHookExecutor``，按阶段分发并支持类型化结果。
-"""
+"""Parser / 出站生命周期入口点。"""
 
 from enum import StrEnum
 

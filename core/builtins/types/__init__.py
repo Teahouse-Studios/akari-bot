@@ -1,9 +1,4 @@
-"""
-消息元素类型定义模块。
-
-定义了系统中所有支持的消息元素类型和类型联合体，
-用于类型注解和类型检查。
-"""
+"""消息元素类型定义模块。"""
 
 from core.builtins.message.elements import (
     PlainElement,

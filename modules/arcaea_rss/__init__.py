@@ -23,7 +23,6 @@ arcaea_rss = module(
 
 
 async def get_latest_version() -> tuple[str, str] | None:
-    """Fetch the latest Arcaea APK version and download URL."""
     url = "https://webapi.lowiro.com/webapi/serve/static/bin/arcaea/apk/"
     resp = await get_url(url, attempt=1, logging_err_resp=False)
     if not resp:

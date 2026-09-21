@@ -129,7 +129,6 @@ async def _test_cancelled_transaction_exit_leaves_no_open_transaction():
 
 
 async def _test_cancelled_pooled_transaction_entry_returns_connection():
-    """池化后端（MySQL）在 __aenter__ 被取消时必须回滚并归还连接。"""
     released = []
     rolled_back = asyncio.Event()
     begun = asyncio.Event()
@@ -183,7 +182,6 @@ async def _test_cancelled_pooled_transaction_entry_returns_connection():
 
 
 async def _test_cancelled_mysql_bulk_write_rolls_back():
-    """MySQL 批量写入被取消时必须回滚，而不是把连接留在打开的事务里。"""
     if MySQLClient is None:
         return True
 

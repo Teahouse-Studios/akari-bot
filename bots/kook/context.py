@@ -90,7 +90,7 @@ class KOOKContextManager(ContextManager):
         guild = await bot.client.fetch_guild(channel.guild_id)
         user_roles = (await guild.fetch_user(author)).roles
         guild_roles = await guild.fetch_roles()
-        for i in guild_roles:  # 遍历服务器身分组
+        for i in guild_roles:
             if i.id in user_roles and i.has_permission(0):
                 return True
         if author == guild.master_id:
@@ -207,8 +207,6 @@ class KOOKContextManager(ContextManager):
         quote: bool = True,
         msg_ids: list[str] | None = None,
     ) -> list[str]:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
         raw_ctx = cls.context.get(session_info.session_id)
         ctx = raw_ctx if isinstance(raw_ctx, Message) else None
         reaction_ctx = raw_ctx if isinstance(raw_ctx, KOOKReactionContext) else None

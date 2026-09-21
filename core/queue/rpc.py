@@ -1,9 +1,4 @@
-"""Typed RPC declarations shared by callers and handlers.
-
-An endpoint owns the Python signature, wire name and route. Both sides use the
-same codec. ``await method(...)`` waits for execution; ``await method.submit``
-only waits for acceptance. Submission never promises delivery or retries.
-"""
+"""Typed RPC declarations shared by callers and handlers."""
 
 from __future__ import annotations
 
@@ -189,8 +184,6 @@ class RpcMethod(Generic[P, R]):
 
 
 class SignalMethod(RpcMethod[P, R]):
-    """Typed fan-out event declaration with optional per-peer ACK collection."""
-
     async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
         raise TypeError("Signals require an explicit PeerSelector via .emit() or .gather()")
 

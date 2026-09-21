@@ -380,7 +380,6 @@ async def _test_image_reply_falls_back_to_proactive() -> bool:
 
 
 async def _test_plain_image_is_uploaded_before_send() -> bool:
-    """群聊 plain 图片须先 upload_media，发送阶段只提交 file_info 引用。"""
     session = _make_session(target_group_prefix)
     client = _CaptureSendClient()
     message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
@@ -426,7 +425,6 @@ async def _test_audio_video_are_sent_after_the_main_message() -> bool:
 
 
 async def _test_missing_media_elements_are_skipped() -> bool:
-    """图片/语音/视频底层文件缺失时不发送任何消息。"""
     session = _make_session(target_group_prefix)
     client = _CaptureSendClient()
     message = MessageChain.assign(
@@ -445,7 +443,6 @@ async def _test_missing_media_elements_are_skipped() -> bool:
 
 
 async def _test_missing_media_keeps_remaining_text() -> bool:
-    """媒体元素不可用时仍发送其余文本内容。"""
     session = _make_session(target_group_prefix)
     client = _CaptureSendClient()
     message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign("missing-image-fixture.png")])
@@ -512,7 +509,6 @@ async def _test_group_mention_markdown_message() -> bool:
 
 
 async def _test_markdown_removes_line_break_before_at() -> bool:
-    """Markdown payload 不应保留首个 at 标签前的换行。"""
     session = _make_session(target_group_prefix)
     session.support_markdown = True
     client = _CaptureSendClient()
@@ -661,7 +657,6 @@ async def _test_private_message_client_failure_returns_empty() -> bool:
 
 
 async def _test_group_message_reply_uses_message_reference() -> bool:
-    """普通群消息的 reply_id 应使用 message_scene 中的应用层引用 ID。"""
     message = SimpleNamespace(
         group_openid="group",
         author=SimpleNamespace(member_openid="sender", username="sender-name", member_role="member"),
@@ -699,7 +694,6 @@ async def _test_group_message_reply_uses_message_reference() -> bool:
 
 
 async def _test_group_quote_uses_api_message_id() -> bool:
-    """平台引用参数必须使用 ROBOT ID，不能把 msg_idx 传给 OpenAPI。"""
     session = _make_session(target_group_prefix)
     session.message_id = "ROBOT-source"
     context = GroupMessage(
@@ -725,7 +719,6 @@ async def _test_group_quote_uses_api_message_id() -> bool:
 
 
 async def _test_delete_translates_application_message_id() -> bool:
-    """框架返回的 REFIDX 在调用撤回接口前须还原为 ROBOT ID。"""
     client = _FakeClient()
     _message_ids({"id": "ROBOT-delete", "ext_info": {"ref_idx": "REFIDX-delete"}})
     previous_client = QQBotContextManager.client

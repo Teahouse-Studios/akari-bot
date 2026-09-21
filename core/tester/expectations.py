@@ -10,15 +10,6 @@ from core.builtins.types import MessageElement, MultimediaElement
 
 
 def _searchable_texts(result: dict) -> tuple[str, ...]:
-    """取出用于文本搜索的候选串。
-
-    先给出仅含文本元素的渲染，再给出包含全部元素的渲染。图片、语音等非文本元素
-    在 `to_str()` 的默认模式下会被丢弃，若只比对前者，形如 `Contains("KE:image")`
-    的断言将永远无法命中。
-
-    :param result: 测试结果字典。
-    :return: 去重后的候选字符串元组，按匹配优先级排列。
-    """
     output = result.get("output")
     text_only = MessageChain.assign(output).to_str()
     full = MessageChain.assign(output).to_str(text_only=False)
@@ -26,9 +17,7 @@ def _searchable_texts(result: dict) -> tuple[str, ...]:
 
 
 class Expectation:
-    """
-    所有期望匹配器的基类。
-    """
+    """所有期望匹配器的基类。"""
 
     async def match(self, result: dict) -> bool:
         raise NotImplementedError
@@ -106,9 +95,7 @@ class Not(Expectation):
 
 
 class Empty(Expectation):
-    """
-    是否无输出。
-    """
+    """是否无输出。"""
 
     async def match(self, result):
         return not bool(result.get("output"))
@@ -118,12 +105,6 @@ class Empty(Expectation):
 
 
 class Equal(Expectation):
-    """
-    是否完全匹配消息链。
-
-    :param msg_chain: 期望消息链
-    """
-
     def __init__(
         self, msg_chain: str | MessageChain | list[MessageElement] | tuple[MessageElement, ...] | MessageElement
     ):
@@ -383,13 +364,6 @@ class Count(Expectation):
 
 
 class InOrder(Expectation):
-    """
-    按顺序匹配消息链中的消息元素。
-
-    :param elements: 消息元素类型，可以是多个类型或包含类型的 list/tuple。
-    :param consecutive: 是否严格匹配，不允许插入干扰元素。（默认 False）
-    """
-
     def __init__(
         self,
         *elements: type[MultimediaElement] | list[type[MultimediaElement]] | tuple[type[MultimediaElement], ...],
@@ -439,12 +413,6 @@ class InOrder(Expectation):
 
 
 class StructureEqual(Expectation):
-    """
-    严格匹配消息链中的消息元素。
-
-    :param elements: 消息元素类型，可以是多个类型或包含类型的 list/tuple。
-    """
-
     def __init__(
         self, *elements: type[MultimediaElement] | list[type[MultimediaElement]] | tuple[type[MultimediaElement], ...]
     ):
@@ -528,11 +496,7 @@ class Predicate(Expectation):
 
 
 class AnyOutput(Expectation):
-    """
-    是否有任意输出（非空）。
-
-    如果输出包含错误信息（如"执行命令时发生错误"），则匹配失败。
-    """
+    """是否有任意输出（非空）。"""
 
     # 错误信息关键词列表
     ERROR_KEYWORDS = ["执行命令时发生错误"]
@@ -555,14 +519,6 @@ class AnyOutput(Expectation):
 
 
 class OutputCount(Expectation):
-    """
-    输出 action 条目数量。
-
-    :param eq: 预期精确数量
-    :param ge: 预期最小数量
-    :param le: 预期最大数量
-    """
-
     def __init__(self, eq: int | None = None, ge: int | None = None, le: int | None = None):
         self.eq = eq
         self.ge = ge
@@ -640,14 +596,7 @@ class ContainsAny(Expectation):
 
 
 class NoException(Expectation):
-    """
-    执行过程中无异常。
-
-    检查以下条件：
-    1. 结果中无 exception 字段
-    2. 结果中无 traceback 字段
-    3. 输出中不包含错误信息关键词
-    """
+    """执行过程中无异常。"""
 
     # 错误信息关键词列表
     ERROR_KEYWORDS = ["执行命令时发生错误"]
@@ -676,13 +625,6 @@ class NoException(Expectation):
 
 
 class ActionContains(Expectation):
-    """
-    action 列表中包含特定文本。
-
-    :param text: 需要包含的文本
-    :param case_sensitive: 是否大小写敏感，默认 False
-    """
-
     def __init__(self, text: str, case_sensitive: bool = False):
         self.text = text
         self.case_sensitive = case_sensitive

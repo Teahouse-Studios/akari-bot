@@ -35,11 +35,11 @@ async def websocket_logs(websocket: WebSocket):
     await websocket.accept()
     current_date = datetime.today().strftime("%Y-%m-%d")
 
-    last_file_pos = defaultdict(int)  # 日志文件当前位置
-    last_file_size = defaultdict(int)  # 日志文件大小
-    today_logs = list((logs_path).glob(f"*_{current_date}.log"))  # 缓存日志文件列表
+    last_file_pos = defaultdict(int)
+    last_file_size = defaultdict(int)
+    today_logs = list((logs_path).glob(f"*_{current_date}.log"))
 
-    initial_connect = True  # 标记是否为建立连接后的第一次读取
+    initial_connect = True
 
     try:
         while True:

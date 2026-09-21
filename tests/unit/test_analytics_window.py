@@ -9,7 +9,6 @@ from modules.core.su_tools.analytics import local_midnight
 
 
 def _test_local_midnight_is_aware():
-    """测试统计窗口 - 零点须带时区且时分秒微秒全为零"""
     try:
         midnight = local_midnight()
         return midnight.tzinfo is not None and (
@@ -24,7 +23,6 @@ def _test_local_midnight_is_aware():
 
 
 async def _test_window_emits_no_naive_warning():
-    """测试统计窗口 - 查询不应触发 naive datetime 警告"""
     try:
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
@@ -38,7 +36,6 @@ async def _test_window_emits_no_naive_warning():
 
 
 async def _test_window_counts_today_only():
-    """测试统计窗口 - 今日窗口只计入今天的记录"""
     marker = "analytics_window_probe"
     try:
         old = local_midnight()

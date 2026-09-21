@@ -1,8 +1,5 @@
-"""
-机器人内置的随机生成工具。``Random`` 由 ``use_secrets_random`` 配置选择后端，
+"""机器人内置的随机生成工具。``Random`` 由 ``use_secrets_random`` 配置选择后端，
 ``SecureRandom`` 始终使用 ``secrets``，用于密码、令牌和绑定口令等安全凭据。
-
-请在模块中使用此库进行随机生成，避免导入`random`或`secrets`库。
 """
 
 import base64
@@ -17,8 +14,6 @@ T = TypeVar("T")
 
 
 class _RandomBackend:
-    """标准库 ``random`` 后端：速度快，不适合用于安全凭据。"""
-
     @staticmethod
     def random() -> float:
         return pyrandom.random()
@@ -71,8 +66,6 @@ class _RandomBackend:
 
 
 class _SecretsBackend:
-    """``secrets`` 后端：密码学安全，用于凭据与需要不可预测的随机。"""
-
     @staticmethod
     def random() -> float:
         return secrets.randbelow(INF) / INF
@@ -140,10 +133,7 @@ class _SecretsBackend:
 
 
 class Random:
-    """随机生成工具。
-
-    后端在类定义时按 ``use_secrets_random`` 选定一次，公开方法仅做转发。
-    """
+    """随机生成工具。"""
 
     use_secrets = CoreConfig.use_secrets_random
     _backend = _SecretsBackend() if use_secrets else _RandomBackend()

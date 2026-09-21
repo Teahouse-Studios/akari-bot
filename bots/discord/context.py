@@ -39,7 +39,6 @@ def resolve_discord_reference(ctx, quote: bool):
 
 
 async def get_discord_guild(session_info: SessionInfo):
-    """从频道会话或服务器事件会话取得 Discord Guild。"""
     if session_info.target_from == target_channel_prefix:
         channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
         return channel.guild
@@ -58,9 +57,6 @@ class DiscordContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-        # 这里可以添加权限检查的逻辑
 
         ctx: Message | discord.Interaction | DiscordReactionContext | None = cls.context.get(session_info.session_id)
 
@@ -183,8 +179,6 @@ class DiscordContextManager(ContextManager):
         quote: bool = True,
     ) -> list[str]:
 
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
         ctx: Message | discord.Interaction | DiscordReactionContext | None = cls.context.get(session_info.session_id)
         if ctx:
             channel = ctx.channel
@@ -267,9 +261,6 @@ class DiscordContextManager(ContextManager):
             message_id = [message_id]
         if not isinstance(message_id, list):
             raise TypeError("Message ID must be a list or str")
-
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
 
         for msg_id in message_id:
             try:

@@ -19,7 +19,6 @@ from core.tester.timing import TIME_SCALE
 
 
 async def _wait_until(predicate, timeout: float | None = None) -> bool:
-    """按真实时限等待条件成立，避免固定轮次在慢速 CI 上过早放弃。"""
     deadline = asyncio.get_running_loop().time() + (timeout if timeout is not None else 5 * TIME_SCALE)
     while asyncio.get_running_loop().time() < deadline:
         if predicate():
@@ -35,7 +34,6 @@ async def _make_held_session(
     *,
     reply_id: str | None = None,
 ):
-    """建立不依赖真实平台 Queue 的等待结果会话。"""
     from core.builtins.session.internal import MessageSession
 
     class HeldSession(MessageSession):
@@ -61,11 +59,6 @@ async def _make_held_session(
 
 
 async def _test_features_inject_action_text():
-    """测试 support_action_text 能注入会话
-
-    inject_features() 以 asdict(features) 逐字段 setattr，SessionInfo 若缺少同名
-    字段会在注入时抛错，故新增能力标志必须两处同步声明。
-    """
     try:
         from core.builtins.session.info import SessionInfo
 
@@ -82,7 +75,6 @@ async def _test_features_inject_action_text():
 
 
 async def _test_release_context_tolerates_prior_platform_cleanup():
-    """平台关闭先清空 context 时，后台 release 仍应移除 hold 计数而不抛错。"""
     session_id = "session-release-after-platform-cleanup"
     session = SimpleNamespace(session_id=session_id)
     ContextManager.context[session_id] = object()
@@ -99,7 +91,6 @@ async def _test_release_context_tolerates_prior_platform_cleanup():
 
 
 async def _test_hold_normalizes_remote_context_unavailable():
-    """跨进程 hold 的上下文缺失应恢复为可供调用方处理的领域异常。"""
     from core.builtins.session.internal import MessageSession
 
     session = MessageSession(
@@ -133,7 +124,6 @@ async def _test_hold_normalizes_remote_context_unavailable():
 
 
 async def _test_features_inject_markdown_table():
-    """测试 support_markdown_extension 能注入并随会话序列化"""
     try:
         from core.builtins.session.info import SessionInfo
 
@@ -150,7 +140,6 @@ async def _test_features_inject_markdown_table():
 
 
 async def _test_session_refresh_updates_derived_union_state():
-    """跨进程入队后刷新会话时，权限与场景配置的派生字段必须一起更新。"""
     target_id = "TEST|Group|refresh-derived-state"
     sender_id = "TEST|refresh-derived-state"
     session_info = await SessionInfo.assign(
@@ -200,7 +189,6 @@ async def _test_session_refresh_updates_derived_union_state():
 
 
 async def _test_session_refresh_does_not_recreate_deleted_unions():
-    """入队后的旧消息不能复活已被管理员删除的用户或场景 Union。"""
     sender_target_id = "TEST|Group|refresh-deleted-sender"
     sender_id = "TEST|refresh-deleted-sender"
     target_target_id = "TEST|Group|refresh-deleted-target"
@@ -255,7 +243,6 @@ async def _test_session_refresh_does_not_recreate_deleted_unions():
 
 
 def _test_features_override():
-    """测试 Features.override()"""
     try:
         features = Features.override(support_image=True, support_audio=True)
         if features.support_image is not True:
@@ -270,7 +257,6 @@ def _test_features_override():
 
 
 async def _test_lock_add_remove():
-    """测试 ExecutionLockList 添加和移除"""
     try:
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
@@ -292,7 +278,6 @@ async def _test_lock_add_remove():
 
 
 async def _test_lock_multiple_users():
-    """测试多个用户的锁"""
     try:
         msg1 = MockMessageSession("~test")
         await msg1.async_init("~test")
@@ -329,7 +314,6 @@ async def _test_lock_multiple_users():
 
 
 async def _test_lock_shared_by_bound_identities():
-    """同一用户 Union 下的不同平台身份应共享执行锁。"""
     try:
         first = MockMessageSession("~test")
         await first.async_init("~test")
@@ -355,7 +339,6 @@ async def _test_lock_shared_by_bound_identities():
 
 
 async def _test_lock_non_owner_cannot_release():
-    """同一 Union 中未取得锁的会话不能释放所有者的锁。"""
     owner = MockMessageSession("~test")
     await owner.async_init("~test")
     await owner.session_info.sender_union_info.bind_id("TEST|lock-contender")
@@ -381,7 +364,6 @@ async def _test_lock_non_owner_cannot_release():
 
 
 async def _test_old_owner_cannot_release_reacquired_lock():
-    """会话提前释放后，其最终清理不能删除另一会话后来取得的同一把锁。"""
     first = MockMessageSession("~test")
     await first.async_init("~test")
     await first.session_info.sender_union_info.bind_id("TEST|lock-reacquired")
@@ -409,7 +391,6 @@ async def _test_old_owner_cannot_release_reacquired_lock():
 
 
 async def _test_lock_get():
-    """测试 ExecutionLockList.get()"""
     try:
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
@@ -429,7 +410,6 @@ async def _test_lock_get():
 
 
 async def _test_lock_detects_union_merge_by_physical_bindings():
-    """Union 合并会更换 Union ID，但不得让新组中的另一账号绕过旧 lease。"""
     from core.builtins.session.internal import MessageSession
 
     first_sender = "TEST|lock-merge-first"
@@ -473,7 +453,6 @@ async def _test_lock_detects_union_merge_by_physical_bindings():
 
 
 async def _test_wait_resume_reacquires_after_competing_command():
-    """等待结果到达时，原 continuation 必须等待期间启动的新命令释放锁。"""
     from core.builtins.session.internal import MessageSession
 
     class WaitSession(MessageSession):
@@ -547,7 +526,6 @@ async def _test_wait_resume_reacquires_after_competing_command():
 
 
 async def _test_cancelled_wait_leaves_no_task_or_lease():
-    """取消已释放执行锁的等待时，不得遗留 waiter 或重获 lease。"""
     from core.builtins.session.internal import MessageSession
 
     class WaitSession(MessageSession):
@@ -587,7 +565,6 @@ async def _test_cancelled_wait_leaves_no_task_or_lease():
 
 
 async def _test_execution_lock_state_does_not_survive_session_serialization():
-    """SessionInfo 跨进程复制不能携带或释放原 MessageSession 的 lease。"""
     from core.builtins.converter import converter
     from core.builtins.session.internal import MessageSession
 
@@ -621,7 +598,6 @@ async def _test_execution_lock_state_does_not_survive_session_serialization():
 
 
 async def _test_execution_lock_count_counts_leases():
-    """多绑定账号只算一条命令，exclude 只排除当前执行域。"""
     from core.builtins.session.internal import MessageSession
 
     owner = MessageSession(
@@ -660,7 +636,6 @@ async def _test_execution_lock_count_counts_leases():
 
 
 async def _test_partial_overlap_merge_reservations_do_not_deadlock():
-    """A+B 与 C+B 这类部分重叠 reservation 中，后进入者应主动让出。"""
     from core.builtins.session.internal import MessageSession
 
     first = MessageSession(
@@ -708,7 +683,6 @@ async def _test_partial_overlap_merge_reservations_do_not_deadlock():
 
 
 async def _test_active_sender_leases_are_barriered_before_merge():
-    """两个活跃 Union 合并前须等待另一 lease，期间阻止双方新命令进入。"""
     from core.builtins.session.internal import MessageSession
     from core.utils.union_merge import apply_sender_merge, plan_sender_merge, reserve_sender_merge
 
@@ -791,7 +765,6 @@ async def _test_active_sender_leases_are_barriered_before_merge():
 
 
 async def _test_cross_user_wait_result_keeps_root_lock_subject():
-    """wait_anyone 的回复者会话继续 sleep 时，lease 仍须覆盖命令发起者。"""
     from core.builtins.session.internal import MessageSession
 
     class LifecycleSession(MessageSession):
@@ -888,7 +861,6 @@ async def _test_cross_user_wait_result_keeps_root_lock_subject():
 
 
 async def _test_wait_result_context_release_retries_once():
-    """wait-result context 第一次释放失败时应只重试失败项。"""
     from core.builtins.session.internal import MessageSession
 
     class RetryReleaseSession(MessageSession):
@@ -927,7 +899,6 @@ async def _test_wait_result_context_release_retries_once():
 
 
 async def _test_wait_confirm_can_preserve_merge_barrier():
-    """Union 冲突选择等待回复时可以保持已建立的 execution barrier。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.session.internal import MessageSession
 
@@ -1001,7 +972,6 @@ async def _test_wait_confirm_can_preserve_merge_barrier():
 
 
 async def _test_parser_wait_result_keeps_root_merge_barrier():
-    """真实 parser 消费等待回复后不得释放根命令持有的 merge barrier。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.parser.message import parser
     from core.builtins.session.internal import MessageSession
@@ -1077,7 +1047,6 @@ async def _test_parser_wait_result_keeps_root_merge_barrier():
 
 
 async def _test_inactive_wait_releases_context_acquired_during_hold():
-    """hold 跨进程期间 waiter 被移除时，不得发布结果或遗留 context。"""
     from core.builtins.session.internal import MessageSession
 
     class BlockingHoldSession(MessageSession):
@@ -1125,7 +1094,6 @@ async def _test_inactive_wait_releases_context_acquired_during_hold():
 
 
 async def _test_sleep_waits_for_competing_lease_before_resuming():
-    """sleep 返回后的 continuation 必须等竞争命令释放后再重获 lease。"""
     from core.builtins.session.internal import MessageSession
 
     original_sleep = asyncio.sleep
@@ -1181,7 +1149,6 @@ async def _test_sleep_waits_for_competing_lease_before_resuming():
 
 
 async def _test_cancelled_sleep_reacquire_keeps_competing_lease():
-    """continuation 等待重获时被取消，不得破坏竞争者 lease 或留下幽灵锁。"""
     from core.builtins.session.internal import MessageSession
 
     original_sleep = asyncio.sleep
@@ -1240,7 +1207,6 @@ async def _test_cancelled_sleep_reacquire_keeps_competing_lease():
 
 
 async def _test_task_add_and_get():
-    """测试 SessionTaskManager 添加和获取任务"""
     try:
         SessionTaskManager._task_list.clear()
 
@@ -1270,7 +1236,6 @@ async def _test_task_add_and_get():
 
 
 async def _test_task_add_callback():
-    """测试 SessionTaskManager 添加回调"""
     try:
 
         async def test_callback(session):
@@ -1296,7 +1261,6 @@ async def _test_task_add_callback():
 
 
 async def _test_send_message_binds_button_callback_reply_id():
-    """带 callback 的按钮应自动取得虚拟 reply_id，并与真实消息 ID 一起注册。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.message.elements import ButtonFrameElement
     from core.builtins.message.internal import Button
@@ -1354,7 +1318,6 @@ async def _test_send_message_binds_button_callback_reply_id():
 
 
 async def _test_button_callback_registered_before_send_returns():
-    """平台消息已显示但跨进程发送结果未回包时，立即点击按钮也不能丢 callback。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.message.elements import ButtonFrameElement
     from core.builtins.message.internal import Button
@@ -1416,7 +1379,6 @@ async def _test_button_callback_registered_before_send_returns():
 
 
 async def _test_send_failure_does_not_leave_callback():
-    """平台以空消息 ID 表示发送失败时不能留下虚拟 ID 或 bot_id callback。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.message.internal import Button
     from core.builtins.session.info import SessionInfo
@@ -1453,7 +1415,6 @@ async def _test_send_failure_does_not_leave_callback():
 
 
 async def _test_virtual_reply_id_triggers_callback():
-    """按钮交互写入虚拟 reply_id 后应复用普通 callback 匹配。"""
     SessionTaskManager._callback_list.clear()
     called = False
 
@@ -1471,7 +1432,6 @@ async def _test_virtual_reply_id_triggers_callback():
 
 
 async def _test_public_button_callback_accepts_other_sender():
-    """公开按钮的 callback 不应受原发送者限制。"""
     SessionTaskManager._callback_list.clear()
     called = False
 
@@ -1491,7 +1451,6 @@ async def _test_public_button_callback_accepts_other_sender():
 
 
 async def _test_callback_remains_active_across_aliases():
-    """同一 callback 的真实／虚拟回复别名在有效期内均可重复命中。"""
     SessionTaskManager._callback_list.clear()
     called = 0
 
@@ -1517,7 +1476,6 @@ async def _test_callback_remains_active_across_aliases():
 
 
 async def _test_callback_once_is_consumed_across_aliases():
-    """显式一次性 callback 在任一别名首次命中后应整体失效。"""
     SessionTaskManager._callback_list.clear()
     called = 0
 
@@ -1541,7 +1499,6 @@ async def _test_callback_once_is_consumed_across_aliases():
 
 
 async def _test_reused_callback_keeps_independent_registration():
-    """同一个函数对象用于两次独立发送时，命中一组不能删除另一组。"""
     SessionTaskManager._callback_list.clear()
     called = []
 
@@ -1572,7 +1529,6 @@ async def _test_reused_callback_keeps_independent_registration():
 
 
 async def _test_shared_callback_fallback_is_not_guessed():
-    """两次发送共享同一 bot_id fallback 时不得按注册顺序猜测。"""
     SessionTaskManager._callback_list.clear()
     called = []
 
@@ -1609,7 +1565,6 @@ async def _test_shared_callback_fallback_is_not_guessed():
 
 
 async def _test_callback_registration_handle_survives_alias_collision():
-    """相同虚拟 ID 的并发注册不能覆盖，物理 ID 回包后应各自命中。"""
     SessionTaskManager._callback_list.clear()
     called = []
 
@@ -1641,7 +1596,6 @@ async def _test_callback_registration_handle_survives_alias_collision():
 
 
 async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
-    """无按钮 callback 在发送回包前也须登记，避免 bot_id fallback 串线。"""
     from core.builtins.session.internal import MessageSession
     from core.i18n import Locale
 
@@ -1717,7 +1671,6 @@ async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
 
 
 async def _test_callback_primary_id_beats_fallback():
-    """一个注册的主 ID 与另一注册 fallback 重合时，主 ID 必须优先。"""
     SessionTaskManager._callback_list.clear()
     called = []
 
@@ -1740,7 +1693,6 @@ async def _test_callback_primary_id_beats_fallback():
 
 
 async def _test_callback_ignores_missing_reply_id():
-    """非回复消息不能以字符串化的 None 命中 callback。"""
     SessionTaskManager._callback_list.clear()
     called = False
 
@@ -1760,7 +1712,6 @@ async def _test_callback_ignores_missing_reply_id():
 
 
 async def _test_callback_is_scoped_by_message_channel():
-    """相同平台消息 ID 在不同现实场景中不能覆盖或误命中 callback。"""
     from core.builtins.session.info import SessionInfo
 
     SessionTaskManager._callback_list.clear()
@@ -1798,7 +1749,6 @@ async def _test_callback_is_scoped_by_message_channel():
 
 
 async def _test_callback_finish_is_consumed_as_control_flow():
-    """callback 调用 msg.finish() 的 SessionFinished 不得让队列 action 卡在 processing。"""
     from core.constants import SessionFinished
 
     SessionTaskManager._callback_list.clear()
@@ -1817,7 +1767,6 @@ async def _test_callback_finish_is_consumed_as_control_flow():
 
 
 async def _test_callback_rejects_other_physical_sender():
-    """普通 reply 必须与 callback 发送时的物理账号一致。"""
     from core.builtins.session.internal import MessageSession
 
     target_id = "TEST|Group|callback-owner"
@@ -1864,7 +1813,6 @@ async def _test_callback_rejects_other_physical_sender():
 
 
 async def _test_callback_ttl_checked_on_use():
-    """即使周期清理尚未运行，超过自身有效期的 callback 也不得执行。"""
     msg = MockMessageSession("1")
     await msg.async_init("1")
     msg.session_info.reply_id = "expired-callback"
@@ -1885,7 +1833,6 @@ async def _test_callback_ttl_checked_on_use():
 
 
 async def _test_repeatable_callback_is_serialized():
-    """同一 callback 的连续触发应串行执行，并在完成后继续有效。"""
     SessionTaskManager._callback_list.clear()
     entered = asyncio.Event()
     release = asyncio.Event()
@@ -1930,7 +1877,6 @@ async def _test_repeatable_callback_is_serialized():
 
 
 async def _test_parser_rejects_blocked_wait_responder_before_task_check():
-    """全局屏蔽用户不得完成场景内的 wait_anyone。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.parser.message import parser
     from core.builtins.session.internal import MessageSession
@@ -1968,7 +1914,6 @@ async def _test_parser_rejects_blocked_wait_responder_before_task_check():
 
 
 async def _test_wait_confirm_ignores_unrelated_message():
-    """确认等待只消费确认词，其他消息仍可进入普通 parser。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.session.internal import MessageSession, _is_confirmation_message
 
@@ -2005,7 +1950,6 @@ async def _test_wait_confirm_ignores_unrelated_message():
 
 
 async def _test_wait_next_message_allows_parser_fallthrough():
-    """wait_next_message 完成等待后，当前消息仍继续普通解析。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.session.internal import MessageSession
 
@@ -2046,7 +1990,6 @@ async def _test_wait_next_message_allows_parser_fallthrough():
 
 
 async def _test_wait_anyone_allows_parser_fallthrough():
-    """wait_anyone 完成等待后，触发消息仍继续普通解析。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.session.internal import MessageSession
 
@@ -2093,7 +2036,6 @@ async def _test_wait_anyone_allows_parser_fallthrough():
 
 
 async def _test_parser_rejects_banned_callback_responder_before_task_check():
-    """场景屏蔽用户不得继续触发封禁前登记的 callback。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.parser.message import parser
     from core.builtins.session.internal import MessageSession
@@ -2137,7 +2079,6 @@ async def _test_parser_rejects_banned_callback_responder_before_task_check():
 
 
 async def _test_reply_task_normalizes_integer_reply_id():
-    """平台提供整数 reply_id 时也应命中已字符串化的等待目标。"""
     SessionTaskManager._task_list.clear()
     waiting = MockMessageSession("prompt")
     await waiting.async_init("prompt")
@@ -2156,7 +2097,6 @@ async def _test_reply_task_normalizes_integer_reply_id():
 
 
 async def _test_reply_task_preserves_comma_in_message_id():
-    """消息 ID 自身含逗号时必须作为一个完整等待目标，不能按分隔符拆开。"""
     SessionTaskManager._task_list.clear()
     waiting = MockMessageSession("prompt")
     await waiting.async_init("prompt")
@@ -2175,7 +2115,6 @@ async def _test_reply_task_preserves_comma_in_message_id():
 
 
 async def _test_send_message_does_not_set_transport_format_flag():
-    """消息格式应由元素表达，发送链路不得再写入 transport 格式临时值。"""
     from core.builtins.message.internal import Markdown
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
@@ -2206,7 +2145,6 @@ async def _test_send_message_does_not_set_transport_format_flag():
 
 
 async def _test_wait_next_message_registers_before_fast_reply():
-    """提示发送完成后下一事件循环拍到达的回复不应落在等待任务登记之前。"""
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
     from core.constants import WaitCancelException
@@ -2239,7 +2177,6 @@ async def _test_wait_next_message_registers_before_fast_reply():
 
 
 async def _test_wait_next_message_preserves_choice_rows():
-    """possibly_choices 的每个映射应保留为独立按钮行。"""
     from core.builtins.message.elements import ButtonFrameElement
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
@@ -2282,7 +2219,6 @@ async def _test_wait_next_message_preserves_choice_rows():
 
 
 async def _test_wait_confirm_registers_before_reaction_roundtrip():
-    """添加确认反应发生网络让出时，立即到达的文本确认仍应命中等待任务。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
@@ -2320,7 +2256,6 @@ async def _test_wait_confirm_registers_before_reaction_roundtrip():
 
 
 async def _test_wait_confirm_any_message_retracts_prompt():
-    """长消息确认的否按钮或普通消息都应结束等待并撤回提示。"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.session.internal import MessageSession
 
@@ -2363,7 +2298,6 @@ async def _test_wait_confirm_any_message_retracts_prompt():
 
 
 async def _test_wait_reply_registers_before_send_returns():
-    """提示已在平台显示但发送 action 尚未回包时，快速引用回复不应丢失。"""
     from core.builtins.session.internal import MessageSession
 
     check_task_holder = {}
@@ -2442,7 +2376,6 @@ async def _test_wait_reply_registers_before_send_returns():
 
 
 async def _test_ready_reply_is_not_blocked_by_earlier_pending_reply():
-    """较早 pending 的 reply task 不得阻塞后登记但已 ready 的精确目标。"""
     from core.builtins.session.internal import MessageSession
 
     class HeldIncoming(MessageSession):
@@ -2515,7 +2448,6 @@ async def _test_ready_reply_is_not_blocked_by_earlier_pending_reply():
 
 
 async def _test_wait_reply_send_failure_unblocks_pending_parser():
-    """reply 提示发送失败时，已到达的引用消息不得永远卡在 reply_ready。"""
     from core.builtins.session.internal import MessageSession
 
     check_task_holder = {}
@@ -2580,7 +2512,6 @@ async def _test_wait_reply_send_failure_unblocks_pending_parser():
 
 
 async def _test_wait_reply_timeout_covers_pending_send():
-    """wait_reply 的 timeout 必须覆盖发送阶段，并唤醒已等待 reply_ready 的 parser。"""
     from core.builtins.session.internal import MessageSession
     from core.constants import WaitCancelException
 
@@ -2660,7 +2591,6 @@ async def _test_wait_reply_timeout_covers_pending_send():
 
 
 async def _test_wait_reply_timeout_is_single_deadline():
-    """发送提示耗时须从后续等待回复的预算中扣除。"""
     from core.builtins.session.internal import MessageSession
     from core.constants import WaitCancelException
 
@@ -2719,7 +2649,6 @@ async def _test_wait_reply_timeout_is_single_deadline():
 
 
 async def _test_wait_reply_none_timeout_keeps_pending_send():
-    """timeout=None 必须保留无限等待语义，直到调用方取消。"""
     from core.builtins.session.internal import MessageSession
 
     send_entered = asyncio.Event()
@@ -2767,7 +2696,6 @@ async def _test_wait_reply_none_timeout_keeps_pending_send():
 
 
 async def _test_wait_reply_deletes_prompt_when_reply_registration_is_lost():
-    """发送成功后若 pending task 已失效，delete=True 仍须撤回无法交互的提示。"""
     from core.builtins.session.internal import MessageSession
     from core.constants import WaitCancelException
 
@@ -2812,7 +2740,6 @@ async def _test_wait_reply_deletes_prompt_when_reply_registration_is_lost():
 
 
 async def _test_cancelled_wait_reply_deletes_sent_prompt():
-    """调用方取消已经发出提示的 wait_reply 时，delete=True 不应遗留提示。"""
     from core.builtins.session.internal import MessageSession
 
     send_returned = asyncio.Event()
@@ -2859,7 +2786,6 @@ async def _test_cancelled_wait_reply_deletes_sent_prompt():
 
 
 async def _test_wait_reply_committed_result_beats_timeout_observation():
-    """incoming 已提交 result 后，即使 deadline 同拍触发也必须返回已消费的回复。"""
     from core.builtins.session.internal import MessageSession
 
     prompt_id = "committed-result-prompt"
@@ -2935,7 +2861,6 @@ async def _test_wait_reply_committed_result_beats_timeout_observation():
 
 
 async def _test_wait_reply_delete_failure_does_not_mask_cancellation():
-    """撤回失败只能记录日志，不能把 wait_reply 的取消结果改成删除异常。"""
     from core.builtins.session.internal import MessageSession
     from core.constants import WaitCancelException
 
@@ -2977,7 +2902,6 @@ async def _test_wait_reply_delete_failure_does_not_mask_cancellation():
 
 
 async def _test_wait_task_follows_sender_union_merge():
-    """Sender Union 改为全新 ID 后，原物理账号仍须命中自己登记的 waiter。"""
     target_id = "WAITMERGES|Group|1"
     sender_a = "WAITMERGES|A"
     sender_b = "WAITMERGES|B"
@@ -3006,7 +2930,6 @@ async def _test_wait_task_follows_sender_union_merge():
 
 
 async def _test_wait_task_follows_sender_unbind_without_old_owner_takeover():
-    """被拆出的账号保留 waiter，留在旧 Sender Union 的账号不得接管。"""
     target_id = "WAITUNBINDS|Group|1"
     sender_a = "WAITUNBINDS|A"
     sender_b = "WAITUNBINDS|B"
@@ -3039,7 +2962,6 @@ async def _test_wait_task_follows_sender_unbind_without_old_owner_takeover():
 
 
 async def _test_wait_task_follows_target_merge_and_current_channel():
-    """Target merge 后跟随物理场景；只有随后明确同通道的 sibling 才能共享 waiter。"""
     target_a = "WAITMERGETA|Group|1"
     target_b = "WAITMERGETB|Group|2"
     sender_id = "WAITMERGET|USER"
@@ -3085,7 +3007,6 @@ async def _test_wait_task_follows_target_merge_and_current_channel():
 
 
 async def _test_wait_task_follows_target_unbind_without_old_channel_takeover():
-    """被拆出的物理场景保留 waiter，旧 Target Union／channel 不得接管。"""
     target_a = "WAITUNBINDTA|Group|1"
     target_b = "WAITUNBINDTB|Group|2"
     sender_id = "WAITUNBINDT|USER"
@@ -3119,7 +3040,6 @@ async def _test_wait_task_follows_target_unbind_without_old_channel_takeover():
 
 
 async def _test_wait_task_follows_target_rechannel_without_old_channel_takeover():
-    """物理场景重新分配通道后，all_ waiter 也应跟随它而不是留在旧通道。"""
     target_a = "WAITCHANNELA|Group|1"
     target_b = "WAITCHANNELB|Group|2"
     sender_id = "WAITCHANNEL|USER"
@@ -3152,7 +3072,6 @@ async def _test_wait_task_follows_target_rechannel_without_old_channel_takeover(
 
 
 async def _test_reply_wait_is_scoped_to_physical_platform_context():
-    """同现实通道的另一平台即使 message_id 碰撞，也不得命中本平台 wait_reply。"""
     target_a = "WAITREPLYSA|Group|1"
     target_b = "WAITREPLYSB|Group|2"
     sender_a = "WAITREPLYSA|USER"
@@ -3196,7 +3115,6 @@ async def _test_reply_wait_is_scoped_to_physical_platform_context():
 
 
 async def _test_wait_task_physical_index_survives_refresh_after_topology_change():
-    """等待会话刷新到新 Union／channel 后，set_task_reply 与 remove 仍须命中稳定 bucket。"""
     target_a = "WAITREFRESHA|Group|1"
     target_b = "WAITREFRESHB|Group|2"
     sender_a = "WAITREFRESHA|USER"
@@ -3230,7 +3148,6 @@ async def _test_wait_task_physical_index_survives_refresh_after_topology_change(
 
 
 async def _test_task_bg_check_timeout():
-    """测试 SessionTaskManager.bg_check() 超时处理"""
     try:
         SessionTaskManager._task_list.clear()
 
@@ -3261,7 +3178,6 @@ async def _test_task_bg_check_timeout():
 
 
 async def _test_task_remove_prunes_indexes():
-    """等待完成后应释放 MessageSession 及空的父级索引。"""
     try:
         SessionTaskManager._task_list.clear()
         msg = MockMessageSession("~test")
@@ -3276,7 +3192,6 @@ async def _test_task_remove_prunes_indexes():
 
 
 async def _test_inactive_task_does_not_capture_message():
-    """已完成但尚待等待协程回收的任务不得被下一条消息覆盖结果。"""
     try:
         SessionTaskManager._task_list.clear()
         waiting = MockMessageSession("~test")
@@ -3298,7 +3213,6 @@ async def _test_inactive_task_does_not_capture_message():
 
 
 async def _test_one_message_completes_only_one_wait_task():
-    """同一用户存在多段交互时，一条输入只能推进最早登记的一段。"""
     SessionTaskManager._task_list.clear()
     first = MockMessageSession("first prompt")
     await first.async_init("first prompt")

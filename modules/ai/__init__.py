@@ -167,7 +167,6 @@ async def _(
 
 
 def _build_llm_billing_items(llm_info: dict) -> list:
-    """Build the billing message items for a single LLM (used by ``llm list --price`` and ``llm price``)."""
     items = []
     billing_config = llm_info.get("billing") if isinstance(llm_info.get("billing"), dict) else {}
     billing_type = billing_config.get("type", "token")

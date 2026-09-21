@@ -1,7 +1,4 @@
-"""命令纠错建议：通过 ``parser.command.unmatched`` 返回 RecoveryProposal。
-
-确认与重解析由核心恢复协调器完成；本模块只做候选计算，不跨 120s wait 持有草稿。
-"""
+"""命令纠错建议：通过 ``parser.command.unmatched`` 返回 RecoveryProposal。"""
 
 from __future__ import annotations
 
@@ -224,7 +221,6 @@ def suggest_correction(msg, modules, command_first_word) -> RecoveryProposal | N
 
 @typo.hook(point=HookPoint.COMMAND_UNMATCHED, priority=50, name="suggest", server_scope=True)
 async def _(ctx: "Bot.ParserHookContext"):
-    """未匹配模块时提供纠错建议。用户偏好关闭时跳过。"""
     if ctx.data.get("unmatched_kind") != "module" or ctx.data.get("recovery_stale"):
         return None
     if not ctx.msg.session_info.sender_union_info.sender_data.get("typo_check", True):

@@ -20,16 +20,12 @@ DF_QUERY_URL = "https://www.diving-fish.com/api/chunithmprober/query/player"
 
 
 class _SessionInfo:
-    """只带发送者标识与前缀的会话信息替身。"""
-
     def __init__(self, sender_id: str = "u|1"):
         self.sender_id = sender_id
         self.prefixes = ["~"]
 
 
 class _MessageSession:
-    """只带会话信息的消息会话替身；取数过程不应真的收发消息。"""
-
     def __init__(self, sender_id: str = "u|1"):
         self.session_info = _SessionInfo(sender_id)
 
@@ -41,7 +37,6 @@ class _MessageSession:
 
 
 def _df_record(**overrides) -> dict:
-    """给出一条水鱼公开端点风格的成绩。"""
     record = {
         "mid": 1,
         "title": "Song",
@@ -56,7 +51,6 @@ def _df_record(**overrides) -> dict:
 
 
 async def _test_map_df_chunithm_record():
-    """水鱼的成绩按难度标级补出难度序号，接口未给难度序号时才回退"""
     master = map_df_chunithm_record(_df_record(fc="alljustice"))
     ultima = map_df_chunithm_record({"id": 456, "level_label": "Ultima"})
     explicit = map_df_chunithm_record({"mid": 789, "level_label": "Expert", "level_index": 1})
@@ -80,7 +74,6 @@ async def _test_map_df_chunithm_record():
 
 
 async def _test_df_username_mapping():
-    """公开端点返回的两段成绩应换算为绘图所读的形状，玩家名从 username 取"""
     captured = {}
 
     async def fake_post(url, data=None, **kwargs):
@@ -109,7 +102,6 @@ async def _test_df_username_mapping():
 
 
 async def _test_df_username_legacy_records():
-    """旧版公开端点只给 b30 与 r10 时，仍应填出两段成绩而不是空列表"""
 
     async def fake_post(url, data=None, **kwargs):
         return {
@@ -127,7 +119,6 @@ async def _test_df_username_legacy_records():
 
 
 async def _test_df_record_route():
-    """中二水鱼取分按查询对象分流：给了用户名走公开端点，否则走 OAuth 端点"""
     calls = []
     bind = DivingProberBindInfo(union_id="u", refresh_token="token", subject=None)
 
@@ -155,7 +146,6 @@ async def _test_df_record_route():
 
 
 async def _test_lxns_record_route():
-    """中二落雪取分按查询对象分流：给好友码走开发者端点，配了密钥则用资料里的好友码"""
     calls = []
     bind = LxnsProberBindInfo(union_id="u", refresh_token="token")
 
@@ -202,7 +192,6 @@ async def _test_lxns_record_route():
 
 
 async def _test_lxns_developer_required():
-    """未配置开发者密钥时按好友码查询应直接报错，而不是发出注定被拒的请求"""
     with patch.object(chunithm_apidata, "LXNS_DEVELOPER_ENABLED", False):
         try:
             await get_record_lx_dev(_MessageSession(), "1234567890", use_cache=False)
@@ -212,7 +201,6 @@ async def _test_lxns_developer_required():
 
 
 async def _test_lxns_developer_urls():
-    """中二的成绩也应落在按好友码寻址的开发者端点上"""
     return (
         chunithm_apidata.LXNS_CHUNITHM_PLAYER_BY_FRIEND_CODE_URL.format(friend_code=1234567890)
         == "https://maimai.lxns.net/api/v0/chunithm/player/1234567890"

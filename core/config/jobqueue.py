@@ -37,11 +37,7 @@ def _is_empty_config_value(value: object) -> bool:
 
 
 def bootstrap_jobqueue_config() -> tuple[str, ...]:
-    """在子进程启动前生成并持久化缺失的 JobQueue 共享配置。
-
-    正常启动只应在 ``pre_init`` 的单写进程中调用本函数。返回值只包含生成的字段名，
-    不包含实际密钥，便于调用方记录安全的启动日志。
-    """
+    """在子进程启动前生成并持久化缺失的 JobQueue 共享配置。"""
     generated = []
     if _is_empty_config_value(JobQueueConfig.jobqueue_node_id):
         CFGManager.edit_write("jobqueue_node_id", str(uuid4()), str, table_name="jobqueue")

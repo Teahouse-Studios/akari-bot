@@ -48,7 +48,6 @@ qq_account = None
 
 
 async def _tos_report(sender: str, target: str, reason: str, banned: bool = False):
-    """经 Server 具名 hook 上报；bot 进程不导入模块实现，失败仅记录日志。"""
     try:
         return await ServerAPI.trigger_hook(
             "tos.report",

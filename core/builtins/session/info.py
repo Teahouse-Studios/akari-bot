@@ -1,9 +1,4 @@
-"""
-会话信息模块 - 定义和管理消息会话的信息和上下文。
-
-该模块定义了 SessionInfo 类，用于承载一个消息会话的所有相关信息，
-包括场景、用户、平台特性、权限信息等。
-"""
+"""会话信息模块 - 定义和管理消息会话的信息和上下文。"""
 
 from __future__ import annotations
 
@@ -29,9 +24,6 @@ default_locale = BaseConfig.default_locale
 
 
 async def _none():
-    """
-    并发解析时用于占位的空协程，使 gather 的两路返回值位置保持固定。
-    """
     return None
 
 
@@ -377,28 +369,18 @@ class SessionInfo:
         self.target_channel_id = bind.channel_id if bind else 1
 
     def get_common_target_id(self) -> str:
-        """
-        获取场景的常用 ID。
-        """
+        """获取场景的常用 ID。"""
         return self.target_id.split("|")[-1]
 
     def get_common_sender_id(self) -> str:
-        """
-        获取用户的常用 ID。
-        """
+        """获取用户的常用 ID。"""
         if self.sender_id:
             return self.sender_id.split("|")[-1]
         return ""
 
     @property
     def channel_key(self) -> str:
-        """
-        现实场景的标识，形如 ``UTID|8B1F...|1``。
-
-        union 只表示若干平台场景共享同一份数据，并不等于它们是现实中的同一个场景；
-        组内 ``target_channel_id`` 相同才是，而默认各占一号即默认谁也不与谁合并。
-        冷却、游戏状态、等待任务这类「同一个现实场景内共享」的内存态须按此建键：
-        只按 union 建键会把仅仅共享配置、实为不同现实场景的双方错误地并作一处。
+        """现实场景的标识，形如 ``UTID|8B1F...|1``。
 
         :return: union ID 与消息通道号拼成的键。
         """
@@ -425,16 +407,12 @@ class SessionInfo:
 
 @define
 class FetchedSessionInfo(SessionInfo):
-    """
-    主动获取的消息会话信息。
-    """
+    """主动获取的消息会话信息。"""
 
 
 @define
 class ModuleHookContext:
-    """
-    模块任务上下文。主要用于传递模块任务的参数。
-    """
+    """模块任务上下文。主要用于传递模块任务的参数。"""
 
     args: dict
     session_info: SessionInfo | None = None

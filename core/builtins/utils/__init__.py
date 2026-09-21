@@ -1,9 +1,4 @@
-"""
-内置工具模块 - 提供命令前缀和确认词等系统级配置。
-
-该模块从配置文件中加载命令前缀和确认词的配置项，
-并对其进行去重和处理，供系统其他部分使用。
-"""
+"""内置工具模块 - 提供命令前缀和确认词等系统级配置。"""
 
 from core.config.base import CoreConfig
 from core.constants.default import (

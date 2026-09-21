@@ -53,11 +53,7 @@ RETIRED_ALLOWED_MODULES = {"merge"}
 
 
 def parse_retired_routes(entries: list) -> dict[str, str | None]:
-    """
-    把 ``"源 -> 目标"`` 形式的配置解析为映射。
-
-    只写源时目标为 None，表示该客户端退役但不提供迁移去处。格式错误的项一律跳过并记录警告，
-    不使解析失败：退役是运营配置，一处笔误不应拖垮整个实例的启动。
+    """把 ``"源 -> 目标"`` 形式的配置解析为映射。
 
     :param entries: 配置中的原始条目。
     :return: ``源客户端 → 目标客户端`` 的映射，目标可能为 None。
@@ -92,12 +88,7 @@ RETIRED_TARGETS: list[str] = []
 
 
 def reload_retired_routes() -> None:
-    """
-    重新解析迁移关系配置。
-
-    解析结果在模块导入时生成一次，命令装饰器的 ``available_for`` 亦在导入期取用，
-    因此运行期改动配置须重启才会完全生效。此函数供测试重置内存态。
-    """
+    """重新解析迁移关系配置。"""
     global RETIRED_ROUTES
     RETIRED_ROUTES = parse_retired_routes(CoreConfig.retired_clients)
     # 就地改写而非重新赋值：装饰器可能已持有这两个列表对象的引用。
@@ -121,10 +112,7 @@ def is_retired_client(client_name: str | None) -> bool:
 
 
 def is_retired_target(target_id: str | None) -> bool:
-    """
-    判断一个场景是否属于已退役的客户端。
-
-    场景 ID 形如 ``QQ|Group|12345``，取首段即客户端名称。
+    """判断一个场景是否属于已退役的客户端。
 
     :param target_id: 场景 ID。
     :return: 是否属于已退役客户端。
@@ -147,11 +135,7 @@ def is_module_allowed_when_retired(module_name: str | None) -> bool:
 
 
 def is_merge_route_allowed(source_client: str | None, current_client: str | None) -> bool:
-    """
-    判断一枚迁移码能否在当前客户端兑换。
-
-    命令级 ``available_for`` 只能表达「这个平台是某条迁移关系的目标」，表达不了「这枚迁移码该去哪」。
-    配置多条关系时，若不校验来源，甲关系签发的迁移码可在乙关系的目标处兑换。
+    """判断一枚迁移码能否在当前客户端兑换。
 
     :param source_client: 签发迁移码的客户端。
     :param current_client: 兑换所在的客户端。
@@ -164,11 +148,7 @@ def is_merge_route_allowed(source_client: str | None, current_client: str | None
 
 
 def filter_retired_targets(target_ids: list[str]) -> list[str]:
-    """
-    从推送目标列表中滤除属于已退役客户端的场景。
-
-    退役客户端停止一切主动推送。在推送目标解析处统一滤除，即可覆盖 RSS、wikilog、schedule
-    等全部推送模块，无须逐个模块改动。
+    """从推送目标列表中滤除属于已退役客户端的场景。
 
     :param target_ids: 待推送的场景 ID 列表。
     :return: 滤除退役场景后的列表。
@@ -177,12 +157,7 @@ def filter_retired_targets(target_ids: list[str]) -> list[str]:
 
 
 def should_yield_channel(target_id: str, channels: dict[str, int], channel_id: int) -> bool:
-    """
-    判断一个退役场景是否应当把消息让给同通道内的其他场景处理。
-
-    退役场景不执行白名单之外的命令，若由它抢到认领，同通道的其他场景会因避让而放弃处理，
-    该场景内将无人响应。故只要同通道存在非退役场景，退役场景一律让位。
-    通道内只剩自身时照常认领，迁移路径不致中断。
+    """判断一个退役场景是否应当把消息让给同通道内的其他场景处理。
 
     :param target_id: 当前场景 ID。
     :param channels: 同组内「场景 ID → 通道号」的映射。
@@ -195,17 +170,6 @@ def should_yield_channel(target_id: str, channels: dict[str, int], channel_id: i
 
 
 async def is_yielding_retired_session(target_id: str, union_id: str, channel_id: int) -> bool:
-    """
-    判断一个场景是否为正在让位的退役场景。
-
-    :func:`should_yield_channel` 的查库版本，供手边没有通道映射的介入点调用。非退役场景
-    占绝大多数，故先按场景 ID 短路，免得为每条消息白查一次库。
-
-    :param target_id: 当前场景 ID。
-    :param union_id: 当前场景所属的 union ID。
-    :param channel_id: 当前场景的通道号。
-    :return: 是否为正在让位的退役场景。
-    """
     if not is_retired_target(target_id) or not union_id:
         return False
     channels = await TargetUnionBind.list_channels(union_id)
@@ -213,11 +177,6 @@ async def is_yielding_retired_session(target_id: str, union_id: str, channel_id:
 
 
 async def _load_notified() -> dict[str, str]:
-    """
-    加载已发送公告的场景记录，首次调用时从存储读入并转为字典。
-
-    :return: ``场景 ID → 发送时间`` 的映射。
-    """
     global _notified
     if _notified is not None:
         return _notified
@@ -236,9 +195,7 @@ async def _load_notified() -> dict[str, str]:
 
 
 def reset_notified_cache() -> None:
-    """
-    清空已发送公告的内存记录，使下次判断重新从存储加载。仅供测试使用。
-    """
+    """清空已发送公告的内存记录，使下次判断重新从存储加载。仅供测试使用。"""
     global _notified
     _notified = None
 
@@ -279,11 +236,7 @@ async def mark_notified(target_id: str) -> None:
 
 
 def read_notice(client_name: str, locale: str, base_path: Path | None = None) -> str | None:
-    """
-    读取某个已退役客户端的公告文案。
-
-    按「当前语言 → 基础语言 → 目录内任意文件」的顺序回退。目录缺失或为空时返回 None，
-    由调用方落到通用兜底文案，避免部署方漏放文件时机器人一声不吭。
+    """读取某个已退役客户端的公告文案。
 
     :param client_name: 客户端名称，用于定位目录，匹配时转为小写。
     :param locale: 当前会话的语言。
@@ -312,9 +265,7 @@ def read_notice(client_name: str, locale: str, base_path: Path | None = None) ->
 
 
 def reset_pending_cache() -> None:
-    """
-    清空待推送队列的内存记录。仅供测试使用。
-    """
+    """清空待推送队列的内存记录。仅供测试使用。"""
     pending_notices.clear()
 
 
@@ -340,17 +291,6 @@ async def should_enqueue_notice(target_id: str) -> bool:
 
 
 def build_notice(client_name: str, locale: str, prefix: str) -> list:
-    """
-    构造一条退役公告的消息链。
-
-    部署方的文案可在其中书写 ``{I18N:key}`` 引用既有本地化键，故交由 ``t_str`` 处理；
-    公告须禁用玩笑，否则文字会被打乱，一份写有停机日期的公告因此失真。
-
-    :param client_name: 客户端名称。
-    :param locale: 会话语言。
-    :param prefix: 会话的首选命令前缀，供兜底文案使用。
-    :return: 消息链。
-    """
     content = read_notice(client_name, locale)
     if not content:
         return [
@@ -360,15 +300,6 @@ def build_notice(client_name: str, locale: str, prefix: str) -> list:
 
 
 async def _deliver_notice(session_info, delay: int) -> None:
-    """
-    等待指定时长后向场景推送退役公告。
-
-    推送成功才记录已发送：失败多半意味着场景已永久失效（群解散、机器人被移出），
-    此时不重试，留待进程重启后由该场景的下条消息重新排队。
-
-    :param session_info: 目标会话信息。
-    :param delay: 延迟秒数。
-    """
     target_id = session_info.target_id
     try:
         await asyncio.sleep(delay)
@@ -390,7 +321,6 @@ async def _deliver_notice(session_info, delay: int) -> None:
 
 
 def _notice_task_done(task: asyncio.Task, target_id: str) -> None:
-    """Release queue state and retrieve failures even if a task was cancelled before its first step."""
     _notice_tasks.discard(task)
     pending_notices.discard(target_id)
     if task.cancelled():
@@ -401,7 +331,6 @@ def _notice_task_done(task: asyncio.Task, target_id: str) -> None:
 
 
 def _create_notice_task(awaitable, target_id: str) -> asyncio.Task:
-    """Create and retain one delayed retired-notice delivery task."""
     try:
         task = asyncio.create_task(awaitable, name=f"retired-notice-{target_id}")
     except BaseException:

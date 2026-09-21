@@ -295,7 +295,6 @@ async def _test_final_media_group_attaches_markup_by_edit():
 
 
 async def _test_unavailable_media_elements_are_skipped():
-    """图片/音频底层文件缺失时不产生媒体，仅保留文本操作。"""
     chain = MessageChain.assign(
         [Plain("hello"), Image("missing-image-fixture.png"), Audio("missing-audio-fixture.mp3")]
     )

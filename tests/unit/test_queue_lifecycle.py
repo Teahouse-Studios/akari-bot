@@ -17,11 +17,10 @@ from core.tester.timing import TIME_SCALE
 
 
 class QueueAuditRuntime(JobQueueBase):
-    """为直接传输测试提供显式数据库后端。"""
+    pass
 
 
 async def _test_cleanup_keeps_active_tasks():
-    """测试定时清理 - 只删除过期终态任务，不删除仍可执行的活动任务。"""
     old = datetime.now(UTC) - timedelta(minutes=90)
     task_ids = {}
     for status in ("pending", "processing", "done", "failed", "timeout"):
@@ -45,7 +44,6 @@ async def _test_cleanup_keeps_active_tasks():
 
 
 async def _test_cleanup_marks_stale_active_timeout():
-    """测试定时清理 - 等待型活动任务标记 timeout，免回包活动任务直接删除。"""
     old = datetime.now(UTC) - timedelta(hours=3)
     task_ids = []
     for status in ("pending", "processing"):
@@ -66,7 +64,6 @@ async def _test_cleanup_marks_stale_active_timeout():
 
 
 async def _test_cancelled_fire_and_forget_task_is_deleted():
-    """测试处理取消 - 无需回包的任务直接删除，且不会恢复为 pending 后重试。"""
 
     class AuditQueue(JobQueueBase):
         pass
@@ -97,7 +94,6 @@ async def _test_cancelled_fire_and_forget_task_is_deleted():
 
 
 async def _test_completed_task_is_deleted_after_response_consumption():
-    """测试处理完成 - 等待型结果保留至调用方读取，并在读取后立即删除。"""
 
     class AuditQueue(JobQueueBase):
         pass
@@ -125,7 +121,6 @@ async def _test_completed_task_is_deleted_after_response_consumption():
 
 
 async def _test_completed_fire_and_forget_task_is_deleted():
-    """测试处理完成 - 无需回包的任务不写入终态结果。"""
 
     class AuditQueue(JobQueueBase):
         pass
@@ -141,7 +136,6 @@ async def _test_completed_fire_and_forget_task_is_deleted():
 
 
 async def _test_concurrent_consumers_claim_once():
-    """测试任务领取 - 两个消费者读到同一 pending 快照时仍只执行一次。"""
 
     class AuditQueue(JobQueueBase):
         name = "QUEUE-AUDIT-INTERNAL"
@@ -200,7 +194,6 @@ async def _test_concurrent_consumers_claim_once():
 
 
 async def _test_database_claim_batch_is_bounded():
-    """数据库积压不得在单轮轮询中触发无上限的领取写入。"""
     target = "QUEUE-BOUNDED-CLAIM"
     task_ids = [await JobQueuesTable.add_task(target, "bounded", {"index": index}) for index in range(3)]
     try:
@@ -214,7 +207,6 @@ async def _test_database_claim_batch_is_bounded():
 
 
 async def _test_trigger_hook_result_is_not_overwritten():
-    """trigger_hook 应由统一处理流程写回一次，不能先写真实值又被空字典覆盖。"""
     request = QueueAuditRuntime._request(
         "QUEUE-HOOK-AUDIT",
         ServerAPI.trigger_hook.name,
@@ -238,7 +230,6 @@ async def _test_trigger_hook_result_is_not_overwritten():
 
 
 async def _test_fire_and_forget_finish_only_deletes_claimed_task():
-    """免回包完成操作必须限定 processing，避免异常调用删除尚未领取的任务。"""
     task_id = str(await JobQueuesTable.add_task("QUEUE-FINISH-GUARD", "guard", {}))
     await JobQueuesTable.filter(task_id=task_id).update(expects_response=False)
     request = QueueAuditRuntime._request("QUEUE-FINISH-GUARD", "guard", {}, timeout=2, expects_response=False)

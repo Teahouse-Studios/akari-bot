@@ -21,15 +21,7 @@ httpx 的默认超时为 5 秒，而 requests 默认不设超时。文件下载�
 
 
 def checkSessionToken(sessionToken: str, _raise: bool = True) -> bool:
-    """检查 sessionToken 格式是否合法
-
-    参数:
-        sessionToken (str): 玩家的 sessionToken
-        _raise (bool): 是否主动引发错误，若为 False，则会在检测到不合法时返回 False。默认为 True
-
-    返回:
-        (bool): sessionToken 是否合法
-    """
+    """检查 sessionToken 格式是否合法"""
     # 判断 sessionToken 是否为空
     if sessionToken == "" or sessionToken is None:
         if _raise:
@@ -61,15 +53,7 @@ def checkSessionToken(sessionToken: str, _raise: bool = True) -> bool:
 
 
 def unzipFile(zip_data: bytes, file_name: Optional[str] = None) -> Dict[str, bytes]:
-    """读取压缩包并解压文件数据
-
-    参数:
-        zip_data (bytes): 压缩包数据
-        file_name (str | None): 文件名，用于解压单个文件，为 None 时解压所有文件，默认为 None
-
-    返回:
-        (dict[str, bytes]): 压缩包文件数据
-    """
+    """读取压缩包并解压文件数据"""
     files_dict = {}
     # 打开压缩包 (存档本身是一个 zip 压缩包)
     with ZipFile(BytesIO(zip_data)) as zip_file:
@@ -101,14 +85,6 @@ def unzipFile(zip_data: bytes, file_name: Optional[str] = None) -> Dict[str, byt
 
 
 def zipSave(files_dict: Dict[str, Any]) -> bytes:
-    """创建压缩包
-
-    参数:
-        files_dict (dict[str, Any]): 压缩包文件数据
-
-    返回:
-        (bytes): 压缩包数据
-    """
     with BytesIO() as file:
         with ZipFile(file, "w", compression=ZIP_DEFLATED) as zip_file:
             for filename, filedata in files_dict.items():
@@ -120,15 +96,6 @@ def zipSave(files_dict: Dict[str, Any]) -> bytes:
 
 
 def addDifficulty(record_data: dict, difficulty: Dict[str, list]) -> Dict[str, dict]:
-    """为所有成绩添加谱面定数信息
-
-    参数:
-        record_data (dict): gameRecord/存档 反序列化数据
-        difficulty (dict[str, list]): 歌曲谱面定数数据
-
-    返回:
-        (dict[str, dict]): 添加谱面定数信息后的 gameRecord/存档 反序列化数据
-    """
     # 各难度的映射字典
     diff_list = {"EZ": 0, "HD": 1, "IN": 2, "AT": 3, "Legacy": 4}
 
@@ -163,16 +130,7 @@ def addDifficulty(record_data: dict, difficulty: Dict[str, list]) -> Dict[str, d
 
 
 def countRks(record_data: dict, difficulty: Dict[str, list], onlyCountRks: bool = False) -> Dict[str, dict]:
-    """为反序列化后的 gameRecord 中的每条成绩添加难度定数并计算等效 rks
-
-    参数:
-        record_data (dict): gameRecord/存档 反序列化数据
-        difficulty (dict): 歌曲定数数据
-        onlyCountRks (bool): 是否仅计算 rks，默认为 False，如果为 True 则只会计算等效 rks 而不添加谱面定数
-
-    返回:
-        (dict): 处理后的 gameRecord/存档 反序列化数据
-    """
+    """为反序列化后的 gameRecord 中的每条成绩添加难度定数并计算等效 rks"""
     if not onlyCountRks:
         record_data = addDifficulty(record_data, difficulty)
 
@@ -203,16 +161,7 @@ def countRks(record_data: dict, difficulty: Dict[str, list], onlyCountRks: bool 
 
 
 def getBest(record_data: dict, phi_count: int = 3, best_count: int = 27) -> Dict[str, List[dict]]:
-    """获取 best 成绩
-
-    参数:
-        record_data (dict): gameRecord/存档 反序列化数据
-        phi_count (int): 要返回 phi 榜的前几条成绩，默认为 3
-        best_count (int): 要返回 best 榜的前几条成绩，默认为 27
-
-    返回:
-        (dict[str, list[dict]]): best 列表
-    """
+    """获取 best 成绩"""
     all_record = []  # 存储所有打歌成绩记录
 
     if record_data.get("gameRecord") is not None and isinstance(record_data["gameRecord"], dict):
@@ -250,14 +199,6 @@ def getBest(record_data: dict, phi_count: int = 3, best_count: int = 27) -> Dict
 
 
 def getB19(records: dict) -> List[dict]:
-    """获取 b19 (现在 Phigros 已不使用 b19 进行计算 rks 了，请使用 `getB30()`)
-
-    参数:
-        records (dict): gameRecord/存档 反序列化数据
-
-    返回:
-        (list[dict]): b19 列表
-    """
     best_dict = getBest(records, 1, 19)
     phi, best = best_dict["phi"], best_dict["best"]
 
@@ -266,14 +207,6 @@ def getB19(records: dict) -> List[dict]:
 
 
 def getB30(records: dict):
-    """获取 b30
-
-    参数:
-        records (dict): gameRecord/存档 反序列化数据
-
-    返回:
-        (list[dict]): b30 列表
-    """
     best_dict = getBest(records, 3, 27)
     phi, best = best_dict["phi"], best_dict["best"]
 
@@ -282,14 +215,7 @@ def getB30(records: dict):
 
 
 def decryptSave(save_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    """反序列化存档原始数据
-
-    参数:
-        save_dict (dict[str, Any]): 存档原始数据
-
-    返回:
-        (dict[str, dict]): 存档反序列化数据
-    """
+    """反序列化存档原始数据"""
     file_head = {}  # 存储文件头数据
     # 获取每个文件的文件头 (起始第一个字节)
     for key, value in save_dict.items():
@@ -308,14 +234,6 @@ def decryptSave(save_dict: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
 
 
 def encryptSave(save_dict: Dict[str, Any]):
-    """序列化存档数据
-
-    参数:
-        save_dict (dict[str, dict]): 存档反序列化数据
-
-    返回:
-        (dict[str, bytes]): 存档序列化数据
-    """
     file_head = getFileHead(save_dict)
     structure_list = headGetStructure(file_head)
 
@@ -329,24 +247,8 @@ def encryptSave(save_dict: Dict[str, Any]):
 
 
 def parseSaveDict(save_data: bytes):
-    """反序列化存档原始数据为存档字典数据
-
-    参数:
-        save_data (bytes): 存档原始数据
-
-    返回:
-        (dict[str, dict[str, Any]]): 存档反序列化数据
-    """
     return decryptSave(unzipFile(save_data))
 
 
 def buildSaveDict(save_dict: Dict[str, dict]):
-    """序列化存档字典数据为存档原始数据
-
-    参数:
-        save_dict (dict[str, dict]): 存档反序列化数据
-
-    返回:
-        (bytes): 存档原始数据
-    """
     return zipSave(encryptSave(save_dict))

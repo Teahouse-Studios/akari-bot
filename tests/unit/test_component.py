@@ -5,7 +5,6 @@ from core.types import Module
 
 
 def _test_bind_module_create():
-    """Bind.Module: 创建实例"""
     try:
         from core.component import Bind
 
@@ -16,7 +15,6 @@ def _test_bind_module_create():
 
 
 def _test_module_assign_basic():
-    """Module.assign: 基本创建"""
     try:
         m = Module.assign(module_name="test_mod", alias=None, recommend_modules=None, developers=None)
         return m.module_name == "test_mod" and m.base is False and m.load is True
@@ -25,7 +23,6 @@ def _test_module_assign_basic():
 
 
 def _test_module_assign_alias_str():
-    """Module.assign: 字符串别名应转为字典"""
     try:
         m = Module.assign(module_name="test_mod", alias="tm", recommend_modules=None, developers=None)
         return m.alias == {"tm": "test_mod"}
@@ -34,7 +31,6 @@ def _test_module_assign_alias_str():
 
 
 def _test_module_assign_alias_list():
-    """Module.assign: 列表别名应转为字典"""
     try:
         m = Module.assign(module_name="test_mod", alias=["t1", "t2"], recommend_modules=None, developers=None)
         return m.alias == {"t1": "test_mod", "t2": "test_mod"}
@@ -43,7 +39,6 @@ def _test_module_assign_alias_list():
 
 
 def _test_module_assign_alias_dict():
-    """Module.assign: 字典别名保持不变"""
     try:
         m = Module.assign(module_name="test_mod", alias={"tm": "test_mod"}, recommend_modules=None, developers=None)
         return m.alias == {"tm": "test_mod"}
@@ -52,7 +47,6 @@ def _test_module_assign_alias_dict():
 
 
 def _test_module_assign_flags():
-    """Module.assign: 标志位应正确设置"""
     try:
         m = Module.assign(
             module_name="test_mod",
@@ -70,7 +64,6 @@ def _test_module_assign_flags():
 
 
 def _test_module_assign_available_for():
-    """Module.assign: available_for 应转为列表"""
     try:
         m = Module.assign(
             module_name="test_mod", alias=None, recommend_modules=None, developers=None, available_for="QQ"
@@ -81,7 +74,6 @@ def _test_module_assign_available_for():
 
 
 def _test_module_to_dict():
-    """Module.to_dict: 应返回完整字典"""
     try:
         m = Module.assign(
             module_name="test_mod", alias=None, recommend_modules=None, developers=None, desc="Test module"
@@ -93,7 +85,6 @@ def _test_module_to_dict():
 
 
 def _test_module_command_matches_init():
-    """Module: command_list 应初始化为空"""
     try:
         m = Module.assign(module_name="test_mod", alias=None, recommend_modules=None, developers=None)
         return len(m.command_list.set) == 0
@@ -102,7 +93,6 @@ def _test_module_command_matches_init():
 
 
 def _test_module_bot_permission_requirements():
-    """模块应合并声明权限与 event/regex/rss 的隐含权限。"""
     try:
         m = Module.assign(
             module_name="test_mod",
@@ -124,7 +114,6 @@ def _test_module_bot_permission_requirements():
 
 
 def _test_module_regex_matches_init():
-    """Module: regex_list 应初始化为空"""
     try:
         m = Module.assign(module_name="test_mod", alias=None, recommend_modules=None, developers=None)
         return len(m.regex_list.set) == 0

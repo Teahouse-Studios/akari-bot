@@ -18,7 +18,6 @@ class WikiLogTargetSetInfo(DBModel):
         table = f"{table_prefix}target_set_info"
 
     async def _mutate_infos(self, mutation) -> bool:
-        """锁住所属 Union 与模块行后，基于最新的嵌套配置执行修改。"""
         async with union_mutation():
             async with in_transaction("default") as connection:
                 target = await (
@@ -144,9 +143,7 @@ class WikiLogTargetSetInfo(DBModel):
 
     @classmethod
     async def return_all_data(cls):
-        """
-        返回全部配置，键为场景 union ID（推送时需展开为该 union 下的全部平台场景 ID）。
-        """
+        """返回全部配置，键为场景 union ID（推送时需展开为该 union 下的全部平台场景 ID）。"""
         all_data = await cls.all()
         data_d = {x.union_id: x.infos for x in all_data}
         return data_d

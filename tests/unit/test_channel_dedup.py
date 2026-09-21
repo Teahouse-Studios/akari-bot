@@ -10,9 +10,6 @@ from modules.core.hooks.routing import CHANNEL_DEDUP_WINDOW, channel_claim_cache
 
 
 async def _fake_msg(target_id: str, trigger: str):
-    """
-    构造一个满足通道认领 hook 所需的最小会话。
-    """
     target_union_info = await TargetUnionInfo.resolve_union(target_id)
     return SimpleNamespace(
         session_info=SimpleNamespace(
@@ -32,7 +29,6 @@ async def _claim(msg) -> bool:
 
 
 async def _test_alone_in_channel_never_claims():
-    """测试消息通道 - 通道内仅有自身时不作认领"""
     try:
         msg = await _fake_msg("CHANTEST|Group|alone", "help")
         # 连续两次均不应判定为重复，否则单个场景会丢弃自身的消息。
@@ -43,7 +39,6 @@ async def _test_alone_in_channel_never_claims():
 
 
 async def _test_same_channel_claims_once():
-    """测试消息通道 - 同通道内由先到者认领，后到者避让"""
     try:
         union = await TargetUnionInfo.resolve_union("CHANTEST|Group|dup1")
         await union.bind_id("CHANTEST|Group|dup2")
@@ -59,7 +54,6 @@ async def _test_same_channel_claims_once():
 
 
 async def _test_repeat_from_same_session_not_duplicate():
-    """测试消息通道 - 同一场景在时间窗内重发不判定为重复"""
     try:
         union = await TargetUnionInfo.resolve_union("CHANTEST|Group|rep1")
         await union.bind_id("CHANTEST|Group|rep2")
@@ -79,7 +73,6 @@ async def _test_repeat_from_same_session_not_duplicate():
 
 
 async def _test_outside_window_not_duplicate():
-    """测试消息通道 - 超出时间窗的相同文本不判定为重复"""
     try:
         union = await TargetUnionInfo.resolve_union("CHANTEST|Group|win1")
         await union.bind_id("CHANTEST|Group|win2")
@@ -103,7 +96,6 @@ async def _test_outside_window_not_duplicate():
 
 
 async def _test_different_channel_not_duplicate():
-    """测试消息通道 - 同组但不同通道互不干扰"""
     try:
         union = await TargetUnionInfo.resolve_union("CHANTEST|Group|sep1")
         await union.bind_id("CHANTEST|Group|sep2")
@@ -119,7 +111,6 @@ async def _test_different_channel_not_duplicate():
 
 
 async def _test_channel_lookup_failure_stops_message():
-    """测试消息通道 - 查询失败时不得降级为未认领并继续执行"""
     msg = await _fake_msg("CHANTEST|Group|lookup-failed", "help")
     with patch.object(TargetUnionBind, "list_channels", new=AsyncMock(side_effect=RuntimeError("db failed"))):
         return await _claim(msg)

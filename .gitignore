@@ -70,6 +70,9 @@ generated_docs/*
 .claude/*
 CLAUDE.md
 
+# Cline
+.clinerules
+
 # Mimo Code
 .mimocode/*
 

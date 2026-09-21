@@ -119,7 +119,6 @@ async def _test_mixed_elements_fit_one_payload():
 
 
 async def _test_unavailable_media_elements_are_skipped():
-    """图片/音频底层文件缺失时不产生附件，仅保留文本。"""
     chain = MessageChain.assign(
         [Plain("hello"), Image("missing-image-fixture.png"), Audio("missing-audio-fixture.mp3")]
     )

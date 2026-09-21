@@ -16,7 +16,6 @@ wiki_allowlist_url = WikiConfig.wiki_allowlist_url
 
 @wiki.command("render <mode> {{I18N:wiki.help.render}}", required_admin=True)
 async def _(msg: Bot.MessageSession, mode: str):
-    """切换当前场景的 Wiki WebRender 行为。"""
     mode = mode.lower()
     aliases = {
         "button": WIKI_RENDER_MODE_BUTTON,

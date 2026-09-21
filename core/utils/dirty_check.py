@@ -1,7 +1,4 @@
-"""检查字符串是否合规，支持阿里云内容安全与自定义关键词过滤。
-
-使用阿里云后端前，请在配置文件中填写`check_access_key_id`和`check_access_key_secret`以便鉴权。
-"""
+"""检查字符串是否合规，支持阿里云内容安全与自定义关键词过滤。"""
 
 import asyncio
 import base64
@@ -148,12 +145,6 @@ def dirty_word_cache_namespace(backend: str) -> str:
 
 
 async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
-    """对文本列表执行阿里云内容安全审核。
-
-    :param texts: 待审核的文本列表。
-    :param confidence: 判定置信度阈值。
-    :returns: 与输入顺序一致的审核结果字典列表。
-    """
     cache_namespace = dirty_word_cache_namespace(ALIYUN_BACKEND)
 
     query_list = {}

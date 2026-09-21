@@ -1,7 +1,4 @@
-"""bots.web.api.policy 单元测试 - URL 审计名单与过滤词库接口。
-
-测试只操作临时目录，不触碰部署者真实的名单与词库文件。
-"""
+"""bots.web.api.policy 单元测试 - URL 审计名单与过滤词库接口。"""
 
 import inspect
 from pathlib import Path
@@ -17,8 +14,6 @@ from core.tester import Tester, func_case
 
 
 class FakeRequest:
-    """绕过 FastAPI 的最小请求替身，只提供接口用到的 json()。"""
-
     def __init__(self, body=None):
         self._body = body
 
@@ -29,12 +24,10 @@ class FakeRequest:
 
 
 def _endpoint(func):
-    """剥掉 slowapi 限流装饰层，直接取到接口实现。"""
     return inspect.unwrap(func)
 
 
 async def _call(call) -> tuple[int, object]:
-    """执行接口，返回 ``(状态码, detail 或响应体)``，便于断言错误分支。"""
     try:
         result = await call()
     except HTTPException as exc:
@@ -43,7 +36,6 @@ async def _call(call) -> tuple[int, object]:
 
 
 async def _url_audit_case() -> bool:
-    """URL 审计名单接口：读写、版本号约定与错误码。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -139,7 +131,6 @@ async def _url_audit_case() -> bool:
 
 
 async def _filter_words_case() -> bool:
-    """过滤词库接口：读写、词库即时重载与错误码。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)

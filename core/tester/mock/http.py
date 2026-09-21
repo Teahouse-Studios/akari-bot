@@ -13,9 +13,6 @@ from core.constants.info import Info
 def digest_request_body(data: Any) -> str | None:
     """计算请求体的摘要，用于区分同一 URL 上的不同请求。
 
-    部分接口（如 nbnhhsh）以 POST 请求体决定响应内容，仅凭 URL 无法区分，
-    回放时会让所有请求都命中同一份录制结果。
-
     :param data: 请求体，可能为 bytes、str 或可转为字符串的对象。
     :return: 请求体的 SHA256 摘要；请求体为空时返回 None。
     """
@@ -55,9 +52,6 @@ class MockHTTPResponse:
     def read(self) -> bytes:
         """返回响应的二进制内容，对齐 `httpx.Response.read` 的语义。
 
-        `download()` 以 `fmt="read"` 调用 `request_url`，若缺少此方法，
-        mock 分支会抛出 `No such method: read`，导致 fixture 无法覆盖下载类请求。
-
         :return: 响应正文的二进制内容；未录制二进制内容时回退为 text 的 UTF-8 编码。
         """
         if self.content:
@@ -74,8 +68,6 @@ class MockHTTPResponse:
 
 @dataclass
 class _Registration:
-    """一条 mock 规则。method 与 body_digest 为 None 时表示不限。"""
-
     pattern: re.Pattern
     response: MockHTTPResponse
     method: str | None = None
@@ -92,27 +84,11 @@ class _Registration:
 
     @property
     def specificity(self) -> int:
-        """规则的具体程度，用于在多条命中时择优。"""
         return (2 if self.body_digest is not None else 0) + (1 if self.method is not None else 0)
 
 
 class HTTPMock:
-    """HTTP 请求 mock 管理器。
-
-    使用方式：
-        # 注册 mock
-        HTTPMock.register("https://api.example.com/data", MockHTTPResponse(json_data={"key": "value"}))
-        HTTPMock.register(r"https://api\\.example\\.com/.*", MockHTTPResponse(text="pattern match"))
-
-        # 获取 mock 响应
-        resp = HTTPMock.get_response("https://api.example.com/data")
-
-        # 清除
-        HTTPMock.clear()
-
-    同一 URL 可注册多条规则：附带 method 与请求体摘要的规则优先于宽泛规则，
-    以便区分 POST 接口上请求体不同的调用。
-    """
+    """HTTP 请求 mock 管理器。"""
 
     _responses: list[_Registration] = []
 

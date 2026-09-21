@@ -52,7 +52,6 @@ def _make_module(name: str, *, db_load: bool = True, load: bool = True) -> Modul
 
 
 def _test_normalize_result():
-    """normalize_result: None 视为 Continue，非法类型报错"""
     try:
         assert isinstance(normalize_result(None), Continue)
         stop = Stop(scope=StopScope.MESSAGE)
@@ -67,7 +66,6 @@ def _test_normalize_result():
 
 
 def _test_subscription_sort_and_platform():
-    """HookSubscription: 排序键与平台过滤"""
     try:
         a = build_subscription(
             "mod_a",
@@ -101,7 +99,6 @@ def _test_subscription_sort_and_platform():
 
 
 async def _test_executor_isolates_failures():
-    """ParserHookExecutor: 单 hook 失败不影响后续，且优先短路"""
     try:
         called = []
 
@@ -146,7 +143,6 @@ async def _test_executor_isolates_failures():
 
 
 async def _test_executor_skips_disabled_module_fixed():
-    """ParserHookExecutor: 仅已加载模块执行"""
     try:
         called_modules = []
 
@@ -171,7 +167,6 @@ async def _test_executor_skips_disabled_module_fixed():
 
 
 async def _test_loader_indexes_point_hooks():
-    """ModulesManager.refresh_modules_hooks: point 与 name 分索引"""
     try:
         reset_parser_hook_executor()
         module_name = "__test_parser_hooks_mod"
@@ -205,7 +200,6 @@ async def _test_loader_indexes_point_hooks():
 
 
 async def _test_invalid_result_isolated():
-    """非法返回值按失败隔离，不短路后续"""
     try:
         seen = []
 
@@ -238,7 +232,6 @@ async def _test_invalid_result_isolated():
 
 
 async def _test_protocol_exception_isolated():
-    """SessionFinished 等控制流异常不得由 hook 直接终止 parser"""
     try:
         from core.constants.exceptions import SessionFinished
 
@@ -270,7 +263,6 @@ async def _test_protocol_exception_isolated():
 
 
 async def _test_timeout_discards_result():
-    """超时 hook 的晚返回结果被丢弃"""
     try:
         import asyncio
 
@@ -304,7 +296,6 @@ async def _test_timeout_discards_result():
 
 
 async def _test_handled_short_circuits():
-    """Handled 作为控制结果停止后续 hook"""
     try:
         from core.builtins.parser.hooks import Handled
 
@@ -336,7 +327,6 @@ async def _test_handled_short_circuits():
 
 
 async def _test_typo_suggests_close_module():
-    """typo 模块对近似模块名返回 RecoveryProposal"""
     try:
         from core.builtins.parser.hooks import RecoveryProposal
         from modules.core.hooks.typo import suggest_correction
@@ -389,7 +379,6 @@ async def _test_typo_suggests_close_module():
 
 
 async def _test_stale_generation_skipped():
-    """重载后旧代际订阅不执行"""
     try:
         from core.module_runtime import ModuleRuntimeManager
 
@@ -432,7 +421,6 @@ async def _test_stale_generation_skipped():
 
 
 async def _test_per_subscription_timeout():
-    """订阅自身 timeout 生效"""
     try:
         import asyncio
 
@@ -476,7 +464,6 @@ async def _test_per_subscription_timeout():
 
 
 async def _test_named_hook_skips_point_and_disabled():
-    """Bot.Hook.trigger：跳过 point 订阅；停用模块不执行具名 hook"""
     try:
         from core.builtins.bot import Bot
         from core.loader import ModulesManager
@@ -524,7 +511,6 @@ async def _test_named_hook_skips_point_and_disabled():
 
 
 async def _test_named_hook_uses_shared_execution_contract():
-    """具名 hook 复用共享执行器的广播隔离、平台筛选和单能力错误传播。"""
     from core.builtins.hooks import dispatch_module_hook
     from core.constants.exceptions import SessionFinished
 
@@ -571,7 +557,6 @@ async def _test_named_hook_uses_shared_execution_contract():
 
 
 async def _test_named_hook_timeout_is_enforced():
-    """具名 hook 的单次调用遵守订阅 timeout。"""
     import asyncio
 
     from core.builtins.hooks import dispatch_module_hook
@@ -597,7 +582,6 @@ async def _test_named_hook_timeout_is_enforced():
 
 
 async def _test_event_handler_isolation():
-    """event 分发：单 handler 失败不影响其他 handler"""
     try:
         from core.builtins.session.info import EventInfo
         from core.loader import ModulesManager
@@ -639,7 +623,6 @@ async def _test_event_handler_isolation():
 
 
 async def _test_recovery_target_revalidated():
-    """确认后重校验：停用/缺失模块拒绝过期建议"""
     try:
         from core.builtins.parser.message import _validate_recovery_target
 
@@ -667,7 +650,6 @@ async def _test_recovery_target_revalidated():
 
 
 async def _test_session_ready_draft_commit():
-    """SESSION_READY 支持草稿提交 tmp"""
     try:
         called = []
 
@@ -697,7 +679,6 @@ async def _test_session_ready_draft_commit():
 
 
 async def _test_reload_failure_keeps_old_hooks():
-    """reload 失败回退后，旧订阅仍按旧 runtime 代际执行。"""
     try:
         from core.loader import ModulesManager
         from core.module_runtime import ModuleRuntimeManager
@@ -791,7 +772,6 @@ async def test_parser_hooks(tester: Tester):
 
 
 async def _test_cleanup_cancellation_propagates():
-    """超时收尾期间父 dispatch 被取消：取消须传播，不得吞成 TimeoutError 后继续。"""
     try:
         import asyncio
 
@@ -834,7 +814,6 @@ async def _test_cleanup_cancellation_propagates():
 
 
 async def _test_nested_same_session_dispatch_skipped():
-    """同会话嵌套分发被拒绝：子 dispatch 不执行，父失败也不产生子提交。"""
     try:
         committed = []
         holder = {}
@@ -875,7 +854,6 @@ async def _test_nested_same_session_dispatch_skipped():
 
 
 async def _test_invalid_recovery_fields_rejected():
-    """RecoveryProposal 字段非法时在 hook 边界被拒绝，不进入恢复流程。"""
     try:
         from core.builtins.parser.hooks import RecoveryProposal
 
@@ -908,7 +886,6 @@ async def _test_invalid_recovery_fields_rejected():
 
 
 async def _test_snapshot_build_failure_isolated():
-    """快照构建失败按当前 hook 失败处理，后续 hook 仍执行。"""
     try:
         from core.builtins.parser.hooks import OutgoingPayload
 
@@ -946,7 +923,6 @@ async def _test_snapshot_build_failure_isolated():
 
 
 async def _test_missing_runtime_generation_skipped():
-    """带代际的订阅失去 runtime 后必须视为陈旧，不能重新创建 runtime 执行。"""
     try:
         from core.module_runtime import ModuleRuntimeManager
 
@@ -986,7 +962,6 @@ async def _test_missing_runtime_generation_skipped():
 
 
 async def _test_generation_rechecked_between_hooks():
-    """前一个 hook 等待期间发生 reload 时，已收集的后续旧代际回调必须跳过。"""
     try:
         from core.module_runtime import ModuleRuntimeManager
 
@@ -1043,7 +1018,6 @@ async def _test_generation_rechecked_between_hooks():
 
 
 async def _test_outgoing_commit_failure_isolated():
-    """成功回调产出不可复制内容时只丢弃该改写，并继续后续 hook。"""
     try:
         from core.builtins.message.chain import MessageChain
         from core.builtins.parser.hooks import OutgoingPayload
@@ -1094,7 +1068,6 @@ async def _test_outgoing_commit_failure_isolated():
 
 
 async def _test_disabled_rechecked_between_hooks():
-    """前一个 hook 等待期间停用后续模块时，已收集的回调也不能继续执行。"""
     try:
         called = []
         modules = {"a": _make_module("a"), "b": _make_module("b")}

@@ -5,9 +5,7 @@ from core.utils.http import get_url
 
 
 async def get_rss():
-    """
-    Get RSS feed from lakeus.xyz
-    """
+    """Get RSS feed from lakeus.xyz"""
     url = await get_url(
         "https://lakeus.xyz/api.php?action=featuredfeed&feed=teahouse-weekly&feedformat=atom",
         status_code=200,

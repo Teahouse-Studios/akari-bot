@@ -12,9 +12,6 @@ MARKER = "webui_analytics_probe"
 
 
 async def _add_record(hours_ago: float) -> None:
-    """
-    写入一条指定时间的统计记录。timestamp 是 auto_now_add 字段，只能建好之后再改写。
-    """
     record = await AnalyticsData.create(
         module_name=MARKER,
         module_type="command",
@@ -27,7 +24,6 @@ async def _add_record(hours_ago: float) -> None:
 
 
 async def _test_analytics_counts_records_in_window():
-    """测试统计接口 - 窗口内的记录应被计入而非始终返回空"""
     # 单元测试验证接口业务逻辑，不经过 SlowAPI 的 Request 类型与限流状态检查。
     # inspect.unwrap 可兼容装饰器层数变化，不依赖固定数量的 __wrapped__ 属性。
     endpoint = inspect.unwrap(web_api.get_analytics)
@@ -63,7 +59,6 @@ async def test_webui_analytics_modules(tester: Tester):
 
 
 async def _test_analytics_modules_counts_in_window():
-    """测试模块统计接口 - 只计入窗口内的记录，占比按窗口总数计算"""
     endpoint = inspect.unwrap(web_api.get_analytics_modules)
     try:
         with patch.object(web_api, "verify_jwt", lambda request: None):
@@ -91,7 +86,6 @@ async def _test_analytics_modules_counts_in_window():
 
 
 async def _test_analytics_modules_respects_limit():
-    """测试模块统计接口 - limit 截断返回项但保留模块总数"""
     endpoint = inspect.unwrap(web_api.get_analytics_modules)
     try:
         await _add_record(hours_ago=1)

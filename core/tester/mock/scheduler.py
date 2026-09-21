@@ -1,18 +1,4 @@
-"""计划任务 Mock 工具 - 用于测试模块的定时任务注册和执行。
-
-使用方式：
-    1. 在测试中调用 get_scheduled_tasks() 获取所有已注册的计划任务
-    2. 调用 run_schedule_function(func) 手动执行计划任务函数
-    3. 调用 get_schedule_summary() 获取模块计划任务概览
-
-计划任务注册流程：
-    模块通过 @module.schedule(trigger) 装饰器注册 → ScheduleMeta 存入 Module.schedule_list.set
-    Server 启动时遍历所有模块，调用 Scheduler.add_job() 注册到 APScheduler
-
-Mock 方案：
-    不启动 APScheduler，直接从 ModulesManager 中读取已注册的 ScheduleMeta，
-    手动调用 function 来测试计划任务的逻辑。
-"""
+"""计划任务 Mock 工具 - 用于测试模块的定时任务注册和执行。"""
 
 from __future__ import annotations
 
@@ -110,12 +96,7 @@ async def run_all_schedules_for_module(module_name: str, timeout: float = 30) ->
 
 
 class strict_http:
-    """在上下文内让未录制的 HTTP 请求立即失败。
-
-    mock 未命中时默认回落到真实网络，且带有重试与超时（默认 3 次 × 20 秒）。
-    定时任务往往串联多个外部请求，任一未录制的 URL 都会让用例拖上一分钟以上，
-    并把测试结果与线上状态绑定。此上下文将这种回落改为即时失败。
-    """
+    """在上下文内让未录制的 HTTP 请求立即失败。"""
 
     def __init__(self, enabled: bool = True):
         self.enabled = enabled
@@ -133,9 +114,6 @@ class strict_http:
 
 def reset_startup_mute(module_path: str) -> bool:
     """关闭模块的首轮静默开关。
-
-    多个 RSS 模块以模块级 ``startup_mute`` 抑制启动后的第一轮推送，
-    以免机器人重启时重复刷屏。测试需要立刻观察到推送行为，故直接置为关闭。
 
     :param module_path: 模块的导入路径，如 ``modules.mcv_rss``。
     :return: 是否确实存在并重置了该开关。
@@ -165,10 +143,6 @@ async def force_run_schedule(
 ) -> list[dict]:
     """无视内部闸门，立即触发指定模块的全部定时任务。
 
-    定时任务在生产环境按触发器择时运行，并普遍带有「首轮静默」与「已推送去重」
-    两类闸门。测试直接调用函数即可绕过触发器，但仍需清除上述闸门，否则函数虽然
-    执行却不会产生任何可观察的行为。
-
     :param module_name: 注册的模块名，用于取出其定时任务。
     :param module_path: 模块导入路径，提供时会重置其 startup_mute。
     :param stored_keys: 需要清空的持久化去重列表键名。
@@ -189,9 +163,6 @@ async def force_run_schedule(
 def get_module_hooks(module_name: str | None = None) -> dict[str, Callable]:
     """获取已注册的具名钩子。
 
-    钩子以 ``{模块名}.{钩子名}`` 为键建立具名订阅索引；
-    执行时统一经模块 hook executor 分发。
-
     :param module_name: 指定模块名，None 则返回全部钩子。
     :returns: {钩子全名: 钩子函数} 字典。
     """
@@ -209,9 +180,6 @@ def get_module_hooks(module_name: str | None = None) -> dict[str, Callable]:
 
 async def run_hook(hook_name: str, args: dict | None = None, session_info=None, timeout: float = 30) -> dict:
     """按名手动触发一个具名钩子。
-
-    通过与生产环境相同的模块 hook executor 调用钩子，覆盖真实的
-    平台过滤、超时、runtime 和异常隔离逻辑。
 
     :param hook_name: 钩子全名，形如 ``wikilog.keepalive``。
     :param args: 传递给钩子的参数字典。

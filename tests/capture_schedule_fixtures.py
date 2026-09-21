@@ -1,17 +1,4 @@
-"""定时任务语料捕获工具。
-
-定时任务不经由消息解析触发，普通的集成测试录制流程覆盖不到它们依赖的外部请求。
-此脚本直接触发各模块的 schedule 函数，把途中的 HTTP 响应与 WebRender 取源结果
-分别录入 tests/fixtures/http/ 与 tests/fixtures/webrender/。
-
-WebRender 依赖无头浏览器，录制阶段无法真正渲染，故以普通 HTTP 抓取同一 URL 的
-响应代替。对必须执行脚本才能出内容的页面，抓取结果与真实渲染并不等价，此时应改为
-手工编写最小语料。
-
-使用方式：
-    python tests/capture_schedule_fixtures.py                  # 录制全部可录制的任务
-    python tests/capture_schedule_fixtures.py arcaea-rss ...   # 只录制指定模块
-"""
+"""定时任务语料捕获工具。"""
 
 import asyncio
 import json

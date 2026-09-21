@@ -23,7 +23,6 @@ def _msg(support_markdown: bool):
 
 
 def _patch_usage(usages, failures):
-    """让进程行构建读取固定数据，避免真实信号扇出。"""
     return patch(
         "modules.core.common_tools.ping.gather_process_usage",
         new=AsyncMock(return_value=(usages, failures)),
@@ -31,7 +30,6 @@ def _patch_usage(usages, failures):
 
 
 async def _test_process_usage_lines_use_status_keys():
-    """进程行：占位标签本地化且语言键取自 about.status 命名空间。"""
     usages = [ProcessUsage(name=DAEMON_LABEL, pid=12, memory=100 * 1024 * 1024, metric="RSS")]
     failures = [ProcessUnavailable(name="jobqueue-hub", reason="timeout")]
     with _patch_usage(usages, failures):
@@ -53,7 +51,6 @@ async def _test_process_usage_lines_use_status_keys():
 
 
 async def _test_process_usage_lines_absent_without_data():
-    """进程行：无任何采集结果时不产生输出行。"""
     with _patch_usage([], []):
         return await _build_process_usage_lines(_msg(True)) == []
 

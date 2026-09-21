@@ -1,8 +1,4 @@
-"""用于验证 JobQueue 契约的进程内后端。
-
-该实现不属于生产配置选项。它使运行时测试能够在完全不访问 JobQueue ORM 表的情况下
-覆盖 RPC、信号、实例发现和失效传播，从而避免新的传输实现再次引入数据库耦合。
-"""
+"""用于验证 JobQueue 契约的进程内后端。"""
 
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta

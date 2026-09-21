@@ -18,7 +18,6 @@ from core.types import Module
 
 
 async def _test_resolve_union_creates_bind():
-    """测试 resolve_union - 首次解析建出 union 与映射"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|resolve|1")
         if not union:
@@ -36,7 +35,6 @@ async def _test_resolve_union_creates_bind():
 
 
 async def _test_resolve_union_concurrent_same_id():
-    """测试 resolve_union - 同一新 ID 并发解析只创建一组，且调用均成功。"""
     platform_id = "UNIONTEST|concurrent|same"
     results = await asyncio.gather(
         *(SenderUnionInfo.resolve_union(platform_id) for _ in range(20)),
@@ -57,7 +55,6 @@ async def _test_resolve_union_concurrent_same_id():
 
 
 async def _test_new_union_id_prefixed():
-    """测试 new_union_id - 新建的 union ID 带域前缀且为大写"""
     try:
         sender = await SenderUnionInfo.resolve_union("UNIONTEST|prefix|1")
         target = await TargetUnionInfo.resolve_union("UNIONTEST|Group|prefix")
@@ -75,7 +72,6 @@ async def _test_new_union_id_prefixed():
 
 
 async def _test_resolve_union_no_create():
-    """测试 resolve_union - create 为 False 时不建行"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|nocreate|1", create=False)
         if union:
@@ -87,7 +83,6 @@ async def _test_resolve_union_no_create():
 
 
 async def _test_bind_id_shares_data():
-    """测试 bind_id - 绑定后两个账号共享同一份数据"""
     try:
         first = await SenderUnionInfo.resolve_union("UNIONTEST|share|1")
         first.petal = 42
@@ -108,7 +103,6 @@ async def _test_bind_id_shares_data():
 
 
 async def _test_bind_id_rejects_other_union():
-    """测试 bind_id - 已属于其他 union 的账号不可重复绑定"""
     try:
         first = await SenderUnionInfo.resolve_union("UNIONTEST|reject|1")
         await SenderUnionInfo.resolve_union("UNIONTEST|reject|2")
@@ -119,7 +113,6 @@ async def _test_bind_id_rejects_other_union():
 
 
 async def _test_bind_id_concurrent_claim_returns_boolean():
-    """测试 bind_id - 两个 union 并发争用同一账号时一胜一负，不向调用方泄漏唯一键异常。"""
     first = await SenderUnionInfo.resolve_union("UNIONTEST|claim|owner1")
     second = await SenderUnionInfo.resolve_union("UNIONTEST|claim|owner2")
     claimed_id = "UNIONTEST|claim|shared"
@@ -136,7 +129,6 @@ async def _test_bind_id_concurrent_claim_returns_boolean():
 
 
 async def _test_counter_updates_are_atomic():
-    """测试用户计数器 - 并发警告和花瓣增量不会因过期实例整行保存而丢失。"""
     sender_id = "UNIONTEST|counter|1"
     union = await SenderUnionInfo.resolve_union(sender_id)
     union.warns = 0
@@ -153,7 +145,6 @@ async def _test_counter_updates_are_atomic():
 
 
 async def _test_json_updates_preserve_concurrent_keys():
-    """测试 Union JSON 数据 - 并发修改不同键时不会用过期快照覆盖其它协程。"""
     sender_id = "UNIONTEST|json|sender"
     target_id = "UNIONTEST|Group|json-target"
     sender = await SenderUnionInfo.resolve_union(sender_id)
@@ -179,7 +170,6 @@ async def _test_json_updates_preserve_concurrent_keys():
 
 
 async def _test_permission_lists_preserve_concurrent_members():
-    """测试场景权限列表 - 并发加入不同成员时不丢失先完成的更新。"""
     target_id = "UNIONTEST|Group|permission-list"
     target = await TargetUnionInfo.resolve_union(target_id)
     target.custom_admins = []
@@ -200,7 +190,6 @@ async def _test_permission_lists_preserve_concurrent_members():
 
 
 async def _test_block_applies_to_whole_union():
-    """测试封禁范围 - 封禁挂在 union 上，组内全部账号一并生效"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|blocked|1")
         await union.bind_id("UNIONTEST|blocked|2")
@@ -216,7 +205,6 @@ async def _test_block_applies_to_whole_union():
 
 
 async def _test_merge_keeps_block():
-    """测试封禁范围 - 与干净组合并后封禁不被稀释"""
     try:
         blocked = await SenderUnionInfo.resolve_union("UNIONTEST|mergeban|1")
         await blocked.edit_attr("blocked", True)
@@ -232,7 +220,6 @@ async def _test_merge_keeps_block():
 
 
 async def _test_unbind_keeps_block_and_binding():
-    """测试封禁范围 - 解绑后封禁随账号转移，且映射行始终存在"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|unbindban|1")
         await union.bind_id("UNIONTEST|unbindban|2")
@@ -252,7 +239,6 @@ async def _test_unbind_keeps_block_and_binding():
 
 
 async def _test_unblock_applies_to_whole_union():
-    """测试解封 - 解封同样作用于整组"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|unblock|1")
         await union.bind_id("UNIONTEST|unblock|2")
@@ -270,7 +256,6 @@ async def _test_unblock_applies_to_whole_union():
 
 
 async def _test_switch_identity_unblocks():
-    """测试 switch_identity - 取消身份时解除封禁"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|identity|1")
         await union.switch_identity(trust=False, enable=True)
@@ -288,7 +273,6 @@ async def _test_switch_identity_unblocks():
 
 
 async def _test_merge_union_creates_new_union():
-    """测试 merge_union - 合并生成全新的组，两个旧组一并作废"""
     try:
         first = await SenderUnionInfo.resolve_union("UNIONTEST|newid|1")
         second = await SenderUnionInfo.resolve_union("UNIONTEST|newid|2")
@@ -311,7 +295,6 @@ async def _test_merge_union_creates_new_union():
 
 
 async def _test_merge_union_merges_data():
-    """测试 merge_union - 花瓣累加、警告取最大、数据逐键合并"""
     try:
         keep = await SenderUnionInfo.resolve_union("UNIONTEST|merge|1")
         keep.petal = 10
@@ -344,7 +327,6 @@ async def _test_merge_union_merges_data():
 
 
 async def _test_merge_union_rewrites_permission_refs():
-    """测试 merge_union - 权限名单中的旧 union ID 被改写"""
     try:
         keep = await SenderUnionInfo.resolve_union("UNIONTEST|refs|1")
         drop = await SenderUnionInfo.resolve_union("UNIONTEST|refs|2")
@@ -365,7 +347,6 @@ async def _test_merge_union_rewrites_permission_refs():
 
 
 async def _test_merge_union_moves_module_rows():
-    """测试 merge_union - 模块表随之改挂新 union"""
     try:
         from modules.phigros.database.models import PhigrosBindInfo
 
@@ -386,7 +367,6 @@ async def _test_merge_union_moves_module_rows():
 
 
 async def _test_merge_union_module_conflict_keeps_self():
-    """测试 merge_union - 模块表冲突默认保留发起方"""
     try:
         from modules.phigros.database.models import PhigrosBindInfo
 
@@ -407,7 +387,6 @@ async def _test_merge_union_module_conflict_keeps_self():
 
 
 async def _test_merge_union_module_conflict_keeps_other():
-    """测试 merge_union - keep_other_tables 指定时保留被并入方"""
     try:
         from modules.phigros.database.models import PhigrosBindInfo
 
@@ -428,7 +407,6 @@ async def _test_merge_union_module_conflict_keeps_other():
 
 
 async def _test_merge_target_union_moves_module_rows():
-    """测试 merge_union - 场景侧模块表同样改挂 union"""
     try:
         from modules.wiki.database.models import WikiTargetInfo
 
@@ -455,7 +433,6 @@ async def _test_merge_target_union_moves_module_rows():
 
 
 async def _test_channel_id_increments_within_union():
-    """测试消息通道 - 组内逐个递增，默认各占一号"""
     try:
         union = await TargetUnionInfo.resolve_union("UNIONTEST|Group|chan1")
         await union.bind_id("UNIONTEST|Group|chan2")
@@ -470,7 +447,6 @@ async def _test_channel_id_increments_within_union():
 
 
 async def _test_reassign_channel_clears_peer_bots_atomically():
-    """单场景换通道时一并清理双方互认记录，并可原子分配新通道号。"""
     first_id = "UNIONTEST|Group|rechannel-first"
     moved_id = "UNIONTEST|Group|rechannel-moved"
     untouched_id = "UNIONTEST|Group|rechannel-untouched"
@@ -501,7 +477,6 @@ async def _test_reassign_channel_clears_peer_bots_atomically():
 
 
 async def _test_reassign_channel_rolls_back_peer_cleanup_failure():
-    """通道更新后的互认清理失败时，两部分都必须回滚。"""
     first_id = "UNIONTEST|Group|rechannel-rollback-first"
     moved_id = "UNIONTEST|Group|rechannel-rollback-moved"
     union = await TargetUnionInfo.resolve_union(first_id)
@@ -532,7 +507,6 @@ async def _test_reassign_channel_rolls_back_peer_cleanup_failure():
 
 
 async def _test_unify_channels_moves_complete_equivalence_class():
-    """并合通道须整体移动来源通道，不能把其中第三个平台入口拆开。"""
     anchor_id = "UNIONTEST|Group|unify-channel-anchor"
     source_id = "UNIONTEST|Group|unify-channel-source"
     source_peer_id = "UNIONTEST|Group|unify-channel-source-peer"
@@ -561,7 +535,6 @@ async def _test_unify_channels_moves_complete_equivalence_class():
 
 
 async def _test_sender_merge_rolls_back_on_failure():
-    """测试 merge_union - 中途异常时新组、映射、Captcha 引用和旧组数据全部回滚。"""
     from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
     from modules.captcha.service import verification_id
 
@@ -612,7 +585,6 @@ async def _test_sender_merge_rolls_back_on_failure():
 
 
 async def _test_target_merge_rolls_back_on_failure():
-    """测试场景 merge_union - 显式引用迁移异常时不遗留新组或半迁移 Captcha 引用。"""
     from core.database.models import migrate_union_references
     from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
     from modules.captcha.service import verification_id
@@ -668,7 +640,6 @@ async def _test_target_merge_rolls_back_on_failure():
 
 
 async def _test_sender_unbind_rolls_back_on_failure():
-    """显式引用迁移失败时，用户解绑的 Challenge、映射与新组须全部回滚。"""
     from modules.captcha.database.models import CaptchaChallenge
 
     kept_id = "UNIONTEST|rollback|unbind-sender-kept"
@@ -717,7 +688,6 @@ async def _test_sender_unbind_rolls_back_on_failure():
 
 
 async def _test_target_unbind_rolls_back_on_failure():
-    """显式引用迁移失败时，场景解绑的 Challenge、通道、互认记录与新组须全部回滚。"""
     from modules.captcha.database.models import CaptchaChallenge
 
     kept_id = "UNIONTEST|Group|rollback-unbind-target-kept"
@@ -776,7 +746,6 @@ async def _test_target_unbind_rolls_back_on_failure():
 
 
 async def _test_channel_id_concurrent_bind_is_unique():
-    """测试消息通道 - 同组并发绑定不同场景时仍为每个新入口分配不同通道。"""
     union = await TargetUnionInfo.resolve_union("UNIONTEST|Group|concurrent-channel-base")
     target_ids = [f"UNIONTEST|Group|concurrent-channel-{index}" for index in range(20)]
     results = await asyncio.gather(*(union.bind_id(target_id) for target_id in target_ids), return_exceptions=True)
@@ -788,7 +757,6 @@ async def _test_channel_id_concurrent_bind_is_unique():
 
 
 async def _test_merge_union_renumbers_channels():
-    """测试消息通道 - 合并时并入方重新编号，不与自身一侧重号"""
     try:
         first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|mix1")
         await first.bind_id("UNIONTEST|Group|mix2")
@@ -808,7 +776,6 @@ async def _test_merge_union_renumbers_channels():
 
 
 async def _test_unbind_id_splits_account():
-    """测试 unbind_id - 拆出的账号数据归零，处罚状态予以保留"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|unbind|1")
         await union.bind_id("UNIONTEST|unbind|2")
@@ -834,7 +801,6 @@ async def _test_unbind_id_splits_account():
 
 
 async def _test_unbind_id_rejects_last():
-    """测试 unbind_id - 仅剩一个账号时拒绝解绑"""
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|last|1")
         return await union.unbind_id("UNIONTEST|last|1") is None
@@ -844,7 +810,6 @@ async def _test_unbind_id_rejects_last():
 
 
 async def _test_target_union_shares_modules():
-    """测试场景 union - 绑定后模块开关互通"""
     try:
         first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|mod1")
         await first.bind_id("UNIONTEST|Group|mod2")
@@ -858,7 +823,6 @@ async def _test_target_union_shares_modules():
 
 
 async def _test_target_id_list_expands_union():
-    """测试 get_target_id_list_by_module - 推送展开为全部平台场景"""
     try:
         first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|push1")
         await first.bind_id("UNIONTEST|Group|push2")
@@ -875,7 +839,6 @@ async def _test_target_id_list_expands_union():
 
 
 async def _test_subscription_module_alias_migration():
-    """旧模块名订阅应匹配新主名，并在下次开关时惰性归一化。"""
     new_name = "__test-subscription-new"
     old_name = "__test_subscription_old"
     target_id = "UNIONTEST|Group|subscription-alias"
@@ -913,7 +876,6 @@ async def _test_subscription_module_alias_migration():
 
 
 async def _test_list_ids_accepts_multiple():
-    """测试 list_ids - 支持一次展开多个 union"""
     try:
         first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|multi1")
         second = await TargetUnionInfo.resolve_union("UNIONTEST|Group|multi2")
@@ -929,7 +891,6 @@ async def _test_list_ids_accepts_multiple():
 
 
 async def _test_delete_sender_union_cleans_current_state():
-    """删除用户 Union 时清理模块状态、权限引用和验证码，但保留历史统计。"""
     from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
     from modules.captcha.service import verification_id
     from modules.cytoid.database.models import CytoidBindInfo
@@ -994,7 +955,6 @@ async def _test_delete_sender_union_cleans_current_state():
 
 
 async def _test_delete_target_union_cleans_current_state():
-    """删除场景 Union 时清理场景模块状态和验证码，但保留历史统计。"""
     from modules.captcha.database.models import CaptchaChallenge, CaptchaTrust
     from modules.captcha.service import verification_id
     from modules.wiki.database.models import WikiTargetInfo
@@ -1048,7 +1008,6 @@ async def _test_delete_target_union_cleans_current_state():
 
 
 async def _test_delete_union_rejects_active_captcha():
-    """仍有平台限制待解除的验证码时，删除必须整体拒绝。"""
     from modules.captcha.database.models import CaptchaChallenge
     from modules.captcha.service import verification_id
 
@@ -1083,7 +1042,6 @@ async def _test_delete_union_rejects_active_captcha():
 
 
 async def _test_sender_concurrent_unbind_keeps_remaining_union_mapped():
-    """三个账号并发拆出两个时，原 Union 仍须保留核心行和最后一条映射。"""
     kept_id = "UNIONTEST|concurrent-unbind|sender-kept"
     split_ids = [
         "UNIONTEST|concurrent-unbind|sender-split-1",
@@ -1114,7 +1072,6 @@ async def _test_sender_concurrent_unbind_keeps_remaining_union_mapped():
 
 
 async def _test_target_concurrent_unbind_keeps_remaining_union_mapped():
-    """三个场景并发拆出两个时，原 Union 仍须保留核心行和最后一条映射。"""
     kept_id = "UNIONTEST|Group|concurrent-unbind-target-kept"
     split_ids = [
         "UNIONTEST|Group|concurrent-unbind-target-split-1",
@@ -1146,7 +1103,6 @@ async def _test_target_concurrent_unbind_keeps_remaining_union_mapped():
 
 
 async def _test_stale_scalar_updates_preserve_fresh_json():
-    """旧实例的标量更新不得把后来写入的 JSON、警告次数或其它字段覆盖掉。"""
     sender_id = "UNIONTEST|stale-scalar|sender"
     target_id = "UNIONTEST|Group|stale-scalar-target"
     stale_sender = await SenderUnionInfo.resolve_union(sender_id)
@@ -1176,7 +1132,6 @@ async def _test_stale_scalar_updates_preserve_fresh_json():
 
 
 async def _test_stale_sender_cannot_mutate_deleted_union():
-    """删除用户 Union 后，旧 ORM 实例的全部 mutation 入口都不得复活核心行或映射。"""
     sender_id = "UNIONTEST|stale-delete|sender"
     added_id = "UNIONTEST|stale-delete|sender-added"
     stale = await SenderUnionInfo.resolve_union(sender_id)
@@ -1201,7 +1156,6 @@ async def _test_stale_sender_cannot_mutate_deleted_union():
 
 
 async def _test_stale_target_cannot_mutate_deleted_union():
-    """删除场景 Union 后，旧 ORM 实例的全部 mutation 入口都不得复活核心行或映射。"""
     target_id = "UNIONTEST|Group|stale-delete-target"
     added_id = "UNIONTEST|Group|stale-delete-target-added"
     stale = await TargetUnionInfo.resolve_union(target_id)
@@ -1228,7 +1182,6 @@ async def _test_stale_target_cannot_mutate_deleted_union():
 
 
 async def _test_stale_sender_merge_ignores_deleted_side():
-    """合并前一侧已被删除时，旧实例不得把该侧花瓣、权限和 JSON 复制进存活方。"""
     deleted_id = "UNIONTEST|stale-merge|sender-deleted"
     kept_id = "UNIONTEST|stale-merge|sender-kept"
     stale_deleted = await SenderUnionInfo.resolve_union(deleted_id)
@@ -1259,7 +1212,6 @@ async def _test_stale_sender_merge_ignores_deleted_side():
 
 
 async def _test_stale_target_merge_ignores_deleted_side():
-    """合并前一侧已被删除时，旧实例不得把该侧权限、模块和 JSON 复制进存活方。"""
     deleted_id = "UNIONTEST|Group|stale-merge-target-deleted"
     kept_id = "UNIONTEST|Group|stale-merge-target-kept"
     stale_deleted = await TargetUnionInfo.resolve_union(deleted_id)
@@ -1291,7 +1243,6 @@ async def _test_stale_target_merge_ignores_deleted_side():
 
 
 async def _test_module_create_rechecks_union_after_resolve():
-    """模块行创建前须重查核心 Union，不能信任 resolve_union 返回后的旧实例。"""
     from modules.cytoid.database.models import CytoidBindInfo
     from modules.wiki.database.models import WikiTargetInfo
 
@@ -1319,7 +1270,6 @@ async def _test_module_create_rechecks_union_after_resolve():
 
 
 async def _test_bind_models_reject_deleted_union():
-    """直接调用模块绑定写入口时，已删除的用户 Union 不得留下悬空模块行。"""
     from modules.cytoid.database.models import CytoidBindInfo
     from modules.maimai.database.models import DivingProberBindInfo, LxnsProberBindInfo
     from modules.phigros.database.models import PhigrosBindInfo
@@ -1347,7 +1297,6 @@ async def _test_bind_models_reject_deleted_union():
 
 
 async def _test_wiki_mutations_use_fresh_row():
-    """Wiki 的旧实例更新不同字段或 JSON 键时应合并最新值，删除后不得写回。"""
     from modules.wiki.database.models import WikiTargetInfo
 
     target_id = "UNIONTEST|Group|wiki-stale-mutation"
@@ -1385,7 +1334,6 @@ async def _test_wiki_mutations_use_fresh_row():
 
 
 async def _test_wikilog_mutations_use_fresh_nested_data():
-    """Wikilog 的旧实例修改不同 Wiki 和嵌套字段时不得互相覆盖，删除后不得复活。"""
     from modules.wikilog.database.models import WikiLogTargetSetInfo
 
     target_id = "UNIONTEST|Group|wikilog-stale-mutation"

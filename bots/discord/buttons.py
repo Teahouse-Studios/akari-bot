@@ -29,8 +29,6 @@ class DiscordButton(discord.ui.Button):
 
 
 class DiscordButtonView(discord.ui.View):
-    """由按钮 token 自行控制有效期的 Discord View。"""
-
     def __init__(self):
         super().__init__(timeout=None)
 
@@ -46,8 +44,6 @@ def _action_label(action_text: ActionTextElement, limit: int = DISCORD_BUTTON_LA
 
 
 class DiscordActionTextModal(discord.ui.Modal):
-    """允许用户编辑 ActionText 后再提交的 Discord Modal。"""
-
     def __init__(
         self,
         action_text: ActionTextElement,

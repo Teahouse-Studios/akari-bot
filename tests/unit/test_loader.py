@@ -53,7 +53,6 @@ RELOAD_WAIT_TIMEOUT = 10
 
 
 def _test_add_module():
-    """ModulesManager.add_module: 添加模块"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_mod_1", alias=None, recommend_modules=None, developers=None
@@ -68,7 +67,6 @@ def _test_add_module():
 
 
 def _test_add_module_duplicate():
-    """ModulesManager.add_module: 重复添加应抛出 ValueError"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_mod_2", alias=None, recommend_modules=None, developers=None
@@ -91,7 +89,6 @@ def _test_add_module_duplicate():
 
 
 def _test_remove_modules():
-    """ModulesManager.remove_modules: 移除模块"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_mod_3", alias=None, recommend_modules=None, developers=None
@@ -104,7 +101,6 @@ def _test_remove_modules():
 
 
 def _test_remove_nonexistent_module():
-    """ModulesManager.remove_modules: 移除不存在的模块应抛出 ValueError"""
     try:
         ModulesManager.remove_modules(["__nonexistent_module_xyz_12345__"])
         return False
@@ -115,7 +111,6 @@ def _test_remove_nonexistent_module():
 
 
 def _test_bind_to_module_command():
-    """ModulesManager.bind_to_module: 绑定 CommandMeta"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_bind_1", alias=None, recommend_modules=None, developers=None
@@ -136,7 +131,6 @@ def _test_bind_to_module_command():
 
 
 def _test_bind_to_module_regex():
-    """ModulesManager.bind_to_module: 绑定 RegexMeta"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_bind_2", alias=None, recommend_modules=None, developers=None
@@ -157,7 +151,6 @@ def _test_bind_to_module_regex():
 
 
 def _test_bind_to_nonexistent_module():
-    """ModulesManager.bind_to_module: 绑定到不存在的模块应静默忽略"""
     try:
         meta = CommandMeta(function=lambda m: None, command_template=[])
         ModulesManager.bind_to_module("__nonexistent_xyz__", meta)
@@ -167,7 +160,6 @@ def _test_bind_to_nonexistent_module():
 
 
 def _test_return_modules_list():
-    """ModulesManager.return_modules_list: 返回所有模块"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_list_1", alias=None, recommend_modules=None, developers=None
@@ -184,7 +176,6 @@ def _test_return_modules_list():
 
 
 def _test_return_modules_list_filter_platform():
-    """ModulesManager.return_modules_list: 按平台过滤"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_filter_1",
@@ -213,7 +204,6 @@ def _test_return_modules_list_filter_platform():
 
 
 def _test_refresh_aliases():
-    """ModulesManager.refresh_modules_aliases: 刷新别名"""
     try:
         test_module = Module.assign(
             module_name="__test_loader_alias_1",
@@ -232,7 +222,6 @@ def _test_refresh_aliases():
 
 
 def _test_get_module_and_alias_first_words():
-    """ModulesManager.get_module_and_alias_first_words: 查找模块与别名首词"""
     module_name = "__test_loader_related"
     try:
         test_module = Module.assign(
@@ -263,7 +252,6 @@ def _test_get_module_and_alias_first_words():
 
 
 def _test_renamed_modules_keep_legacy_aliases():
-    """带下划线的旧模块名应保留为新主名的命令别名。"""
     return all(
         new_name in ModulesManager.modules and ModulesManager.modules_aliases.get(old_name) == new_name
         for new_name, old_name in RENAMED_MODULES.items()
@@ -271,7 +259,6 @@ def _test_renamed_modules_keep_legacy_aliases():
 
 
 async def _test_module_status_alias_migration():
-    """ModuleStatus 应在主名迁移时保留旧模块的加载状态。"""
     new_name = "__test-loader-status-new"
     old_name = "__test_loader_status_old"
     current_modules = await ModuleStatus.get_all_modules()
@@ -322,7 +309,6 @@ async def _patch_database_reload(prepare):
 
 @asynccontextmanager
 async def _isolated_reload_lifecycle():
-    """Keep reload state from other subtests out of cancellation-path assertions."""
 
     @asynccontextmanager
     async def maintenance_window(*_args, **_kwargs):
@@ -337,7 +323,6 @@ async def _isolated_reload_lifecycle():
 
 
 async def _cancel_reload_task(task: asyncio.Task | None):
-    """Finish a reload task before restoring its mocks and registry snapshot."""
     if task is None:
         return
     if not task.done():
@@ -360,7 +345,6 @@ def _reload_test_module(name: str, alias: str, origin: str, hook_function, event
 
 
 async def _test_reload_preserves_mixed_status_and_rebuilds_registries():
-    """同包模块重载后须分别保留启用状态，并重建 origin、别名、Hook 与 Event。"""
     package = "modules.__test_loader_reload_success"
     first_name = "__test_loader_reload_success_first"
     second_name = "__test_loader_reload_success_second"
@@ -436,7 +420,6 @@ async def _test_reload_preserves_mixed_status_and_rebuilds_registries():
 
 
 async def _test_reload_accepts_new_aliasless_module():
-    """无旧状态且 alias=None 的模块不能因读取空别名而让整次重载失败。"""
     package = "modules.__test_loader_reload_aliasless"
     module_name = "__test_loader_reload_aliasless"
     snapshot = _snapshot_module_manager()
@@ -478,7 +461,6 @@ async def _test_reload_accepts_new_aliasless_module():
 
 
 async def _test_reload_drains_queue_before_scheduler_maintenance():
-    """reload 不能持 Scheduler 锁等待会再次申请该锁的 Queue handler。"""
     order = []
 
     @asynccontextmanager
@@ -508,7 +490,6 @@ async def _test_reload_drains_queue_before_scheduler_maintenance():
 
 
 async def _test_reload_python_failure_restores_all_registries():
-    """Python 重载中途失败时，部分新注册不能污染旧模块、别名、Hook 或 Event。"""
     package = "modules.__test_loader_reload_python_failure"
     module_name = "__test_loader_reload_python_failure"
     partial_name = "__test_loader_reload_partial"
@@ -570,7 +551,6 @@ async def _test_reload_python_failure_restores_all_registries():
 
 
 async def _test_reload_reports_database_reinitialization_failure():
-    """新数据库模型失败时须恢复旧模块注册和原 ModuleStatus，而不是只返回失败。"""
     package = "modules.__test_loader_reload_database_failure"
     module_name = "__test_loader_reload_database_failure"
     snapshot = _snapshot_module_manager()
@@ -642,7 +622,6 @@ async def _test_reload_reports_database_reinitialization_failure():
 
 
 async def _test_reload_failure_restores_entire_python_module_tree():
-    """Python 已导入、数据库或其他后置校验失败时也必须恢复旧 sys.modules。"""
     package = "modules.__test_loader_reload_module_tree_rollback"
     module_name = "__test_loader_reload_module_tree_rollback"
     snapshot = _snapshot_module_manager()
@@ -691,7 +670,6 @@ async def _test_reload_failure_restores_entire_python_module_tree():
 
 
 async def _test_reload_stops_runtime_before_database_swap():
-    """旧 runtime 必须先用旧数据库 context 清理，之后才能切换数据库。"""
     package = "modules.__test_loader_reload_db_order"
     module_name = "__test_loader_reload_db_order"
     snapshot = _snapshot_module_manager()
@@ -755,7 +733,6 @@ async def _test_reload_stops_runtime_before_database_swap():
 
 
 def _test_reload_defers_cross_module_bindings():
-    """兄弟文件先执行的装饰器须等目标模块重新注册后再绑定。"""
     package = "modules.__test_loader_reload_deferred"
     module_name = "__test_loader_reload_deferred"
     snapshot = _snapshot_module_manager()
@@ -778,7 +755,6 @@ def _test_reload_defers_cross_module_bindings():
 
 
 def _test_related_modules_respect_package_boundary():
-    """名称互为前缀的包（如 wiki / wikilog）不能被当作同一个热重载范围。"""
     snapshot = _snapshot_module_manager()
     first_name = "__test_loader_package_boundary_first"
     second_name = "__test_loader_package_boundary_second"
@@ -793,7 +769,6 @@ def _test_related_modules_respect_package_boundary():
 
 
 def _test_reload_dependency_closure_is_dependency_first():
-    """重载依赖包时必须先重载依赖，再重载使用它的模块。"""
     with (
         patch.object(ModulesManager, "_rebuild_dependency_graph"),
         patch.dict(
@@ -811,7 +786,6 @@ def _test_reload_dependency_closure_is_dependency_first():
 
 
 def _test_dependency_scan_covers_from_import_and_dynamic_import():
-    """依赖图须识别 from modules import 与常量 import_module 调用。"""
     package = "modules.__test_loader_dependency_scan"
     with TemporaryDirectory() as temp_dir:
         root = Path(temp_dir)
@@ -835,7 +809,6 @@ def _test_dependency_scan_covers_from_import_and_dynamic_import():
 
 
 def _test_locale_fingerprint_detects_removed_files():
-    """删除模块全部 Locale 文件时也必须产生不同指纹。"""
     package = "modules.__test_loader_locale_removal"
     with TemporaryDirectory() as temp_dir:
         module_file = Path(temp_dir) / "__init__.py"
@@ -853,7 +826,6 @@ def _test_locale_fingerprint_detects_removed_files():
 
 
 def _test_reload_syncs_missing_module_config_fields():
-    """reload 后新增的模块配置字段应通过授权接口补写。"""
     package = "modules.__test_loader_config_sync"
     config_module_name = f"{package}.config"
 
@@ -883,7 +855,6 @@ def _test_reload_syncs_missing_module_config_fields():
 
 
 def _test_schema_fingerprint_covers_schema_attributes():
-    """schema 指纹必须覆盖 unique、索引、列名、约束和外键参数。"""
 
     class ProbeField:
         def __init__(self, **overrides):
@@ -915,7 +886,6 @@ def _test_schema_fingerprint_covers_schema_attributes():
 
 
 def _test_reload_py_module_visits_nested_modules_once():
-    """隔离重载按原 sys.modules 顺序重新 import 整个模块树。"""
     root_name = "__test_loader_reload_tree"
     module_names = [root_name, f"{root_name}.child", f"{root_name}.child.grandchild", f"{root_name}.sibling"]
     fake_modules = {name: ModuleType(name) for name in module_names}
@@ -937,7 +907,6 @@ def _test_reload_py_module_visits_nested_modules_once():
 
 
 def _test_reload_py_module_propagates_child_failure():
-    """任一子模块失败都须让整个包返回 -999，不能被其它成功计数抵消。"""
     root_name = "__test_loader_reload_failure_tree"
     child_name = f"{root_name}.child"
     fake_modules = {root_name: ModuleType(root_name), child_name: ModuleType(child_name)}
@@ -962,7 +931,6 @@ def _test_reload_py_module_propagates_child_failure():
 
 
 def _test_reload_py_module_uses_fresh_namespace():
-    """重载应替换模块对象，旧函数持有的模块字典不能被原地改写。"""
     module_name = "__test_loader_fresh_namespace"
     old_module = ModuleType(module_name)
     old_module.version = "old"
@@ -984,7 +952,6 @@ def _test_reload_py_module_uses_fresh_namespace():
 
 
 async def _test_concurrent_reload_fails_before_mutation():
-    """第二个模块重载必须立即失败，不能等待锁后与数据库维护流程互锁。"""
 
     package = "modules.__test_loader_reload_concurrent"
     module_name = "__test_loader_reload_concurrent"
@@ -1034,7 +1001,6 @@ async def _test_concurrent_reload_fails_before_mutation():
 
 
 async def _test_initial_load_rolls_back_partial_registration():
-    """启动导入失败时不能留下半注册模块；仅配置模块本身缺失才可忽略。"""
     broken_package = "modules.__test_loader_initial_broken"
     optional_package = "modules.__test_loader_initial_optional"
     broken_name = "__test_loader_initial_broken"
@@ -1088,7 +1054,6 @@ async def _test_initial_load_rolls_back_partial_registration():
 
 
 async def _test_cancelled_reload_restores_registry_and_status():
-    """取消已修改状态的热重载时，须恢复旧注册表与持久化启用状态。"""
     package = "modules.__test_loader_reload_cancelled"
     module_name = "__test_loader_reload_cancelled"
     snapshot = _snapshot_module_manager()
@@ -1156,7 +1121,6 @@ async def _test_cancelled_reload_restores_registry_and_status():
 
 
 async def _test_cancelled_commit_keeps_committed_generation():
-    """取消发生在 commit 中时，必须等待 commit 完成且不得回滚新代。"""
     package = "modules.__test_loader_reload_commit_cancel"
     module_name = "__test_loader_reload_commit_cancel"
     snapshot = _snapshot_module_manager()
@@ -1234,7 +1198,6 @@ async def _test_cancelled_commit_keeps_committed_generation():
 
 
 async def _test_load_state_changes_only_after_persistence():
-    """全局加载状态持久化失败时，内存标志不能提前翻转。"""
     module_name = "__test_loader_persisted_state"
     snapshot = _snapshot_module_manager()
     try:
@@ -1271,7 +1234,6 @@ async def _test_load_state_changes_only_after_persistence():
 
 
 async def _test_unload_drains_queue_before_stopping_runtime():
-    """unload 必须排空在途 handler 后，才关闭 Scheduler 与模块 runtime。"""
     module_name = "__test_loader_unload_order"
     snapshot = _snapshot_module_manager()
     order = []

@@ -16,7 +16,6 @@ from core.utils.media import resolve_media_base64, resolve_media_path
 
 
 def _inner_exception(error: BaseException) -> BaseException:
-    """取出重试装饰器包裹的最内层异常。"""
     while isinstance(error, RetryError):
         inner = error.last_attempt.exception()
         if inner is None:
@@ -26,7 +25,6 @@ def _inner_exception(error: BaseException) -> BaseException:
 
 
 def _png_bytes() -> bytes:
-    """生成合法 PNG 内容，用于模拟真实图片响应体。"""
     buffer = BytesIO()
     PILImage.new("RGB", (2, 2), "red").save(buffer, format="PNG")
     return buffer.getvalue()
@@ -41,8 +39,6 @@ class _FakeResponse:
 
 
 class _FakeClient:
-    """模拟 httpx.AsyncClient 的异步上下文管理器。"""
-
     def __init__(self, content: bytes):
         self.content = content
 
@@ -57,7 +53,6 @@ class _FakeClient:
 
 
 async def _test_image_element_missing_file_raises() -> bool:
-    """本地图片缺失时 get 抛出 FileNotFoundError。"""
     try:
         await ImageElement.assign("missing-image-fixture.png").get()
     except FileNotFoundError:
@@ -66,7 +61,6 @@ async def _test_image_element_missing_file_raises() -> bool:
 
 
 async def _test_image_element_get_image_accepts_png() -> bool:
-    """响应体为图片时 get_image 落盘并返回缓存路径。"""
     content = _png_bytes()
     with patch("core.builtins.message.elements.httpx.AsyncClient", return_value=_FakeClient(content)):
         path = await ImageElement.assign("https://example.com/image.png").get()
@@ -77,7 +71,6 @@ async def _test_image_element_get_image_accepts_png() -> bool:
 
 
 async def _test_image_element_get_image_rejects_non_image() -> bool:
-    """响应体为 HTML 等非图片内容时，下载失败且不落盘。"""
     client = _FakeClient(b"<html>hotlink protection</html>")
     with patch("core.builtins.message.elements.httpx.AsyncClient", return_value=client):
         try:
@@ -89,7 +82,6 @@ async def _test_image_element_get_image_rejects_non_image() -> bool:
 
 
 async def _test_resolve_media_path_for_local_image() -> bool:
-    """本地图片文件存在时解析出原路径。"""
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as image_file:
         image_file.write(_png_bytes())
         image_path = image_file.name
@@ -100,12 +92,10 @@ async def _test_resolve_media_path_for_local_image() -> bool:
 
 
 async def _test_resolve_media_path_skips_missing_image() -> bool:
-    """本地图片缺失时返回 None，交由调用方跳过。"""
     return await resolve_media_path(ImageElement.assign("missing-image-fixture.png")) is None
 
 
 async def _test_resolve_media_path_skips_failed_download() -> bool:
-    """网络图片内容非法时返回 None。"""
     element = ImageElement.assign("https://example.com/blocked.png")
     with patch(
         "core.builtins.message.elements.ImageElement.get",
@@ -115,7 +105,6 @@ async def _test_resolve_media_path_skips_failed_download() -> bool:
 
 
 async def _test_resolve_media_path_for_local_media_files() -> bool:
-    """音频与视频文件存在且非空时解析出原路径。"""
     created = []
     try:
         for element_type, suffix in ((AudioElement, ".mp3"), (VideoElement, ".mp4")):
@@ -132,7 +121,6 @@ async def _test_resolve_media_path_for_local_media_files() -> bool:
 
 
 async def _test_resolve_media_path_skips_missing_or_empty_media_files() -> bool:
-    """音频/视频文件缺失或为空时返回 None。"""
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as empty_file:
         empty_path = empty_file.name
     try:
@@ -145,7 +133,6 @@ async def _test_resolve_media_path_skips_missing_or_empty_media_files() -> bool:
 
 
 async def _test_resolve_media_base64_encodes_file_content() -> bool:
-    """resolve_media_base64 返回不带 MIME 前缀的原始 Base64。"""
     content = _png_bytes()
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as image_file:
         image_file.write(content)
@@ -158,7 +145,6 @@ async def _test_resolve_media_base64_encodes_file_content() -> bool:
 
 
 async def _test_resolve_media_base64_returns_none_for_unavailable_media() -> bool:
-    """元素不可用时 resolve_media_base64 返回 None。"""
     return (
         await resolve_media_base64(ImageElement.assign("missing-image-fixture.png")) is None
         and await resolve_media_base64(AudioElement.assign("missing-audio-fixture.mp3")) is None

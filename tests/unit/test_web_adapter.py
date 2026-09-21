@@ -290,14 +290,12 @@ async def _test_restart_schedule_is_singleton_and_retained() -> bool:
 
 
 def _featured_session(session_id: str) -> SessionInfo:
-    """带 Web 平台能力位的会话，供元素渲染测试使用。"""
     session = _session(session_id)
     inject_features(session, web_features)
     return session
 
 
 async def _capture_send(session: SessionInfo, chain: MessageChain | MessageNodes) -> dict:
-    """发送消息并返回首条 Socket 收到的 JSON 负载。"""
     source = _RecordingWebSocket()
     WebContextManager.context[session.session_id] = {"websocket": source}
     await WebContextManager.send_message(session, chain)
@@ -423,7 +421,6 @@ async def _test_message_nodes_sends_nodes_type() -> bool:
 
 
 async def _test_unavailable_media_elements_are_skipped() -> bool:
-    """底层文件缺失的媒体元素不产生前端消息字典。"""
     session = _session("web-unavailable-media-session")
     return (
         await _serialize_element(ImageElement.assign("missing-image-fixture.png"), session) is None
@@ -433,7 +430,6 @@ async def _test_unavailable_media_elements_are_skipped() -> bool:
 
 
 async def _test_missing_media_chain_keeps_text_only() -> bool:
-    """媒体元素不可用时消息链仅发送剩余文本。"""
     session = _featured_session("web-missing-media-session")
     try:
         payload = await _capture_send(session, MessageChain.assign([Plain("hello"), Image("missing.png")]))

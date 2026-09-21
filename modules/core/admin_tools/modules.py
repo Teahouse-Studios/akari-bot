@@ -31,7 +31,6 @@ BOT_PERMISSION_PROMPTS = {
 
 
 def format_bot_permissions(msg: Bot.MessageSession, permissions: list[str]) -> str:
-    """将机器人权限字段渲染为管理员可读的名称列表。"""
     locale = msg.session_info.locale
     return locale.t("message.delimiter").join(
         locale.t(

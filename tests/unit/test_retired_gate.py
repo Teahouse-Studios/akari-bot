@@ -1,12 +1,4 @@
-"""core.utils.retired 单元测试 - 迁移关系解析、退役判定与介入点。
-
-本文件集中放置所有改动 ``CoreConfig.retired_clients`` 的用例：``tester.py`` 并发执行各个
-func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，分散在多个文件中改动会互相覆盖。
-同一 func_case 内部则是串行的，因此集中于此即可避免竞争。
-
-末尾的等待任务用例须要数据库与已加载的模块，因为它们经由真实的 ``parser()`` 求证介入点的位置，
-而非只验判据本身。
-"""
+"""core.utils.retired 单元测试 - 迁移关系解析、退役判定与介入点。"""
 
 import asyncio
 from unittest.mock import AsyncMock, patch
@@ -40,7 +32,6 @@ from modules.core.hooks.routing import channel_claim_cache
 
 
 def _use_routes(entries: list):
-    """临时替换迁移关系配置并重新解析，返回原值供还原。"""
     original = CoreConfig.retired_clients
     CoreConfig.retired_clients = entries
     reload_retired_routes()
@@ -48,13 +39,11 @@ def _use_routes(entries: list):
 
 
 def _restore_routes(original: list):
-    """还原迁移关系配置并重新解析。"""
     CoreConfig.retired_clients = original
     reload_retired_routes()
 
 
 async def _test_client_judgement():
-    """测试退役判定 - 按客户端名判定，大小写敏感且未配置时恒为假"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["QQ -> QQBot"])
@@ -76,7 +65,6 @@ async def _test_client_judgement():
 
 
 async def _test_target_judgement():
-    """测试退役判定 - 按场景 ID 的平台前缀判定"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["QQ -> QQBot"])
@@ -94,7 +82,6 @@ async def _test_target_judgement():
 
 
 async def _test_parse_basic_route():
-    """测试关系解析 - 解析出源与目标，分隔符两侧的空白被去除"""
     try:
         routes = parse_retired_routes(["QQ -> QQBot", "  KOOK->Discord  "])
         return routes == {"QQ": "QQBot", "KOOK": "Discord"}
@@ -104,7 +91,6 @@ async def _test_parse_basic_route():
 
 
 async def _test_parse_source_only():
-    """测试关系解析 - 只写源时目标为 None，表示不提供迁移去处"""
     try:
         return parse_retired_routes(["QQ"]) == {"QQ": None}
 
@@ -113,7 +99,6 @@ async def _test_parse_source_only():
 
 
 async def _test_parse_ignores_malformed():
-    """测试关系解析 - 含多个分隔符或源为空的项被整条忽略"""
     try:
         routes = parse_retired_routes(["QQ -> QQBot -> Discord", "-> Discord", "", "KOOK -> Discord"])
         return routes == {"KOOK": "Discord"}
@@ -123,7 +108,6 @@ async def _test_parse_ignores_malformed():
 
 
 async def _test_parse_duplicate_source_keeps_first():
-    """测试关系解析 - 同一源重复出现时以首次为准"""
     try:
         return parse_retired_routes(["QQ -> QQBot", "QQ -> Discord"]) == {"QQ": "QQBot"}
 
@@ -132,7 +116,6 @@ async def _test_parse_duplicate_source_keeps_first():
 
 
 async def _test_route_allows_matching_pair():
-    """测试来源校验 - 同一条关系的两端放行"""
     try:
         original = CoreConfig.retired_clients
         CoreConfig.retired_clients = ["QQ -> QQBot", "KOOK -> Discord"]
@@ -147,7 +130,6 @@ async def _test_route_allows_matching_pair():
 
 
 async def _test_route_rejects_cross_pair():
-    """测试来源校验 - 跨关系兑换被拒绝"""
     try:
         original = CoreConfig.retired_clients
         CoreConfig.retired_clients = ["QQ -> QQBot", "KOOK -> Discord"]
@@ -164,7 +146,6 @@ async def _test_route_rejects_cross_pair():
 
 
 async def _test_route_rejects_when_no_target():
-    """测试来源校验 - 源未配置迁移去处时一律拒绝"""
     try:
         original = CoreConfig.retired_clients
         CoreConfig.retired_clients = ["QQ"]
@@ -179,7 +160,6 @@ async def _test_route_rejects_when_no_target():
 
 
 async def _test_merge_is_allowed():
-    """测试退役白名单 - merge 模块获得放行"""
     try:
         return is_module_allowed_when_retired("merge") and "merge" in RETIRED_ALLOWED_MODULES
 
@@ -188,7 +168,6 @@ async def _test_merge_is_allowed():
 
 
 async def _test_other_module_blocked():
-    """测试退役白名单 - 其余模块一律拦下"""
     try:
         return not is_module_allowed_when_retired("wiki") and not is_module_allowed_when_retired(None)
 
@@ -197,7 +176,6 @@ async def _test_other_module_blocked():
 
 
 async def _test_push_filters_retired_target():
-    """测试推送过滤 - 退役平台的场景被滤除，其余保留"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -219,7 +197,6 @@ async def _test_push_filters_retired_target():
 
 
 async def _test_push_filter_keeps_all_when_unconfigured():
-    """测试推送过滤 - 未配置迁移关系时不滤除任何场景"""
     original = CoreConfig.retired_clients
     try:
         _use_routes([])
@@ -234,7 +211,6 @@ async def _test_push_filter_keeps_all_when_unconfigured():
 
 
 async def _test_retired_yields_to_alive():
-    """测试通道让位 - 同通道存在非退役场景时退役场景让位"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -249,7 +225,6 @@ async def _test_retired_yields_to_alive():
 
 
 async def _test_retired_alone_does_not_yield():
-    """测试通道让位 - 通道内只剩退役场景时照常认领"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -264,7 +239,6 @@ async def _test_retired_alone_does_not_yield():
 
 
 async def _test_different_channel_does_not_yield():
-    """测试通道让位 - 非退役场景位于其他通道时不让位"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -279,7 +253,6 @@ async def _test_different_channel_does_not_yield():
 
 
 async def _test_alive_never_yields():
-    """测试通道让位 - 非退役场景自身不适用让位规则"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RETIRETEST -> ALIVETEST"])
@@ -294,7 +267,6 @@ async def _test_alive_never_yields():
 
 
 async def _session(target_id: str, client: str, text: str = "") -> MessageSession:
-    """建立用于真实 parser 检查的会话。"""
     session_info = await SessionInfo.assign(
         target_id=target_id,
         target_from=f"{client}|Group",
@@ -307,16 +279,6 @@ async def _session(target_id: str, client: str, text: str = "") -> MessageSessio
 
 
 async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
-    """
-    令退役场景的一条消息走一遍真实的 ``parser()``，观察同通道内挂起的等待任务是否被它触发。
-
-    等待任务按消息通道共享，故须由 ``parser()`` 而非判据函数本身求证：判据即便正确，
-    介入点排在任务检查之后仍拦不下这条路径。空消息在任务检查之后随即返回，恰好只跑到待测的这一段。
-
-    :param prefix: 客户端名前缀，各用例互不相同以免共用 union。
-    :param with_alive: 通道内是否另有存活场景。
-    :return: 等待任务是否被退役场景的消息触发。
-    """
     retired_client = f"{prefix}R"
     retired_target = f"{retired_client}|Group|x"
     _use_routes([f"{retired_client} -> {prefix}A"])
@@ -353,7 +315,6 @@ async def _probe_wait_task(prefix: str, with_alive: bool) -> bool:
 
 
 async def _test_retired_yields_wait_task():
-    """测试等待任务 - 同通道存在存活场景时，退役场景的消息不触发挂起的等待任务"""
     original = CoreConfig.retired_clients
     try:
         return not await _probe_wait_task("WTA", with_alive=True)
@@ -366,7 +327,6 @@ async def _test_retired_yields_wait_task():
 
 
 async def _test_retired_keeps_wait_task_when_alone():
-    """测试等待任务 - 通道内只剩退役场景时照常触发，迁移流程的确认不致中断"""
     original = CoreConfig.retired_clients
     try:
         return await _probe_wait_task("WTB", with_alive=False)
@@ -379,7 +339,6 @@ async def _test_retired_keeps_wait_task_when_alone():
 
 
 async def _probe_merge_command_route(command: str, order: tuple[str, str], prefix: str) -> bool:
-    """让迁移关系两端依次处理同一条命令，返回是否仅由期望端进入模块执行。"""
     retired_client = f"{prefix}R"
     alive_client = f"{prefix}A"
     retired_target = f"{retired_client}|Group|x"
@@ -418,7 +377,6 @@ async def _probe_merge_command_route(command: str, order: tuple[str, str], prefi
 
 
 async def _test_merge_start_routes_to_retired_source():
-    """测试迁移命令 - 同通道目标端先收到裸 merge 时仍由退役源端执行。"""
     original = CoreConfig.retired_clients
     try:
         return await _probe_merge_command_route("~merge", ("alive", "retired"), "MRS")
@@ -427,7 +385,6 @@ async def _test_merge_start_routes_to_retired_source():
 
 
 async def _test_merge_token_routes_to_alive_target():
-    """测试迁移命令 - 同通道退役源端先收到 token 命令时仍由存活目标端执行。"""
     original = CoreConfig.retired_clients
     try:
         return await _probe_merge_command_route("~merge token ABCDEF", ("retired", "alive"), "MRT")
@@ -436,7 +393,6 @@ async def _test_merge_token_routes_to_alive_target():
 
 
 async def _test_union_push_skips_retired():
-    """测试组内推送 - 退役平台的场景不参与组内推送，队首落到存活场景"""
     original = CoreConfig.retired_clients
     try:
         _use_routes(["RPUSHR -> RPUSHA"])

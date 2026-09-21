@@ -1,10 +1,4 @@
-"""本地化时间格式化的非 ASCII 字面文本测试。
-
-语言文件中的 ``time.*.format`` 带有非 ASCII 字面文本（如韩文 ``%Y년 %m월 %d일``）。
-Windows 上 ``datetime.strftime()`` 会先把整个格式串按进程 ANSI 代码页编码，直接调用
-即抛出 ``UnicodeEncodeError``；上报邮件的 HTML、会话的 ``format_time()`` 与
-``FormattedTimeElement`` 都必须经 ``safe_strftime()`` 按指令与字面文本分离后再格式化。
-"""
+"""本地化时间格式化的非 ASCII 字面文本测试。"""
 
 import re
 from datetime import datetime, timedelta
@@ -27,10 +21,6 @@ KO_RENDERED = f"{KO_TIME_TEXT} (UTC+8)"
 
 
 def _ko_locale() -> Locale:
-    """取韩文本地化对象，并确认语言文件确实带有非 ASCII 格式串。
-
-    :return: ``ko_kr`` 本地化对象；语言文件未按预期加载时返回 ``None``。
-    """
     locale = Locale("ko_kr")
     if locale.t("time.date.format") != KO_DATE_FORMAT or locale.t("time.time.format") != KO_TIME_FORMAT:
         Logger.error("ko_kr locale data is missing, cannot verify localized time format")
@@ -39,19 +29,10 @@ def _ko_locale() -> Locale:
 
 
 def _directive_pattern(fmt: str) -> str:
-    """把格式串转换成匹配其产物的正则，字面文本须原样出现。
-
-    :param fmt: strftime 格式串。
-    :return: 正则表达式。
-    """
     return "".join(r"\d+" if token.startswith("%") else re.escape(token) for token in re.split(r"(%[A-Za-z%])", fmt))
 
 
 def _session_info() -> SessionInfo:
-    """构造带 +8 时区与韩文地区的会话信息。
-
-    :return: 会话信息。
-    """
     return SessionInfo(
         target_id="TEST|Group|localized_time",
         target_from="TEST|Group",
@@ -64,7 +45,6 @@ def _session_info() -> SessionInfo:
 
 
 def _test_safe_strftime_keeps_non_ascii_literals() -> bool:
-    """safe_strftime: 非 ASCII 字面文本与指令一同产出，且不抛 UnicodeEncodeError。"""
     locale = _ko_locale()
     if locale is None:
         return False
@@ -76,7 +56,6 @@ def _test_safe_strftime_keeps_non_ascii_literals() -> bool:
 
 
 def _test_session_format_time_localizes_non_ascii_format() -> bool:
-    """MessageSession.format_time: 会话时间文案使用本地化的非 ASCII 格式串。"""
     rendered = FetchedMessageSession(session_info=_session_info()).format_time(FIXED_TIMESTAMP)
     if rendered != KO_RENDERED:
         Logger.error(f"Unexpected format_time result: {rendered!r}")
@@ -85,7 +64,6 @@ def _test_session_format_time_localizes_non_ascii_format() -> bool:
 
 
 def _test_formatted_time_element_localizes_non_ascii_format() -> bool:
-    """FormattedTimeElement: 消息元素时间文案使用本地化的非 ASCII 格式串。"""
     element = FormattedTimeElement.assign(FIXED_TIMESTAMP)
     rendered = element.to_str(_session_info())
     if rendered != KO_RENDERED:
@@ -95,7 +73,6 @@ def _test_formatted_time_element_localizes_non_ascii_format() -> bool:
 
 
 def _test_report_email_html_localizes_non_ascii_format() -> bool:
-    """上报邮件 HTML: 页脚时间同样走本地化的非 ASCII 格式串。"""
     with patch.object(smtp, "locale", _ko_locale()):
         html = smtp._build_email_html("body", "footer")
     if not re.search(_directive_pattern(f"{KO_DATE_FORMAT} {KO_TIME_FORMAT}"), html):

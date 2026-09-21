@@ -454,7 +454,6 @@ async def _test_maintenance_pumps_nested_results_before_entering():
 
 
 async def _test_non_exclusive_maintenance_pumps_cleanup_rpc():
-    """非独占维护窗口不得阻断清理阶段发起的响应回收。"""
     async with _peers() as (caller, receiver):
 
         @caller.register("cleanup")
@@ -509,7 +508,6 @@ async def _test_bad_protocol_and_late_success_are_not_silent():
 
 
 async def _test_ambiguous_send_failure_discards_possible_insert():
-    """send 已落库后才抛错时，等待型调用仍应按未知结果清理已知任务 ID。"""
     async with _peers() as (caller, _receiver):
         original_send = caller.transport.send
 
@@ -533,7 +531,6 @@ async def _test_ambiguous_send_failure_discards_possible_insert():
 
 
 async def _test_abandon_cleanup_is_bounded():
-    """A stuck cleanup backend must not extend a timed-out RPC indefinitely."""
     async with _peers() as (caller, receiver):
 
         @receiver.register("cleanup-timeout")
@@ -559,7 +556,6 @@ async def _test_abandon_cleanup_is_bounded():
 
 
 async def _test_response_cleanup_failure_does_not_hide_result():
-    """终态结果已读入内存后，删除失败不得终止结果泵或改写调用结果。"""
     async with _peers() as (caller, receiver):
 
         @receiver.register("cleanup-failure")
@@ -587,7 +583,6 @@ async def _test_response_cleanup_failure_does_not_hide_result():
 
 
 async def _test_malformed_deadline_is_protocol_failure():
-    """bool 是 int 的子类，但不得被解释成合法的 Unix deadline。"""
     async with _peers() as (caller, receiver):
         request = replace(caller._request(receiver.name, "never", None, timeout=RPC_TEST_TIMEOUT), deadline=True)
         await caller.transport.send(request)
@@ -597,7 +592,6 @@ async def _test_malformed_deadline_is_protocol_failure():
 
 
 async def _test_nested_maintenance_window_is_reentrant_for_owner():
-    """同一任务嵌套维护窗口时复用外层锁，避免不可重入锁导致死锁。"""
     async with _peers() as (caller, _receiver):
         async with asyncio.timeout(RPC_TEST_TIMEOUT):
             async with caller.maintenance_window():
@@ -609,7 +603,6 @@ async def _test_nested_maintenance_window_is_reentrant_for_owner():
 
 
 async def _test_concurrent_maintenance_windows_are_serialized():
-    """不同任务的维护窗口必须串行，避免后进入者在 Registry 已恢复 ready 后执行维护。"""
     async with _peers() as (caller, _receiver):
         first_entered = asyncio.Event()
         release_first = asyncio.Event()

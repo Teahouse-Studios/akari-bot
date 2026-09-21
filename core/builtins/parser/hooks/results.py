@@ -1,7 +1,4 @@
-"""Parser 入口 hook 的类型化结果。
-
-禁止用任意 truthy 值隐式短路；执行器只识别本模块中的类型。
-"""
+"""Parser 入口 hook 的类型化结果。"""
 
 from __future__ import annotations
 
@@ -72,10 +69,7 @@ class RecoveryProposal(HookResult):
 
 @define
 class Handled(HookResult):
-    """错误/恢复入口专用：该 hook 已处理，不再走默认错误提示。
-
-    观察入口禁止使用。
-    """
+    """错误/恢复入口专用：该 hook 已处理，不再走默认错误提示。"""
 
     data: dict = field(factory=dict)
 

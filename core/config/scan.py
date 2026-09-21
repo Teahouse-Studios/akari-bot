@@ -1,8 +1,4 @@
-"""配置模板扫描。
-
-配置的生成统一在 bot.py 的 pre_init() 中完成，bot 与 server 子进程一律只读，
-因此这里必须把全部模板扫全：任何遗漏的键都会在子进程读取时抛出 ConfigOperationError。
-"""
+"""配置模板扫描。"""
 
 import importlib
 from pathlib import Path
@@ -43,8 +39,6 @@ def iter_config_template_modules() -> list[str]:
 
 def scan_config_templates() -> list[str]:
     """导入全部配置模板，补全配置文件中缺失的键。
-
-    扫描不区分 bot 与模块的启用状态：配置项一律补全，否则用户先禁用再启用便会撞上缺键。
 
     :return: 加载失败的配置模板模块名列表，空列表表示全部成功。
     """

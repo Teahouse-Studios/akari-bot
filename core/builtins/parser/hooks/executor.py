@@ -1,11 +1,4 @@
-"""Parser / 出站入口 hook 执行器。
-
-契约见 README。关键点：
-- 订阅 generation 优先取 staging（reload commit 前 refresh）
-- 观察入口不接受控制结果
-- 超时/失败丢弃草稿与控制结果
-- 出站 before_send 逐 hook 草稿提交
-"""
+"""Parser / 出站入口 hook 执行器。"""
 
 from __future__ import annotations
 
@@ -136,7 +129,6 @@ class ParserHookExecutor(HookExecutor):
         return isinstance(result, allowed)
 
     def _result_fields_valid(self, result: HookResult) -> bool:
-        """控制结果的字段必须在 hook 边界校验，不能让核心承担后续类型错误。"""
         if isinstance(result, RecoveryProposal):
             return (
                 isinstance(result.trigger_msg, str)

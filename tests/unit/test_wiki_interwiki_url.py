@@ -16,7 +16,6 @@ MIRAHEZE_TARGET_CURID_URL = "https://allthetropes.org/w/index.php?curid=58214"
 
 
 async def _test_global_interwiki_uses_api_url():
-    """Siteinfo 缺少全域前缀时，应使用查询响应中的 iwurl。"""
     source = WikiLib(SOURCE_API)
     source.wiki_info = WikiInfo(
         api=SOURCE_API,
@@ -86,7 +85,6 @@ async def _test_global_interwiki_uses_api_url():
 
 
 async def _test_multilevel_interwiki_resolves_target_title():
-    """多级前缀应从最终 URL 还原标题，并保留完整逻辑前缀。"""
     source = WikiLib(MIRAHEZE_SOURCE_API)
     source.wiki_info = WikiInfo(
         api=MIRAHEZE_SOURCE_API,

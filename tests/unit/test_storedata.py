@@ -5,7 +5,6 @@ from core.utils.storedata import get_stored_list, update_stored_list
 
 
 async def _test_get_stored_list_empty():
-    """测试 get_stored_list() - 获取空存储数据"""
     try:
         result = await get_stored_list("TEST", "nonexistent_key")
         return result == []
@@ -14,7 +13,6 @@ async def _test_get_stored_list_empty():
 
 
 async def _test_update_and_get_stored_list():
-    """测试 update_stored_list() 和 get_stored_list() - 更新并获取存储数据"""
     try:
         test_data = [{"name": "test", "value": 123}]
         await update_stored_list("TEST", "test_key", test_data)
@@ -34,7 +32,6 @@ async def _test_update_and_get_stored_list():
 
 
 async def _test_stored_list_multiple_keys():
-    """测试多个存储键"""
     try:
         await update_stored_list("TEST", "key1", [1, 2, 3])
         await update_stored_list("TEST", "key2", ["a", "b", "c"])

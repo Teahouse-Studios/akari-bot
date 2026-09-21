@@ -22,8 +22,6 @@ _bud_mutation_lock = asyncio.Lock()
 def split_amount(total: int, count: int) -> list[int]:
     """将 ``total`` 片花瓣随机拆成 ``count`` 份，每份至少 1 片、总和守恒。
 
-    采用带平均值保底的二倍均值法，减少极端小额。
-
     :param total: 花瓣总数。
     :param count: 拆分份数。
     :raises ValueError: 当 ``count`` 非正或 ``total < count`` 时无法拆分。
@@ -56,7 +54,6 @@ def generate_bud_id(existing_ids: set[str]) -> str:
 
 
 async def _refund_expired_bud(bud: dict) -> None:
-    """将过期花苞中未领取的花瓣退回发送者。"""
     claimed = sum(r.get("amount", 0) for r in bud.get("records", []))
     remaining = bud.get("total", 0) - claimed
     if remaining <= 0:
@@ -67,7 +64,6 @@ async def _refund_expired_bud(bud: dict) -> None:
 
 
 async def _load_buds() -> list[dict]:
-    """读取当前有效的花苞列表，过期花苞退回未领取花瓣并顺带清理。"""
     buds = await get_stored_list(BUD_STORE_SCOPE, BUD_STORE_KEY) or []
     now = datetime.now().timestamp()
     kept: list[dict] = []
@@ -126,10 +122,7 @@ async def release_buds() -> int:
 
 
 async def claim_bud(msg: Bot.MessageSession, code: str) -> tuple[str, dict | None, int | None]:
-    """领取花苞，返回 ``(状态, 花苞, 领取数量)``。
-
-    状态取值：``not_found`` / ``empty`` / ``already`` / ``success``。
-    """
+    """领取花苞，返回 ``(状态, 花苞, 领取数量)``。"""
     sender_union_info = msg.session_info.sender_union_info
     union_id = msg.session_info.sender_union_id
     if not sender_union_info or not union_id:
@@ -160,7 +153,6 @@ async def claim_bud(msg: Bot.MessageSession, code: str) -> tuple[str, dict | Non
 
 
 async def _load_buds_for_update(connection) -> tuple[list[dict], StoredData | None]:
-    """在交易中鎖定花苞資料，並把過期退款與清理一併完成。"""
     stored = await (
         StoredData.filter(stored_key=f"{BUD_STORE_SCOPE}|{BUD_STORE_KEY}")
         .using_db(connection)

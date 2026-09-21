@@ -1,9 +1,4 @@
-"""wiki 结果消息的按钮挂载测试 - 只挂按钮的空消息不应被发出。
-
-未找到条目且检索到候选时，正文全部交给等待链路（wait_msg_list），msg_list 保持为空；
-此前仍会挂上只含「X」的按钮组，于是平台先收到一条带关闭按钮的空消息，再收到候选条目
-按钮。按钮只能依附在确有正文的消息上。
-"""
+"""wiki 结果消息的按钮挂载测试 - 只挂按钮的空消息不应被发出。"""
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -27,7 +22,6 @@ SUGGESTIONS = ["示例条目 1", "示例条目 2", "示例条目 3", "示例条�
 
 
 def _is_button_only(message_chain) -> bool:
-    """消息链是否非空但只由按钮组构成（即没有可展示的正文）。"""
     elements = list(message_chain)
     return bool(elements) and all(isinstance(element, ButtonFrameElement) for element in elements)
 
@@ -48,13 +42,6 @@ def _target() -> SimpleNamespace:
 
 
 async def _run_query(page: PageInfo, session: MessageSession) -> tuple[list, list]:
-    """
-    跑一遍 query_pages，捕获主流程发出的消息与等待链路的提示。
-
-    :param page: 由 WikiLib.parse_page_info 返回的页面信息。
-    :param session: 会话对象。
-    :return: (主流程消息链列表, wait_next_message 的调用参数列表)
-    """
     sent = []
     waits = []
 
@@ -94,7 +81,6 @@ async def _run_query(page: PageInfo, session: MessageSession) -> tuple[list, lis
 
 
 async def _test_not_found_sends_no_button_only_message():
-    """未找到条目且检索到多个候选时，只发候选按钮提示，不再先发一条带「X」的空消息"""
     page = PageInfo(
         info=WikiInfo(api=API, realurl=ARTICLE, is_allowed=True),
         title=SUGGESTIONS[0],
@@ -120,7 +106,6 @@ async def _test_not_found_sends_no_button_only_message():
 
 
 async def _test_single_suggestion_sends_no_button_only_message():
-    """未找到条目且只有一个候选时，只发确认提示，同样不发出空按钮消息"""
     page = PageInfo(
         info=WikiInfo(api=API, realurl=ARTICLE, is_allowed=True),
         title=SUGGESTIONS[0],
@@ -146,7 +131,6 @@ async def _test_single_suggestion_sends_no_button_only_message():
 
 
 async def _test_found_page_keeps_render_buttons():
-    """有正文时渲染预览与关闭按钮照常挂在该消息上"""
     page = PageInfo(
         info=WikiInfo(api=API, realurl=ARTICLE, is_allowed=True),
         title="示例页面",

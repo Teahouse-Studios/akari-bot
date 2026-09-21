@@ -107,7 +107,6 @@ class _HTMLAtomParser(HTMLParser):
 
 
 def _escape_telegram_text(text: str, parse_mentions: bool = True) -> str:
-    """转义普通文本，仅将本平台 AT 码转换为受控的 Telegram HTML。"""
     if not parse_mentions:
         return escape(text)
 
@@ -161,7 +160,6 @@ def split_telegram_html(text: str, limit: int) -> list[str]:
 
 
 def _split_plain_telegram_text(text: str, limit: int) -> list[str]:
-    """纯文本快速拆分，避免为每个字符创建 HTML atom 对象。"""
     chunks = []
     start = 0
     while start < len(text):

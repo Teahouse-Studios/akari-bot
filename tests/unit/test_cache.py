@@ -7,7 +7,6 @@ from core.utils.cache import random_cache_path
 
 
 def _test_random_cache_path_no_ext():
-    """测试 random_cache_path() - 无扩展名"""
     try:
         path = random_cache_path()
         if path is None:
@@ -22,7 +21,6 @@ def _test_random_cache_path_no_ext():
 
 
 def _test_random_cache_path_with_ext():
-    """测试 random_cache_path() - 带扩展名"""
     try:
         path = random_cache_path("png")
         if path is None:

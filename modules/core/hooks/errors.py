@@ -54,7 +54,6 @@ def format_error_detail(msg_or_session, text: str) -> MessageChain:
 
 
 def format_error_detail_markdown(text: str) -> MessageChain:
-    """将错误详情包装成可按接收方能力降级的 Markdown 代码块。"""
     longest_fence = max((len(match.group(0)) for match in re.finditer(r"`+", text)), default=0)
     fence = "`" * max(3, longest_fence + 1)
     return MessageChain.assign(Markdown(f"{fence}\n{text}\n{fence}", disable_joke=True, allow_parse=False))
@@ -117,7 +116,6 @@ async def process_exception(msg: "Bot.MessageSession", error: Exception) -> None
 
 @errors.hook(point=HookPoint.EXECUTION_ERROR, priority=100, name="default_feedback", server_scope=True, timeout=0)
 async def _execution_error(ctx: "Bot.ParserHookContext"):
-    """统一承接 parser 的异常反馈；默认策略不回落到核心 parser。"""
     error = ctx.data.get("error")
     # SendMessageFailed 继承 BaseException，是消息会话控制流的一部分，不能用
     # ``Exception`` 作为入口过滤，否则发送失败会被 parser 误记为未处理异常。
@@ -142,7 +140,6 @@ async def _execution_error(ctx: "Bot.ParserHookContext"):
 
 @errors.hook("format_error_detail")
 async def _format_error_detail_hook(ctx: "Bot.ModuleHookContext") -> MessageChain:
-    """供 RPC 报告使用的格式化能力，调用方无需依赖本模块实现。"""
     text = ctx.args.get("text", "")
     if not ctx.session_info.support_markdown:
         return MessageChain.assign(Plain(str(text), disable_joke=True, allow_parse=False))

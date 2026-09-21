@@ -16,7 +16,6 @@ WEB_RENDER_REQUEST_ERRORS = ("invalid_options", "invalid_mode", "missing_target"
 
 
 def _local_config() -> dict[str, Any]:
-    """本进程读取到的 WebRender 配置，供前端展示当前生效的设置。"""
     return {
         "enable": bool(WebRenderConfig.enable),
         "browser_type": WebRenderConfig.browser_type,
@@ -28,7 +27,6 @@ def _local_config() -> dict[str, Any]:
 
 
 async def _read_json_body(request: Request) -> dict:
-    """读取 JSON 请求体；非对象一律按无效请求处理。"""
     try:
         body = await request.json()
     except Exception:
@@ -55,11 +53,7 @@ async def get_web_render(request: Request):
 @app.post("/api/webrender/control")
 @limiter.limit("6/minute")
 async def control_web_render(request: Request):
-    """启动、关闭或重启服务端的 WebRender 浏览器。
-
-    服务端离线等运行期问题以 200 + ``ok: false`` 回报并附带原因码，只有请求本身
-    不合法（请求体或 action）才返回 4xx。
-    """
+    """启动、关闭或重启服务端的 WebRender 浏览器。"""
     ip = get_client_ip(request)
     verify_jwt(request)
     body = await _read_json_body(request)
@@ -84,12 +78,7 @@ async def control_web_render(request: Request):
 @app.post("/api/webrender/test")
 @limiter.limit("10/minute")
 async def test_web_render(request: Request):
-    """执行一次渲染测试。
-
-    ``mode`` 为 ``status`` 时只探测可用性；``source`` 取渲染后的页面源码；
-    ``screenshot`` 返回裸 base64 图片列表（data URL 前缀由前端拼接）。
-    渲染失败属于运行期问题，同样以 200 + ``ok: false`` 回报。
-    """
+    """执行一次渲染测试。"""
     ip = get_client_ip(request)
     verify_jwt(request)
     body = await _read_json_body(request)

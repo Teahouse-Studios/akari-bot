@@ -1,15 +1,4 @@
-"""
-配置装饰器模块。
-
-该模块提供了一个配置装饰器，用于将 Python 类自动转换为配置对象。
-装饰器会自动处理配置文件的生成和加载，使得定义配置变得简单直观。
-
-主要功能：
-- 为类自动生成配置文件
-- 支持类型注解和类型检查
-- 支持敏感信息加密存储
-- 自动生成 __init__ 和 __repr__ 方法
-"""
+"""配置装饰器模块。"""
 
 from collections.abc import Mapping
 import inspect
@@ -19,22 +8,11 @@ from typing import Any, Literal, TypeVar, get_args
 from core.exports import add_export
 from . import CFGManager, ALLOWED_TYPES
 
-# 类型变量，用于泛型支持
 T = TypeVar("T")
 
 
 class ConfigMeta(type):
-    """配置模板的元类，使类属性访问直接返回配置文件中的当前值。
-
-    必须实现在元类上：类体内的 ``__getattr__`` 只对实例生效，对类属性访问不起作用。
-    """
-
     def __getattr__(cls, name: str):
-        """转调 :meth:`CFGManager.get` 读取配置项。
-
-        :param name: 配置项名称。
-        :raises AttributeError: 该名称未在模板中声明。
-        """
         field = cls.__dict__.get("__config_fields__", {}).get(name)
         if field is None:
             # 未声明的名称照常报错：键名书写有误时立即抛出异常，而非静默返回默认值
@@ -48,19 +26,6 @@ def _process_class(
     secret=False,
     standalone_comments: Mapping[str, tuple[str, ...]] | None = None,
 ) -> type[T]:
-    """处理类并转换为配置对象。
-
-    该函数是核心的转换逻辑，它会：
-    1. 提取类的所有注解（类型提示）
-    2. 为类生成自定义的 __init__ 和 __repr__ 方法
-    3. 自动生成和管理配置文件
-
-    :param cls: 要处理的类对象
-    :param table_name: 配置表名称，用于在配置文件中标识该配置块
-    :param secret: 是否将该配置的值视为敏感信息进行加密存储（默认 False）
-    :param standalone_comments: 配置字段名前的独立注释块。键为字段名，值为按顺序排列的 i18n 键元组
-    :return: 处理后的类对象，具有自动生成的初始化和字符串表示方法
-    """
     cls_annotations = {k: v for k, v in inspect.get_annotations(cls).items() if not k.startswith("__")}
     # 未写类型标注时退回类属性本身，使无标注的模板仍能生成配置项
     if not cls_annotations:
@@ -94,8 +59,6 @@ def _process_class(
     def __init__(self, **kwargs):
         """自动生成的初始化方法。
 
-        支持通过关键字参数初始化所有字段。任何未提供的字段会使用模板中声明的默认值。
-
         :param **kwargs: `<字段名>=<值>` 的键值对，用于初始化对象属性
         """
         for field_name, field in config_fields.items():
@@ -112,7 +75,6 @@ def _process_class(
         return f"{cls.__name__}({fields_str})"
 
     def __generate_config_file():
-        """登记全部字段，并为配置文件中缺失的项补写默认值。"""
         for attr_name, attr_type in cls_annotations.items():
             if not attr_name.startswith("__"):
                 # 仅有类型标注而无赋值，表示该项必填且无默认值：此处取 None 交由下游处理，
@@ -146,19 +108,17 @@ def _process_class(
                 # 注意不可用 attr_name 与 CFGManager.values 比较：后者的键为配置文件名而非配置项键名，
                 # 二者不存在交集，该判据将恒为真，使每个属性都触发一次全量重写
                 if not CFGManager.has(attr_name, secret, table_name):
-                    # 创建新的配置项
                     CFGManager.get(
                         attr_name,
                         __attr if __attr != "" else None,  # 默认值：使用类属性值或None
                         # 须传入已规整的 __attr_type：含不受支持成员的联合类型（如 str | None）在上方已被置空，
                         # 此处若回退为原始的 attr_type，下游将取得不具有 __name__ 的 UnionType 而报错
-                        get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,  # 类型信息
-                        secret,  # 敏感信息标志
-                        table_name,  # 配置表名
+                        get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,
+                        secret,
+                        table_name,
                         _generate=True,  # 生成模式标志
                         standalone_comment_keys=standalone_comments.get(attr_name, ()),
                     )
-                    # 保存修改到配置文件
                     CFGManager.save()
 
     # 执行配置文件生成，为该类创建配置项，同时填充 config_fields
@@ -189,22 +149,6 @@ def on_config(
 ):
     """配置装饰器工厂函数。
 
-    这是一个装饰器工厂，返回实际的装饰器函数。
-
-    示例:
-    ```
-        @on_config("my_config", table_type="module")
-        class MyConfig:
-            api_key: str = "default_key"
-            timeout: int = 30
-            enable_debug: bool = False
-    ```
-
-    该装饰器会自动：
-    1. 为 MyConfig 类生成 __init__ 和 __repr__ 方法
-    2. 在配置文件中创建 `module_my_config` 表
-    3. 为所有类属性创建配置项
-
     :param table_name: 配置表的基本名称。最终的表名为 "table_type_table_name" 的形式
                    例如：`table_type="module", table_name="myconfig" -> "module_myconfig"`
     :param table_type: 配置表的类型，用于分类和命名空间隔离（默认""）
@@ -221,13 +165,10 @@ def on_config(
     def wrap(cls: type[T]):
         """实际的装饰器函数。
 
-        构造完整的表名并调用_process_class进行处理。
-
         :param cls: 要装饰的配置类
 
         :return: 处理后的类，具有自动生成的配置管理功能
         """
-        # 构造表名：如果 table_type 不为空，则添加前缀和下划线分隔符
         __type = table_type + "_" if table_type != "" else table_type
         return _process_class(cls, __type + table_name, secret, standalone_comments)
 
@@ -236,13 +177,6 @@ def on_config(
 
 def on_base_config():
     """表外顶层配置项的装饰器工厂函数。
-
-    示例:
-    ```
-        @on_base_config()
-        class BaseConfig:
-            default_locale: str = default_locale
-    ```
 
     :return: 装饰器函数，接收一个类并返回处理后的类
     """
@@ -264,15 +198,6 @@ def on_bot_config(
 ):
     """平台配置装饰器工厂函数。
 
-    等价于 ``on_config(bot_name, table_type="bot", secret=secret)``，供 ``bots/`` 下的配置模板使用。
-
-    示例:
-    ```
-        @on_bot_config("onebot")
-        class OneBotConfig:
-            qq_typing_emoji: int = 181
-    ```
-
     :param bot_name: 平台名称，须与 `bots/` 下的目录名一致：守护进程以 ``bot_<目录名>``
                  的表名查找该平台的 `enable` 配置。最终的表名为 "bot_平台名"
     :param secret: 是否将此配置中的所有值视为敏感信息进行加密存储（默认 False）
@@ -290,16 +215,6 @@ def on_module_config(
 ):
     """模块配置装饰器工厂函数。
 
-    等价于 ``on_config(module_name, table_type="module", secret=secret)``，供 ``modules/`` 下的配置模板使用。
-
-    示例:
-    ```
-        @on_module_config("dice")
-        class DiceConfig:
-            dice_limit: int = 100
-    ```
-
-
     :param module_name: 模块名称，须与 `module()` 声明的名称一致。最终的表名为 "module_模块名"
     :param secret: 是否将此配置中的所有值视为敏感信息进行加密存储（默认 False）
     :param standalone_comments: 配置字段名前的独立注释块。键为字段名，值为 i18n 键元组
@@ -309,5 +224,4 @@ def on_module_config(
     return on_config(module_name, "module", secret, standalone_comments)
 
 
-# 将 _process_class 函数导出到系统模块导出表中，使其可被其他模块导入使用
 add_export(_process_class)

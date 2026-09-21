@@ -484,19 +484,6 @@ def construct_support(ret, mod, desc):
 
 
 def nim_handler(ret, description):
-    """
-    Parses 3ds nim error codes in the following ranges:
-    005-2000 to 005-3023:
-     - NIM got a result of its own. Took description and added by 52000.
-    005-4200 to 005-4399:
-     - NIM got an HTTP result. Took description and added by 54200, cutting out at 54399 if it was beyond that.
-    005-4400 to 005-4999:
-     - Range of HTTP codes, however, can suffer collision.
-    005-5000 to 005-6999:
-     - SOAP Error Code range, when <ErrorCode> is not 0 on the SOAP responses.
-    005-7000 to 005-9999:
-     - Non specific expected results are formatted to an error code in nim by taking result module and shifting right by 5, and taking the result description and masked with 0x1F, then added both together along with 57000.
-    """
     # If we have a specific description for it in our knowledgebase,
     # show it instead of doing the rest of the processing.
     error = nim.get_error(description)

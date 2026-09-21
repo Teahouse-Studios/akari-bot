@@ -215,9 +215,7 @@ class HTML2Text(html.parser.HTMLParser):
         return None
 
     def handle_emphasis(self, start: bool, tag_style: dict[str, str], parent_style: dict[str, str]) -> None:
-        """
-        Handles various text emphases
-        """
+        """Handles various text emphases"""
         tag_emphasis = google_text_emphasis(tag_style)
         parent_emphasis = google_text_emphasis(parent_style)
 
@@ -652,9 +650,7 @@ class HTML2Text(html.parser.HTMLParser):
         self.br_toggle = "  "
 
     def o(self, data: str, puredata: bool = False, force: bool | str = False) -> None:
-        """
-        Deal with indentation and whitespace
-        """
+        """Deal with indentation and whitespace"""
         if self.abbr_data is not None:
             self.abbr_data += data
 

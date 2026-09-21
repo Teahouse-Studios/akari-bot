@@ -10,7 +10,6 @@ from core.tester import Tester, func_case
 
 
 async def _test_email_takes_priority_over_targets():
-    """SMTP 配置完整时只发送邮件，不触发场景上报。"""
     direct_sender = AsyncMock()
     with (
         patch.object(SMTPConfig, "enable_email_report", True),
@@ -24,7 +23,6 @@ async def _test_email_takes_priority_over_targets():
 
 
 async def _test_targets_are_used_without_email():
-    """未启用 SMTP 时发送到传入的上报场景。"""
     direct_sender = AsyncMock()
     bot = MagicMock()
     bot.fetch_union_target_list = AsyncMock(return_value=["target-a", "target-b"])
@@ -43,7 +41,6 @@ async def _test_targets_are_used_without_email():
 
 
 async def _test_no_targets_does_not_send():
-    """未启用 SMTP 且没有上报场景时不发送。"""
     direct_sender = AsyncMock()
     with patch.object(SMTPConfig, "enable_email_report", False):
         await send_report("message", "subject", "body", direct_sender=direct_sender, targets=[])
@@ -51,10 +48,6 @@ async def _test_no_targets_does_not_send():
 
 
 async def _test_external_smtp_client_uses_starttls_and_login():
-    """邮件上报使用外部 SMTP 服务商，并按配置执行 STARTTLS 与登录。
-
-    邮件正文为纯文本加 HTML 备用，尾部附带引导误收件人前往 issue 反馈的链接，且内嵌 Logo。
-    """
     smtp = MagicMock()
     smtp_context = smtp.__enter__.return_value
     with (

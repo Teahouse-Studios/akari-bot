@@ -14,7 +14,6 @@ FLAG = "require_check_dirty_words"
 
 
 async def _test_flag_reaches_fetched_session():
-    """测试文字过滤 - 平台声明的开关须传递到主动推送会话上"""
     alive = Alive.values.copy()
     try:
         Alive.values.clear()
@@ -67,7 +66,6 @@ async def _test_flag_reaches_fetched_session():
 
 
 async def _test_wiki_content_check_respects_dirty_word_feature():
-    """Wiki 内容检查须受 require_check_dirty_words 开关控制。"""
     from modules.wiki.utils.wikilib import WikiLib
 
     class SessionInfo:

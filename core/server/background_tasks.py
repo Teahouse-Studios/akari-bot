@@ -1,12 +1,4 @@
-"""
-服务器后台任务模块。
-
-定义服务器启动后运行的后台任务，包括：
-- 定期的会话检查和清理
-- 过期临时数据清理
-- IP 信息获取
-- WebRender 初始化
-"""
+"""服务器后台任务模块。"""
 
 import asyncio
 
@@ -23,13 +15,7 @@ _background_task: asyncio.Task[None] | None = None
 
 
 async def hourly_background_task():
-    """每小时执行一次的后台检查任务。
-
-    功能：
-    - 执行会话的后台检查
-    - 清理已完成的任务队列
-    - 清理过期的临时数据
-    """
+    """每小时执行一次的后台检查任务。"""
     await SessionTaskManager.bg_check()
     await JobQueuesTable.clear_task()
     await ExpiringTempDict.clear_all()
@@ -60,7 +46,6 @@ async def _fetch_public_ip() -> str | None:
 
 
 async def fetch_ip_info():
-    """获取本机公网 IP 信息并记入 ``Secret``，供日志脱敏与展示使用。"""
     try:
         ip = await _fetch_public_ip()
         if not ip:
@@ -79,13 +64,7 @@ async def fetch_ip_info():
 
 
 async def init_background_task():
-    """初始化后台任务。
-
-    启动以下服务：
-    1. IP信息获取
-    2. WebRender 初始化
-    3. 检查并记录 WebRender 状态
-    """
+    """初始化后台任务。"""
 
     async def _init_web_render():
         Logger.info("Starting WebRender...")
@@ -108,7 +87,6 @@ async def init_background_task():
 
 
 def _background_task_done(task: asyncio.Task[None]) -> None:
-    """取回后台初始化任务的异常，避免出现 ``Task exception was never retrieved``。"""
     try:
         task.result()
     except asyncio.CancelledError:

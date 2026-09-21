@@ -13,12 +13,7 @@ RECOMMENDED_WIKIS: list[tuple[str, str]] = [
 
 
 def get_recommend_button_data() -> list[ButtonRows]:
-    """
-    构造推荐 Wiki 的按钮数据，每个元素为一行按钮。
-
-    按钮点击后经 interaction 事件另行建立会话，该会话的可用前缀取自全局配置，
-    并不包含 QQ 平台在常规消息入口所用的斜杠前缀，故此处须使用 command_prefix，
-    若改用当前会话的前缀，回流的命令将匹配不到前缀而被丢弃。
+    """构造推荐 Wiki 的按钮数据，每个元素为一行按钮。
 
     :return: 按钮数据，键为按钮文本，值为点击后发出的命令。
     """
@@ -26,11 +21,7 @@ def get_recommend_button_data() -> list[ButtonRows]:
 
 
 async def finish_with_start_wiki_not_set(msg: Bot.MessageSession) -> NoReturn:
-    """
-    提示当前场景尚未设置默认 Wiki 并终结会话。
-
-    在支持按钮的平台上，额外为具备设置权限的用户附上推荐 Wiki 的按钮。
-    按钮回流后走完整的命令解析流程，权限由 wiki set 命令自身再次校验。
+    """提示当前场景尚未设置默认 Wiki 并终结会话。
 
     :param msg: 消息会话对象。
     """

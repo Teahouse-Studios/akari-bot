@@ -14,7 +14,6 @@ started_time = time.time()
 
 
 async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
-    """构造各进程内存占用的展示行；无任何数据时返回空列表。"""
     usages, failures = await gather_process_usage()
     if not usages and not failures:
         return []
@@ -51,13 +50,11 @@ async def _build_process_usage_lines(msg: Bot.MessageSession) -> list[str]:
 
 
 def _format_running_time() -> str:
-    """返回自模块加载以来的运行时长，格式为 ``HH:MM:SS``。"""
     td_seconds = time.time() - started_time
     return f"{int(td_seconds // 3600):02d}:{int((td_seconds % 3600) // 60):02d}:{int(td_seconds % 60):02d}"
 
 
 def _format_status_result(msg: Bot.MessageSession, result: MessageChain) -> MessageChain:
-    """在支持 Markdown 的平台将 ping / status 信息整理到代码块中。"""
     if not msg.session_info.support_markdown:
         return result
 

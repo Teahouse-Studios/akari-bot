@@ -11,12 +11,10 @@ from core.tester import Tester, func_case
 
 
 def _rebuild(text: str) -> str:
-    """把切分结果按原文拼回，供各用例复用。"""
     return "".join(part.raw if isinstance(part, InlineMention) else part for part in iter_at_code(text))
 
 
 def _test_iter_splits_surrounding_text():
-    """AT 码应与前后文本交替产出，并记录原文与区间。"""
     try:
         parts = list(iter_at_code("hi <AT:QQ|123> bye"))
         return (
@@ -33,7 +31,6 @@ def _test_iter_splits_surrounding_text():
 
 
 def _test_iter_supports_alternate_marker():
-    """`<@:client|id>` 与 `<AT:client|id>` 等价。"""
     try:
         parts = list(iter_at_code("<@:QQ|123>"))
         return (
@@ -44,7 +41,6 @@ def _test_iter_supports_alternate_marker():
 
 
 def _test_iter_supports_extra_fields():
-    """`client|extra|id` 形式取最后一段作为用户 ID。"""
     try:
         parts = list(iter_at_code("<AT:QQ|guild|123>"))
         return (
@@ -55,7 +51,6 @@ def _test_iter_supports_extra_fields():
 
 
 def _test_broadcast_detection():
-    """非数字 ID（如 all）视为全体提及。"""
     try:
         broadcast = next(part for part in iter_at_code("<AT:QQ|all>") if isinstance(part, InlineMention))
         user = next(part for part in iter_at_code("<AT:QQ|123>") if isinstance(part, InlineMention))
@@ -65,7 +60,6 @@ def _test_broadcast_detection():
 
 
 def _test_plain_text_passthrough():
-    """无 AT 码时原样产出单个文本片段；空文本不产出片段。"""
     try:
         return list(iter_at_code("hello")) == ["hello"] and list(iter_at_code("")) == []
     except Exception:
@@ -73,10 +67,6 @@ def _test_plain_text_passthrough():
 
 
 def _test_adjacent_at_codes_follow_legacy_pattern():
-    """记录既有正则语义：同一行内相邻 AT 码会合并为一次匹配并取最后一个 ID。
-
-    该行为在本重构前就由各适配器共用的正则决定，此处固定下来以免无意改变线上输出。
-    """
     try:
         parts = list(iter_at_code("<AT:QQ|1><AT:QQ|2>"))
         return (
@@ -90,7 +80,6 @@ def _test_adjacent_at_codes_follow_legacy_pattern():
 
 
 def _test_roundtrip_preserves_text():
-    """切分结果拼接后必须与原文逐字节一致。"""
     cases = (
         "",
         "no at code",
@@ -109,7 +98,6 @@ def _test_roundtrip_preserves_text():
 
 
 def _test_render_platform_syntax():
-    """各平台的渲染回调只作用于本平台的 AT 码。"""
     templates = {
         "QQ": lambda at: f"[CQ:at,qq={at.id}]",
         "Discord": lambda at: f"<@{at.id}>",
@@ -131,7 +119,6 @@ def _test_render_platform_syntax():
 
 
 def _test_render_keeps_foreign_atcode():
-    """非本平台的 AT 码原样保留。"""
     try:
         text = "hi <AT:Discord|7> bye"
         return render_at_code(text, "QQ", lambda at: f"@{at.id}") == text
@@ -140,7 +127,6 @@ def _test_render_keeps_foreign_atcode():
 
 
 def _test_render_is_inline():
-    """渲染结果嵌入文本流，不引入换行或空格等分隔符。"""
     try:
         return render_at_code("a<AT:QQ|1>b", "QQ", lambda at: f"@{at.id}") == "a@1b"
     except Exception:
@@ -148,7 +134,6 @@ def _test_render_is_inline():
 
 
 def _test_spans_match_pattern_regions():
-    """受保护区间应精确覆盖 AT 码原文，且不吞掉相邻 AT 码之间的正文。"""
     try:
         text = "a <AT:QQ|123> b <@:Discord|456>"
         spans = spans_at_code(text)
@@ -166,7 +151,6 @@ def _test_spans_match_pattern_regions():
 
 
 def _test_wrap_sender_id_idempotent():
-    """发送者 ID 引用被包装为 AT 码，已包装的不重复包装。"""
     try:
         return (
             wrap_sender_id("TEST|0 说 hi", "TEST") == "<AT:TEST|0> 说 hi"
@@ -178,7 +162,6 @@ def _test_wrap_sender_id_idempotent():
 
 
 def _test_wrap_sender_id_preserves_backslashes():
-    """文本中的反斜杠是普通字符，包装 AT 码时不得吞掉。"""
     cases = (
         (r"a\b", r"a\b"),
         (r"a\\b", r"a\\b"),
@@ -193,7 +176,6 @@ def _test_wrap_sender_id_preserves_backslashes():
 
 
 def _test_wrap_then_render():
-    """wrap_sender_id 产出的 AT 码必须能被渲染回提及。"""
     try:
         return render_at_code(wrap_sender_id("TEST|123 hi", "TEST"), "TEST", lambda at: f"@{at.id}") == "@123 hi"
     except Exception:
@@ -223,7 +205,6 @@ async def test_atcode(tester: Tester):
 
 
 def _test_allow_parse_false_keeps_raw_text():
-    """调用方跳过渲染时（allow_parse=False），含 AT 码的文本必须原样保留。"""
     try:
         return _rebuild("hi <AT:QQ|123> bye") == "hi <AT:QQ|123> bye"
     except Exception:

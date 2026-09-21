@@ -155,7 +155,6 @@ class OneBotContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        # 这里可以添加权限检查的逻辑
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
         async def _check():
@@ -236,10 +235,7 @@ class OneBotContextManager(ContextManager):
         message: MessageChain | MessageNodes,
         quote: bool = True,
     ) -> list[str]:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
 
-        # ctx: Event = cls.context.get(session_info.session_id)
         send = None
         if session_info.sender_id is None:
             if session_info.target_from == target_group_prefix:
@@ -708,8 +704,6 @@ class OneBotContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
         flag = cls.typing_flags.pop(session_info.session_id, None)
         if flag:
             flag.set()
@@ -717,14 +711,12 @@ class OneBotContextManager(ContextManager):
         if task:
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
-        # 这里可以添加结束输入状态的逻辑
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加错误处理逻辑
 
         if session_info.target_from == target_group_prefix:
             qq_account = Temp.data.get("qq_account")

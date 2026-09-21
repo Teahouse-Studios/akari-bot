@@ -6,13 +6,6 @@ from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
 
 
 async def get_diving_prober_bind_info(msg: Bot.MessageSession):
-    """取得该用户的水鱼绑定记录。
-
-    CHUNITHM 成绩由 OAuth 端点提供，查询对象由令牌决定，因此必须存在这位用户自己的授权记录。
-
-    :param msg: 消息会话。
-    :return: 该用户的绑定记录。
-    """
     bind_info = await DivingProberBindInfo.get_by_sender_id(msg, create=False)
     if not diving_fish_bind_usable(bind_info):
         await msg.finish(
@@ -25,13 +18,6 @@ async def get_diving_prober_bind_info(msg: Bot.MessageSession):
 
 
 async def get_lxns_prober_bind_info(msg: Bot.MessageSession):
-    """取得该用户的落雪绑定记录。
-
-    查询对象由令牌决定，故必须存在这位用户自己的授权记录。
-
-    :param msg: 消息会话。
-    :return: 该用户的绑定记录。
-    """
     bind_info = await LxnsProberBindInfo.get_by_sender_id(msg, create=False)
     if not bind_info or not bind_info.refresh_token:
         await msg.finish(

@@ -7,7 +7,6 @@ from modules.ai import context
 
 
 def _test_context_isolated_by_context_key_and_can_branch():
-    """上下文按场景隔离，且每次快照创建都是可独立续写的分叉。"""
     with patch.object(context, "_context_windows", context.ExpiringTempDict(exp=context.CONTEXT_EXPIRY)):
         parent_id = context.create_context([{"role": "user", "content": "start"}], "context-a")
         child_id = context.create_context(

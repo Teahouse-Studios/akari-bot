@@ -10,10 +10,7 @@ FORUM_TABLE_MAX_ROWS = 5
 
 
 def build_markdown_choice_table(choices: list[tuple[str, str]], command_prefix: str) -> MessageChain:
-    """将 Wiki 选择项渲染为可点击的 Markdown 表格。
-
-    ``choices`` 中每项为（展示文本，查询标题）。表格最多使用五行，超过五条后从右侧追加列。
-    """
+    """将 Wiki 选择项渲染为可点击的 Markdown 表格。"""
     if not choices:
         return MessageChain.create()
 

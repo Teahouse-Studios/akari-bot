@@ -527,12 +527,6 @@ async def _():
     for id_ in matched:
 
         async def _send_logs(session_info, id_=id_):
-            """
-            在承担推送的会话上算出并逐条发出该组的日志。
-
-            日志文本须按目标会话现算：敏感词检查取决于该会话所在平台是否要求，同组的不同平台
-            未必一致。逐条发送故在此处完成，工厂随即返回 None，不再交由外层发送。
-            """
             session = await FetchedMessageSession.from_session_info(session_info)
             for wiki in matched[id_]:
                 try:

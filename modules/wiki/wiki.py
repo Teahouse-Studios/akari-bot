@@ -67,8 +67,6 @@ WIKI_RENDER_MODE_OFF = "off"
 
 
 class _WikiMessageTracker:
-    """Track every message emitted by one Wiki query for bulk cleanup."""
-
     def __init__(self, session: Bot.MessageSession):
         self.session_info = session.session_info
         self.message_ids: list[str | int] = []
@@ -97,7 +95,6 @@ class _WikiMessageTracker:
 
 
 def _wiki_render_mode(session: Bot.MessageSession | QueryInfo) -> str:
-    """Return the scene's WebRender mode, with button platforms defaulting to preview buttons."""
     if not isinstance(session, MessageSession):
         return WIKI_RENDER_MODE_AUTO
     target_union = session.session_info.target_union_info
@@ -116,7 +113,6 @@ async def _render_preview_items(
     *,
     report_failure: bool = False,
 ) -> MessageChain:
-    """Render pre-checked pages/sections and optionally report legacy failures."""
     result = MessageChain.create()
     for item in items:
         try:
@@ -149,7 +145,6 @@ async def _render_preview_items(
 
 
 def _build_render_preview_callback(items: list[dict], headers: dict, tracker: _WikiMessageTracker):
-    """Build a callback for preview and bulk deletion buttons."""
 
     async def _callback(session: Bot.MessageSession):
         action = session.as_display(text_only=True).strip()
@@ -173,7 +168,6 @@ def _build_render_preview_callback(items: list[dict], headers: dict, tracker: _W
 
 
 async def _release_background_session(session: Bot.MessageSession) -> None:
-    """Release a held context without hiding the background operation's result."""
     try:
         await session.release()
     except BaseException:
@@ -181,7 +175,6 @@ async def _release_background_session(session: Bot.MessageSession) -> None:
 
 
 async def _run_background_with_release(session: Bot.MessageSession, awaitable):
-    """Run one background operation and always release its held platform context."""
     try:
         return await awaitable
     finally:
@@ -191,7 +184,6 @@ async def _run_background_with_release(session: Bot.MessageSession, awaitable):
 async def _start_background_with_release(
     session: Bot.MessageSession, awaitable_factory, *, name: str
 ) -> asyncio.Task | None:
-    """Hold a session, then start a retained background operation with rollback on spawn failure."""
     try:
         await session.hold()
     except SessionContextUnavailable:
@@ -230,7 +222,6 @@ async def _start_background_with_release(
 
 
 async def _gather_background(*awaitables):
-    """Wait for every sibling task before propagating the first failure."""
     results = await asyncio.gather(*awaitables, return_exceptions=True)
     for result in results:
         if isinstance(result, BaseException):
@@ -239,7 +230,6 @@ async def _gather_background(*awaitables):
 
 
 def _build_section_callback(page: PageInfo):
-    """Freeze one page's section choices for a callback dispatched after this query returns."""
     title = page.title
     sections = tuple(page.sections or ())
     api = page.info.api
@@ -256,7 +246,6 @@ def _build_section_callback(page: PageInfo):
 
 
 def _build_forum_callback(page: PageInfo):
-    """Freeze one forum listing so later callbacks cannot observe another loop iteration's page."""
     api = page.info.api
     topics = {
         str(key): value["text"]
@@ -298,7 +287,6 @@ def _build_not_found_choice_prompt(
     preferred_title: str,
     support_button: bool,
 ) -> MessageChain:
-    """Build a missing-page choice prompt suited to the platform's interaction capabilities."""
     possible_titles = possible_titles[:MAX_RESEARCH_SUGGESTIONS]
     prompt = MessageChain.assign(I18NContext("wiki.message.not_found.autofix.choice", title=title))
     preferred_number = str(possible_titles.index(preferred_title) + 1) if preferred_title in possible_titles else "1"
@@ -316,7 +304,6 @@ def _build_not_found_choice_prompt(
 
 
 def _build_not_found_choice_rows(possible_titles: list[str], start_index: int = 1) -> list[dict[str, str]]:
-    """Put every missing-page suggestion on its own button row."""
     return [
         {possible_title: str(index)}
         for index, possible_title in enumerate(possible_titles[:MAX_RESEARCH_SUGGESTIONS], start=start_index)
@@ -352,7 +339,6 @@ async def finish_if_wiki_blocked(msg: Bot.MessageSession, api_link: str) -> None
 
 
 def _format_page_desc(desc: str, session: Bot.MessageSession | QueryInfo):
-    """按平台能力格式化页面摘要，Markdown 会话使用块引用。"""
     if isinstance(session, MessageSession) and session.session_info.support_markdown:
         lines = desc.splitlines() or [""]
         # Markdown 元素后再拼接其它元素时，这个尾换行会与 MessageChain
@@ -491,9 +477,6 @@ async def _query_pages_impl(
             await finish_with_start_wiki_not_set(session)
     if isinstance(session, MessageSession):
         await finish_if_wiki_blocked(session, start_wiki)
-    # if lang in interwiki_list:
-    #     start_wiki = interwiki_list[lang]
-    #     lang = None
     if random_page:
         random_wiki = WikiLib(start_wiki, headers, locale=session.session_info.locale.locale)
         random_result = await random_wiki.get_json(action="query", list="random", rnnamespace="0")
@@ -1220,9 +1203,6 @@ async def auto_search(ctx: Bot.ModuleHookContext):
 
 @wiki.hook("auto_get_custom_iw_list")
 async def auto_get_custom_iw_list(ctx: Bot.ModuleHookContext):
-    """
-    Get custom interwiki list from target info.
-    """
     target = await WikiTargetInfo.get_by_target_id(ctx.session_info.target_id)
     if not target:
         return []

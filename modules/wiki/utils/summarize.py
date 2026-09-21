@@ -1,8 +1,4 @@
-"""
-Wikitext 离线摘要提取。
-
-本模块只做纯文本处理，不涉及网络请求。
-"""
+"""Wikitext 离线摘要提取。"""
 
 import re
 
@@ -73,19 +69,6 @@ MAX_SUMMARY_LINES = 5
 
 
 def _strip_braced(text: str) -> str:
-    """
-    移除成对的 {{...}} 构造，连同其中嵌套的同类构造。
-
-    须在解析前自行扫描，不能一概交给 wikitextparser：构造内部若有裸露的单个花括号
-    （如 {{#css:}} 所含的 CSS 规则），其括号配对便会失准，该构造既不算模板也不算
-    解析器函数，遂原样留在 plain_text() 的输出里被当作正文。
-
-    只移除成对者。MediaWiki 对孤立的 {{ 按字面文本渲染，其后的正文照常显示，一路
-    吞到结尾会连正文一并丢失。
-
-    :param text: 原始 Wikitext。
-    :returns: 去除成对 {{...}} 构造后的文本。
-    """
     spans = []
     stack = []
     i = 0
@@ -115,25 +98,10 @@ def _strip_braced(text: str) -> str:
 
 
 def _normalize_section(title: str) -> str:
-    """
-    归一化章节名以供比较。
-
-    章节锚点中的下划线与标题中的空格等价，wikilib 传入的章节名已将空格换作下划线。
-
-    :param title: 章节名或章节标题。
-    :returns: 归一化后的章节名。
-    """
     return title.strip().replace("_", " ")
 
 
 def _select_section(parsed: wtp.WikiText, section: str | None):
-    """
-    取出目标章节。
-
-    :param parsed: 已解析的 Wikitext。
-    :param section: 章节名。为 None 时取引言段。
-    :returns: 目标章节对象；未匹配到时返回 None。
-    """
     sections = parsed.sections
     if not sections:
         return None
@@ -148,16 +116,6 @@ def _select_section(parsed: wtp.WikiText, section: str | None):
 
 
 def _templatedata_description(wikitext: str) -> str:
-    """
-    取出 TemplateData 中的模板说明。
-
-    模板文档页的说明常整个写在 <templatedata> 的 description 字段里，而其外层的
-    {{TemplateData|...}} 会被当作模板剥离，正文遂无从取得，摘要只剩「参见」一类的
-    章节残留。取回的说明仍是 Wikitext，须由调用方再行清理。
-
-    :param wikitext: 页面的原始 Wikitext。
-    :returns: description 字段的原文；无 TemplateData、JSON 不合法或无该字段时返回空字符串。
-    """
     match = _TEMPLATEDATA.search(wikitext)
     if not match:
         return ""
@@ -173,13 +131,6 @@ def _templatedata_description(wikitext: str) -> str:
 
 
 def _extract_section_text(wikitext: str, section: str | None) -> str:
-    """
-    解析 Wikitext 并取出指定章节的正文纯文本。
-
-    :param wikitext: 待解析的 Wikitext。
-    :param section: 章节名。为 None 时取引言段。
-    :returns: 清理后的纯文本；未匹配到章节时返回空字符串。
-    """
     # 行为开关、模板类构造与语义属性链接须在解析前以文本处理：行为开关不构成任何
     # 可识别的节点，模板类构造可能因内含裸花括号而不被识别，改写链接节点则会令其失效
     cleaned = _BEHAVIOR_SWITCH.sub("", wikitext)
@@ -211,12 +162,7 @@ def _extract_section_text(wikitext: str, section: str | None) -> str:
 
 
 def extract_summary(wikitext: str, section: str | None = None) -> str:
-    """
-    离线解析 Wikitext，取出指定章节的正文纯文本。
-
-    模板、文件链接与格式标记由 plain_text() 剥离，表格与引用等噪音节点须在其之前
-    显式清除。引言取不到正文时改取 TemplateData 中的模板说明，模板文档页的正文
-    往往只写在那里。返回空字符串表示无法离线取得正文。
+    """离线解析 Wikitext，取出指定章节的正文纯文本。
 
     :param wikitext: 页面的原始 Wikitext。
     :param section: 章节名。为 None 时取引言段。
@@ -238,12 +184,6 @@ def extract_summary(wikitext: str, section: str | None = None) -> str:
 
 
 def _take_sentence(text: str) -> str | None:
-    """
-    取出文本开头的一个完整句子。
-
-    :param text: 待取句的文本。
-    :returns: 含句末标点的首句；未找到完整句子时返回 None。
-    """
     matched = re.findall(_SENTENCE_END, text, re.S | re.M)
     if not matched:
         return None
@@ -256,11 +196,7 @@ def _take_sentence(text: str) -> str | None:
 
 
 def truncate_summary(text: str) -> str:
-    """
-    将正文截断为摘要。
-
-    取开头的一句；首句短于 MIN_FIRST_SENTENCE_LENGTH 时补上第二句。随后应用长度与
-    行数上限，超出者末尾附省略号。
+    """将正文截断为摘要。
 
     :param text: 待截断的正文纯文本。
     :returns: 截断后的摘要。

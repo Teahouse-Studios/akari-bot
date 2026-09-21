@@ -19,11 +19,6 @@ def check_session_token(session_token: str) -> bool:
 
 
 def build_client() -> httpx.AsyncClient:
-    """构造带项目代理配置的 HTTP 客户端。
-
-    存档下载走 CDN 直链，必须跟随重定向，否则 PigeonRequest 中的 raise_for_status()
-    会把 302 当作错误抛出。
-    """
     return httpx.AsyncClient(follow_redirects=True, timeout=DEFAULT_TIMEOUT, proxy=proxy)
 
 

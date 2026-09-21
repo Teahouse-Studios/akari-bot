@@ -145,7 +145,6 @@ async def _(msg: Bot.MessageSession):
 
 
 def check_valid_placeholder(alias):
-    """检查占位符有效性"""
     alias_noph = alias
     phs = re.findall(r"\${(.*?)}", alias)
     for ph in phs:

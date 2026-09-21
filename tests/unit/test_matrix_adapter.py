@@ -54,7 +54,6 @@ async def _test_matrix_image_preserves_detected_mimetype():
 
 
 async def _test_matrix_unavailable_media_is_skipped():
-    """图片/音频/视频文件缺失时不上传也不发送。"""
     session = SessionInfo(
         target_id=f"{target_prefix}|!room:test",
         target_from=target_prefix,

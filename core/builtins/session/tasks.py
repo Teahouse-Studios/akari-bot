@@ -1,9 +1,4 @@
-"""
-会话任务管理模块 - 管理等待用户回复和执行回调的任务。
-
-该模块提供了 SessionTaskManager 类，用于管理异步任务队列，
-包括等待用户回复和消息回调等功能。
-"""
+"""会话任务管理模块 - 管理等待用户回复和执行回调的任务。"""
 
 import asyncio
 import time
@@ -54,10 +49,7 @@ class SessionTaskManager:
         matcher: Callable[["MessageSession"], bool] | None = None,
         allow_fallthrough: bool = False,
     ):
-        """
-        添加一个等待任务到管理器。
-
-        该方法添加一个新的异步任务到队列中，等待用户的回复。
+        """添加一个等待任务到管理器。
 
         :param msg: 消息会话对象
         :param flag: 用于同步的 asyncio.Event 对象，任务完成时将被触发
@@ -72,12 +64,10 @@ class SessionTaskManager:
         # 使用物理 ID 建立稳定索引；Union／channel 都允许在等待期间变化。
         target = msg.session_info.target_id
         sender = msg.session_info.sender_id
-        # 根据是否指定了回复 ID 来确定任务类型
         task_type = task_type or ("reply" if reply or reply_pending else "wait")
         if all_:
             sender = "all"
 
-        # 创建必要的嵌套字典结构
         if target not in cls._task_list:
             cls._task_list[target] = {}
         if sender not in cls._task_list[target]:
@@ -92,13 +82,13 @@ class SessionTaskManager:
         # 存储任务信息
         cls._task_sequence += 1
         cls._task_list[target][sender][msg] = {
-            "flag": flag,  # 同步事件标志
-            "active": True,  # 任务初始为活跃状态
-            "type": task_type,  # 任务类型
-            "reply": reply,  # 期望的回复 ID
+            "flag": flag,
+            "active": True,
+            "type": task_type,
+            "reply": reply,
             "reply_ready": asyncio.Event(),  # 平台发送完成后才能确定的物理消息 ID
-            "ts": time.time(),  # 当前时间戳
-            "timeout": timeout,  # 超时设置
+            "ts": time.time(),
+            "timeout": timeout,
             "order": cls._task_sequence,  # 跨用户专属／all 索引的稳定登记顺序
             # reply 的物理 message_id 只在发送它的客户端／平台场景中有意义；
             # 即使两个入口属于同一现实通道，也不能跨平台用碰巧相同的 ID 命中。
@@ -143,10 +133,7 @@ class SessionTaskManager:
         once: bool = False,
         allow_all_reply_ids: set[str] | None = None,
     ) -> tuple[tuple[str | None, str], str]:
-        """
-        为已发送的消息添加一个回调函数。
-
-        当接收到指定消息 ID 的回复时，会自动执行该回调函数。
+        """为已发送的消息添加一个回调函数。
 
         :param message_id: 消息 ID（可以是整数、字符串或列表）
         :param callback: 回调协程函数，当回复到达时执行
@@ -172,8 +159,8 @@ class SessionTaskManager:
         # 存储回调信息
         callback_key = (cls._callback_scope(msg), uuid.uuid4().hex)
         cls._callback_list[callback_key] = {
-            "callback": callback,  # 要执行的回调
-            "ts": time.time(),  # 添加时间戳（用于超时清理）
+            "callback": callback,
+            "ts": time.time(),
             "timeout": timeout,
             "once": once,
             "allow_all_reply_ids": frozenset(str(reply_id) for reply_id in (allow_all_reply_ids or set())),
@@ -211,13 +198,11 @@ class SessionTaskManager:
 
     @staticmethod
     def _callback_expired(callback_info: dict, now: float | None = None) -> bool:
-        """判断 callback 是否已经超过自身有效期。"""
         timeout = callback_info.get("timeout", SessionTaskManager.CALLBACK_TTL)
         return timeout is not None and (time.time() if now is None else now) - callback_info["ts"] >= timeout
 
     @staticmethod
     def _attach_callback_message_id(session: "MessageSession", callback_info: dict) -> None:
-        """Restore the physical message ID when a platform only returns a virtual reply ID."""
         session_info = session.session_info
         if session_info.message_id is not None:
             return
@@ -235,7 +220,6 @@ class SessionTaskManager:
         :param msg: 消息会话对象
         :return: 任务完成后的结果（通常是一个 MessageSession 对象），如果没有结果则返回 None
         """
-        # 检查是否存在任务结果
         task_info = cls._task_list.get(msg.session_info.target_id, {}).get(msg.session_info.sender_id, {}).get(msg)
         if task_info and "result" in task_info:
             return task_info["result"]
@@ -274,37 +258,25 @@ class SessionTaskManager:
 
     @classmethod
     async def bg_check(cls):
-        """
-        后台检查任务超时。
-
-        该方法应定期调用，用于清理超时的任务和过期的回调。
-        超时的任务将被标记为非活跃，其同步标志将被设置。
-        """
-        # 检查所有活跃任务是否超时
+        """后台检查任务超时。"""
         for target in cls._task_list:
             for sender in cls._task_list[target]:
                 for session in cls._task_list[target][sender]:
-                    # 检查任务是否活跃
                     if cls._task_list[target][sender][session]["active"]:
-                        # 计算任务已经存在的时间
                         elapsed_time = time.time() - cls._task_list[target][sender][session]["ts"]
                         timeout = cls._task_list[target][sender][session].get("timeout", 3600)
 
-                        # 如果超时，标记为不活跃并触发标志
                         if timeout is not None and elapsed_time > timeout:
                             cls._task_list[target][sender][session]["active"] = False
-                            # 设置标志，触发等待此标志的协程（无结果 = 取消）
                             cls._task_list[target][sender][session]["reply_ready"].set()
                             cls._task_list[target][sender][session]["flag"].set()
 
-        # 清理超过各自有效期的 callback
         for message_id in cls._callback_list.copy():
             if cls._callback_expired(cls._callback_list[message_id]):
                 del cls._callback_list[message_id]
 
     @classmethod
     async def _active_tasks(cls, session: "MessageSession") -> list[tuple["MessageSession", dict]]:
-        """按当前 Union／channel 拓扑返回 incoming 可命中的稳定物理 bucket。"""
         if not cls._task_list:
             return []
 
@@ -361,7 +333,6 @@ class SessionTaskManager:
         task_info: dict,
         session: "MessageSession",
     ) -> bool:
-        """持有 incoming context 后原子地把消息发布给等待命令。"""
         try:
             await session.hold()
         except Exception:
@@ -385,11 +356,7 @@ class SessionTaskManager:
 
     @classmethod
     async def check(cls, session: "MessageSession", *, allow_wait_fallthrough: bool = False) -> bool:
-        """
-        检查新消息是否匹配任何等待中的任务或回调。
-
-        当接收到新消息时调用此方法，检查是否有任务在等待此消息，
-        或是否有回调需要执行。
+        """检查新消息是否匹配任何等待中的任务或回调。
 
         :param session: 新收到的消息会话
         """
@@ -524,8 +491,6 @@ class SessionTaskManager:
         return False
 
 
-# 将 SessionTaskManager 导出到系统的导出列表中
 add_export(SessionTaskManager)
 
-# 定义模块公开接口
 __all__ = ["SessionTaskManager"]

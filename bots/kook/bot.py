@@ -170,7 +170,6 @@ async def private_add_reaction(b: khlBot, event: Event):
 
 @bot.on_event(EventTypes.JOINED_GUILD)
 async def joined_guild(b: khlBot, event: Event):
-    """接收 KOOK 服务器成员加入事件。"""
     body = event.body
     member_id = body.get("user_id")
     guild_id = event.target_id
@@ -191,7 +190,6 @@ async def joined_guild(b: khlBot, event: Event):
 
 @bot.on_event(EventTypes.EXITED_GUILD)
 async def exited_guild(b: khlBot, event: Event):
-    """接收 KOOK 服务器成员离开事件。"""
     body = event.body
     member_id = body.get("user_id")
     guild_id = event.target_id

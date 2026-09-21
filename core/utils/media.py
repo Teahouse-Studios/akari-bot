@@ -46,8 +46,6 @@ async def resolve_media_path(element: ImageElement | AudioElement | VideoElement
 async def resolve_media_base64(element: ImageElement | AudioElement | VideoElement) -> str | None:
     """取得媒体元素内容的 Base64 编码，无法取得时返回 None。
 
-    与 :func:`resolve_media_path` 相同，元素不可用时返回 None，由调用方跳过该元素。
-
     :param element: 待解析的媒体元素。
     :return: 不带 MIME 前缀的 Base64 字符串；无法取得时返回 None。
     """

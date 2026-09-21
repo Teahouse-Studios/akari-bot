@@ -1,15 +1,4 @@
-"""
-assets / data 布局迁移脚本。
-
-旧版把可写内容与只读资源一并放在 ``assets`` 下。新版按「只读留 assets、可写进 data」
-拆分：运行时产物、部署者提供的内容以及模块的下载资源改放 ``data`` 目录。
-
-升级既有部署时，从仓库根目录执行一次：
-
-    python core/scripts/migrate_assets_to_data.py [--dry-run]
-
-脚本只做移动，不覆盖目标位置已存在的文件，因而可以重复执行；已经迁移过的条目会被跳过。
-"""
+"""assets / data 布局迁移脚本。"""
 
 import shutil
 import sys
@@ -34,11 +23,6 @@ MOVES = [
 
 
 def migrate(root: Path, dry_run: bool = False) -> int:
-    """按 :data:`MOVES` 逐条迁移，返回实际处理（或 dry run 下预计处理）的条目数。
-
-    :param root: 仓库根目录。
-    :param dry_run: 为 True 时只打印计划，不做实际改动。
-    """
     moved = 0
     for source, target in MOVES:
         src = root / source

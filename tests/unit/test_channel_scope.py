@@ -26,9 +26,6 @@ async def _session(target_id: str, client: str) -> MessageSession:
 
 
 async def _states_shared(prefix: str) -> tuple[bool, bool, bool]:
-    """
-    判断同一 union 下的两个平台场景是否共用冷却、游戏状态与等待任务。
-    """
     first = await _session(f"{prefix}1|Group|x", f"{prefix}1")
     second = await _session(f"{prefix}2|Group|y", f"{prefix}2")
 
@@ -53,7 +50,6 @@ async def _states_shared(prefix: str) -> tuple[bool, bool, bool]:
 
 
 async def _test_states_isolated_across_channels():
-    """测试作用域 - 同 union 但通道号不同的场景不应共用内存态"""
     try:
         union = await TargetUnionInfo.resolve_union("CHA1|Group|x")
         await union.bind_id("CHA2|Group|y")
@@ -65,7 +61,6 @@ async def _test_states_isolated_across_channels():
 
 
 async def _test_states_shared_within_channel():
-    """测试作用域 - 并入同一消息通道后应共用内存态"""
     try:
         union = await TargetUnionInfo.resolve_union("CHB1|Group|x")
         await union.bind_id("CHB2|Group|y")
@@ -77,7 +72,6 @@ async def _test_states_shared_within_channel():
 
 
 async def _test_play_state_running_lifecycle():
-    """异常退出应清理本局，旧局退出不能关闭后来开启的新局。"""
     msg = await _session("CHGAME|Group|x", "CHGAME")
     failed = PlayState("managed_failure", msg)
     try:
@@ -101,7 +95,6 @@ async def _test_play_state_running_lifecycle():
 
 
 async def _test_petal_quota_shared_across_platforms():
-    """测试作用域 - 花瓣每日额度按 union 共享，不随平台账号翻倍"""
     union = await SenderUnionInfo.resolve_union("PETALA|1")
     await union.bind_id("PETALB|2")
 
@@ -130,7 +123,6 @@ async def _test_petal_quota_shared_across_platforms():
 
 
 async def _test_parser_cooldown_shared_within_channel_and_user_union():
-    """Parser 手动冷却应同时按消息通道和用户 Union 共享。"""
     from core.tester.mock.session import MockMessageSession
 
     target = await TargetUnionInfo.resolve_union("CDSCOPEA|Group|1")

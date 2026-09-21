@@ -20,7 +20,6 @@ CONFIG_READONLY_ENV = "AKARI_CONFIG_READONLY"
 # 故该名称在 tester.py 与 tests/run_one.py 中各以字面量重复了一次。
 UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
 
-# 基本路径
 assets_path = Path("./assets").resolve()
 bots_path = Path("./bots").resolve()
 cache_path = Path("./cache").resolve()
@@ -35,22 +34,18 @@ tests_path = Path("./tests").resolve()
 # assets 与 data 的分工：assets 只放随仓库分发的只读内容，运行时或部署者产生的内容一律写进 data。
 data_path.mkdir(parents=True, exist_ok=True)
 
-# assets 子路径（只读）
 fonts_path = assets_path / "fonts"
 templates_path = assets_path / "templates"
 
-# data 子路径（可写）
 filter_words_path = data_path / "filter_words"
 retired_path = data_path / "retired"
 union_merge_logs_path = Path(os.environ.get(UNION_MERGE_LOGS_PATH_ENV) or data_path / "union_merge_logs").resolve()
 url_audit_data_path = data_path / "url_audit"
 
-# 字体文件路径
 noto_sans_bold_path = fonts_path / "Noto Sans CJK Bold.otf"
 noto_sans_demilight_path = fonts_path / "Noto Sans CJK DemiLight.otf"
 noto_sans_symbol_path = fonts_path / "Noto Sans Symbols2 Regular.ttf"
 
-# 特殊路径
 bots_locales_path = bots_path / "*" / "locales"
 modules_locales_path = modules_path / "*" / "locales"
 
@@ -74,9 +69,6 @@ class PrivateData:
 
 def module_data_path(module_dir: str | Path) -> Path:
     """取模块的可写数据目录，并确保其存在。
-
-    模块内的 ``assets`` 只放随仓库分发的只读内容；下载所得的资源、运行时生成的索引等
-    应写入模块的 ``data`` 目录。
 
     :param module_dir: 模块根目录，例如 ``Path(__file__).parent``。
     """

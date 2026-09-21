@@ -5,7 +5,6 @@ from core.types.module import Module
 
 
 def _build(**kwargs):
-    """构造一个最小可用的模块实例。"""
     defaults = {
         "module_name": "dummy",
         "alias": None,
@@ -17,7 +16,6 @@ def _build(**kwargs):
 
 
 async def _test_default_is_false():
-    """测试语法错误提示开关 - 默认不抑制提示"""
     try:
         return _build().suppress_invalid_prompt is False
 
@@ -26,7 +24,6 @@ async def _test_default_is_false():
 
 
 async def _test_can_be_enabled():
-    """测试语法错误提示开关 - 可显式开启"""
     try:
         return _build(suppress_invalid_prompt=True).suppress_invalid_prompt is True
 
@@ -35,7 +32,6 @@ async def _test_can_be_enabled():
 
 
 async def _test_included_in_to_dict():
-    """测试语法错误提示开关 - 纳入 to_dict 序列化"""
     try:
         return _build(suppress_invalid_prompt=True).to_dict()["suppress_invalid_prompt"] is True
 

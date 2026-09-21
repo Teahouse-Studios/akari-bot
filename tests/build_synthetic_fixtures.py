@@ -1,14 +1,4 @@
-"""构造无法录制的语料。
-
-minecraft.net 对非浏览器请求返回拦截页，其内容只能由 WebRender 真实渲染取得，
-录制工具无法覆盖。此处按解析逻辑实际依赖的结构手工构造最小语料，使 minecraft_news
-与 mcv_rss 的解析、去重、推送分支得以在测试中执行；被跳过的仅是渲染本身。
-
-语料内容为虚构数据，不代表线上真实内容。
-
-使用方式：
-    python tests/build_synthetic_fixtures.py
-"""
+"""构造无法录制的语料。"""
 
 import json
 import sys

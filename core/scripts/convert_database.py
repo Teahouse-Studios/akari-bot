@@ -1,20 +1,4 @@
-"""
-数据库格式转换脚本。
-
-该脚本用于将旧版本数据库格式迁移到新版本。
-
-主要功能：
-1. 将旧表重命名为临时表（以 `_old` 前缀）
-2. 初始化新的数据库架构
-3. 从旧表中读取数据，转换格式后导入新表
-4. 支持多个模块的数据迁移
-5. 清理临时表
-
-使用情形：
-- 从无法直接增量升级的旧数据库转换至当前版本
-- 保留所有历史数据不丢失
-- 自动处理格式差异和类型转换
-"""
+"""数据库格式转换脚本。"""
 
 import os
 import sys
@@ -38,23 +22,10 @@ from modules.wiki.database.models import *
 from modules.wikilog.database.models import *
 
 
-# ========== 旧数据库表定义（用于从旧表读取数据）==========
 # 这些类定义旧数据库的模式，用于连接到旧的数据库表进行数据迁移
 
 
 class SenderInfoL(Model):
-    """旧版本的用户信息表。
-
-    Attributes:
-        id: 用户的唯一标识
-        isInBlockList: 是否在黑名单中
-        isInAllowList: 是否在白名单中
-        isSuperUser: 是否为超级用户
-        warns: 警告次数
-        disableTyping: 是否禁用输入提示
-        petal: 花瓣数量（积分系统）
-    """
-
     id = fields.CharField(max_length=512, primary_key=True)
     isInBlockList = fields.BooleanField(default=False)
     isInAllowList = fields.BooleanField(default=False)
@@ -68,17 +39,6 @@ class SenderInfoL(Model):
 
 
 class TargetInfoL(Model):
-    """旧版本的场景信息表。
-
-    Attributes:
-        targetId: 场景的唯一标识
-        enabledModules: 启用的模块列表
-        options: 场景选项设置
-        customAdmins: 自定义管理员列表
-        muted: 是否被禁言
-        locale: 本地化语言设置
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
     enabledModules = fields.JSONField(default=[])
     options = fields.JSONField(default={})
@@ -91,12 +51,6 @@ class TargetInfoL(Model):
 
 
 class GroupBlockList(Model):
-    """旧版本的群组黑名单表。
-
-    Attributes:
-        targetId: 被阻止的场景 ID
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
 
     class Meta:
@@ -104,15 +58,6 @@ class GroupBlockList(Model):
 
 
 class StoredDataL(Model):
-    """旧版本的通用存储数据表。
-
-    用于存储各模块的自定义数据（键值对）。
-
-    Attributes:
-        name: 数据键名
-        value: 数据值（JSON格式）
-    """
-
     name = fields.CharField(max_length=512, primary_key=True)
     value = fields.CharField(max_length=512)
 
@@ -121,20 +66,6 @@ class StoredDataL(Model):
 
 
 class Analytics(Model):
-    """旧版本的分析统计表。
-
-    记录每条命令的执行统计信息。
-
-    Attributes:
-        id: 记录唯一标识
-        moduleName: 模块名称
-        moduleType: 模块类型
-        targetId: 场景 ID
-        senderId: 发送者ID
-        command: 执行的命令
-        timestamp: 执行时间
-    """
-
     id = fields.IntField(primary_key=True)
     moduleName = fields.CharField(max_length=512)
     moduleType = fields.CharField(max_length=512)
@@ -148,19 +79,6 @@ class Analytics(Model):
 
 
 class UnfriendlyActionsTable(Model):
-    """旧版本的不友好行为记录表。
-
-    记录用户的不当行为（如刷屏、辱骂等）。
-
-    Attributes:
-        id: 记录唯一标识
-        targetId: 场景 ID
-        senderId: 发送者ID
-        action: 不当行为类型
-        detail: 行为详情
-        timestamp: 发生时间
-    """
-
     id = fields.CharField(max_length=512, primary_key=True)
     targetId = fields.CharField(max_length=512)
     senderId = fields.CharField(max_length=512)
@@ -172,19 +90,7 @@ class UnfriendlyActionsTable(Model):
         table = "_old_unfriendly_action"
 
 
-# ========== 模块相关的旧数据库表 ==========
-
-
 class CytoidBindInfoL(Model):
-    """Cytoid 模块的绑定信息表（旧版）。
-
-    存储用户与 Cytoid 游戏账号的绑定关系。
-
-    Attributes:
-        targetId: 用户 ID
-        username: Cytoid 用户名
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
@@ -193,15 +99,6 @@ class CytoidBindInfoL(Model):
 
 
 class DivingProberBindInfoL(Model):
-    """Maimai 模块的绑定信息表（旧版）。
-
-    存储用户与 Maimai 游戏账号的绑定关系。
-
-    Attributes:
-        targetId: 用户 ID
-        username: Maimai 用户名
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
     username = fields.CharField(max_length=512)
 
@@ -210,16 +107,6 @@ class DivingProberBindInfoL(Model):
 
 
 class PhigrosBindInfoL(Model):
-    """Phigros 模块的绑定信息表（旧版）。
-
-    存储用户与 Phigros 游戏账号的绑定关系。
-
-    Attributes:
-        targetId: 用户 ID
-        sessiontoken: 游戏会话令牌
-        username: Phigros 用户名
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
     sessiontoken = fields.CharField(max_length=512)
     username = fields.CharField(max_length=512)
@@ -229,18 +116,6 @@ class PhigrosBindInfoL(Model):
 
 
 class WikiTargetInfoL(Model):
-    """Wiki 模块的场景设置表（旧版）。
-
-    存储各场景 Wiki 模块的个性化设置。
-
-    Attributes:
-        targetId: 场景 ID
-        link: Wiki API 链接
-        iws: 跨 Wiki 链接映射
-        headers: HTTP 请求头
-        prefix: 页面前缀
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
     link = fields.CharField(max_length=512, null=True)
     iws = fields.JSONField(default={})
@@ -252,16 +127,6 @@ class WikiTargetInfoL(Model):
 
 
 class WikiSiteInfoL(Model):
-    """Wiki 网站信息表（旧版）。
-
-    缓存 Wiki 网站的元信息。
-
-    Attributes:
-        apiLink: Wiki 的 API 链接
-        siteInfo: 网站信息（JSON 格式）
-        timestamp: 缓存时间
-    """
-
     apiLink = fields.CharField(max_length=512, primary_key=True)
     siteInfo = fields.JSONField(default={})
     timestamp = fields.DatetimeField()
@@ -271,15 +136,6 @@ class WikiSiteInfoL(Model):
 
 
 class WikiAllowListL(Model):
-    """Wiki 白名单表（旧版）。
-
-    允许访问的 Wiki 网站列表。
-
-    Attributes:
-        apiLink: Wiki 的 API 链接
-        timestamp: 添加时间
-    """
-
     apiLink = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -288,15 +144,6 @@ class WikiAllowListL(Model):
 
 
 class WikiBlockListL(Model):
-    """Wiki 黑名单表（旧版）。
-
-    禁止访问的 Wiki 网站列表。
-
-    Attributes:
-        apiLink: Wiki 的 API 链接
-        timestamp: 添加时间
-    """
-
     apiLink = fields.CharField(max_length=512, primary_key=True)
     timestamp = fields.DatetimeField(auto_now_add=True)
 
@@ -305,16 +152,6 @@ class WikiBlockListL(Model):
 
 
 class WikiBotAccountListL(Model):
-    """Wiki 机器人账号表（旧版）。
-
-    存储用于 Wiki 编辑操作的机器人账号信息。
-
-    Attributes:
-        apiLink: Wiki 的 API 链接
-        botAccount: 机器人账号名称
-        botPassword: 机器人账号密码
-    """
-
     apiLink = fields.CharField(max_length=512, primary_key=True)
     botAccount = fields.CharField(max_length=512)
     botPassword = fields.CharField(max_length=512)
@@ -324,15 +161,6 @@ class WikiBotAccountListL(Model):
 
 
 class WikiLogTargetSetInfoL(Model):
-    """WikiLog 模块的场景设置表（旧版）。
-
-    存储 WikiLog 功能的场景特定配置。
-
-    Attributes:
-        targetId: 场景 ID
-        infos: 配置信息（JSON 格式）
-    """
-
     targetId = fields.CharField(max_length=512, primary_key=True)
     infos = fields.TextField()
 
@@ -341,21 +169,6 @@ class WikiLogTargetSetInfoL(Model):
 
 
 async def rename_old_tables():
-    """重命名旧数据库表，为新表让位。
-
-    将所有旧版本的表添加"_old"前缀，以便在创建新表时不产生冲突。
-    这一步是必要的，因为我们需要同时保留旧数据和创建新架构。
-
-    表重命名映射：
-    - SenderUnionInfo -> _old_SenderInfo
-    - TargetUnionInfo -> _old_TargetInfo
-    - GroupBlockList -> _old_GroupBlockList
-    - StoredData -> _old_StoredData
-    - Analytics -> _old_Analytics
-    - 以及各模块的表
-
-    错误处理：如果某些表不存在，异常会被捕获并忽略。
-    """
     Logger.warning("Renaming old tables...")
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.scripts.convert_database"]})
     conn = Tortoise.get_connection("default")
@@ -396,16 +209,7 @@ async def rename_old_tables():
 
 
 async def convert_database():
-    """执行完整的数据库转换过程。
-
-    该函数执行以下步骤：
-    1. 重命名旧表
-    2. 初始化新数据库架构
-    3. 将数据从旧表迁移到新表
-    4. 验证和清理临时表
-
-    过程中会记录详细的进度和错误信息。
-    """
+    """执行完整的数据库转换过程。"""
     Logger.warning("Start converting old database...")
 
     database_list = fetch_module_db()
@@ -424,8 +228,6 @@ async def convert_database():
     await Tortoise.generate_schemas(safe=True)
 
     Logger.warning("Converting old database data...")
-
-    # ========== 转换核心表数据 ==========
 
     Logger.info("Converting SenderUnionInfo...")
     sender_info_records = await SenderInfoL.all()
@@ -565,8 +367,6 @@ async def convert_database():
             Logger.error(f"Failed to convert UnfriendlyActionRecords: {r.id}, error: {e}")
             Logger.error(f"UnfriendlyActionRecords record: {r.__dict__}")
     await conn.execute_query("DROP TABLE IF EXISTS _old_unfriendly_action;")
-
-    # ========== 转换模块特定的表数据 ==========
 
     Logger.info("Converting CytoidBindInfo...")
 

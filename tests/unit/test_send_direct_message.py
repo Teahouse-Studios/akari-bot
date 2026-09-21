@@ -25,9 +25,6 @@ async def _session(client: str) -> MessageSession:
 
 
 async def _queued_message(client: str, message) -> dict:
-    """
-    以给定入参调用 send_direct_message，返回其入队任务里的 message 字段。
-    """
     peer_id = f"TEST-PEER-{client}"
     metadata = {
         "target_prefix_list": [f"{client}|Group"],
@@ -56,12 +53,6 @@ async def _queued_message(client: str, message) -> dict:
 
 
 async def _test_bare_element_is_wrapped():
-    """测试直接发送 - bare 元素入队前须包成 MessageChain，否则队列反序列化会失败
-
-    send_direct_message 曾把未归一化的原始入参直接入队。传入 bare 元素（如
-    ``I18NContext(...)``）时，其序列化形态为 ``{"_type": "I18NContextElement", ...}``，
-    缺少 values 字段，客户端按 MessageChain | MessageNodes 反序列化即抛 KeyError。
-    """
     alive = Alive.values.copy()
     try:
         raw = await _queued_message("DIRECTA", I18NContext("message.success"))
@@ -77,7 +68,6 @@ async def _test_bare_element_is_wrapped():
 
 
 async def _test_plain_and_str_round_trip():
-    """测试直接发送 - bare Plain 与纯字符串同样应能安全入队并还原"""
     alive = Alive.values.copy()
     try:
         for message in (Plain("hello"), "world"):

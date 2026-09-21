@@ -279,11 +279,7 @@ class SchedulerLifecycle:
     @classmethod
     @asynccontextmanager
     async def maintenance_window(cls, module_names: Iterable[str] | None = None):
-        """暂停新触发并取消、等待目标范围内正在运行的 Job。
-
-        ``module_names=None`` 表示数据库级全局维护。窗口允许同一 Task 重入，
-        Loader 外层覆盖 Python reload 时，``reload_db()`` 可再次进入而不死锁。
-        """
+        """暂停新触发并取消、等待目标范围内正在运行的 Job。"""
         current = asyncio.current_task()
         if current is None:
             raise RuntimeError("Scheduler maintenance requires an asyncio task.")

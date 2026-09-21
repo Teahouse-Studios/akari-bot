@@ -27,7 +27,7 @@ SIGNAL_TIMEOUT = 5 * TIME_SCALE
 
 
 class RegistryAuditPeer(JobQueueBase):
-    """为直接 Registry 测试提供显式数据库后端。"""
+    pass
 
 
 @asynccontextmanager
@@ -307,7 +307,6 @@ async def _test_stopped_peer_cannot_be_revived_by_late_ready_signal():
 
 
 async def _test_authoritative_reregistration_revives_stopped_cache():
-    """同一实例的轮询器重新注册后，权威 ready 信号应立即覆盖 stopped 缓存。"""
     previous_alive = Alive.values.copy()
     peer_id = f"PEER-REREGISTER-{uuid4()}"
 
@@ -577,7 +576,6 @@ async def _test_maintenance_temporarily_removes_instance_from_stable_routes():
 
 
 async def _test_maintenance_window_poll_lock_wait_is_bounded():
-    """维护窗口等待轮询锁超时后不得把整个测试或进程卡住。"""
     async with _peer_cluster() as (controller, worker_a, worker_b):
         del controller, worker_b
         original_timeout = worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS
@@ -719,7 +717,6 @@ async def _test_expired_instance_discards_fire_and_forget_delivery():
 
 
 async def _test_expiration_rolls_back_when_delivery_finalization_fails():
-    """租约 CAS 与任务终结必须同事务提交，失败后应保留可重试状态。"""
     peer_id = f"PEER-ROLLBACK-{uuid4()}"
     task_id = None
     try:
@@ -755,7 +752,6 @@ async def _test_expiration_rolls_back_when_delivery_finalization_fails():
 
 
 async def _test_unexpected_poller_failure_unregisters_peer():
-    """轮询器异常退出时不得保留本地 registered 状态或可路由租约。"""
     peer_id = f"PEER-POLLER-FAIL-{uuid4()}"
 
     class FailingPeer(JobQueueBase):
@@ -778,7 +774,6 @@ async def _test_unexpected_poller_failure_unregisters_peer():
 
 
 async def _test_ambiguous_registration_failure_is_rolled_back():
-    """注册写入后才抛错时，应以已知 peer_id 主动撤销半注册记录。"""
     peer_id = f"PEER-REGISTER-FAIL-{uuid4()}"
 
     class FailingPeer(JobQueueBase):
@@ -805,7 +800,6 @@ async def _test_ambiguous_registration_failure_is_rolled_back():
 
 
 async def _test_interrupted_emit_discards_partial_transport_write():
-    """批量信号写入部分成功后抛错时，清理所有已知投递 ID。"""
     signal_name = f"audit.partial-submit.{uuid4()}"
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
         original_send = controller.transport.send
@@ -826,7 +820,6 @@ async def _test_interrupted_emit_discards_partial_transport_write():
 
 
 async def _test_interrupted_emit_cleanup_is_bounded():
-    """部分写入后的异常清理卡住时，广播调用仍应及时返回。"""
     signal_name = f"audit.partial-submit-timeout.{uuid4()}"
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
         original_send = controller.transport.send
@@ -859,7 +852,6 @@ async def _test_interrupted_emit_cleanup_is_bounded():
 
 
 async def _test_shutdown_does_not_wait_forever_for_poll_lock():
-    """关闭时轮询锁被占用也必须在 deadline 内继续摘流。"""
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
         original_timeout = controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS
         controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 0.05
@@ -875,7 +867,6 @@ async def _test_shutdown_does_not_wait_forever_for_poll_lock():
 
 
 async def _test_shutdown_task_cleanup_is_bounded():
-    """取消不响应的后台清理任务不能让 Queue 关闭卡死。"""
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
         original_timeout = controller.SHUTDOWN_OPERATION_TIMEOUT_SECONDS
         controller.SHUTDOWN_OPERATION_TIMEOUT_SECONDS = 0.05
@@ -903,7 +894,6 @@ async def _test_shutdown_task_cleanup_is_bounded():
 
 
 async def _test_shutdown_window_does_not_wait_forever_for_poll_lock():
-    """关闭窗口无法取得轮询锁时也必须让调用方继续回收资源。"""
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
         original_timeout = controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS
         controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 0.05
@@ -921,7 +911,6 @@ async def _test_shutdown_window_does_not_wait_forever_for_poll_lock():
 
 
 async def _test_partial_batch_result_is_reported_per_peer():
-    """传输层明确报告部分失败时，广播结果不得伪装成全部成功。"""
     signal_name = f"audit.partial-result.{uuid4()}"
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
 

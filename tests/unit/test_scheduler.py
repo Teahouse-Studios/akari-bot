@@ -21,7 +21,6 @@ from core.types.module.component_meta import ScheduleMeta
 
 
 def _test_get_scheduled_tasks_has_structure():
-    """get_scheduled_tasks: 每项应包含必要字段"""
     try:
         tasks = get_scheduled_tasks()
         if not tasks:
@@ -35,7 +34,6 @@ def _test_get_scheduled_tasks_has_structure():
 
 
 def _test_get_scheduled_tasks_filter_by_module():
-    """get_scheduled_tasks: 按模块名过滤"""
     try:
         all_tasks = get_scheduled_tasks()
         if not all_tasks:
@@ -48,7 +46,6 @@ def _test_get_scheduled_tasks_filter_by_module():
 
 
 def _test_schedule_meta_stored_in_module():
-    """Module.schedule_list: 应正确存储 ScheduleMeta"""
     try:
         from core.types.module.component_meta import ScheduleMeta
 
@@ -67,7 +64,6 @@ def _test_schedule_meta_stored_in_module():
 
 
 def _test_schedule_triggers_are_valid():
-    """计划任务: trigger 应为有效的 APScheduler 触发器类型"""
     try:
         from apscheduler.triggers.interval import IntervalTrigger
         from apscheduler.triggers.cron import CronTrigger
@@ -85,7 +81,6 @@ def _test_schedule_triggers_are_valid():
 
 
 def _test_schedule_functions_are_coroutine():
-    """计划任务: 所有函数应为协程函数"""
     try:
         import asyncio
 
@@ -99,7 +94,6 @@ def _test_schedule_functions_are_coroutine():
 
 
 async def _test_run_schedule_function_with_noop():
-    """run_schedule_function: 执行空函数应成功"""
     try:
 
         async def noop():
@@ -112,7 +106,6 @@ async def _test_run_schedule_function_with_noop():
 
 
 async def _test_run_schedule_function_with_error():
-    """run_schedule_function: 执行抛异常的函数应捕获错误"""
     try:
 
         async def failing():
@@ -125,7 +118,6 @@ async def _test_run_schedule_function_with_error():
 
 
 async def _test_run_schedule_function_with_timeout():
-    """run_schedule_function: 超时应被捕获"""
     try:
 
         async def slow():
@@ -147,14 +139,12 @@ def _make_scheduled_module(module_name: str, function, loaded: bool = True) -> M
 
 
 def _test_interval_trigger_applies_configured_multiplier():
-    """IntervalTrigger 应将全局倍率应用于声明的间隔。"""
     with patch.object(CoreConfig, "schedule_interval_multiplier", 2.5):
         trigger = IntervalTrigger(minutes=2)
     return trigger.interval == timedelta(minutes=5) and trigger.interval_length == 300
 
 
 def _test_interval_trigger_rejects_invalid_multiplier():
-    """非正数倍率应在注册计划任务时立即失败。"""
     with patch.object(CoreConfig, "schedule_interval_multiplier", 0):
         try:
             IntervalTrigger(seconds=60)
@@ -164,7 +154,6 @@ def _test_interval_trigger_rejects_invalid_multiplier():
 
 
 def _test_registered_interval_schedules_use_configurable_trigger():
-    """所有已注册的周期任务都应经过可配置的 IntervalTrigger。"""
     interval_triggers = [
         task["trigger"] for task in get_scheduled_tasks() if isinstance(task["trigger"], APSchedulerIntervalTrigger)
     ]
@@ -176,7 +165,6 @@ def _test_registered_interval_schedules_use_configurable_trigger():
 
 
 def _test_scheduler_reconcile_uses_stable_ids_and_explicit_limit():
-    """模块 Job 使用稳定 ID，且显式传入正确的 max_instances 参数。"""
     module_name = "__test_scheduler_stable"
 
     async def first():
@@ -204,7 +192,6 @@ def _test_scheduler_reconcile_uses_stable_ids_and_explicit_limit():
 
 
 async def _test_module_load_unload_synchronizes_jobs():
-    """全局 load/unload 应立即注册／删除模块 Job，无需重启 Server。"""
     module_name = "__test_scheduler_toggle"
 
     async def scheduled():
@@ -234,7 +221,6 @@ async def _test_module_load_unload_synchronizes_jobs():
 
 
 async def _test_scheduler_maintenance_cancels_and_waits_running_job():
-    """维护窗口不依赖真实时间：手动启动 wrapper，进入窗口时须等其 finally 完成。"""
     module_name = "__test_scheduler_maintenance"
     started = asyncio.Event()
     stopped = asyncio.Event()
@@ -268,7 +254,6 @@ async def _test_scheduler_maintenance_cancels_and_waits_running_job():
 
 
 def _test_scheduler_snapshot_restores_old_function():
-    """热重载失败回滚时，旧 Job 函数和 trigger 可由快照恢复。"""
     module_name = "__test_scheduler_restore"
 
     async def old_function():
@@ -297,7 +282,6 @@ def _test_scheduler_snapshot_restores_old_function():
 
 
 async def _test_scheduler_shutdown_waits_and_reaches_real_shutdown_event():
-    """shutdown 返回前须完成 Job 取消清理，并收到 APScheduler 的实际 shutdown event。"""
     module_name = "__test_scheduler_shutdown"
     started = asyncio.Event()
     stopped = asyncio.Event()

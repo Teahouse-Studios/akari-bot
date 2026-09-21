@@ -16,7 +16,6 @@ from core.utils.container import ExpiringTempDict
 
 
 async def _test_check_temp_ban_no_ban():
-    """check_temp_ban: 未封禁时返回 False"""
     try:
         from modules.core.hooks.tos import check_temp_ban, temp_ban_counter
 
@@ -28,7 +27,6 @@ async def _test_check_temp_ban_no_ban():
 
 
 async def _test_check_temp_ban_with_nested_dict():
-    """check_temp_ban: 存储非空 dict 时应返回剩余秒数"""
     try:
         from modules.core.hooks.tos import check_temp_ban, temp_ban_counter
 
@@ -45,7 +43,6 @@ async def _test_check_temp_ban_with_nested_dict():
 
 
 async def _test_remove_temp_ban():
-    """remove_temp_ban: 应清除封禁记录"""
     try:
         from modules.core.hooks.tos import check_temp_ban, remove_temp_ban, temp_ban_counter
 
@@ -62,7 +59,6 @@ async def _test_remove_temp_ban():
 
 
 async def _test_abuse_warn_target_sends_message():
-    """abuse_warn_target: 应向用户发送警告消息"""
     await TestDataFactory.setup_default_test_env()
     msg = MockMessageSession("~test")
     await msg.async_init("~test")
@@ -86,7 +82,6 @@ async def _test_abuse_warn_target_sends_message():
 
 
 async def _test_tos_report_no_targets():
-    """tos_report: 无报告场景时不报错"""
     try:
         from modules.core.hooks.tos import tos_report
 
@@ -98,7 +93,6 @@ async def _test_tos_report_no_targets():
 
 
 async def _test_tos_report_delegates_to_send_report():
-    """tos_report: 上报统一经 core.smtp.send_report，并透传上报场景与邮件主题"""
     from core.builtins.message.chain import MessageChain
     from core.builtins.message.elements import I18NContextElement
     from modules.core.hooks.tos import tos_report
@@ -122,7 +116,6 @@ async def _test_tos_report_delegates_to_send_report():
 
 
 async def _test_tos_report_blocked_action():
-    """tos_report: 封禁上报应标记为已封禁动作"""
     from core.builtins.message.elements import I18NContextElement
     from modules.core.hooks.tos import tos_report
 
@@ -139,7 +132,6 @@ async def _test_tos_report_blocked_action():
 
 
 async def _test_tos_report_email_takes_priority():
-    """tos_report: 启用邮件上报后发邮件，不再回传到上报场景"""
     from core.builtins.bot import Bot
     from core.config.base import SMTPConfig
     from modules.core.hooks.tos import tos_report
@@ -162,7 +154,6 @@ async def _test_tos_report_email_takes_priority():
 
 
 async def _test_temp_ban_counter_type():
-    """temp_ban_counter: 应为 ExpiringTempDict 实例"""
     try:
         from modules.core.hooks.tos import temp_ban_counter
 
@@ -172,7 +163,6 @@ async def _test_temp_ban_counter_type():
 
 
 async def _test_check_temp_ban_expired():
-    """check_temp_ban: 过期的封禁应返回 False"""
     try:
         from modules.core.hooks.tos import check_temp_ban, temp_ban_counter
 
@@ -209,7 +199,6 @@ async def _bound_sessions(prefix: str):
 
 
 async def _test_temp_ban_shared_by_sender_union():
-    """临时封禁不能通过切换同一 Union 下的另一个平台身份绕过。"""
     from core.builtins.parser.hooks import Stop
     from modules.core.hooks.tos import _temp_ban_check, temp_ban_counter
 
@@ -226,7 +215,6 @@ async def _test_temp_ban_shared_by_sender_union():
 
 
 async def _test_rate_bucket_shared_by_sender_union():
-    """单命令令牌桶应由绑定身份共同消耗。"""
     from core.builtins.parser.hooks import Stop
     from modules.core.hooks.tos import _buckets_all, _buckets_same, _msg_counter
 
@@ -268,7 +256,6 @@ async def test_tos(tester: Tester):
 
 
 async def _dispatch_tos_point(point, msg):
-    """用真实 ToS 订阅和生产 executor 验证控制结果契约。"""
     from core.builtins.parser.hooks import ParserHookExecutor, build_subscription
     from core.loader import ModulesManager
 
@@ -286,7 +273,6 @@ async def _dispatch_tos_point(point, msg):
 
 
 async def _test_counter_overflow_survives_notify_failure():
-    """令牌桶超限后即使处罚通知发送失败，也必须返回 Stop（拒绝决定不丢失）。"""
     from core.builtins.parser.hooks import HookPoint, Stop, StopScope
     from modules.core.hooks.tos import _buckets_all, _buckets_same, _msg_counter
 
@@ -319,7 +305,6 @@ async def _test_counter_overflow_survives_notify_failure():
 
 
 async def _test_temp_ban_hint_has_no_compat_metadata():
-    """临封提示与升级处罚都使用普通 Stop，不携带旧流程兼容元数据。"""
     from core.builtins.parser.hooks import HookPoint, Stop
     from modules.core.hooks.tos import _temp_ban_check, temp_ban_counter
 

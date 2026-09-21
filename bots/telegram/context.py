@@ -28,9 +28,6 @@ class TelegramContextManager(ContextManager):
 
     @classmethod
     async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
-        # 这里可以添加权限检查的逻辑
         ctx = cls.context.get(session_info.session_id)
         if not ctx:
             chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
@@ -218,8 +215,6 @@ class TelegramContextManager(ContextManager):
     async def delete_message(
         cls, session_info: SessionInfo, message_id: str | list[str], reason: str | None = None
     ) -> None:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
 
         if isinstance(message_id, str):
             message_id = [message_id]

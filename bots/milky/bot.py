@@ -42,7 +42,6 @@ milky_account: int | None = None
 
 
 async def _tos_report(sender: str, target: str, reason: str, banned: bool = False):
-    """经 Server 具名 hook 上报；bot 进程不导入模块实现，失败仅记录日志。"""
     try:
         return await ServerAPI.trigger_hook(
             "tos.report",
@@ -58,39 +57,23 @@ async def _tos_report(sender: str, target: str, reason: str, banned: bool = Fals
 
 
 def _event_data(event: dict) -> dict:
-    """取出事件载荷。
-
-    :param event: Milky 原始事件。
-    :return: 事件载荷字典，缺失或非字典时返回空字典。
-    """
     data = event.get("data")
     return data if isinstance(data, dict) else {}
 
 
 def _is_self(user_id) -> bool:
-    """判断给定 QQ 号是否为机器人自身。
-
-    :param user_id: 待判断的 QQ 号。
-    :return: 是机器人自身时为 True。
-    """
     if milky_account is None or user_id is None:
         return False
     return str(user_id) == str(milky_account)
 
 
 def _sender_name(message: dict) -> str | None:
-    """从消息中取出发送者昵称，群名片优先。
-
-    :param message: Milky 消息字典。
-    :return: 发送者昵称；无法获取时返回 None。
-    """
     member = message_field(message, "group_member") or {}
     friend = message_field(message, "friend") or {}
     return member.get("card") or member.get("nickname") or friend.get("nickname") or None
 
 
 async def refresh_login_info() -> None:
-    """拉取并缓存机器人自身信息，供会话构建与主动消息使用。"""
     global milky_account
     login_info = await milky_bot.get_login_info()
     milky_account = login_info.uin
@@ -109,17 +92,6 @@ async def _assign_session(
     message_id: str | None = None,
     reply_id: str | None = None,
 ) -> SessionInfo:
-    """按 Milky 场景组装会话信息。
-
-    :param context: `group` / `friend` / `temp`。
-    :param peer_id: 群号（群聊）或对端 QQ 号。
-    :param sender_uin: 发送者 QQ 号。
-    :param messages: 触发本次会话的消息链。
-    :param sender_name: 发送者昵称。
-    :param message_id: 消息序列号（字符串形式）。
-    :param reply_id: 被引用消息的序列号（字符串形式）。
-    :return: 会话信息。
-    """
     is_group = context == "group"
     return await SessionInfo.assign(
         target_id=f"{target_group_prefix}|{peer_id}" if is_group else f"{target_private_prefix}|{sender_uin}",
@@ -139,11 +111,6 @@ async def _assign_session(
 
 
 def _has_content(segments: list[dict]) -> bool:
-    """判断消息段列表中是否还有实际内容。
-
-    :param segments: Milky 消息段列表。
-    :return: 存在非空文本或非文本消息段时为 True。
-    """
     for segment in segments:
         if segment.get("type") != "text":
             return True
@@ -161,16 +128,6 @@ async def _process_synthetic_message(
     message_id: str | None = None,
     reply_id: str | None = None,
 ) -> None:
-    """把非消息事件转换为文本消息后交给模块处理（戳一戳等快速确认场景）。
-
-    :param context: `group` / `friend`。
-    :param peer_id: 群号或对端 QQ 号。
-    :param sender_uin: 触发者 QQ 号。
-    :param text: 合成消息文本。
-    :param source_event: 原始事件，作为模块处理时的上下文。
-    :param message_id: 关联的消息序列号。
-    :param reply_id: 被引用消息的序列号。
-    """
     msg_chain = await to_message_chain({"segments": [{"type": "text", "data": {"text": text}}]})
     session = await _assign_session(
         context=context,
@@ -184,12 +141,6 @@ async def _process_synthetic_message(
 
 
 async def _enforce_group_blocklist(session: SessionInfo, context: str, peer_id) -> None:
-    """群被列入封禁名单时发送告知并退出该群。
-
-    :param session: 本次会话。
-    :param context: 消息场景。
-    :param peer_id: 群号。
-    """
     if not enable_tos or context != "group":
         return
     target_id = f"{target_group_prefix}|{peer_id}"
@@ -255,7 +206,6 @@ async def message_handler(event: dict) -> None:
 
 
 async def friend_request_handler(event: dict) -> None:
-    """处理好友请求：超级用户与信任用户自动同意，配置允许时按黑名单决定。"""
     message = _event_data(event)
     initiator_uid = message_field(message, "initiator_uid")
     if not initiator_uid:
@@ -273,7 +223,6 @@ async def friend_request_handler(event: dict) -> None:
 
 
 async def group_invitation_handler(event: dict) -> None:
-    """处理他人邀请机器人入群：超级用户与信任用户自动同意，配置允许时跳过黑名单群。"""
     message = _event_data(event)
     group_id = message_field(message, "group_id")
     invitation_seq = message_field(message, "invitation_seq")
@@ -296,7 +245,6 @@ async def group_invitation_handler(event: dict) -> None:
 
 
 async def group_nudge_handler(event: dict) -> None:
-    """处理群戳一戳：被戳时按快速确认处理。"""
     message = _event_data(event)
     if not quick_confirm or not _is_self(message_field(message, "receiver_id")):
         return
@@ -310,7 +258,6 @@ async def group_nudge_handler(event: dict) -> None:
 
 
 async def friend_nudge_handler(event: dict) -> None:
-    """处理好友戳一戳：被戳时按快速确认处理。"""
     message = _event_data(event)
     if not quick_confirm or not message_field(message, "is_self_receive", False):
         return
@@ -324,7 +271,6 @@ async def friend_nudge_handler(event: dict) -> None:
 
 
 async def group_mute_handler(event: dict) -> None:
-    """机器人被禁言时按 ToS 记录并处理操作者。"""
     if not (enable_tos and not client_retired):
         return
     message = _event_data(event)
@@ -363,7 +309,6 @@ async def group_mute_handler(event: dict) -> None:
 
 
 async def group_member_decrease_handler(event: dict) -> None:
-    """机器人被移出群聊时按 ToS 记录并处理操作者。"""
     if not (enable_tos and not client_retired):
         return
     message = _event_data(event)
@@ -397,7 +342,6 @@ async def group_member_decrease_handler(event: dict) -> None:
 
 
 async def bot_offline_handler(event: dict) -> None:
-    """协议端下线事件：仅记录原因，事件流断开后由主循环负责重连。"""
     reason = message_field(_event_data(event), "reason", "") or "unknown reason"
     Logger.error(f"Milky bot went offline: {reason}")
 
@@ -417,8 +361,6 @@ EVENT_HANDLERS = {
 async def dispatch_event(event: dict) -> None:
     """按事件类型分发单个 Milky 事件。
 
-    未注册的事件类型（如群名称变更、精华消息变更等通知）直接忽略。
-
     :param event: Milky 原始事件。
     """
     event_type = event.get("event_type")
@@ -435,7 +377,6 @@ async def dispatch_event(event: dict) -> None:
 
 
 async def event_loop() -> None:
-    """持续消费 SSE 事件流，断开后按固定间隔重连。"""
     while True:
         try:
             async for event in milky_bot.events_sse():

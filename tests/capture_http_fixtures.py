@@ -1,20 +1,4 @@
-"""HTTP Fixture 捕获工具 - 运行集成测试并将真实响应录制到本地文件。
-
-使用方式：
-    python tests/capture_http_fixtures.py                # 录制全部集成测试
-    python tests/capture_http_fixtures.py test_rss ...   # 只录制指定测试文件
-
-脚本会：
-    1. 启动测试环境；
-    2. 包裹 `core.utils.http.request_url`，记录途经的全部请求与响应；
-    3. 运行集成测试用例，触发真实网络请求；
-    4. 将捕获结果写入 tests/fixtures/http/。
-
-之后运行 tester.py 时，`load_modules()` 会自动加载 fixture，请求被 HTTPMock 拦截。
-
-注意：模块在导入时即绑定了 `get_url` 等函数的引用，因此这里只包裹底层的
-`request_url`——所有上层封装最终都会以模块全局名查找并调用它，故能被完整覆盖。
-"""
+"""HTTP Fixture 捕获工具 - 运行集成测试并将真实响应录制到本地文件。"""
 
 import asyncio
 import json
@@ -37,11 +21,6 @@ _failures: list[tuple[str, str]] = []
 
 
 def _normalize(result):
-    """将 request_url 的返回值归一化为可持久化的字段。
-
-    :param result: request_url 的返回值，可能为 str、bytes 或已解析的 JSON 对象。
-    :return: (text, json_data, content) 三元组。
-    """
     if isinstance(result, bytes):
         # fmt="read"/"content" 的下载类请求返回二进制，无法直接写入 JSON。
         return "", None, result
@@ -54,7 +33,6 @@ def _normalize(result):
 
 
 async def _run_test_files(names: list[str]):
-    """导入并执行指定集成测试文件中的全部 func_case。"""
     from core.tester.tester import Tester
 
     for path in sorted(INTEGRATION_DIR.glob("test_*.py")):

@@ -1,9 +1,4 @@
-"""进程内存占用采集。
-
-``uss`` 仅在进程自测时可靠可得：macOS 不向非特权进程开放 ``task_for_pid``，跨进程读取
-必然 ``AccessDenied``。故各 Peer 经 ``process.resource_usage`` 信号自报，守护进程与内置
-Hub 等非 Peer 进程由 Server 按 PID 读取并降级为 ``rss``。
-"""
+"""进程内存占用采集。"""
 
 from __future__ import annotations
 
@@ -65,11 +60,7 @@ def collect_self_usage() -> dict[str, int]:
 
 
 def collect_external_usage(pid: int | None) -> dict[str, int] | None:
-    """按 PID 读取同机其他进程的内存指标；进程不存在或不可读时返回 None。
-
-    仅取 ``rss``：跨进程 ``uss`` 在 Linux 可得而在 macOS 必然失败，机会性获取将使同一份
-    输出的口径随平台漂移。
-    """
+    """按 PID 读取同机其他进程的内存指标；进程不存在或不可读时返回 None。"""
     if not pid:
         return None
     try:
@@ -146,10 +137,7 @@ def usage_payload(
     usages: list[ProcessUsage],
     failures: list[ProcessUnavailable],
 ) -> dict[str, list[dict]]:
-    """把内存占用汇总转为可经 RPC 与 JSON 传递的纯字典。
-
-    展示层需要本地化的名称仍以原始标签给出，翻译由调用方处理。
-    """
+    """把内存占用汇总转为可经 RPC 与 JSON 传递的纯字典。"""
     return {
         "items": [
             {
@@ -172,10 +160,7 @@ _usage_lock = asyncio.Lock()
 async def gather_process_usage(
     use_cache: bool = True,
 ) -> tuple[list[ProcessUsage], list[ProcessUnavailable]]:
-    """汇总各进程的内存占用。
-
-    Peer 经信号自报；守护进程与内置 Hub 由当前进程按 PID 读取，仅在与 Server 同机时可得。
-    """
+    """汇总各进程的内存占用。"""
     global _usage_cache
 
     now = time.monotonic()

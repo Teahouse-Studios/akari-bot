@@ -67,7 +67,6 @@ _handshake_lock = ModuleRuntimeManager.state(
 
 
 def _create_handshake_task(awaitable, *, name: str) -> asyncio.Task:
-    """Create one framework-managed handshake lifecycle task."""
     try:
         return b.spawn(awaitable, name=name)
     except BaseException:
@@ -77,7 +76,6 @@ def _create_handshake_task(awaitable, *, name: str) -> asyncio.Task:
 
 
 async def _release_sessions(*sessions: Bot.MessageSession) -> None:
-    """Best-effort release for every held handshake context, even when one release fails."""
     unique_sessions = []
     seen = set()
     for session in sessions:
@@ -101,12 +99,6 @@ async def cleanup_bind_handshake_state() -> None:
 
 
 def _take_code(code: str) -> tuple[str, dict] | None:
-    """
-    取出并消费一枚由 ``bind`` 签发的绑定码。
-
-    :param code: 用户输入的绑定码。
-    :return: ``(union 域, 绑定码信息)``，无效或已过期时为 None。
-    """
     return take_code(
         code,
         ((UNION_SCOPE_SENDER, _sender_bind_codes), (UNION_SCOPE_TARGET, _target_bind_codes)),
@@ -114,9 +106,6 @@ def _take_code(code: str) -> tuple[str, dict] | None:
 
 
 async def _channel_lines(msg: Bot.MessageSession) -> list:
-    """
-    当前场景的消息通道信息，含同通道的其它场景。
-    """
     union_id = msg.session_info.target_union_id
     if not union_id:
         return [I18NContext("core.message.bind.channel.unknown")]
@@ -252,14 +241,6 @@ async def _(msg: Bot.MessageSession, target: str):
 
 
 async def _bind_private(msg: Bot.MessageSession, entry: dict) -> None:
-    """
-    完成一次私聊绑定：账号组与场景组一并合并。
-
-    私聊里「这个账号」与「这段私聊」指的是同一件事，只并其一会让另一半的数据留在原处。
-    两者共用一次确认后一起执行，避免用户在第二次确认时取消而停在只绑一半的状态。
-
-    :param entry: 绑定码携带的发起方信息。
-    """
     session_info = msg.session_info
     sender_current = session_info.sender_union_info
     target_current = session_info.target_union_info
@@ -393,13 +374,6 @@ async def _(msg: Bot.MessageSession):
 
 
 async def _start_handshake(msg: Bot.MessageSession) -> None:
-    """
-    发起一轮通道握手：登记一枚待认领的 probe 口令并在场景中发出。
-
-    此处不作二次确认：双方尚未关联，通道去重与互认记录均未生效，
-    同一场景内的每个机器人都会各自解析该命令，确认提示会被重复发出。
-    需要管理员确认的是握手闭合后的合并提示，该提示已完整说明数据的继承方式。
-    """
     probe_token = SecureRandom.randstr(HANDSHAKE_TOKEN_LENGTH)
     _pending_probes[probe_token] = {"initiator": msg}
 
@@ -418,12 +392,6 @@ async def _start_handshake(msg: Bot.MessageSession) -> None:
 
 
 async def _expire_handshake(probe_token: str, initiator: Bot.MessageSession) -> None:
-    """
-    口令过期后收回本轮握手的全部登记。
-
-    :param probe_token: 本轮的 probe 口令。
-    :param initiator: 发起本轮握手的会话。
-    """
     await asyncio.sleep(HANDSHAKE_EXPIRED)
     if not _pending_probes.pop(probe_token, None):
         # 本轮已让位或已闭合，上下文在各自的路径中释放，此处不再重复处理。
@@ -443,15 +411,6 @@ async def _expire_handshake(probe_token: str, initiator: Bot.MessageSession) -> 
 
 
 async def _respond_probe(msg: Bot.MessageSession, token: str) -> None:
-    """
-    认领一枚 probe 口令，并换发一枚仅对本次配对有效的 confirm 口令。
-
-    口令在场景中以明文出现，任何人都能原样复制，因此认领是一次性的：口令一经认领即作废，
-    其后携带同一串口令的消息一律丢弃。否则复制粘贴该命令的用户会被当作对端机器人记录下来，
-    此后其发言都将被视为另一个机器人的输出而遭忽略。
-
-    :param token: 对方发出的 probe 口令。
-    """
     entry = _pending_probes.get(token)
     if not entry or entry.get("claimed"):
         await msg.finish()
@@ -518,14 +477,6 @@ async def _respond_probe(msg: Bot.MessageSession, token: str) -> None:
 
 
 async def _close_handshake(msg: Bot.MessageSession, token: str) -> None:
-    """
-    闭合一轮握手。
-
-    confirm 口令同样只能消费一次，且只在发起场景中生效：响应方发出的口令必然落在双方共处的
-    那个场景里，出现在别处即说明它是被转贴过去的，据此可拒绝跨场景的冒认。
-
-    :param token: 对方发出的 confirm 口令。
-    """
     entry = _pending_confirms.get(token)
     if not entry:
         await msg.finish()
@@ -554,14 +505,6 @@ async def _(msg: Bot.MessageSession, token: str):
 
 
 async def _complete_channel_handshake(entry: dict) -> None:
-    """
-    握手闭合后把两个场景合成同一条消息通道。
-
-    此时已确认两个场景对应同一个现实场景，随后执行三项操作：合并场景组（数据共享）、
-    统一消息通道号（命令与推送去重）、互相记录对方的机器人账号（屏蔽对方发出的消息）。
-
-    :param entry: 握手记录，含双方的会话与机器人账号。
-    """
     initiator: Bot.MessageSession = entry["initiator"]
     responder: Bot.MessageSession = entry["responder"]
     try:
@@ -589,9 +532,6 @@ async def _complete_channel_handshake(entry: dict) -> None:
 
 
 async def _run_channel_handshake(entry: dict, initiator: Bot.MessageSession, responder: Bot.MessageSession) -> None:
-    """
-    合并场景组、统一通道号、互记机器人账号。调用方需持有 :data:`_handshake_lock`。
-    """
     initiator_target = initiator.session_info.target_union_info
     responder_target = responder.session_info.target_union_info
 

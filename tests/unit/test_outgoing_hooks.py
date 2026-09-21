@@ -23,7 +23,6 @@ _RESULT_POINTS = (HookPoint.OUTGOING_SENT, HookPoint.OUTGOING_FAILED)
 
 @contextmanager
 def _sending(path, handlers, platform_effect):
-    """只替换平台 RPC 与订阅注册，执行真实 MessageSession 发送和 hook 分发。"""
     module_name = "__outgoing_regression"
     module = Module.assign(module_name=module_name, alias=None, recommend_modules=None, developers=None)
     module._db_load = True
@@ -62,7 +61,6 @@ def _sending(path, handlers, platform_effect):
 
 
 async def _test_observers_see_normalized_chain():
-    """三条路径的观察内容必须等于实际发送链，包括字符串、节点转换和安全替换。"""
     original_is_safe = MessageChain.is_safe.fget
     for path in _PATHS:
         for rewrite_kind in ("text", "nodes", "unsafe"):
@@ -137,7 +135,6 @@ async def _test_observers_see_normalized_chain():
 
 
 async def _test_observer_faults_preserve_platform_result():
-    """观察快照/调度异常不得遮蔽成功、空 ID、原始异常或直接投递的真实状态。"""
     snapshot = OutgoingPayload.snapshot
     dispatch = hook_dispatch.dispatch_parser_hook
     for path in _PATHS:
@@ -205,7 +202,6 @@ async def _test_observer_faults_preserve_platform_result():
 
 
 async def _test_outgoing_cancellation_and_exit_propagate():
-    """平台及观察边界上的外部取消/退出信号须原样传播，并重置观察重入标记。"""
     dispatch = hook_dispatch.dispatch_parser_hook
     for path in _PATHS:
         for signal_type in (asyncio.CancelledError, SystemExit, KeyboardInterrupt):
@@ -252,7 +248,6 @@ async def _test_outgoing_cancellation_and_exit_propagate():
 
 
 async def _test_external_cancel_during_outgoing_observer():
-    """实际任务取消打断慢观察者，且不把取消伪装成已发送结果。"""
     for path in ("send_message", "send_private_message"):
         observing = asyncio.Event()
 

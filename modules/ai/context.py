@@ -35,11 +35,6 @@ def get_context(session_id: str | None, context_key: str) -> list[dict] | None:
 
 
 def refresh_context(session_id: str | None) -> bool:
-    """会话被成功续写时仅重置其过期计时，历史保持不变；不存在或已过期返回 False。
-
-    会话一旦创建即视为不可变的快照：续写时生成新的会话 ID 以支持分叉，
-    这里只负责在父会话被成功继续时刷新其有效期。
-    """
     if not session_id:
         return False
     window = _context_windows.data.get(session_id)

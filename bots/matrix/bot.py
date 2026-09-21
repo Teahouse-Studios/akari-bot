@@ -67,12 +67,6 @@ async def on_room_member(room: nio.MatrixRoom, event: nio.RoomMemberEvent):
     ):
         await member_left(member_id, room.room_id, event.event_id)
 
-    # is_direct = (room.member_count == 1 or room.member_count == 2) and room.join_rule == "invite"
-    # if not is_direct:
-    #     resp = await bot.room_get_state_event(room.room_id, "m.room.member", client.user)
-    #     if "prev_content" in resp.__dict__ and "is_direct" in resp.__dict__[
-    #             "prev_content"] and resp.__dict__["prev_content"]["is_direct"]:
-    #         is_direct = True
     if room.member_count == 1 and event.membership == "leave":
         resp = await matrix_bot.room_leave(room.room_id)
         if isinstance(resp, nio.ErrorResponse):
@@ -102,7 +96,6 @@ async def to_message_chain(event: nio.RoomMessageFormatted, reply_id: str | None
             url = str(content["url"])
         elif "file" in content:
             # todo: decrypt image
-            # url = str(content["file"]["url"])
             return MessageChain.assign([])
         else:
             Logger.error(f"Got invalid m.image message from {target_id}")
@@ -214,7 +207,6 @@ async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
 
 
 async def _sync_room_state() -> bool:
-    """执行一次初始同步；AsyncClient.sync 已负责更新房间并分发回调。"""
     response = await matrix_bot.sync(
         timeout=10000, since=matrix_bot.next_batch, full_state=True, set_presence="unavailable"
     )
@@ -268,11 +260,6 @@ async def on_in_room_verify(room: nio.MatrixRoom, event: nio.RoomMessageUnknown)
 
 async def _run_client():
     global initial_sync_complete
-    # Logger.info(f"Trying first sync")
-    # sync = await bot.sync()
-    # Logger.info(f"First sync finished in {sync.elapsed}ms, dropped older messages")
-    # if sync is nio.SyncError:
-    #     Logger.error(f"Failed in first sync: {sync.status_code} - {sync.message}")
     try:
         with open(client.store_path_next_batch, "r", encoding="utf-8") as fp:
             matrix_bot.next_batch = fp.read()
@@ -288,7 +275,6 @@ async def _run_client():
     matrix_bot.add_to_device_callback(on_verify, nio.KeyVerificationEvent)
     matrix_bot.add_event_callback(on_in_room_verify, nio.RoomMessageUnknown)
 
-    # E2EE setup
     if matrix_bot.olm:
         if matrix_bot.should_upload_keys:
             Logger.info("Uploading matrix E2E encryption keys...")
@@ -324,7 +310,6 @@ async def _run_client():
             await matrix_bot.import_keys(megolm_backup_path, passphrase)
             Logger.info("Megolm backup imported.")
 
-    # set device name
     if client.device_name:
         try:
             response = await matrix_bot.update_device(client.device_id, {"display_name": client.device_name})
@@ -333,9 +318,7 @@ async def _run_client():
         except Exception:
             Logger.exception("Failed to update Matrix device name:")
 
-    # sync joined room state
     Logger.info("Starting sync room full state...")
-    # bot.upload_filter(presence={"limit":1},room={"timeline":{"limit":1}})
     if not await _sync_room_state():
         return
     initial_sync_complete = True

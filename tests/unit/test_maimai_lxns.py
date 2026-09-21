@@ -41,8 +41,6 @@ from modules.maimai.libraries.source import (
 
 
 class _UnionInfo:
-    """只带 `sender_data` 的联合信息替身。"""
-
     def __init__(self, sender_data: dict):
         self.sender_data = sender_data
 
@@ -54,8 +52,6 @@ class _SessionInfo:
 
 
 class _MessageSession:
-    """只带会话信息的消息会话替身。"""
-
     def __init__(self, sender_data: dict):
         self.session_info = _SessionInfo(sender_data)
 
@@ -64,7 +60,6 @@ class _MessageSession:
 
 
 async def _test_lxns_id_conversion():
-    """舞萌 DX 谱面的 ID 换算应对称，宴会场曲目不参与换算"""
     return (
         lxns_to_df_id(834, "dx") == "10834"
         and lxns_to_df_id(834, "standard") == "834"
@@ -84,7 +79,6 @@ async def _test_lxns_id_conversion():
 
 
 async def _test_map_score_with_local_music():
-    """有本地曲目时，成绩应取本地定数，字段名换算为水鱼形状"""
     score = {
         "id": 834,
         "type": "dx",
@@ -117,7 +111,6 @@ async def _test_map_score_with_local_music():
 
 
 async def _test_map_score_without_local_music():
-    """本地缺曲时定数记 0，曲名留空，其余字段仍需可用"""
     mapped = map_score({"id": 3, "type": "standard", "level_index": 2}, None)
     return (
         mapped["song_id"] == "3"
@@ -134,7 +127,6 @@ async def _test_map_score_without_local_music():
 
 
 async def _test_score_rating_fallback():
-    """接口未给单曲 Rating 时应按定数与达成率推算，本地缺曲则记 0"""
     score = {"achievements": 100.5}
     return (
         score_rating({"dx_rating": 320.4}, 14.7) == 320
@@ -144,8 +136,6 @@ async def _test_score_rating_fallback():
 
 
 class _EmptyTotalList:
-    """测试用曲库替身：一律视为本地缺曲，免得测试去联网取曲目表。"""
-
     async def get(self):
         return self
 
@@ -154,13 +144,11 @@ class _EmptyTotalList:
 
 
 async def _test_top_rated_orders_and_limits():
-    """Best 列表应按单曲 Rating 降序取前若干条"""
     records = [{"ra": 100}, {"ra": 300}, {"ra": 200}]
     return [record["ra"] for record in top_rated(records, 2)] == [300, 200] and top_rated([], 5) == []
 
 
 async def _test_map_bests_keeps_official_pools():
-    """接口的 standard 与 dx 就是 B35 与 B15：旧曲里的 DX 谱面留在 B35，不得并入 B15"""
     bests = {
         "standard": [
             {
@@ -203,7 +191,6 @@ async def _test_map_bests_keeps_official_pools():
 
 
 async def _test_source_selection():
-    """默认数据源为舞萌水鱼、中二落雪（落雪不可用时退回水鱼），并兼容中二的旧键名与非法值"""
     empty = _MessageSession({})
     return (
         default_source(GAME_MAIMAI) == SOURCE_DIVING_FISH
@@ -220,7 +207,6 @@ async def _test_source_selection():
 
 
 async def _test_lxns_bind_usable():
-    """落雪绑定可用性：授权过且落雪已配置才可用，仅有好友码的旧记录一律不可用"""
     return (
         lxns_bind_usable("token", True)
         and not lxns_bind_usable(None, True)
@@ -230,10 +216,6 @@ async def _test_lxns_bind_usable():
 
 
 async def _test_lxns_bind_info_keeps_no_subject():
-    """落雪靠 refresh token 自行轮换，绑定表与写入方法都不该保存令牌里的 `sub`
-
-    水鱼要用用户 ID 去换票，落雪则不需要：`sub` 只在绑定时用于向用户确认账号。
-    """
     return (
         "subject" not in LxnsProberBindInfo._meta.fields_map
         and "subject" not in inspect.signature(LxnsProberBindInfo.set_bind_info).parameters
@@ -242,7 +224,6 @@ async def _test_lxns_bind_info_keeps_no_subject():
 
 
 async def _test_lxns_record_route():
-    """落雪取分一律走用户态接口；带不出令牌的旧记录与未绑定用户都转去取当前绑定"""
     oauth_bind = LxnsProberBindInfo(union_id="u", refresh_token="token")
     legacy_bind = LxnsProberBindInfo(union_id="u", refresh_token=None)
     calls = []
@@ -273,7 +254,6 @@ async def _test_lxns_record_route():
 
 
 async def _test_lxns_friend_code_route():
-    """落雪取分按查询对象分流：给出好友码走开发者端点，未配置密钥时退回用户态端点"""
     bind = LxnsProberBindInfo(union_id="u", refresh_token="token")
     calls = []
 
@@ -320,7 +300,6 @@ async def _test_lxns_friend_code_route():
 
 
 async def _test_lxns_developer_required():
-    """未配置开发者密钥时按好友码查询应直接报错，而不是发出注定被拒的请求"""
     with patch.object(lxns_apidata, "LXNS_DEVELOPER_ENABLED", False):
         try:
             await get_record_lx_dev(_MessageSession({}), "1234567890", use_cache=False)
@@ -330,7 +309,6 @@ async def _test_lxns_developer_required():
 
 
 async def _test_lxns_developer_urls():
-    """落雪的 Best 应落在按好友码寻址的开发者端点上"""
     return (
         LXNS_MAIMAI_PLAYER_BY_FRIEND_CODE_URL.format(friend_code=1234567890)
         == "https://maimai.lxns.net/api/v0/maimai/player/1234567890"
@@ -340,7 +318,6 @@ async def _test_lxns_developer_urls():
 
 
 async def _test_fetch_player_field():
-    """好友码取自授权账号的个人资料，取不到时留空以便退回用户态端点"""
     bind = LxnsProberBindInfo(union_id="u", refresh_token="token")
 
     async def fake_data(bind_info, url, **kwargs):
@@ -360,7 +337,6 @@ async def _test_fetch_player_field():
 
 
 async def _test_get_record_forwards_use_cache():
-    """水鱼侧取分转发落雪时，好友码与 use_cache 都必须走关键字传参，否则会被顶到查询对象的位置上"""
     received = []
     empty = _MessageSession({})
 
@@ -379,7 +355,6 @@ async def _test_get_record_forwards_use_cache():
 
 
 async def _test_authorize_url_params():
-    """授权链接应带上授权码流程与回调地址，且不带 PKCE 与 state"""
     url = build_authorize_url()
     return (
         url.startswith("https://maimai.lxns.net/oauth/authorize?")
@@ -393,7 +368,6 @@ async def _test_authorize_url_params():
 
 
 async def _test_extract_bind_code():
-    """用户发来的授权码应能从引号、空白与整串回调地址里取出"""
     return (
         _extract_bind_code("abc123") == "abc123"
         and _extract_bind_code("  abc123\n") == "abc123"
@@ -406,7 +380,6 @@ async def _test_extract_bind_code():
 
 
 async def _test_unwrap_data_field():
-    """落雪接口的 data 包裹应被取出，未被包裹的响应保持原样"""
     return (
         unwrap({"success": True, "code": 200, "data": {"name": "Lxns"}}) == {"name": "Lxns"}
         and unwrap({"name": "Lxns"}) == {"name": "Lxns"}
@@ -415,7 +388,6 @@ async def _test_unwrap_data_field():
 
 
 async def _test_plate_versions():
-    """名牌板的版本标识应能映射到查分器版本名，未知标识不留版本筛选"""
     return (
         plate_versions("真") == ["maimai", "maimai PLUS"]
         and plate_versions("初") == []

@@ -51,10 +51,6 @@ def build_locale_overview(msg: Bot.MessageSession, locale_url: str | None) -> li
 
 
 async def get_weblate_languages() -> list | None:
-    """获取 Weblate 的语言列表，结果缓存到 cache 目录以复用。
-
-    机器人每晚会自动清空 cache 目录，因此缓存会在次日首次调用时重新拉取。
-    """
     if WEBLATE_LANGUAGES_CACHE.is_file():
         try:
             languages = orjson.loads(WEBLATE_LANGUAGES_CACHE.read_bytes())
@@ -82,7 +78,6 @@ async def get_weblate_languages() -> list | None:
 
 
 async def build_translation_notice(lang: str):
-    """当目标语言在 Weblate 的翻译进度低于阈值时，构造邀请参与翻译的消息。"""
     weblate_code = weblate_lang_codes.get(lang)
     if not weblate_code:
         return None

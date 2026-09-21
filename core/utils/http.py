@@ -1,7 +1,4 @@
-"""基于 `httpx` 的互联网请求工具，用于让机器人请求外部网站。
-
-请勿在本项目中导入并使用 `request`，否则可能会导致阻塞问题。
-"""
+"""基于 `httpx` 的互联网请求工具，用于让机器人请求外部网站。"""
 
 import asyncio
 import ipaddress
@@ -34,7 +31,6 @@ url_pattern = re.compile(
 
 
 async def _resolve_hostname(hostname: str, port: int) -> set[str]:
-    """异步解析主机名并返回解析到的全部地址。"""
     loop = asyncio.get_running_loop()
     addr_info = await loop.getaddrinfo(hostname, port, type=socket.SOCK_STREAM)
     return {entry[4][0] for entry in addr_info}
@@ -75,7 +71,6 @@ async def private_ip_check(url: str):
 
 
 async def _validate_public_request(request: httpx.Request) -> None:
-    """在 httpx 发送首跳及每个重定向请求前验证目标地址。"""
     await private_ip_check(str(request.url))
 
 

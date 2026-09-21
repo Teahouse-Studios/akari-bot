@@ -5,11 +5,7 @@ from .DataType import Bit, String, VarInt, ShortInt, Money, Bits
 
 
 class gameProgress04:
-    """
-    版本号 ≥ 3.8.1
-
-    新增了 "flagOfSongRecordKeyTakumi"
-    """
+    """版本号 ≥ 3.8.1"""
 
     file_head = b"\x04"
 

@@ -1,7 +1,4 @@
-"""JobQueue 的数据库后端实现。
-
-本模块是队列运行时中唯一了解 JobQueue ORM 表、事务和原子领取语义的层。
-"""
+"""JobQueue 的数据库后端实现。"""
 
 from datetime import UTC, datetime, timedelta
 

@@ -7,10 +7,10 @@ from modules.dice.config import DiceConfig
 from core.utils.func import is_int
 from core.utils.random import Random
 
-MAX_DICE_COUNT = DiceConfig.dice_limit  # 一次摇动最多的骰子数量
-MAX_OUTPUT_CNT = DiceConfig.dice_output_count  # 输出的最多数据量
-MAX_OUTPUT_LEN = DiceConfig.dice_output_len  # 输出的最大长度
-MAX_OUTPUT_EXP = DiceConfig.dice_output_digit  # 输出的最大位数
+MAX_DICE_COUNT = DiceConfig.dice_limit
+MAX_OUTPUT_CNT = DiceConfig.dice_output_count
+MAX_OUTPUT_LEN = DiceConfig.dice_output_len
+MAX_OUTPUT_EXP = DiceConfig.dice_output_digit
 
 
 def fmt_num(num: int, sep: bool = False):
@@ -23,17 +23,12 @@ def fmt_num(num: int, sep: bool = False):
     return fmt_num
 
 
-# 异常类定义
 class DiceSyntaxError(Exception):
-    """骰子语法错误"""
-
     def __init__(self, message: str):
         self.message = message
 
 
 class DiceValueError(Exception):
-    """骰子参数值错误"""
-
     def __init__(self, message: str, value: int | str | None = None):
         if value:
             self.message = str(I18NContext("dice.message.error.value", value=value)) + message
@@ -41,10 +36,7 @@ class DiceValueError(Exception):
             self.message = message
 
 
-# 类定义
 class DiceItemBase:
-    """骰子项的基类"""
-
     def __init__(self, dice_code: str):
         self.code = dice_code
         self.result = 0
@@ -61,8 +53,6 @@ class DiceItemBase:
 
 
 class Dice(DiceItemBase):
-    """骰子项"""
-
     def __init__(self, dice_code: str):
 
         super().__init__(dice_code)
@@ -83,11 +73,11 @@ class Dice(DiceItemBase):
             raise DiceValueError("{I18N:dice.message.error.value.advantage.out_of_range}", self.adv)
 
     def get_args(self):
-        dice_code = self.code.upper()  # 便于识别
-        dice_code = dice_code.replace("D%", "D100")  # 百分骰别名
-        dice_count = "1"  # 骰子数量
-        dice_adv = "0"  # 保留的骰子量
-        positive = 0  # 是否保留骰子
+        dice_code = self.code.upper()
+        dice_code = dice_code.replace("D%", "D100")
+        dice_count = "1"
+        dice_adv = "0"
+        positive = 0
         if re.search(r"[^0-9DKQ\%]", dice_code):
             raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         temp = dice_code.split("D")
@@ -105,8 +95,7 @@ class Dice(DiceItemBase):
             dice_adv = midstrs[2]
             positive = -1
         if positive and not dice_adv:
-            dice_adv = "1"  # K/Q后没有值默认为1
-        # 语法合法检定
+            dice_adv = "1"
         if not is_int(dice_count):
             raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         if not is_int(dice_sides):
@@ -124,7 +113,6 @@ class Dice(DiceItemBase):
         dice_results = []
         adv = self.adv
         positive = self.positive
-        # 生成随机序列
         for i in range(self.count):
             dice_results.append(Random.randint(1, int(self.sides)))
         if adv != 0:
@@ -144,7 +132,6 @@ class Dice(DiceItemBase):
                 output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
             output += output_buffer
             dice_results = new_results
-        # 公用加法
         length = len(dice_results)
         if length > 1:
             output_buffer = "=["
@@ -167,8 +154,6 @@ class Dice(DiceItemBase):
 
 
 class FudgeDice(DiceItemBase):
-    """命运骰子项"""
-
     def __init__(self, dice_code: str):
 
         super().__init__(dice_code)
@@ -180,27 +165,26 @@ class FudgeDice(DiceItemBase):
             )
 
     def get_args(self):
-        dice_code = self.code.upper()  # 便于识别
-        dice_code = dice_code.replace("D", "")  # 去除“D”
-        dice_count = "4"  # 骰子数量
+        dice_code = self.code.upper()
+        dice_code = dice_code.replace("D", "")
+        dice_count = "4"
         if re.search(r"[^0-9F]", dice_code):
             raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         temp = dice_code.split("F")
         if len(temp[0]):
             dice_count = temp[0]
 
-        # 语法合法检定
         if not is_int(dice_count):
             raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         return (int(dice_count), 0)
 
     def roll(self):
-        output = self.code.replace("D", "")  # 去除“D”
+        output = self.code.replace("D", "")
         result = 0
 
         selected_results = [Random.choice(["-", "0", "+"]) for _ in range(self.count)]
 
-        if self.count > MAX_OUTPUT_CNT:  # 显示数据含100
+        if self.count > MAX_OUTPUT_CNT:
             output = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
         else:
             output += "=[" + ", ".join(selected_results) + "]"
@@ -219,8 +203,6 @@ class FudgeDice(DiceItemBase):
 
 
 class BonusPunishDice(DiceItemBase):
-    """奖惩骰子项"""
-
     def __init__(self, dice_code: str):
 
         super().__init__(dice_code)
@@ -233,8 +215,8 @@ class BonusPunishDice(DiceItemBase):
             )
 
     def get_args(self):
-        dice_code = self.code.upper()  # 便于识别
-        dice_count = "1"  # 骰子数量
+        dice_code = self.code.upper()
+        dice_count = "1"
         if re.search(r"[^0-9BP]", dice_code):
             raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
         if "B" in dice_code:
@@ -248,7 +230,6 @@ class BonusPunishDice(DiceItemBase):
             if temp[1]:
                 dice_count = temp[1]
 
-        # 语法合法检定
         if not is_int(dice_count):
             raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
 
@@ -259,7 +240,6 @@ class BonusPunishDice(DiceItemBase):
         dice_results = []
         positive = self.positive
         result = 0
-        # 生成随机序列
 
         d100_result = Random.randint(1, 100)
         d100_digit = d100_result % 10
@@ -269,7 +249,7 @@ class BonusPunishDice(DiceItemBase):
             dice_results.append(Random.randint(0, 9))
 
         new_results = [d100_result] + [int(str(item) + str(d100_digit)) for item in dice_results]
-        new_results = [100 if item == 0 else item for item in new_results]  # 将所有00转为100
+        new_results = [100 if item == 0 else item for item in new_results]
 
         if self.count > 1:
             if self.count >= MAX_OUTPUT_CNT:
@@ -298,8 +278,6 @@ class BonusPunishDice(DiceItemBase):
 
 
 class WODDice(DiceItemBase):
-    """无限骰子项"""
-
     def __init__(self, dice_code: str):
 
         super().__init__(dice_code)
@@ -323,16 +301,15 @@ class WODDice(DiceItemBase):
             )
 
     def get_args(self):
-        dice_code = self.code.upper()  # 便于识别
+        dice_code = self.code.upper()
         match = re.match(r"(\d+)A(\d+)(?:K(\d+))?(?:Q(\d+))?(?:M(\d+))?", dice_code)
         if not match:
             raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
-        dice_count = match.group(1)  # 骰子个数
-        dice_add_line = match.group(2)  # 加骰线
-        dice_success_line = match.group(3) if match.group(3) else "8"  # 成功线
-        dice_success_line_max = match.group(4) if match.group(4) else "0"  # 最大成功线
-        dice_sides = match.group(5) if match.group(5) else "10"  # 骰子面数
-        # 语法合法检定
+        dice_count = match.group(1)
+        dice_add_line = match.group(2)
+        dice_success_line = match.group(3) if match.group(3) else "8"
+        dice_success_line_max = match.group(4) if match.group(4) else "0"
+        dice_sides = match.group(5) if match.group(5) else "10"
         if not is_int(dice_count):
             raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         if not is_int(dice_add_line):
@@ -366,7 +343,6 @@ class WODDice(DiceItemBase):
             dice_results = []
             dice_exceed_results = []
             indexes = []
-            # 生成随机序列
             for i in range(dice_count):
                 dice_results.append(Random.randint(1, int(self.sides)))
 
@@ -404,7 +380,7 @@ class WODDice(DiceItemBase):
                     output_buffer += ", "
             output_buffer += "}, "
             dice_count = exceed_result
-        output_buffer = output_buffer[:-2]  # 去除最后的", "
+        output_buffer = output_buffer[:-2]
         output_buffer += "]"
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"
@@ -419,8 +395,6 @@ class WODDice(DiceItemBase):
 
 
 class DXDice(DiceItemBase):
-    """双重十字骰子项"""
-
     def __init__(self, dice_code: str):
 
         super().__init__(dice_code)
@@ -443,14 +417,13 @@ class DXDice(DiceItemBase):
             )
 
     def get_args(self):
-        dice_code = self.code.upper()  # 便于识别
+        dice_code = self.code.upper()
         match = re.match(r"(\d+)C(\d+)(?:M(\d+))?", dice_code)
         if not match:
             raise DiceSyntaxError("{I18N:dice.message.error.invalid}")
-        dice_count = match.group(1)  # 骰子个数
-        dice_add_line = match.group(2)  # 加骰线
-        dice_sides = match.group(3) if match.group(3) else "10"  # 骰子面数
-        # 语法合法检定
+        dice_count = match.group(1)
+        dice_add_line = match.group(2)
+        dice_sides = match.group(3) if match.group(3) else "10"
         if not is_int(dice_count):
             raise DiceValueError("{I18N:dice.message.error.value.count.invalid}", dice_count)
         if not is_int(dice_add_line):
@@ -474,7 +447,6 @@ class DXDice(DiceItemBase):
             dice_results = []
             dice_exceed_results = []
             dice_rounds += 1
-            # 生成随机序列
             for i in range(dice_count):
                 dice_results.append(Random.randint(1, int(self.sides)))
                 if dice_results[i] >= add_line:
@@ -497,7 +469,7 @@ class DXDice(DiceItemBase):
             output_buffer += "}, "
             dice_count = exceed_result
 
-        output_buffer = output_buffer[:-2]  # 去除最后的", "
+        output_buffer = output_buffer[:-2]
         output_buffer += "]"
         if self.count >= MAX_OUTPUT_CNT:
             output_buffer = "=[" + str(I18NContext("dice.message.output.too_long", length=self.count)) + "]"

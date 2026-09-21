@@ -21,7 +21,6 @@ from core.utils.session import inject_features
 
 
 def _session(session_id: str) -> SessionInfo:
-    """构造一个 KOOK 频道会话，并注入平台能力位。"""
     session = SessionInfo(
         target_id=f"{target_group_prefix}|123456",
         target_from=target_group_prefix,
@@ -36,12 +35,10 @@ def _session(session_id: str) -> SessionInfo:
 
 
 def _channel() -> SimpleNamespace:
-    """构造带 send 接口的 KOOK Channel 替身。"""
     return SimpleNamespace(send=AsyncMock(return_value={"msg_id": "1"}))
 
 
 async def _test_unavailable_media_elements_are_skipped() -> bool:
-    """媒体元素不可得时既不发送消息也不上传资源。"""
     session = _session("kook-unavailable-media")
     channel = _channel()
     kook_bot = SimpleNamespace(create_asset=AsyncMock(return_value="https://asset"))
@@ -62,7 +59,6 @@ async def _test_unavailable_media_elements_are_skipped() -> bool:
 
 
 async def _test_unavailable_media_keeps_remaining_text() -> bool:
-    """媒体元素不可得时仍发送其余文本内容。"""
     session = _session("kook-unavailable-media-text")
     channel = _channel()
     kook_bot = SimpleNamespace(create_asset=AsyncMock(return_value="https://asset"))

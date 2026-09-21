@@ -1,9 +1,4 @@
-"""core.utils.retired 单元测试 - 公告文案读取、已发记录与排队。
-
-凡是改动 ``CoreConfig.retired_clients`` 的用例一律放在 ``test_retired_gate.py``：
-``tester.py`` 并发执行各个 func_case，而该配置与 ``RETIRED_ROUTES`` 是进程级全局状态，
-分散在多个文件中改动会互相覆盖。同一 func_case 内部则是串行的。
-"""
+"""core.utils.retired 单元测试 - 公告文案读取、已发记录与排队。"""
 
 import asyncio
 import tempfile
@@ -32,14 +27,12 @@ from core.tester import func_case, Tester
 
 
 def _write(base: Path, client: str, locale: str, text: str):
-    """在临时目录中写入一份公告文案。"""
     target = base / client / f"{locale}.txt"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(text, encoding="utf-8")
 
 
 async def _test_notice_exact_locale():
-    """测试公告读取 - 命中当前语言"""
     try:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -52,7 +45,6 @@ async def _test_notice_exact_locale():
 
 
 async def _test_notice_falls_back_to_zh_cn():
-    """测试公告读取 - 缺少当前语言时回退到 zh_cn"""
     try:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -64,7 +56,6 @@ async def _test_notice_falls_back_to_zh_cn():
 
 
 async def _test_notice_falls_back_to_any():
-    """测试公告读取 - 缺少 zh_cn 时回退到目录内任意文件"""
     try:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -76,7 +67,6 @@ async def _test_notice_falls_back_to_any():
 
 
 async def _test_notice_missing_returns_none():
-    """测试公告读取 - 目录缺失时返回 None 交由调用方兜底"""
     try:
         with tempfile.TemporaryDirectory() as tmp:
             return read_notice("QQ", "zh_cn", Path(tmp)) is None
@@ -86,7 +76,6 @@ async def _test_notice_missing_returns_none():
 
 
 async def _test_notified_starts_false():
-    """测试已发记录 - 未记录的场景判定为未发送"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -97,7 +86,6 @@ async def _test_notified_starts_false():
 
 
 async def _test_mark_then_notified():
-    """测试已发记录 - 记录后判定为已发送"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -109,7 +97,6 @@ async def _test_mark_then_notified():
 
 
 async def _test_mark_persists_to_storage():
-    """测试已发记录 - 记录落库且清空内存后仍可读回"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -127,7 +114,6 @@ async def _test_mark_persists_to_storage():
 
 
 async def _test_mark_keeps_existing_records():
-    """测试已发记录 - 追加记录不会覆盖既有条目"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -141,7 +127,6 @@ async def _test_mark_keeps_existing_records():
 
 
 async def _test_delay_within_range():
-    """测试公告排队 - 随机延迟落在配置区间内"""
     try:
         # 取多次以降低偶然通过的可能，随机源已由测试框架接管。
         return all(RETIRED_NOTIFY_DELAY_MIN <= pick_notice_delay() <= RETIRED_NOTIFY_DELAY_MAX for _ in range(20))
@@ -151,7 +136,6 @@ async def _test_delay_within_range():
 
 
 async def _test_enqueue_skips_notified():
-    """测试公告排队 - 已发送过的场景不再排队"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -164,7 +148,6 @@ async def _test_enqueue_skips_notified():
 
 
 async def _test_enqueue_skips_pending():
-    """测试公告排队 - 已在队列中的场景不重复排队"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -181,7 +164,6 @@ async def _test_enqueue_skips_pending():
 
 
 async def _test_enqueue_allows_fresh_target():
-    """测试公告排队 - 未发送且未排队的场景允许排队"""
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
         reset_notified_cache()
@@ -193,7 +175,6 @@ async def _test_enqueue_allows_fresh_target():
 
 
 async def _test_concurrent_marks_do_not_persist_stale_snapshot():
-    """测试已发记录 - 并发慢写不能用旧快照覆盖较新的完整记录。"""
     persisted = []
     created = 0
     previous_notified = retired_module._notified
@@ -230,7 +211,6 @@ async def _test_concurrent_marks_do_not_persist_stale_snapshot():
 
 
 async def _test_failed_mark_rolls_back_memory_state():
-    """测试已发记录 - 落库失败不把内存永久标成已发送。"""
     target_id = "QQ|Group|failed-mark"
     previous_notified = retired_module._notified
 
@@ -256,7 +236,6 @@ async def _test_failed_mark_rolls_back_memory_state():
 
 
 async def _test_enqueue_concurrent_same_target_once():
-    """测试公告排队 - 同一新场景并发触发只创建一个投递任务。"""
     target_id = "QQ|Group|queued-concurrent"
     await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
     reset_notified_cache()
@@ -287,7 +266,6 @@ async def _test_enqueue_concurrent_same_target_once():
 
 
 async def _test_notice_cleanup_cancels_retained_delivery():
-    """测试公告排队 - 生命周期清理取消延时任务并释放 pending 占位。"""
     target_id = "QQ|Group|cancelled-notice"
     previous_notified = retired_module._notified
     original_pick_delay = retired_module.pick_notice_delay

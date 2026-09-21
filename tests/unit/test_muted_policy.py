@@ -16,7 +16,6 @@ SENDER_ID = "TEST|0"
 
 
 async def _run_parser(text: str, *, muted: bool) -> list[str]:
-    """把场景置为指定静音状态后，用真实 parser 跑一条消息并返回实际发出的消息链。"""
     await TestDataFactory.ensure_target(target_id=TARGET_ID, muted=muted)
     await TestDataFactory.ensure_sender(
         sender_id=SENDER_ID, superuser=True, sender_data={"typing_prompt": False, "typo_check": False}
@@ -42,14 +41,12 @@ async def _run_parser(text: str, *, muted: bool) -> list[str]:
 
 
 async def _test_unmatched_command_silenced_when_muted():
-    """静音时未匹配模块的命令也不再发出默认提示。"""
     if await _run_parser("~qqqzzzwww", muted=True):
         return False
     return bool(await _run_parser("~qqqzzzwww", muted=False))
 
 
 async def _test_mute_command_still_replies():
-    """静音命令本身在静音状态下仍可执行，切换后也能正常回复。"""
     sent = await _run_parser("~mute", muted=True)
     union = await TargetUnionInfo.get_by_target_id(TARGET_ID)
     if not sent or union.muted:

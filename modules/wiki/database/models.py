@@ -33,7 +33,6 @@ class WikiTargetInfo(DBModel):
         table = f"{table_prefix}target_set_info"
 
     async def _mutate(self, mutation) -> bool:
-        """在 Union 与模块行均存在时，基于数据库中的最新值执行一次定向更新。"""
         async with union_mutation():
             async with in_transaction("default") as connection:
                 target = await (

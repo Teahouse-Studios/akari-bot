@@ -5,7 +5,6 @@ from core.utils.random import Random, SecureRandom
 
 
 def _test_random_random():
-    """测试 Random.random() - 返回 0-1 之间浮点数"""
     try:
         for _ in range(100):
             val = Random.random()
@@ -17,7 +16,6 @@ def _test_random_random():
 
 
 def _test_random_randint():
-    """测试 Random.randint() - 返回 [a,b] 范围内整数"""
     try:
         for _ in range(100):
             val = Random.randint(1, 10)
@@ -35,7 +33,6 @@ def _test_random_randint():
 
 
 def _test_random_uniform():
-    """测试 Random.uniform() - 返回 [a,b] 范围内浮点数"""
     try:
         for _ in range(100):
             val = Random.uniform(1.0, 10.0)
@@ -47,7 +44,6 @@ def _test_random_uniform():
 
 
 def _test_random_randrange():
-    """测试 Random.randrange() - 类似 range 的随机整数"""
     try:
         for _ in range(100):
             val = Random.randrange(10)
@@ -67,7 +63,6 @@ def _test_random_randrange():
 
 
 def _test_random_choice():
-    """测试 Random.choice() - 从序列中随机选择"""
     try:
         seq = ["a", "b", "c", "d", "e"]
         for _ in range(100):
@@ -80,7 +75,6 @@ def _test_random_choice():
 
 
 def _test_random_choices():
-    """测试 Random.choices() - 从序列中选择 k 个（允许重复）"""
     try:
         seq = ["a", "b", "c", "d", "e"]
         result = Random.choices(seq, k=10)
@@ -95,7 +89,6 @@ def _test_random_choices():
 
 
 def _test_random_sample():
-    """测试 Random.sample() - 从序列中选择 k 个（不重复）"""
     try:
         seq = ["a", "b", "c", "d", "e"]
         result = Random.sample(seq, k=3)
@@ -112,7 +105,6 @@ def _test_random_sample():
 
 
 def _test_random_shuffle():
-    """测试 Random.shuffle() - 随机打乱序列"""
     try:
         original = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         seq = original.copy()
@@ -127,7 +119,6 @@ def _test_random_shuffle():
 
 
 def _test_random_token_urlsafe():
-    """测试 Random.token_urlsafe() - 生成无填充的 URL-safe token"""
     try:
         tokens = [Random.token_urlsafe(9), SecureRandom.token_urlsafe(9)]
         return SecureRandom.use_secrets and all(

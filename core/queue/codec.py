@@ -1,8 +1,4 @@
-"""RPC values use declared types; dynamic hook values use an explicit allowlist.
-
-No Python object, module name or callable supplied by a peer is imported. The
-existing converter owns the wire representation of message and session objects.
-"""
+"""RPC values use declared types; dynamic hook values use an explicit allowlist."""
 
 import math
 import types

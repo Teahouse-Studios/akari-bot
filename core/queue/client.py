@@ -24,7 +24,6 @@ class JobQueueClient(JobQueueBase):
 
 
 async def resolve_context(session_info: SessionInfo) -> type[ContextManager]:
-    """刷新会话信息，并选择常规或主动消息的上下文管理器。"""
     await session_info.refresh_info()
     bot = exports["Bot"]
     slot = bot.fetched_session_ctx_slot if session_info.fetch else session_info.ctx_slot

@@ -53,7 +53,6 @@ def _test_non_sqlite_link_keeps_existing_behavior():
 
 
 def _test_module_database_discovery_distinguishes_missing_dependency():
-    """没有 models.py 可忽略，但 database 包内部缺依赖必须中止初始化。"""
     module = SimpleNamespace(name="__test_database_discovery")
     with (
         patch.object(database.pkgutil, "iter_modules", return_value=[module]),
@@ -130,7 +129,6 @@ async def _test_pre_init_mode_generates_all_schemas():
 
 
 async def _test_failed_init_closes_partial_connections():
-    """Tortoise 初始化失败时须清理已经建立的部分连接，保证后续可重试。"""
     close_connections = AsyncMock()
     old_database_list = database.Temp.data.get("modules_db_list")
     try:
@@ -149,7 +147,6 @@ async def _test_failed_init_closes_partial_connections():
 
 
 async def _test_cancelled_init_closes_partial_connections():
-    """数据库初始化被取消时也须清理部分连接，并向上保留取消语义。"""
     entered = asyncio.Event()
     close_connections = AsyncMock()
 
@@ -173,7 +170,6 @@ async def _test_cancelled_init_closes_partial_connections():
 
 
 async def _test_init_db_clears_task_local_tortoise_context():
-    """Server 启动后任务应继承空 context，统一走可替换的 global fallback。"""
     context = TortoiseContext()
     context.__enter__()
     old_modules_db_list = database.Temp.data.get("modules_db_list")
@@ -194,7 +190,6 @@ async def _test_init_db_clears_task_local_tortoise_context():
 
 
 async def _test_activate_db_reload_clears_inherited_old_context():
-    """发布新数据库时不得继续把旧 context 固定到 reload 任务。"""
     old_context = TortoiseContext()
     new_context = TortoiseContext()
     previous_global = tortoise_context._global_context
@@ -217,7 +212,6 @@ async def _test_activate_db_reload_clears_inherited_old_context():
 
 
 async def _test_task_created_after_init_uses_replaceable_global_context():
-    """初始化后创建的任务不得复制旧 context，必须动态读取 global fallback。"""
     old_context = TortoiseContext()
     new_context = TortoiseContext()
     previous_global = tortoise_context._global_context
@@ -254,7 +248,6 @@ async def _test_task_created_after_init_uses_replaceable_global_context():
 
 
 async def _test_reload_activates_prepared_context_before_closing_previous():
-    """热重载必须先完整构建新 context，再原子激活并关闭旧 context。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
     prepared = object()
     calls = []
@@ -289,7 +282,6 @@ async def _test_reload_activates_prepared_context_before_closing_previous():
 
 
 async def _test_reload_failure_does_not_activate_partial_context():
-    """新 context 准备失败时旧数据库必须保持激活且不得发布半成品。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
     calls = []
 
@@ -321,7 +313,6 @@ async def _test_reload_failure_does_not_activate_partial_context():
 
 
 async def _test_reload_waits_for_other_queue_handlers():
-    """热重载不能在其它 action 使用 ORM 时关闭数据库连接。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
     started = asyncio.Event()
     release = asyncio.Event()
@@ -365,7 +356,6 @@ async def _test_reload_waits_for_other_queue_handlers():
 
 
 async def _test_reload_cancels_scheduler_jobs_before_closing_connections():
-    """数据库重载须先等待 schedule 的取消清理，再准备新 context。"""
     module_name = "__test_database_scheduler_maintenance"
     started = asyncio.Event()
     stopped = asyncio.Event()
@@ -406,7 +396,6 @@ async def _test_reload_cancels_scheduler_jobs_before_closing_connections():
 
 
 async def _test_reload_keeps_pumping_remote_results():
-    """热重载暂停领取时仍须回收远端结果，否则等待回包的 action 会与重载互锁。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
     old_is_running = JobQueueServer.is_running
     result_task_id = await JobQueuesTable.add_task("QUEUE-REMOTE", "reload-result", {})
@@ -474,7 +463,6 @@ async def _test_reload_keeps_pumping_remote_results():
 
 
 async def _test_cancelled_reload_does_not_publish_partial_context():
-    """准备新 context 时被取消，不得激活或关闭旧数据库 context。"""
     old_modules_db_list = database.Temp.data.get("modules_db_list")
     entered = asyncio.Event()
     calls = []

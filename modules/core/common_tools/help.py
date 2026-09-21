@@ -93,11 +93,7 @@ def qqbot_permissions_limited(msg: Bot.MessageSession) -> bool:
 
 
 async def check_context_admin(msg: Bot.MessageSession) -> bool:
-    """
-    判定会话用户是否具备场景管理员权限，供帮助列表按权限过滤内容。
-
-    平台查询可能因网络或权限接口异常而失败。帮助只是展示，失败时按无权限处理，
-    不能因此让整条帮助命令报错。
+    """判定会话用户是否具备场景管理员权限，供帮助列表按权限过滤内容。
 
     :param msg: 消息会话。
     :return: 用户是否可执行管理员命令。
@@ -110,7 +106,6 @@ async def check_context_admin(msg: Bot.MessageSession) -> bool:
 
 
 def module_has_admin_entries(module_) -> bool:
-    """判断模块是否含有仅管理员可用的命令或正则，用于决定是否需要查询用户权限。"""
     if module_.required_admin:
         return True
     if any(meta.required_admin for meta in module_.command_list.set):
@@ -119,7 +114,6 @@ def module_has_admin_entries(module_) -> bool:
 
 
 def split_subscription_modules(module_list: dict, names: list[str]) -> tuple[list[str], list[str]]:
-    """按模块的 RSS 标记拆分普通模块与订阅模块，并保持原有顺序。"""
     regular = []
     subscription = []
     for name in names:
@@ -146,16 +140,7 @@ def should_use_markdown_table(msg: Bot.MessageSession, force_image: bool = False
 
 
 def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, list[str | ModuleListEntry]]]) -> list:
-    """
-    把若干组模块名构造成可点击的消息链片段。
-
-    每个模块名成为一个指令操作元素，点击后向输入框填入 `<前缀>help <模块名>`，
-    省去用户照着列表手动输入的一步。
-
-    标题以纯文本构造并自带换行，而非交由 I18NContext 延迟翻译：适配器渲染时会把
-    指令操作无条件拼入上一项，标题若不带换行，模块列表会被挤到标题同一行，
-    与既有的纯文本版排版不符。同理，第二组起的标题还须带前导换行，
-    否则会紧贴在上一组末尾的标签之后。
+    """把若干组模块名构造成可点击的消息链片段。
 
     :param msg: 消息会话。
     :param groups: (标题多语言键, 模块名列表) 的序列，模块名为空的组会被跳过。
@@ -184,19 +169,7 @@ def build_clickable_modules(msg: Bot.MessageSession, groups: list[tuple[str, lis
 
 
 def end_inline_run(chain: MessageChain) -> None:
-    """
-    终止行内连排，使其后追加的元素能各自成行。
-
-    可点击的模块列表以指令操作收尾，而适配器会把紧随指令操作之后的文本并入同一行
-    （见 ``bots/qqbot/context.py`` 中 send_msg_markdown() 的 ``inline_pending``）。
-    该规则本是为「文字 + 标签 + 收尾文字」这类同出一句话的场合而设，跨消息元素时却会
-    把调用方随后追加的提示语粘在最后一个模块名之后。补一个纯文本片段即可断开连排。
-
-    片段取一个空格而非空串：消息链会把空文本换成错误提示（见
-    ``core/builtins/message/chain.py`` 对空文本的处理）。换行同样不可取——适配器随后
-    仍会按元素补一次换行，两者叠加会多出一个空行。
-
-    本函数只在具备指令操作能力的平台上有意义，调用点均已由 ``use_clickable`` 把关。
+    """终止行内连排，使其后追加的元素能各自成行。
 
     :param chain: 待收尾的消息链，就地修改。
     """
@@ -209,22 +182,7 @@ def build_module_table(
     include_help_header: bool = False,
     permission: str = "user",
 ) -> list:
-    """
-    把若干组模块名排成一张 markdown 表。
-
-    各组同处一张表，组与组之间以一行只填组名的区隔行分开；首组的组名即表头。表格至多
-    :data:`~core.utils.table.TABLE_MAX_ROWS` 行、至少 :data:`~core.utils.table.TABLE_MIN_COLUMNS` 列，
-    模块数的增长由列数吸收。末行不足处补空单元格 —— markdown 要求各行的列数一致。
-
-    ``include_help_header`` 开启时，机器人名、当前语言、版本与用户权限会成为同一张表的首行。
-    此时表格至少使用四列，列数更多时在首行末尾补空单元格，所有行始终保持相同列数。
-
-    模块名做成指令操作，点击即把 ``<前缀>help <模块名>`` 填入输入框。标签之所以能落在单元格
-    中间，靠的正是适配器把指令操作及其后的文本一并并入上一项的行为（见
-    ``bots/qqbot/context.py`` 的 ``inline_pending``）：整张表因此累积成一个文本块，
-    竖线与换行均由此处显式写出。也正因如此，本函数产出的元素中**不得出现相邻的两个纯文本**
-    —— 适配器只在指令操作之后才做合并，两个纯文本之间会被补上换行，表格随即被劈成两半。
-    区隔行因此与上一组的收尾同处一个元素。
+    """把若干组模块名排成一张 markdown 表。
 
     :param msg: 消息会话。
     :param groups: (组名多语言键, 模块名列表) 的序列，模块名为空的组会被跳过。
@@ -328,16 +286,7 @@ def build_module_table(
 
 
 def strip_command_arguments(command: str) -> str:
-    """
-    去掉命令模板中的参数占位符，留下可以直接发出的命令主体。
-
-    模板中的参数有四种形态：``<必需>``、``[可选]``、``[-选项]`` 与变长的 ``...``，
-    其中可选项还会嵌套（如 ``~wiki <pagename> [-l <lang>]``、``~locale [<lang>]``），
-    故按括号深度逐字符剔除，而非用正则逐个匹配 —— 后者遇到嵌套会留下孤立的方括号。
-
-    原本带参数的命令保留一个尾随空格，点击填入后光标即落在参数位置，与既有的
-    ``ActionText(f"{prefix}locale ")`` 一类写法一致；不带参数的命令则原样返回，
-    点击后可直接发出。
+    """去掉命令模板中的参数占位符，留下可以直接发出的命令主体。
 
     :param command: 命令模板，如 ``~wiki <pagename> [-l <lang>]``。
     :return: 去掉参数后的命令主体，如 ``~wiki ``。
@@ -356,18 +305,7 @@ def strip_command_arguments(command: str) -> str:
 
 
 def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: list[tuple[str, str]]) -> list:
-    """
-    把一个模块的命令、选项与正则排成一张 markdown 表。
-
-    与模块表格同一思路：高度封顶，条目变多时由列数吸收 —— 只是这里的一「列」是「命令 + 说明」
-    一对，故实际列数为对数的两倍。命令多的模块（如 maimai 有 22 条）因此从二十余行压到十行以内。
-
-    命令、选项、正则同处一张表，后两者各以一行区隔行引出。命令做成指令操作，展示的是完整模板，
-    填入输入框的却是去掉参数占位符后的主体 —— 占位符照原样填进去还得用户自行删掉，反倒碍事。
-    选项与正则不做成指令操作：前者不能单独成命令，后者本就不是命令。
-
-    与 :func:`build_module_table` 同理，产出的元素中不得出现相邻的两个纯文本，故区隔行与
-    上一行的收尾同处一个元素。
+    """把一个模块的命令、选项与正则排成一张 markdown 表。
 
     :param msg: 消息会话。
     :param help_doc: :meth:`CommandParser.return_json_help_doc` 的产出。
@@ -428,13 +366,7 @@ def build_command_table(msg: Bot.MessageSession, help_doc: dict, regex_rows: lis
 
 
 def get_help_link_buttons(msg: Bot.MessageSession, include_modules: bool = True) -> list[tuple[str, str]]:
-    """
-    构造帮助菜单底部的三个入口按钮：模块列表、在线文档、关于我们。
-
-    模块列表与关于我们使用命令回流，在线文档使用平台原生链接跳转。
-
-    按钮命令一律使用 command_prefix：按钮回流经 interaction 事件另建会话，其可用前缀
-    取自全局配置，不含各平台在常规消息入口所用的前缀。
+    """构造帮助菜单底部的三个入口按钮：模块列表、在线文档、关于我们。
 
     :param msg: 消息会话。
     :return: （标签, 命令）序列；会话不具备按钮能力时为空列表。
@@ -458,13 +390,7 @@ def get_help_link_buttons(msg: Bot.MessageSession, include_modules: bool = True)
 
 
 def get_setup_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
-    """
-    构造帮助菜单底部直达设置面板的按钮。
-
-    按钮点击后经 interaction 事件另行建立会话，该会话的可用前缀取自全局配置，
-    并不包含各平台在常规消息入口所用的前缀，故此处须使用 command_prefix。
-
-    文案取自面板专设的按钮键，而非面板标题：后者带有分隔用的方括号，套进按钮里并不好看。
+    """构造帮助菜单底部直达设置面板的按钮。
 
     :param msg: 消息会话。
     :return: 按钮数据；会话不具备按钮能力时为空列表。
@@ -481,20 +407,10 @@ def get_setup_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
 
 
 def get_help_button_data(msg: Bot.MessageSession, include_modules: bool = True) -> list[ButtonRows]:
-    """
-    构造帮助菜单底部的全部按钮：设置面板一行，三个入口按钮另起一行。
-
-    两组各自排布再拼接，而非合并后交由 arrange_buttons 均分——后者会把五个按钮摊成
-    三、二两行，把入口按钮拆散。
-
-    :param msg: 消息会话。
-    :return: 按钮数据；会话不具备按钮能力时为空列表。
-    """
     return get_setup_button_data(msg) + arrange_buttons(get_help_link_buttons(msg, include_modules), per_row=3)
 
 
 def get_module_list_button_data(msg: Bot.MessageSession) -> list[ButtonRows]:
-    """构造模块列表底部的在线文档按钮。"""
     if not msg.session_info.support_button or not help_url:
         return []
     return arrange_buttons([(msg.session_info.locale.t("core.message.help.button.document"), help_url)])

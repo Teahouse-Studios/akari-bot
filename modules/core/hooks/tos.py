@@ -1,7 +1,4 @@
-"""ToS 限流、临时封禁与滥用上报。
-
-通过 parser 入口 hook 接入策略；具名能力供管理命令与 Client RPC（OneBot 等）使用。
-"""
+"""ToS 限流、临时封禁与滥用上报。"""
 
 from __future__ import annotations
 
@@ -28,7 +25,6 @@ _I18N_KEY_RE = re.compile(r"^\{I18N:([^}]+)}$")
 
 
 def _enable_tos() -> bool:
-    """运行时读取配置，避免 import 时快照后热更新失效。"""
     return bool(getattr(CoreConfig, "enable_tos", False))
 
 
@@ -46,7 +42,6 @@ def _report_targets():
 
 
 def _resolve_reason_text(msg, reason: str) -> str:
-    """把 ``{I18N:key}`` 解析为用户可见文案，避免把 kecode 原样展示。"""
     text = str(reason)
     matched = _I18N_KEY_RE.fullmatch(text)
     if matched:
@@ -58,7 +53,6 @@ tos = module("_tos", hidden=True, load=True, base=True)
 
 
 def _enforce_tos(function):
-    """ToS 检查故障仍拒绝执行；不能降级成普通扩展 hook 的失败放行。"""
 
     @wraps(function)
     async def enforced(ctx: "Bot.ParserHookContext"):
@@ -111,11 +105,7 @@ async def remove_temp_ban(target):
 
 
 async def tos_report(sender: str, target: str, reason: str, banned: bool = False):
-    """上报滥用行为。
-
-    上报统一交给 ``core.smtp.send_report``：启用 SMTP 邮件上报时发邮件，
-    未启用时才回传到配置的上报场景（按场景组展开，同一现实场景只通知一次）。
-    """
+    """上报滥用行为。"""
     warn_template = MessageChain.assign(
         [I18NContext("tos.message.report", sender=sender, target=target, disable_joke=True)]
     )
@@ -175,7 +165,6 @@ async def abuse_warn_target(msg, reason: str):
 
 
 async def _temp_ban_check(msg):
-    """临时封禁检查。返回 None 表示放行，否则返回 Stop。"""
     if not _enable_tos():
         return None
 
@@ -212,7 +201,6 @@ async def _temp_ban_check(msg):
 
 
 async def _msg_counter(msg, command: str, *, candidate_scope: bool = False):
-    """令牌桶计数。溢出时自行完成警告与临封，返回 Stop。"""
     if not _enable_tos():
         Logger.debug("Tos is disabled, check the configuration if it is not work as expected.")
         return None
@@ -255,10 +243,6 @@ async def _send_generic_abuse_error(msg, reason: str):
 
 
 async def _apply_abuse_safely(msg, reason: str):
-    """尽力完成处罚的通知副作用；失败只记录，不向 hook 传播。
-
-    与“检查本身失败时降级”不同：业务拒绝已经形成，丢失通知不能连带丢失拒绝决定。
-    """
     try:
         await _apply_abuse(msg, reason)
     except (Exception, SendMessageFailed, SessionFinished, WaitCancelException):
@@ -268,7 +252,6 @@ async def _apply_abuse_safely(msg, reason: str):
 
 
 async def _apply_abuse(msg, reason: str):
-    """执行旧 ``_process_tos_abuse_warning`` 的记录与临封。"""
     if not _enable_tos():
         await _send_generic_abuse_error(msg, reason)
         return
@@ -333,7 +316,6 @@ async def _(ctx: "Bot.ParserHookContext"):
 
 @tos.hook("check_temp_ban")
 async def _(ctx: "Bot.ModuleHookContext"):
-    """args: {"target": str} → 剩余秒数或 False"""
     target = ctx.args.get("target")
     if not target:
         return False
@@ -342,7 +324,6 @@ async def _(ctx: "Bot.ModuleHookContext"):
 
 @tos.hook("remove_temp_ban")
 async def _(ctx: "Bot.ModuleHookContext"):
-    """args: {"target": str} → None"""
     target = ctx.args.get("target")
     if target:
         await remove_temp_ban(target)
@@ -351,11 +332,6 @@ async def _(ctx: "Bot.ModuleHookContext"):
 
 @tos.hook("report")
 async def _(ctx: "Bot.ModuleHookContext"):
-    """args: {"sender","target","reason","banned"} → None
-
-    Client 侧经 ``ServerAPI.trigger_hook("tos.report", ...)`` 调用，
-    上报（SMTP 邮件或上报场景）与场景组展开在 Server 进程完成。
-    """
     await tos_report(
         ctx.args.get("sender"),
         ctx.args.get("target"),
@@ -367,7 +343,6 @@ async def _(ctx: "Bot.ModuleHookContext"):
 
 @tos.hook("warning_counts")
 async def _(ctx: "Bot.ModuleHookContext") -> int:
-    """具名能力：读取当前 ToS 警告阈值。"""
     return _warning_counts()
 
 

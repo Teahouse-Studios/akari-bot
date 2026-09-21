@@ -20,7 +20,6 @@ async def test_features(tester: Tester):
     real_fetch = bot_module.Bot.fetch_target
 
     async def degraded_fetch(target_id, sender_id=None, create=False):
-        """主动获取的会话缺少若干能力，模拟保活信号带来的能力与当前会话不一致。"""
         fetched = await real_fetch(target_id, sender_id, create)
         if not fetched:
             return fetched

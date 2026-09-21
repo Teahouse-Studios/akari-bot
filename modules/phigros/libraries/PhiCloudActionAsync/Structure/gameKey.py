@@ -5,11 +5,7 @@ from .DataType import GameKey, Bits, Byte
 
 
 class gameKey03:
-    """
-    版本号 ≥ 3.9.0
-
-    新增 "sideStory4BeginReadKey" 和 "oldScoreClearedV390"
-    """
+    """版本号 ≥ 3.9.0"""
 
     file_head = b"\x03"
 

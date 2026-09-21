@@ -1,31 +1,4 @@
-"""Tortoise ORM 兼容补丁。
-
-Tortoise 1.1 在几处「先占用资源、再开启事务」的路径上只按正常流程清理，
-任务被取消（``CancelledError`` 不属于 ``Exception``）时资源会泄漏：
-
-SQLite 后端：
-1. ``SqliteTransactionContext.__aenter__`` 先取连接锁再执行 ``BEGIN``；若在两步
-   之间被取消（例如关闭超时取消了一个 ``registry.unregister``），``__aexit__``
-   永远不会执行，连接锁再也无人释放。SQLite 后端全进程共用这一把锁，此后所有
-   数据库操作都会静默挂起。
-2. ``SqliteTransactionContext.__aexit__`` 在 ``commit``/``rollback`` 被取消或失败
-   时直接进入 ``finally`` 释放锁，事务本身可能仍处于打开状态。
-3. ``SqliteClient.execute_many`` 自行 ``BEGIN``/``commit``，却只在
-   ``except Exception`` 里回滚；取消抛出的 ``CancelledError`` 会跳过回滚，把连接
-   留在已打开的事务里，下一次批量写入就会报
-   ``cannot start a transaction within a transaction``。
-
-池化后端（MySQL 等，生产环境主库）：
-4. ``TransactionContextPooled.__aenter__`` 先从连接池取走连接再执行 ``BEGIN``；
-   若在 ``begin`` 期间被取消，连接永远不会归还连接池，也不会回滚，反复发生会
-   耗尽池容量，此后所有查询都在 ``acquire`` 上阻塞。``asyncmy`` 归还仍在事务中
-   的连接时会直接关闭它，因此这里要先回滚再归还。
-5. ``TransactionContextPooled.__aexit__`` 的 ``commit``/``rollback`` 失败或取消时
-   没有兜底回滚，且归还连接若抛错会跳过连接上下文的复位。
-6. ``MySQLClient.execute_many`` 与 SQLite 同款：只捕获 ``Exception``，取消时不回滚。
-
-补丁让这些路径在失败或取消时回滚并释放资源，与正常退出路径的清理语义一致。
-"""
+"""Tortoise ORM 兼容补丁。"""
 
 from __future__ import annotations
 

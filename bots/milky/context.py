@@ -35,11 +35,6 @@ HIGH_PRIORITY_QUEUE_RESERVE = 16
 
 
 def _split_common_id(user_id: str) -> str:
-    """取出带平台前缀的用户 ID 中的纯 ID 部分。
-
-    :param user_id: 形如 `QQ|10001` 的用户 ID。
-    :return: 纯 ID 字符串。
-    """
     return str(user_id).split("|")[-1]
 
 

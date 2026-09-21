@@ -44,14 +44,6 @@ async def get_bind_info(msg: Bot.MessageSession) -> DivingProberBindInfo:
 
 
 async def prompt_rebind(msg: Bot.MessageSession, exc: DivingFishTokenRevoked) -> None:
-    """授权失效时引导用户重新完成一次绑定授权。
-
-    两种客户端都会走到这里：公开客户端的 refresh token 被撤销，或机密客户端换票时对方已不
-    再授权本应用。对用户而言要做的事相同。
-
-    :param msg: 消息会话。
-    :param exc: 触发本提示的异常。
-    """
     Logger.warning(f"The Diving-Fish authorization of {msg.session_info.sender_id} is no longer valid: {exc}")
     await msg.finish(
         I18NContext(
@@ -210,8 +202,6 @@ async def get_record(
     use_cache: bool = True,
 ) -> dict | None:
     """按数据源取回 B50，形状统一为水鱼 `/query/player` 的返回。
-
-    水鱼侧以 `payload`（`qq` 或用户名）确定查询对象，落雪侧则以好友码确定，故两者各取所需。
 
     :param msg: 消息会话。
     :param payload: 水鱼查询载荷，含 `qq` 或 `username`。

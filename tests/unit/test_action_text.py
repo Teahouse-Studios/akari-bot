@@ -1,9 +1,4 @@
-"""ActionText 消息元素单元测试 - 构造、内层解析与纯文本降级。
-
-该元素的 text 与 show 可以是纯文本，也可以是待翻译的多语言元素，故构造时须把
-字符串统一包装为元素，发送前再由 resolve() 压成字符串。降级文案取「show（text）」，
-是为了在不支持指令操作的平台上既保留可读标签，又不丢失用户实际需要发送的命令。
-"""
+"""ActionText 消息元素单元测试 - 构造、内层解析与纯文本降级。"""
 
 from urllib.parse import quote
 
@@ -21,12 +16,6 @@ from core.tester import func_case, Tester
 
 
 async def _session(target_suffix: str, support_action_text: bool):
-    """构造一个用于消息链转换的会话。
-
-    :param target_suffix: 场景 ID 后缀，各用例互不相同以免共用 union。
-    :param support_action_text: 会话是否支持指令操作。
-    :return: 会话信息。
-    """
     return await SessionInfo.assign(
         target_id=f"TEST|Group|{target_suffix}",
         target_from="TEST|Group",
@@ -37,7 +26,6 @@ async def _session(target_suffix: str, support_action_text: bool):
 
 
 def _test_assign_from_string():
-    """测试字符串入参被包装为纯文本元素"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒")
         if not isinstance(elem.text, PlainElement):
@@ -54,7 +42,6 @@ def _test_assign_from_string():
 
 
 def _test_assign_from_elements():
-    """测试元素入参被原样保留"""
     try:
         elem = ActionTextElement.assign(
             Plain("~wiki 沙盒"),
@@ -75,7 +62,6 @@ def _test_assign_from_elements():
 
 
 def _test_alias_available():
-    """测试对外别名可用且等价于工厂方法"""
     try:
         elem = ActionText("~wiki 沙盒", show="沙盒")
         if not isinstance(elem, ActionTextElement):
@@ -90,7 +76,6 @@ def _test_alias_available():
 
 
 def _test_resolve_without_session():
-    """测试无会话时 resolve() 对纯文本内层为恒等变换"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒", show="沙盒")
         resolved = elem.resolve(None)
@@ -108,7 +93,6 @@ def _test_resolve_without_session():
 
 
 def _test_to_plain_with_show():
-    """测试带 show 时降级为「show（text）」"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒", show="沙盒")
         plain = elem.to_plain(None)
@@ -123,7 +107,6 @@ def _test_to_plain_with_show():
 
 
 def _test_to_plain_without_show():
-    """测试无 show 时降级只输出 text，不产生空括号"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒")
         plain = elem.to_plain(None)
@@ -135,7 +118,6 @@ def _test_to_plain_without_show():
 
 
 def _test_to_plain_no_truncation():
-    """测试降级路径不截断，纯文本没有平台的字符数限制"""
     try:
         long_text = "~wiki " + "长" * 200
         elem = ActionTextElement.assign(long_text)
@@ -148,7 +130,6 @@ def _test_to_plain_no_truncation():
 
 
 def _test_in_message_element_union():
-    """测试新元素已纳入 MessageElement 联合类型"""
     try:
         from core.builtins.types import MessageElement
 
@@ -159,7 +140,6 @@ def _test_in_message_element_union():
 
 
 def _test_kecode_format():
-    """测试 KE 码格式与 urlencode"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒", show="沙盒", reference=True)
         code = elem.kecode()
@@ -170,7 +150,6 @@ def _test_kecode_format():
 
 
 def _test_kecode_omits_empty_show():
-    """测试无 show 时 KE 码不产出该参数"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒")
         code = elem.kecode()
@@ -184,11 +163,6 @@ def _test_kecode_omits_empty_show():
 
 
 def _test_kecode_roundtrip_special_chars():
-    """测试含 KE 码分隔符的文本能原样往返
-
-    text 是命令文本，逗号、方括号、等号、空格都可能出现。KE 码按顶层逗号切分参数、
-    按方括号判定块边界，故值必须先编码，否则会被切断并丢失后半段。
-    """
     try:
         raw = "~echo a,b]c=d e[KE:plain,text=x]"
         elem = ActionTextElement.assign(raw, show="标签,带]符号")
@@ -208,7 +182,6 @@ def _test_kecode_roundtrip_special_chars():
 
 
 def _test_kecode_roundtrip_reference():
-    """测试 reference 往返"""
     try:
         for flag in (True, False):
             elem = ActionTextElement.assign("~wiki 沙盒", reference=flag)
@@ -221,7 +194,6 @@ def _test_kecode_roundtrip_reference():
 
 
 def _test_kecode_inline_with_text():
-    """测试 KE 码与前后文本混排时被正确切分"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒", show="沙盒")
         chain = match_kecode(f"想了解更多请点击 {elem.kecode()}")
@@ -239,7 +211,6 @@ def _test_kecode_inline_with_text():
 
 
 def _test_kecode_str_equals_kecode():
-    """测试字符串化即 KE 码，这是行内嵌入的前提"""
     try:
         elem = ActionTextElement.assign("~wiki 沙盒")
         return str(elem) == elem.kecode()
@@ -248,7 +219,6 @@ def _test_kecode_str_equals_kecode():
 
 
 async def _test_kept_when_supported():
-    """测试支持的平台保留元素"""
     try:
         session_info = await _session("at_keep", True)
         chain = MessageChain.assign([Plain("提示"), ActionText("~wiki 沙盒", show="沙盒")])
@@ -266,7 +236,6 @@ async def _test_kept_when_supported():
 
 
 async def _test_degraded_when_unsupported():
-    """测试不支持的平台降级为纯文本并并入上一行"""
     try:
         session_info = await _session("at_degrade", False)
         chain = MessageChain.assign([Plain("提示："), ActionText("~wiki 沙盒", show="沙盒")])
@@ -285,7 +254,6 @@ async def _test_degraded_when_unsupported():
 
 
 async def _test_degraded_creates_element_when_first():
-    """测试降级结果为首个元素时新建而非并入"""
     try:
         session_info = await _session("at_first", False)
         chain = MessageChain.assign([ActionText("~wiki 沙盒")])
@@ -302,10 +270,6 @@ async def _test_degraded_creates_element_when_first():
 
 
 async def _test_degraded_when_markdown_disabled():
-    """测试 enable_markdown 时即使平台支持也降级
-
-    QQ 适配器的两条发送路径以该参数区分：纯文本路径传 True，markdown 路径用默认值。
-    """
     try:
         session_info = await _session("at_nomd", True)
         chain = MessageChain.assign([ActionText("~wiki 沙盒")])
@@ -318,7 +282,6 @@ async def _test_degraded_when_markdown_disabled():
 
 
 async def _test_degraded_when_text_empty():
-    """测试 text 解析后为空时走降级路径，不构成非法标签"""
     try:
         session_info = await _session("at_empty", True)
         chain = MessageChain.assign([ActionText("")])
@@ -332,7 +295,6 @@ async def _test_degraded_when_text_empty():
 
 
 async def _test_i18n_inner_resolved():
-    """测试内层多语言元素在转换阶段被翻译"""
     try:
         session_info = await _session("at_i18n", True)
         chain = MessageChain.assign([ActionText(I18NContext("message.yes"))])
@@ -348,11 +310,6 @@ async def _test_i18n_inner_resolved():
 
 
 async def _test_inline_in_i18n_kwargs_supported():
-    """测试支持的平台上，句子中的指令操作还原为独立元素
-
-    locale.t() 内部经 Template.safe_substitute 将参数强制转为字符串，故元素须先
-    序列化为内部标记，再在翻译完成后还原。
-    """
     try:
         session_info = await _session("at_inline_keep", True)
         # message.brackets 的值为「（${msg}）」，借它构造一个前后都有文本的现成句子
@@ -369,7 +326,6 @@ async def _test_inline_in_i18n_kwargs_supported():
 
 
 async def _test_i18n_message_chain_structured_roundtrip():
-    """测试不支持 KE 码的元素也能经 i18n 参数完整往返"""
     try:
         session_info = await _session("i18n_structured_chain", True)
         chain = MessageChain.assign([I18NContext("message.brackets", msg=MessageChain.assign(Raw("<raw,data=1]")))])
@@ -386,11 +342,6 @@ async def _test_i18n_message_chain_structured_roundtrip():
 
 
 async def _test_inline_degraded_merges_into_one_element():
-    """测试不支持的平台上，整句降级后合并为单个元素
-
-    句子被 match_kecode() 切成「（」、指令操作、「）」三段，若各自成元素，
-    平台以换行拼接时会把一句话拆成三行。
-    """
     try:
         session_info = await _session("at_inline_degrade", False)
         chain = MessageChain.assign([I18NContext("message.brackets", msg=ActionText("~wiki 沙盒", show="沙盒"))])
@@ -410,10 +361,6 @@ async def _test_inline_degraded_merges_into_one_element():
 
 
 async def _test_inline_trailing_text_follows_element():
-    """测试支持的平台上，指令操作之后的文本仍是独立元素，交由适配器拼接
-
-    核心层保留元素时无法预知平台的标签形态，故只保证顺序，行内拼接在适配器侧完成。
-    """
     try:
         session_info = await _session("at_inline_order", True)
         chain = MessageChain.assign([I18NContext("message.brackets", msg=ActionText("~wiki 沙盒"))])
@@ -430,11 +377,6 @@ async def _test_inline_trailing_text_follows_element():
 
 
 async def _test_plain_kecode_roundtrip_not_merged():
-    """测试普通纯文本的 KE 码往返不被合并
-
-    MessageChain([Plain("a"), Plain("b")]) 经 to_kecode() 往返后本该仍是两个元素、
-    显示为两行。行内合并只作用于指令操作，不得波及此处。
-    """
     try:
         session_info = await _session("at_plain_roundtrip", False)
         code = MessageChain.assign([Plain("a"), Plain("b")]).to_kecode()
@@ -451,7 +393,6 @@ async def _test_plain_kecode_roundtrip_not_merged():
 
 
 async def _test_inline_i18n_inner_translated():
-    """测试句子中的指令操作，其内层多语言元素同样被翻译"""
     try:
         session_info = await _session("at_inline_i18n", True)
         chain = MessageChain.assign([I18NContext("message.brackets", msg=ActionText(I18NContext("message.yes")))])
@@ -467,7 +408,6 @@ async def _test_inline_i18n_inner_translated():
 
 
 def _test_serialize_roundtrip_plain_inner():
-    """测试内层为纯文本时的序列化往返"""
     try:
         from core.builtins.converter import converter
         from core.builtins.types import MessageElement
@@ -491,10 +431,6 @@ def _test_serialize_roundtrip_plain_inner():
 
 
 def _test_serialize_roundtrip_i18n_inner():
-    """测试内层为多语言元素时保留其类型与参数
-
-    跨进程时翻译尚未发生，内层类型丢失会导致落地为字面量而非本地化文案。
-    """
     try:
         from core.builtins.converter import converter
         from core.builtins.types import MessageElement
@@ -520,7 +456,6 @@ def _test_serialize_roundtrip_i18n_inner():
 
 
 def _test_serialize_roundtrip_no_show():
-    """测试 show 为 None 时的序列化往返"""
     try:
         from core.builtins.converter import converter
         from core.builtins.types import MessageElement
@@ -537,7 +472,6 @@ def _test_serialize_roundtrip_no_show():
 
 
 def _test_serialize_in_message_chain():
-    """测试经消息链整体序列化的往返，这是跨进程的实际路径"""
     try:
         elem = ActionTextElement.assign(I18NContext("message.yes"), show="标签")
         chain = MessageChain.assign([Plain("提示"), elem])
@@ -556,11 +490,6 @@ def _test_serialize_in_message_chain():
 
 
 def _test_to_plain_show_suppressed():
-    """测试声明不在降级时展示 show 后，只输出 text
-
-    show 有时是纯粹的交互提示（如「点击可添加到输入框」），离开可点击的平台便
-    毫无意义，此时应只留命令原文，不把提示带到其他平台上。
-    """
     try:
         elem = ActionTextElement.assign("~bind token ABC", show="点击可添加到输入框", show_on_fallback=False)
         plain = elem.to_plain(None)
@@ -575,7 +504,6 @@ def _test_to_plain_show_suppressed():
 
 
 def _test_kecode_roundtrip_show_on_fallback():
-    """测试 show_on_fallback 往返"""
     try:
         elem = ActionTextElement.assign("~bind token ABC", show="点击填入", show_on_fallback=False)
         code = elem.kecode()
@@ -598,7 +526,6 @@ def _test_kecode_roundtrip_show_on_fallback():
 
 
 async def _test_degraded_suppresses_show():
-    """测试不支持的平台上，交互提示不会被带出去"""
     try:
         session_info = await _session("at_suppress", False)
         chain = MessageChain.assign(
@@ -620,7 +547,6 @@ async def _test_degraded_suppresses_show():
 
 
 def _test_kecode_roundtrip_quote_on_fallback():
-    """测试 quote_on_fallback 往返"""
     try:
         elem = ActionTextElement.assign("~bind token ABC", quote_on_fallback=True)
         code = elem.kecode()
@@ -641,11 +567,6 @@ def _test_kecode_roundtrip_quote_on_fallback():
 
 
 async def _test_degraded_adds_quotes():
-    """测试声明加引号后，降级文案带引号而可点击的标签不带
-
-    可点击的标签自带视觉边界，外面再套一对引号便显重复，故把引号从 i18n 文案中
-    移出、交由元素在降级时补上。
-    """
     try:
         session_info = await _session("at_quote", False)
         chain = MessageChain.assign(

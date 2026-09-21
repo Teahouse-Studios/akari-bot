@@ -69,17 +69,13 @@ def _get_module_and_alias_first_words(module_names: str | list[str] | tuple[str,
 
 
 def get_table_name(model: type[Model]) -> str:
-    """
-    获取模型对应的数据表名。
-    """
+    """获取模型对应的数据表名。"""
     meta = getattr(model, "Meta", None)
     return getattr(meta, "table", None) or model.__name__
 
 
 def get_union_module_name(model: type[Model]) -> str:
-    """
-    获取模块表所属的模块名，用于向用户展示，无法判断时退回表名。
-    """
+    """获取模块表所属的模块名，用于向用户展示，无法判断时退回表名。"""
     parts = model.__module__.split(".")
     if len(parts) > 1 and parts[0] == "modules":
         return parts[1]
@@ -87,15 +83,6 @@ def get_union_module_name(model: type[Model]) -> str:
 
 
 def iter_union_models(scope: str | None = None) -> list[type[Model]]:
-    """
-    遍历所有以 ``union_id`` 为键的模块表，不含核心表与映射表。
-
-    统计与审计表使用 ``sender_union_id`` / ``target_union_id``，不会被纳入，因此合并 union 时不会篡改历史记录。
-
-    :param scope: 限定 union 域（``sender`` / ``target``）。模块表**必须**以类属性 ``union_scope`` 声明自身所属域，
-                  未声明者一律跳过并告警：无从判断表里存的是账号数据还是场景数据，
-                  两个域都处理会把用户绑定与场景配置互相搬走，比漏迁一张表更难修复。
-    """
     from tortoise import Tortoise
 
     core_models = {SenderUnionInfo, TargetUnionInfo, SenderUnionBind, TargetUnionBind}
@@ -121,18 +108,6 @@ def iter_union_models(scope: str | None = None) -> list[type[Model]]:
 
 
 def iter_union_reference_models() -> list[type[Model]]:
-    """遍历显式声明 Union 引用处理协议的模型。
-
-    这类表不以统一名称的 ``union_id`` 为键，例如 Captcha 同时引用场景与用户 Union，
-    因而不能由 :func:`iter_union_models` 猜测归属。模型只有显式实现下列任一类方法时才参与：
-
-    - ``validate_union_delete(scope, union_id)``
-    - ``migrate_union_reference(scope, from_union, to_union)``
-    - ``migrate_unbound_union_reference(scope, platform_id, from_union, to_union)``
-    - ``delete_union_reference(scope, union_id)``
-
-    统计和审计模型未声明协议，仍保持历史记录不变。
-    """
     from tortoise import Tortoise
 
     handlers = (
@@ -152,7 +127,6 @@ def iter_union_reference_models() -> list[type[Model]]:
 
 
 async def validate_union_delete(scope: str, union_id: str) -> None:
-    """让模块确认 Union 可以安全删除，否则抛出 :class:`UnionDeleteBlocked`。"""
     for model in iter_union_reference_models():
         handler = getattr(model, "validate_union_delete", None)
         if not callable(handler):
@@ -175,11 +149,6 @@ async def migrate_unbound_union_references(
     from_union: str,
     to_union: str,
 ) -> None:
-    """迁移能够按平台 ID 精确归属到被拆出成员的模块 Union 引用。
-
-    普通 ``union_id`` 模块数据按解绑契约留在原组；这条协议只供同时保存了平台 ID
-    与 Union ID 的显式引用表使用，使仍需完成的外部状态不会错误留给原组。
-    """
     for model in iter_union_reference_models():
         handler = getattr(model, "migrate_unbound_union_reference", None)
         if callable(handler):
@@ -187,7 +156,6 @@ async def migrate_unbound_union_references(
 
 
 async def delete_union_references(scope: str, union_id: str) -> None:
-    """删除显式声明协议的模块 Union 引用。"""
     for model in iter_union_reference_models():
         handler = getattr(model, "delete_union_reference", None)
         if callable(handler):
@@ -210,16 +178,6 @@ async def collect_union_conflicts(from_union: str, to_union: str, scope: str | N
 
 
 async def move_union_rows(model: type[Model], from_union: str, to_union: str) -> None:
-    """
-    将某张模块表中挂在 ``from_union`` 下的行改挂到 ``to_union``。
-
-    模块表多以 ``union_id`` 作主键，而 Tortoise 不允许通过 ``update()`` 修改主键，
-    因此这类表只能复制各列后重建行；``union_id`` 非主键的表直接修改该列即可。
-
-    :param model: 模块表模型。
-    :param from_union: 来源 union ID。
-    :param to_union: 目标 union ID。
-    """
     if model._meta.pk_attr != "union_id":
         await model.filter(union_id=from_union).update(union_id=to_union)
         return
@@ -248,14 +206,6 @@ async def migrate_union_tables(
     keep_other_tables: set[str] | None = None,
     scope: str | None = None,
 ) -> None:
-    """
-    将模块表中挂在 ``from_union`` 下的数据迁移到 ``to_union``。
-
-    :param from_union: 来源 union ID。
-    :param to_union: 目标 union ID。
-    :param keep_other_tables: 冲突时以来源方为准的表名集合，其余情况保留目标方。
-    :param scope: 限定 union 域。
-    """
     keep_other_tables = keep_other_tables or set()
     for model in iter_union_models(scope):
         if not await model.filter(union_id=from_union).exists():
@@ -270,12 +220,6 @@ async def migrate_union_tables(
 
 
 async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
-    """
-    把场景权限列表中对某个用户 union 的引用改写到另一个 union 上。
-
-    ``custom_admins`` / ``banned_users`` 存的是用户 union ID，合并后若不改写，
-    管理员身份将会丢失，限制名单也可通过换绑绕过。
-    """
     # 调用方位于 Union mutation 事务中。锁住权限列表所属的 Target 行，避免 Web 与 Server
     # 分属不同进程时，一边改写 Union 引用、一边添加管理员而互相覆盖整份 JSON 列表。
     for target in await TargetUnionInfo.all().order_by("union_id").select_for_update():
@@ -292,9 +236,6 @@ async def rewrite_sender_union_refs(from_union: str, to_union: str) -> None:
 
 
 async def inherit_banned_union_refs(from_union: str, to_union: str) -> None:
-    """
-    使新拆出的用户 union 继承原 union 的场景限制名单，避免通过解绑规避封禁。
-    """
     for target in await TargetUnionInfo.all().order_by("union_id").select_for_update():
         banned_users = target.banned_users or []
         if from_union in banned_users and to_union not in banned_users:
@@ -303,7 +244,6 @@ async def inherit_banned_union_refs(from_union: str, to_union: str) -> None:
 
 
 async def remove_sender_union_refs(union_id: str) -> None:
-    """从全部场景权限列表中移除已删除的用户 Union。"""
     for target in await TargetUnionInfo.all().order_by("union_id").select_for_update():
         update_fields = []
         for field in ("custom_admins", "banned_users"):
@@ -317,13 +257,7 @@ async def remove_sender_union_refs(union_id: str) -> None:
 
 
 async def backfill_union_binds() -> None:
-    """
-    为缺少映射行的 union 补建 ID 映射。
-
-    升级与转换脚本沿用「union ID 即原平台 ID」的约定，因此这里把核心表与模块表中出现过的 union ID
-    直接当作平台 ID 建立映射。模块表可能引用核心表里没有的 ID（旧版本的模块绑定不会顺带建用户行），
-    这些 ID 同样要补上映射，否则下次解析会另建一个空 union，模块绑定就此悬空。
-    """
+    """为缺少映射行的 union 补建 ID 映射。"""
     for info_model in (SenderUnionInfo, TargetUnionInfo):
         bind_model = info_model.bind_model
         union_ids = set(await info_model.all().values_list("union_id", flat=True))
@@ -338,15 +272,6 @@ async def backfill_union_binds() -> None:
 
 
 def normalize_peer_bots(value: Any) -> dict[str, dict[str, str]]:
-    """
-    规整机器人互认记录，形如 ``{观察方场景 ID: {对端场景 ID: 对端机器人在观察方平台的账号}}``。
-
-    记录须按「观察方 - 对端」两级存放：机器人账号以观察方所在平台的命名空间记录，
-    若扁平存为一个列表，则无法反查某条记录属于哪个场景，解绑时也就无从删除。
-    旧版本使用的正是扁平列表，此处一律丢弃，重新执行一次 ``bind auto`` 即可。
-
-    :param value: ``target_data["bots_id"]`` 的原始值。
-    """
     if not isinstance(value, dict):
         return {}
     return {
@@ -357,19 +282,6 @@ def normalize_peer_bots(value: Any) -> dict[str, dict[str, str]]:
 
 
 class UnionBind(DBModel):
-    """
-    平台 ID 与 union 的映射关系基类。
-
-    子类须自行定义作为主键的平台 ID 列，并以类属性 :attr:`id_field` 指明该列的列名。
-
-    此表只回答「这个平台 ID 属于哪个 union」，不承载任何状态。封禁一类的判定一律挂在
-    :class:`UnionInfo` 上：union 表示同一个人（或同一个现实场景）的多个身份，
-    状态若下放到单个 ID，换用组内另一个 ID 即可绕过。
-
-    :param union_id: 所属 union ID。
-    :param bound_at: 绑定时间。
-    """
-
     # 子类中作为主键的平台 ID 列名，供按域泛化的查询与补建逻辑使用
     id_field: str
 
@@ -381,11 +293,6 @@ class UnionBind(DBModel):
 
     @classmethod
     async def list_ids(cls, union_id: str | list[str] | tuple[str, ...]) -> list[str]:
-        """
-        将 union ID 展开为其下绑定的全部平台 ID。
-
-        :param union_id: 单个或多个 union ID。
-        """
         return list(await cls.filter(union_id__in=convert_list(union_id)).values_list(cls.id_field, flat=True))
 
 
@@ -422,11 +329,7 @@ class TargetUnionBind(UnionBind):
 
     @classmethod
     async def next_channel_id(cls, union_id: str) -> int:
-        """
-        取该 union 下一个可用的消息通道号。
-
-        通道号仅在组内有意义（消息去重只发生在组内），因此组内自 1 起顺次递增即可。
-        默认每个场景各占一号，即默认互不视为同一条消息通道。
+        """取该 union 下一个可用的消息通道号。
 
         :param union_id: 场景 union ID。
         """
@@ -445,23 +348,10 @@ class TargetUnionBind(UnionBind):
 
 
 def new_union_id(scope: str) -> str:
-    """
-    生成一个新的 union ID，形如 ``USID|8B1F...`` / ``UTID|8B1F...``（UUID4 取大写十六进制）。
-
-    :param scope: union 域（``sender`` / ``target``）。
-    """
     return f"{UNION_ID_PREFIXES[scope]}|{uuid.uuid4().hex.upper()}"
 
 
 class UnionInfo(DBModel):
-    """
-    以 union ID 为主键的核心信息表基类。
-
-    数据挂载在 union 上而非平台 ID 上，多个平台 ID 可通过对应的 :class:`UnionBind` 子表绑定到同一 union 以共享数据。
-
-    子类须声明所属域 :attr:`union_scope` 与配套的映射表 :attr:`bind_model`。
-    """
-
     # 所属 union 域（``sender`` / ``target``）
     union_scope: str
     # 配套的 ID 映射表
@@ -489,18 +379,6 @@ class UnionInfo(DBModel):
 
     @classmethod
     async def resolve_union(cls, platform_id: str, create: bool = True) -> Self | None:
-        """
-        将平台 ID 解析为其所属的 union 信息，并把映射行挂到 :attr:`bind` 上。
-
-        这是 union 的唯一解析入口；:meth:`DBModel.get_by_target_id` 等按会话取行的方法内部同样走这里。
-
-        只有从未出现过的平台 ID 才会被分配新 union；已有映射行的 ID 永远解析回原组，
-        因此被封禁的 ID 无法借由重新解析脱离封禁。
-
-        :param platform_id: 平台账号 ID 或平台场景 ID。
-        :param create: 若尚未绑定任何 union，是否新建。
-        :return: union 信息，若 create 为 False 且不存在则返回 None。
-        """
         bind_model = cls.bind_model
         bind = await bind_model.get_or_none(**{bind_model.id_field: platform_id})
         if bind:
@@ -530,9 +408,6 @@ class UnionInfo(DBModel):
             return union
 
     async def list_bound_ids(self) -> list[str]:
-        """
-        获取该 union 下已绑定的全部平台 ID。
-        """
         return await self.bind_model.list_ids(self.union_id)
 
     @overload
@@ -545,12 +420,6 @@ class UnionInfo(DBModel):
 
     @classmethod
     async def _resolve_session(cls, value: Any, create: bool = True) -> Self | None:
-        """
-        从平台 ID 字符串或会话对象解析出 union 信息，供按会话取行的入口复用。
-
-        :param value: 平台 ID，或 MessageSession / FetchedMessageSession 实例。
-        :param create: 若尚未绑定任何 union，是否新建。
-        """
         id_field = cls.bind_model.id_field
         platform_id = extract_session_id(value, id_field)
         if not platform_id:
@@ -571,13 +440,6 @@ class UnionInfo(DBModel):
             return True
 
     async def delete_union(self) -> bool:
-        """原子删除 Union、平台映射、当前模块状态及显式声明的引用。
-
-        统计和审计表不属于当前状态，不会由此删除。模块若维持平台侧限制等外部状态，
-        可通过 ``validate_union_delete`` 阻止直接删除，待外部状态解除后再重试。
-
-        :return: Union 存在并成功删除时为 True；已经不存在时为 False。
-        """
         async with union_mutation():
             async with in_transaction("default"):
                 current = await type(self).filter(union_id=self.union_id).select_for_update().first()
@@ -598,11 +460,7 @@ class UnionInfo(DBModel):
 
 
 class SenderUnionInfo(UnionInfo):
-    """
-    用户信息。
-
-    数据挂载在 union 上而非平台账号上，多个平台账号可通过 :class:`SenderUnionBind` 绑定到同一 union 以共享数据。
-    平台账号 ID 与 union 的解析见 :meth:`UnionInfo.resolve_union`。
+    """用户信息。
 
     :param union_id: 用户 union ID。
     :param blocked: 是否为黑名单用户。
@@ -690,9 +548,7 @@ class SenderUnionInfo(UnionInfo):
             return True
 
     async def clear_petal(self) -> bool:
-        """
-        清空用户花瓣数量。
-        """
+        """清空用户花瓣数量。"""
         return await self.edit_attr("petal", 0)
 
     async def settle_petal(self, rebate_rate: float) -> bool:
@@ -753,10 +609,7 @@ class SenderUnionInfo(UnionInfo):
                 return bind.union_id == self.union_id
 
     async def unbind_id(self, sender_id: str) -> "SenderUnionInfo | None":
-        """
-        将一个平台账号从该 union 中拆出，数据留在原 union，该账号从零开始。
-
-        惩罚性状态（封禁、警告次数、场景限制名单）随账号一并转移，避免通过解绑规避处罚。
+        """将一个平台账号从该 union 中拆出，数据留在原 union，该账号从零开始。
 
         :param sender_id: 平台账号 ID。
         :return: 拆出后该账号所属的新 union，若无法解绑则为 None。
@@ -795,10 +648,7 @@ class SenderUnionInfo(UnionInfo):
     async def merge_union(
         self, other: "SenderUnionInfo", keep_other_tables: set[str] | None = None
     ) -> "SenderUnionInfo | None":
-        """
-        把两个 union 合并成一个全新的 union，随后删除原有的两个。
-
-        不沿用任何一方的 union ID，以消除合并方向上的歧义：合并之后双方的旧组 ID 一律失效。
+        """把两个 union 合并成一个全新的 union，随后删除原有的两个。
 
         :param other: 参与合并的另一方。
         :param keep_other_tables: 模块表冲突时以 ``other`` 为准的表名集合，其余情况保留自身。
@@ -857,11 +707,7 @@ class SenderUnionInfo(UnionInfo):
 
 
 class TargetUnionInfo(UnionInfo):
-    """
-    场景信息。
-
-    数据挂载在 union 上而非平台场景上，多个平台场景可通过 :class:`TargetUnionBind` 绑定到同一 union 以共享数据。
-    平台场景 ID 与 union 的解析见 :meth:`UnionInfo.resolve_union`。
+    """场景信息。
 
     :param union_id: 场景 union ID。
     :param blocked: 是否为黑名单场景。
@@ -916,7 +762,6 @@ class TargetUnionInfo(UnionInfo):
         current: "TargetUnionInfo",
         connection,
     ) -> bool:
-        """在已持有 Union mutation 锁和核心行锁时登记机器人互认记录。"""
         target_data = dict(current.target_data or {})
         peers = normalize_peer_bots(target_data.get("bots_id"))
         for observer, entries in links.items():
@@ -948,7 +793,6 @@ class TargetUnionInfo(UnionInfo):
         current: "TargetUnionInfo",
         connection,
     ) -> bool:
-        """在已持有 Union mutation 锁和核心行锁时清理机器人互认记录。"""
         target_data = dict(current.target_data or {})
         peers = normalize_peer_bots(target_data.get("bots_id"))
         peers.pop(target_id, None)
@@ -960,11 +804,7 @@ class TargetUnionInfo(UnionInfo):
         return True
 
     async def forget_peer_bots(self, target_id: str) -> bool:
-        """
-        将某个平台场景从机器人互认记录中完全移除，包含它自身的记录与其它场景对它的记录。
-
-        解绑或变更通道后双方不再对应同一个现实场景，保留记录会使双方持续互相屏蔽；
-        而重新配对所用的握手口令正是由机器人发出的命令，屏蔽一旦残留，双方将无法重新建立关联。
+        """将某个平台场景从机器人互认记录中完全移除，包含它自身的记录与其它场景对它的记录。
 
         :param target_id: 要移除的平台场景 ID。
         """
@@ -980,13 +820,6 @@ class TargetUnionInfo(UnionInfo):
     @classmethod
     async def reassign_channel(cls, target_id: str, channel_id: int | None = None) -> int | None:
         """原子地把单个平台场景移到另一条消息通道。
-
-        ``channel_id`` 为 ``None`` 时分配组内下一个新编号。通道变更和机器人互认记录清理
-        必须处于同一 Union mutation 与数据库事务中：若先更新映射、再另行清理互认记录，
-        等待任务或 parser 可能在两步之间观察到「已经分离通道但仍互相屏蔽」的半状态。
-
-        本方法只移动指定物理场景；管理员手工 set/reset 的语义正是让当前入口脱离原通道。
-        需要把两个既有通道整体并合时应使用 :meth:`unify_channels`。
 
         :param target_id: 要移动的平台场景 ID。
         :param channel_id: 目标通道号；为 ``None`` 时新建一条通道。
@@ -1042,13 +875,6 @@ class TargetUnionInfo(UnionInfo):
     @classmethod
     async def unify_channels(cls, anchor_target_id: str, other_target_id: str) -> int | None:
         """原子地把两个场景当前所在的完整消息通道合并为一条。
-
-        同号场景表达的是同一个现实场景，因而具有传递性。若只改 ``other_target_id`` 一行，
-        它原通道中的第三个平台入口会被错误拆开；本方法会把 ``other_target_id`` 所在通道的
-        全部映射一并移到锚点通道。已有互认记录仍描述同一现实场景，合并时无需清除。
-
-        两个场景必须已经位于同一 Target Union；常规绑定、自动配对和退役迁移都应先完成
-        Union 合并，再调用本方法统一通道。
 
         :param anchor_target_id: 保留其通道号的平台场景 ID。
         :param other_target_id: 将其完整通道并入锚点通道的平台场景 ID。
@@ -1170,10 +996,7 @@ class TargetUnionInfo(UnionInfo):
     async def merge_union(
         self, other: "TargetUnionInfo", keep_other_tables: set[str] | None = None
     ) -> "TargetUnionInfo | None":
-        """
-        把两个 union 合并成一个全新的 union，随后删除原有的两个。
-
-        不沿用任何一方的 union ID，以消除合并方向上的歧义：合并之后双方的旧组 ID 一律失效。
+        """把两个 union 合并成一个全新的 union，随后删除原有的两个。
 
         :param other: 参与合并的另一方。
         :param keep_other_tables: 模块表冲突时以 ``other`` 为准的表名集合，其余情况保留自身。
@@ -1418,11 +1241,7 @@ class TargetUnionInfo(UnionInfo):
     async def get_target_id_list_by_module(
         cls, module_name: str | list[str] | tuple[str, ...] | None, id_prefix: str | None = None
     ) -> list[str]:
-        """
-        获取开启此模块的所有平台场景 ID 列表。
-
-        与 :meth:`get_target_list_by_module` 的区别在于会把每个 union 展开成其下绑定的全部平台场景 ID，
-        用于需要逐个场景推送的情形。
+        """获取开启此模块的所有平台场景 ID 列表。
 
         :param module_name: 指定的模块名称。
         :param id_prefix: 指定的 ID 前缀。
@@ -1510,9 +1329,6 @@ class AnalyticsData(DBModel):
     @classmethod
     async def get_modules_count_by_times(cls, new, old) -> dict[str, int]:
         """按时间区间统计各模块的调用次数。
-
-        聚合在数据库内完成：统计页可选的时间窗足以覆盖整表，取回全部行再在
-        Python 侧计数会让单次请求的传输量随历史数据线性增长。
 
         :param new: 区间起点（含）。
         :param old: 区间终点（含）。
@@ -1627,14 +1443,10 @@ class UnfriendlyActionRecords(DBModel):
     async def check_mute(cls, target_id) -> bool:
         """检查场景的禁言行为记录。
 
-        统计按 union 聚合，因此换用同一 union 下的其他账号不会绕过此检查。
-
         :return: 如果：
         - 场景在过去 5 天内有超过 5 条记录
         - 场景内某一用户的记录（在过去 1 天内）超过 3 次
         - 场景内的不同用户的记录（在过去 1 天内）有 3 个以上
-
-        则返回 True。
         """
         target_union_info = await TargetUnionInfo.resolve_union(target_id, create=False)
         if target_union_info:
@@ -1715,12 +1527,7 @@ class JobQueuesTable(DBModel):
         return True
 
     async def claim(self, peer_id: str | None = None) -> bool:
-        """原子地将 pending 任务领取为 processing。
-
-        轮询消费者可能在同一时刻读到相同的 pending 快照。普通的实例 ``save()`` 不会
-        检查旧状态，两边都会成功并重复执行处理器；带状态条件的单条 UPDATE 只有一方
-        能更新一行，因此可作为跨进程的领取凭证。
-        """
+        """原子地将 pending 任务领取为 processing。"""
         updated = (
             await type(self)
             .filter(task_id=self.task_id, status="pending")

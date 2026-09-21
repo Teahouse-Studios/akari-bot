@@ -6,7 +6,6 @@ from core.tester import func_case, Tester
 
 
 async def _test_is_private_defaults_to_false():
-    """测试私聊标识 - 未指明时按非私聊处理"""
     try:
         session_info = await SessionInfo.assign(
             target_id="PRIV|Group|1", target_from="PRIV|Group", client_name="PRIV", create=True
@@ -18,7 +17,6 @@ async def _test_is_private_defaults_to_false():
 
 
 async def _test_is_private_survives_serialization():
-    """测试私聊标识 - 须能跨进程传递"""
     try:
         # 会话由 bot 进程构造、经队列送至 server 进程，标识不随序列化丢失才有意义
         session_info = await SessionInfo.assign(

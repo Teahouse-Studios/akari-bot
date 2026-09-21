@@ -15,8 +15,6 @@ BUTTON_EXPIRES = 3600
 
 @define
 class ButtonState:
-    """按钮 token 对应的运行时状态。"""
-
     payload: str
     reply_id: str | None
     allowed_sender_id: str | None
@@ -27,8 +25,6 @@ class ButtonState:
 
 @define(frozen=True)
 class RegisteredButton:
-    """供平台渲染的按钮。"""
-
     label: str
     token: str | None = None
     url: str | None = None
@@ -46,8 +42,6 @@ class ButtonConsumeStatus(Enum):
 
 @define(frozen=True)
 class ButtonConsumeResult:
-    """按钮消费后的数据。"""
-
     status: ButtonConsumeStatus
     payload: str | None = None
     reply_id: str | None = None
@@ -127,5 +121,4 @@ def normalize_button_payload(payload: str) -> str:
 
 
 def _clear_button_registry() -> None:
-    """清空按钮注册表，仅供测试隔离。"""
     _button_registry.clear()

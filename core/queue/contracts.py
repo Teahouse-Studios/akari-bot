@@ -1,10 +1,4 @@
-"""Shared RPC declarations. Importing this module never loads either receiver.
-
-Platform signatures come directly from ContextManager. A new ordinary platform
-capability needs one exposure here and its SDK implementation, with no queue
-serializer or receiving handler to maintain. Server services have explicit
-contracts because their implementations must stay in the server process.
-"""
+"""Shared RPC declarations. Importing this module never loads either receiver."""
 
 from typing import Any, Literal
 
@@ -81,11 +75,7 @@ class ProcessAPI:
     @staticmethod
     @signal("process.resource_usage", timeout=10)
     async def resource_usage() -> dict[str, int]:
-        """Report the responding process's own memory footprint in bytes.
-
-        Peers answer for themselves because ``uss`` is only readable from
-        inside the process; see ``core.queue.diagnostics``.
-        """
+        """Report the responding process's own memory footprint in bytes."""
         ...
 
 

@@ -57,7 +57,6 @@ def _test_state_preserve_reset_and_migrate():
 
 
 def _test_state_migration_does_not_mutate_previous_generation():
-    """版本迁移函数只能修改框架提供的副本，失败回滚后旧状态必须保持原样。"""
     module_name = "__test_module_runtime_migrate_copy"
     runtime = ModuleRuntimeManager.get_or_create(module_name)
     original = runtime.get_state(
@@ -111,7 +110,6 @@ async def _test_resource_is_lazy_and_recreated_after_suspend():
 
 
 async def _test_resource_creation_timeout_is_bounded():
-    """异步资源工厂超时后不得把半成品标记为已初始化。"""
     module_name = "__test_module_runtime_resource_timeout"
 
     async def factory():
@@ -146,7 +144,6 @@ async def _test_spawned_tasks_are_cancelled_on_stop():
 
 
 async def _test_spawned_task_failure_logs_traceback():
-    """后台任务未处理异常日志必须包含任务 traceback。"""
     module_name = "__test_module_runtime_task_traceback"
 
     async def worker():
@@ -168,7 +165,6 @@ async def _test_spawned_task_failure_logs_traceback():
 
 
 async def _test_stop_cancellation_still_closes_remaining_resources():
-    """停止流程被取消时仍须继续关闭后续资源，再传播取消。"""
     module_name = "__test_module_runtime_stop_cancelled"
     closed = []
     cleanup_started = asyncio.Event()
@@ -247,7 +243,6 @@ async def _test_reload_abort_keeps_old_generation():
 
 
 async def _test_cache_paths_rotate_after_reload():
-    """版本化缓存目录只在新 generation 提交后清理旧版本。"""
     module_name = "__test_module_runtime_cache_path"
     with TemporaryDirectory() as temp_dir:
         with patch("core.module_runtime.cache_path", Path(temp_dir)):
@@ -263,7 +258,6 @@ async def _test_cache_paths_rotate_after_reload():
 
 
 async def _test_aborted_reload_preserves_shared_cache_path():
-    """失败重载不得删除与旧 generation 共用的缓存目录。"""
     module_name = "__test_module_runtime_shared_cache_path"
     with TemporaryDirectory() as temp_dir:
         with patch("core.module_runtime.cache_path", Path(temp_dir)):
@@ -282,7 +276,6 @@ async def _test_aborted_reload_preserves_shared_cache_path():
 
 
 async def _test_unregistered_runtime_created_during_reload_is_rolled_back():
-    """导入期间意外创建的 runtime 也必须保持 inactive，并在失败时移除。"""
     module_name = "__test_module_runtime_unregistered"
     snapshot = ModuleRuntimeManager.prepare_reload(set())
     runtime = ModuleRuntimeManager.get_or_create(module_name)
@@ -292,7 +285,6 @@ async def _test_unregistered_runtime_created_during_reload_is_rolled_back():
 
 
 async def _test_removed_module_runtime_is_pruned_after_reload():
-    """代码删除模块后，旧 runtime 不得继续滞留在 Manager 中。"""
     module_name = "__test_module_runtime_removed"
     closed = []
     resource = ModuleRuntimeManager.resource(module_name, "resource", object, close=lambda value: closed.append(value))

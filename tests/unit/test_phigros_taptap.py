@@ -15,7 +15,6 @@ from modules.phigros.libraries.taptap import (
 
 
 def _test_mac_authorization_matches_official_vector():
-    """MAC 签名应包含查询参数，并与 TapTap 官方固定向量一致。"""
     authorization = build_mac_authorization(
         {
             "kid": "demo_kid",
@@ -30,7 +29,6 @@ def _test_mac_authorization_matches_official_vector():
 
 
 async def _test_device_login_flow():
-    """设备码、待授权、资料和 Phigros 登录请求应首尾衔接。"""
     token_attempts = 0
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -99,7 +97,6 @@ async def _test_device_login_flow():
 
 
 async def _test_device_login_errors():
-    """设备码失效应分类处理，未知错误应保留脱敏后的诊断信息。"""
     responses = iter(
         [
             httpx.Response(400, json={"data": {"error": "invalid_grant_code"}}),

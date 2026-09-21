@@ -1,8 +1,4 @@
-"""bots.web.api.webrender 单元测试 - 参数校验与 RPC 转发。
-
-浏览器归服务端所有，接口只校验请求并转发；测试以替身固定 RPC 返回值，
-既不起浏览器，也不依赖服务端进程在线。
-"""
+"""bots.web.api.webrender 单元测试 - 参数校验与 RPC 转发。"""
 
 import inspect
 from contextlib import ExitStack, contextmanager
@@ -27,8 +23,6 @@ STATUS = {
 
 
 class FakeRequest:
-    """绕过 FastAPI 的最小请求替身，只提供接口用到的 json()。"""
-
     def __init__(self, body=None):
         self._body = body
 
@@ -39,7 +33,6 @@ class FakeRequest:
 
 
 async def _call(call) -> tuple[int, object]:
-    """执行接口，返回 ``(状态码, detail 或响应体)``，便于断言错误分支。"""
     try:
         result = await call()
     except HTTPException as exc:
@@ -49,7 +42,6 @@ async def _call(call) -> tuple[int, object]:
 
 @contextmanager
 def _patched(**rpc_results):
-    """放行鉴权与来源地址，并把用到的 RPC 替换为返回固定值的替身。"""
     with ExitStack() as stack:
         stack.enter_context(patch.object(webrender_api, "verify_jwt", lambda request: None))
         stack.enter_context(patch.object(webrender_api, "get_client_ip", lambda request: "test"))
@@ -59,21 +51,18 @@ def _patched(**rpc_results):
 
 
 async def _test_webrender_status_merges_config_with_rpc():
-    """测试状态查询 - 本地配置与经 RPC 取得的状态并列返回"""
     endpoint = inspect.unwrap(webrender_api.get_web_render)
     with _patched(get_web_render_status_detail={"return_value": STATUS}):
         return await endpoint(None) == {"config": webrender_api._local_config(), "status": STATUS}
 
 
 async def _test_webrender_status_survives_missing_server():
-    """测试状态查询 - 服务端离线时降级为 400，而不是抛出未处理异常"""
     endpoint = inspect.unwrap(webrender_api.get_web_render)
     with _patched(get_web_render_status_detail={"side_effect": RuntimeError("offline")}):
         return await _call(lambda: endpoint(None)) == (400, "Bad request")
 
 
 async def _test_webrender_control_validates_action():
-    """测试控制接口 - 请求体与 action 校验，合法请求原样转发"""
     endpoint = inspect.unwrap(webrender_api.control_web_render)
     control_result = {"ok": True, "error": None, "status": STATUS}
     with _patched(control_web_render={"return_value": control_result}):
@@ -90,7 +79,6 @@ async def _test_webrender_control_validates_action():
 
 
 async def _test_webrender_control_reports_runtime_failure():
-    """测试控制接口 - 运行期失败以 200 + ok:false 回报"""
     endpoint = inspect.unwrap(webrender_api.control_web_render)
     failure = {"ok": False, "error": "control_failed", "status": None}
     with _patched(control_web_render={"return_value": failure}):
@@ -98,7 +86,6 @@ async def _test_webrender_control_reports_runtime_failure():
 
 
 async def _test_webrender_test_validates_target():
-    """测试渲染测试接口 - mode 与渲染目标在转发前校验"""
     endpoint = inspect.unwrap(webrender_api.test_web_render)
     disabled = {"ok": False, "mode": "screenshot", "error": "web_render_disabled"}
     with _patched(test_web_render={"return_value": disabled}):
@@ -118,7 +105,6 @@ async def _test_webrender_test_validates_target():
 
 
 async def _test_webrender_test_forwards_render_result():
-    """测试渲染测试接口 - 渲染结果与运行期失败均原样返回"""
     endpoint = inspect.unwrap(webrender_api.test_web_render)
     success = {
         "ok": True,

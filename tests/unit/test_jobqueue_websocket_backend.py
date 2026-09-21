@@ -271,7 +271,6 @@ async def _test_websocket_limits_duplicate_identity_and_backpressure():
 
 
 async def _test_websocket_command_slot_contention_waits_for_capacity():
-    """控制命令短暂拥塞时应等待槽位，而不是立即拒绝启动期 action。"""
     async with _websocket_peers(queue_size=1) as (_, peers):
         caller, receiver = peers
         slots = caller.backend.connection._command_slots

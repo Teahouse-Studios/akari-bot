@@ -24,10 +24,7 @@ _write_lock = threading.Lock()
 
 
 class FilterWordError(ValueError):
-    """词库写入失败的原因。
-
-    ``reason`` 同时作为 WebUI 接口的错误码，可由调用方本地化后展示。
-    """
+    """词库写入失败的原因。"""
 
     def __init__(self, reason: str):
         super().__init__(reason)
@@ -35,7 +32,6 @@ class FilterWordError(ValueError):
 
 
 def _read_filter_file(file: Path) -> list[str] | None:
-    """按行读取词库文件；读取失败时记录日志并返回 None。"""
     try:
         return [line.strip() for line in file.read_text(encoding="utf-8").splitlines() if line.strip()]
     except (OSError, UnicodeDecodeError) as exc:
@@ -69,10 +65,7 @@ badword_rules = _load_badword_rules()
 
 
 def reload_filter_words() -> dict[str, list[str]]:
-    """重新读取词库并原地替换已加载规则，供写入后立即生效。
-
-    原地更新使已导入 ``filter_badwords`` / ``contain_badwords`` 的调用方无需重新导入。
-    """
+    """重新读取词库并原地替换已加载规则，供写入后立即生效。"""
     rules = _load_badword_rules()
     badword_rules.clear()
     badword_rules.update(rules)
@@ -137,7 +130,6 @@ def _atomic_write(path: Path, content: str) -> None:
 
 
 def _check_category_quota(path: Path) -> None:
-    """新建分类前校验分类数量上限。"""
     if path.exists():
         return
     if len(list_categories()) >= MAX_FILTER_CATEGORIES:
@@ -197,7 +189,6 @@ def delete_filter_category(category: str) -> bool:
 
 
 def _find_badword_matches(content: str) -> list[tuple[int, int, str]]:
-    """查找文本中的关键词命中位置。"""
     replace_tasks: list[tuple[str, str]] = []
     seen: set[str] = set()
 
@@ -258,10 +249,7 @@ def filter_badwords(content: str) -> str:
 
 
 def contain_badwords(content: str) -> bool:
-    """检测文本是否包含关键词。
-
-    命中关键词返回 True，否则返回 False。
-    """
+    """检测文本是否包含关键词。"""
     return bool(_find_badword_matches(content))
 
 

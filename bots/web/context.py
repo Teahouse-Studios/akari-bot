@@ -48,7 +48,6 @@ def resolve_media_url(token: str) -> str | None:
 
 
 def _serialize_buttons(frame: ButtonFrameElement) -> list[list[dict]]:
-    """把按钮区序列化为二维数组，供前端渲染按钮行。"""
     rows = []
     for row in frame.rows:
         buttons = []
@@ -66,11 +65,6 @@ def _serialize_buttons(frame: ButtonFrameElement) -> list[list[dict]]:
 
 
 async def _get_image_base64(image: ImageElement | None) -> str | None:
-    """取得图片的 Base64 内容，图片不可读时返回 None。
-
-    :param image: 待编码的图片元素；为 None 时直接返回 None。
-    :return: 带 MIME 前缀的 Base64 字符串；无法取得时返回 None。
-    """
     if image is None:
         return None
     try:
@@ -81,7 +75,6 @@ async def _get_image_base64(image: ImageElement | None) -> str | None:
 
 
 async def _serialize_embed(embed: EmbedElement, session_info: SessionInfo) -> dict:
-    """把 Embed 序列化为前端可直接渲染的富文本卡片数据。"""
     image = await _get_image_base64(embed.image)
     thumbnail = await _get_image_base64(embed.thumbnail)
 
@@ -114,10 +107,6 @@ async def _serialize_embed(embed: EmbedElement, session_info: SessionInfo) -> di
 
 
 async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
-    """把单个可发送元素序列化为前端消息字典（发送规则的唯一落点）。
-
-    :return: 前端消息字典；无法识别的元素返回 None，由调用方跳过。
-    """
     if isinstance(x, PlainElement):
         return {"type": "text", "content": x.text}
     if isinstance(x, ImageElement):
@@ -145,7 +134,6 @@ async def _serialize_element(x, session_info: SessionInfo) -> dict | None:
 
 
 async def _serialize_chain(chain: MessageChain, session_info: SessionInfo) -> list[dict]:
-    """把消息链序列化为前端消息数组，并逐元素记录发送日志。"""
     sends = []
     for x in chain.as_sendable(session_info):
         item = await _serialize_element(x, session_info)
@@ -203,12 +191,6 @@ class WebContextManager(ContextManager):
 
     @classmethod
     def _get_websocket(cls, session_info: SessionInfo) -> WebSocket | None:
-        """Return the socket which owns this session.
-
-        A normal session must keep using the socket from which its message
-        arrived.  Only fetched sessions (scheduled or otherwise proactive
-        messages) may fall back to the most recently connected console.
-        """
         if not getattr(session_info, "fetch", False):
             context = cls.context.get(session_info.session_id)
             if isinstance(context, dict):
@@ -378,8 +360,6 @@ class WebContextManager(ContextManager):
 
     @classmethod
     async def end_typing(cls, session_info: SessionInfo) -> None:
-        # if session_info.session_id not in cls.context:
-        #     raise ValueError("Session not found in context")
         flag = cls.typing_flags.pop(session_info.session_id, None)
         if flag:
             flag.set()
@@ -387,7 +367,6 @@ class WebContextManager(ContextManager):
         if task:
             task.cancel()
             await asyncio.gather(task, return_exceptions=True)
-        # 这里可以添加结束输入状态的逻辑
         try:
             websocket = cls._get_websocket(session_info)
 
@@ -401,7 +380,6 @@ class WebContextManager(ContextManager):
     async def error_signal(cls, session_info: SessionInfo) -> None:
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加错误处理逻辑
         try:
             websocket = cls._get_websocket(session_info)
 

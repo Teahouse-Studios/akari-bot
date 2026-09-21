@@ -1,8 +1,4 @@
-"""bots.web.api 单元测试 - 状态接口的运行时统计与进程内存占用。
-
-接口只读服务端经 RPC 汇总的数据，测试以替身固定 RPC 返回值与系统指标，
-不依赖真实进程扇出，也不在本机取样 CPU 占用。
-"""
+"""bots.web.api 单元测试 - 状态接口的运行时统计与进程内存占用。"""
 
 import inspect
 from unittest.mock import AsyncMock, patch
@@ -16,7 +12,6 @@ PROCESSES["error"] = None
 
 
 def _patch_system_metrics():
-    """固定本机取值，避免测试真正读取 CPU 与磁盘。"""
     return (
         patch.object(web_api, "get_cpu_info", lambda: {"brand_raw": "test-cpu"}),
         patch.object(web_api.psutil, "cpu_percent", lambda interval=None: 0.0),
@@ -31,7 +26,6 @@ class _DiskUsage:
 
 
 async def _test_server_info_reports_runtime_stats():
-    """测试状态接口 - 后端类型、自启动以来的计数与各进程内存占用"""
     endpoint = inspect.unwrap(web_api.server_info)
     stats = {"jobqueue_backend": "websocket", "command_parsed": 12, "message_parsed": 34}
     cpu_info_patch, cpu_patch, disk_patch = _patch_system_metrics()
@@ -56,7 +50,6 @@ async def _test_server_info_reports_runtime_stats():
 
 
 async def _test_server_info_degrades_without_server():
-    """测试状态接口 - 服务端离线时仍交付本机信息，只在对应字段降级"""
     endpoint = inspect.unwrap(web_api.server_info)
     cpu_info_patch, cpu_patch, disk_patch = _patch_system_metrics()
     with (

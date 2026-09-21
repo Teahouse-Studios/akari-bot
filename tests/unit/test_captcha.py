@@ -36,7 +36,6 @@ UTF8MB4_MAX_BYTES_PER_CHAR = 4
 
 
 def _test_captcha_indexes_fit_mysql_limit():
-    """验证码表的显式与字段索引均不得超过 MySQL InnoDB 的索引长度上限。"""
     for model in (CaptchaTrust, CaptchaChallenge):
         for field in model._meta.fields_map.values():
             if not (getattr(field, "index", False) or getattr(field, "unique", False) or getattr(field, "pk", False)):
@@ -452,7 +451,6 @@ async def _test_emote_captcha_uses_localized_buttons():
 
 
 async def _test_emote_captcha_restores_markdown_after_send_error():
-    """表情图片发送抛错时，也必须恢复会话原有的 Markdown 能力。"""
     target_id = "QQBot|Group|captcha-emote-markdown-error"
     sender_id = "QQBot|captcha-emote-markdown-error-user"
     session = await SessionInfo.assign(
@@ -822,7 +820,6 @@ async def _test_target_unbind_during_member_join_preserves_challenge_migration()
 
 
 async def _test_sender_unbind_during_token_moves_trust_to_current_union():
-    """平台解禁等待期间用户解绑时，原 token 应在新用户 Union 上完成验证。"""
     target_id = "QQBot|Group|captcha-token-unbind-sender-target"
     kept_id = "QQBot|captcha-token-unbind-sender-kept"
     split_id = "QQBot|captcha-token-unbind-sender-split"
@@ -891,7 +888,6 @@ async def _test_sender_unbind_during_token_moves_trust_to_current_union():
 
 
 async def _test_target_unbind_during_token_moves_trust_to_current_union():
-    """平台解禁等待期间场景解绑时，原 token 应在新场景 Union 上完成验证。"""
     kept_id = "QQBot|Group|captcha-token-unbind-target-kept"
     split_id = "QQBot|Group|captcha-token-unbind-target-split"
     sender_id = "QQBot|captcha-token-unbind-target-sender"
@@ -960,7 +956,6 @@ async def _test_target_unbind_during_token_moves_trust_to_current_union():
 
 
 async def _test_token_does_not_report_success_when_trust_fails():
-    """平台已解禁但信任落库失败时，不得向两端发送完整成功提示。"""
     target_id = "QQBot|Group|captcha-token-trust-failed-target"
     sender_id = "QQBot|captcha-token-trust-failed-sender"
     session = await SessionInfo.assign(
@@ -1011,7 +1006,6 @@ async def _test_token_does_not_report_success_when_trust_fails():
 
 
 async def _test_trust_challenge_rolls_back_partial_persistence():
-    """Trust 已写入后 Challenge 更新失败时，两者必须一起回滚并返回明确失败。"""
     target = await TargetUnionInfo.resolve_union("QQBot|Group|captcha-trust-rollback-target")
     sender = await SenderUnionInfo.resolve_union("QQBot|captcha-trust-rollback-sender")
     challenge = await CaptchaChallenge.create(
@@ -1044,7 +1038,6 @@ async def _test_trust_challenge_rolls_back_partial_persistence():
 
 
 async def _test_member_left_rolls_back_partial_cleanup():
-    """Trust 删除异常时，先删掉的 Challenge 也必须回滚，便于之后安全重试。"""
     target_id = "QQBot|Group|captcha-member-left-rollback-target"
     sender_id = "QQBot|captcha-member-left-rollback-sender"
     event = await EventInfo.assign(
@@ -1093,7 +1086,6 @@ async def _test_member_left_rolls_back_partial_cleanup():
 
 
 async def _test_member_left_waits_for_sender_unbind_and_cleans_current_challenge():
-    """退群与用户解绑交错时，应等待迁移完成并清理新 Union 下的活跃挑战。"""
     target_id = "QQBot|Group|captcha-member-left-unbind-target"
     kept_id = "QQBot|captcha-member-left-unbind-kept"
     split_id = "QQBot|captcha-member-left-unbind-split"

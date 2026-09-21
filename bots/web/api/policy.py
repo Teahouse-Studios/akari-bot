@@ -1,13 +1,4 @@
-"""WebUI 策略内容接口：全局 URL 审计名单与本地过滤词库。
-
-两个目录都是部署者可维护的纯文本配置：``data/url_audit/<list>/user.txt`` 与
-``data/filter_words/*.txt``。随仓库分发的 ``global.txt`` 只读展示，接口不会改动它。
-
-写入接口共用一份版本号约定：读取响应里的 ``revision``，写入时原样回传；若期间
-有其他人（命令、手工编辑、另一个前端）改动过文件，服务端返回 409
-``revision_mismatch`` 并附带 ``X-Policy-Revision`` 响应头，调用方重新拉取即可。
-完整约定见同目录 README.md。
-"""
+"""WebUI 策略内容接口：全局 URL 审计名单与本地过滤词库。"""
 
 from __future__ import annotations
 
@@ -66,12 +57,10 @@ MISSING_REVISION = "missing"
 
 
 def _revision_of(*parts: str) -> str:
-    """把若干片段哈希成短版本号，供前端判断是否需要重新拉取。"""
     return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:REVISION_LENGTH]
 
 
 def _file_meta(path: Path) -> dict:
-    """取文件的版本号与元信息；文件不存在时 version 为 ``missing``。"""
     try:
         stat = path.stat()
     except OSError:
@@ -85,7 +74,6 @@ def _file_meta(path: Path) -> dict:
 
 
 def _display_path(path: Path) -> str:
-    """把绝对路径转成相对仓库根的展示路径，便于前端提示文件位置。"""
     try:
         return f"./{path.resolve().relative_to(ROOT_DIR).as_posix()}"
     except ValueError:
@@ -93,7 +81,6 @@ def _display_path(path: Path) -> str:
 
 
 async def _json_body(request: Request) -> dict:
-    """读取 JSON 请求体，非对象时返回 400。"""
     try:
         body = await request.json()
     except Exception:
@@ -104,10 +91,6 @@ async def _json_body(request: Request) -> dict:
 
 
 def _assert_revision(expected, current: str) -> None:
-    """乐观并发控制：客户端传了非空字符串版本号且与当前不符时拒绝写入。
-
-    未提供版本号（或提供了非字符串值）时不做校验，客户端可只读地使用接口。
-    """
     if not isinstance(expected, str) or not expected:
         return
     if expected != current:
@@ -135,7 +118,6 @@ def _dump_rule(rule: URLRule) -> dict:
 
 
 def _scan_rule_file(path: Path) -> tuple[int, int]:
-    """统计规则文件中的有效规则数与解析失败的行数。"""
     if not path.is_file():
         return 0, 0
     try:
@@ -158,7 +140,6 @@ def _scan_rule_file(path: Path) -> tuple[int, int]:
 
 
 def _dump_url_list(list_name: str) -> dict:
-    """序列化一份 URL 名单：来源文件、全部生效规则与用户自定义规则。"""
     target = _resolve_list(list_name)
     builtin_meta = _file_meta(target.builtin_path)
     user_meta = _file_meta(target.user_path)
@@ -216,7 +197,6 @@ def _filter_word_files() -> list[Path]:
 
 
 def _filter_words_revision() -> str:
-    """词库目录的版本号：任一文件的元信息或文件集合变化都会改变它。"""
     parts = ["filter-words"]
     for path in _filter_word_files():
         parts.append(f"{path.name}:{_file_meta(path)['revision']}")
@@ -260,11 +240,6 @@ def _filter_category_response(category: str, changed: bool) -> dict:
 
 
 async def _sync_filter_words() -> bool:
-    """写入后让过滤词库立即生效。
-
-    WebUI 与机器人核心分处两个进程：本进程直接重载，核心进程经 RPC 触发重载。
-    核心重载失败不影响文件写入结果，前端可据 ``runtime_synced`` 提示用户。
-    """
     reload_filter_words()
     try:
         return bool(await ServerAPI.reload_filter_words())
@@ -276,7 +251,6 @@ async def _sync_filter_words() -> bool:
 @app.get("/api/policy/revision")
 @limiter.limit("120/minute")
 async def get_policy_revision(request: Request):
-    """轻量轮询接口：只读文件元信息，用于判断是否需要重新拉取内容。"""
     try:
         verify_jwt(request)
 
@@ -300,7 +274,6 @@ async def get_policy_revision(request: Request):
 @app.get("/api/url-audit")
 @limiter.limit("60/minute")
 async def get_url_audit(request: Request, revision: str = Query(None)):
-    """读取两份 URL 名单；``revision`` 与当前一致时返回 304 空响应。"""
     try:
         verify_jwt(request)
 
@@ -464,7 +437,6 @@ async def remove_url_rule(
 
 
 async def _write_filter_category(ip: str, category: str, words: list[str]) -> dict:
-    """写入分类词条并同步运行中的词库，返回该分类的最新状态。"""
     try:
         written = write_filter_words(category, words)
     except FilterWordError as exc:

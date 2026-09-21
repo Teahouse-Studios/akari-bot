@@ -1,16 +1,4 @@
-"""把自研测试框架的 ``@func_case`` 入口接入 pytest 的适配层。
-
-pytest 在这里只负责收集与报告，用例依旧由 :func:`core.tester.process.run_function_entry`
-执行，因此条目级隔离（重建数据库、重新加载模块、watchdog 超时）与 ``tester.py`` 完全一致。
-
-三条设计约束：
-
-* 判定语义逐条对齐 ``tester.py`` 的失败分支。子测试不匹配、抛异常、条目超时或「注册了
-  子测试却没产生结果」都判为失败，避免适配层出现假绿。
-* 所有框架调用共用同一个会话事件循环。数据库连接与 ``ExpiringTempDict`` 的锁都绑定事件
-  循环，混用多个循环会在已关闭的循环上留下持锁的任务。
-* 本模块是框架里唯一依赖 pytest 的文件，且只在 pytest 运行时被导入，不影响 ``tester.py``。
-"""
+"""把自研测试框架的 ``@func_case`` 入口接入 pytest 的适配层。"""
 
 import asyncio
 from collections.abc import Awaitable, Callable
@@ -37,10 +25,7 @@ def get_session_loop() -> asyncio.AbstractEventLoop:
 
 
 def run_in_session_loop(awaitable: Awaitable[Any]) -> Any:
-    """
-    在会话事件循环中执行协程。
-
-    只能在同步调用点使用：事件循环不可重入，在异步测试函数里调用会抛 RuntimeError。
+    """在会话事件循环中执行协程。
 
     :param awaitable: 待执行的协程。
     :return: 协程的返回值。
@@ -49,7 +34,6 @@ def run_in_session_loop(awaitable: Awaitable[Any]) -> Any:
 
 
 async def _cancel_pending_tasks() -> None:
-    """尽力取消遗留的后台任务，避免关闭循环时刷出大量 Task was destroyed 警告。"""
     current = asyncio.current_task()
     pending = [task for task in asyncio.all_tasks() if task is not current]
     if not pending:
@@ -60,11 +44,7 @@ async def _cancel_pending_tasks() -> None:
 
 
 def close_session_loop() -> None:
-    """
-    关闭会话事件循环。
-
-    框架加载的模块会留下未完成的后台任务，因此收尾是有界的：取消等待最多 1 秒。
-    """
+    """关闭会话事件循环。"""
     global _session_loop
     loop, _session_loop = _session_loop, None
     if loop is None or loop.is_closed():
@@ -79,7 +59,6 @@ def close_session_loop() -> None:
 
 
 def _label_of(sub_result: dict[str, Any], index: int) -> str:
-    """取子测试的可读标签，优先使用 note。"""
     return sub_result.get("note") or str(sub_result.get("input") or f"第 {index} 个子测试")
 
 
@@ -190,14 +169,7 @@ class FuncCaseItem(pytest.Item):
 
 
 class PytestTester(Tester):
-    """
-    面向纯 pytest 风格用例的同步运行器。
-
-    ``@func_case`` 入口由适配层收集并用框架执行；本类让不写 ``@func_case`` 的用例复用同一
-    套基座与判定：调用 ``test``/``integrate`` 立即返回结果，不匹配当场抛给 pytest，而不是
-    留到收尾再断言，避免漏断言造成的假绿。接口是同步的（异步操作在会话事件循环里完成），
-    因此只能在同步测试函数中使用。
-    """
+    """面向纯 pytest 风格用例的同步运行器。"""
 
     def test(self, func: Callable, note: str | None = None):  # type: ignore[override]
         """执行纯函数子测试，失败立即判定为用例失败。"""

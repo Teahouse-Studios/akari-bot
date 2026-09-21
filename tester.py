@@ -10,7 +10,6 @@ from pathlib import Path
 
 import tomlkit
 
-# ========== 测试配置引导 ==========
 TEST_CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"  # 须与 core.constants.path.CONFIG_PATH_ENV 一致
 TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
 
@@ -19,7 +18,6 @@ TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
 # 留在 data/ 里只会随每次测试运行越积越多。
 TEST_UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
 
-# 测试所需的配置覆盖项，格式为 (文件名, 表名, 键名, 值)。
 TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
     ("config.toml", "config", "enable_petal", True),
     # 通用测试进程不启动守护进程所管理的 WebSocket Hub。数据库后端
@@ -29,11 +27,6 @@ TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
 
 
 def _install_test_config() -> Path:
-    """
-    铺好一份测试专用配置，并令其后的导入一律指向它。
-
-    :return: 临时配置目录的路径。
-    """
     path = Path(tempfile.mkdtemp(prefix="akari_test_config_"))
     if TEST_CONFIG_TEMPLATE_PATH.is_dir():
         shutil.copytree(TEST_CONFIG_TEMPLATE_PATH, path, dirs_exist_ok=True)
@@ -55,15 +48,6 @@ test_config_path = _install_test_config()
 
 
 def _install_test_union_merge_logs() -> Path:
-    """
-    把 union 合并日志引到临时目录，避免测试合成的日志堆积在 data/ 中。
-
-    日志写入本身仍被完整走到，只是产物随进程退出一并删除；需要留存时
-    可自行设置 ``AKARI_UNION_MERGE_LOGS_PATH``，已显式设置的值优先。
-    先行设置过的运行器（如 tests/run_one.py）直接沿用，不再另建一份目录。
-
-    :return: 日志目录的路径。
-    """
     configured = os.environ.get(TEST_UNION_MERGE_LOGS_PATH_ENV)
     if configured:
         return Path(configured)
@@ -109,7 +93,6 @@ IS_CI = os.environ.get("CI", "0") == "1"
 ENABLE_COVERAGE = os.environ.get("COVERAGE", "0") == "1"
 MAX_CONCURRENT = 1
 
-# Coverage 集成
 _coverage_instance = None
 if ENABLE_COVERAGE:
     try:
@@ -156,8 +139,6 @@ async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: CaseEntry, te
 
 
 class FuncTestResult(TypedDict):
-    """单个 @func_case 测试的运行结果。"""
-
     fn: FunctionType
     path: str
     res: dict
@@ -637,23 +618,19 @@ async def main(inspect_module=inspect):
         sys.stderr.flush()
         os._exit(1)
 
-    # Coverage 报告生成
     if _coverage_instance:
         try:
             _coverage_instance.stop()
             _coverage_instance.save()
 
-            # 生成控制台报告
             Logger.info("=" * 60)
             Logger.info("Coverage Report:")
             _coverage_instance.report(show_missing=True)
 
-            # 生成 HTML 报告
             html_dir = Path("htmlcov")
             _coverage_instance.html_report(directory=str(html_dir))
             Logger.success(f"HTML coverage report generated: {html_dir}/index.html")
 
-            # 生成 XML 报告（可选，用于 CI 集成）
             if IS_CI:
                 _coverage_instance.xml_report(outfile="coverage.xml")
                 Logger.success("XML coverage report generated: coverage.xml")

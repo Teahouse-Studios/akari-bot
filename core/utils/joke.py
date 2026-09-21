@@ -7,10 +7,6 @@ from core.utils.random import Random
 
 
 def shuffle_joke(text: str) -> str:
-    """按配置概率打乱文本以制造愚人节玩笑，URL 片段原样保留。
-
-    仅在愚人节（4 月 1 日）且 ``enable_joke`` 开启时生效，否则原样返回。
-    """
     current_time = time.localtime()
     if not (CoreConfig.enable_joke and current_time.tm_mon == 4 and current_time.tm_mday == 1):
         return text

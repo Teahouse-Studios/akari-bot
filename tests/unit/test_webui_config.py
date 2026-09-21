@@ -1,8 +1,4 @@
-"""bots.web.api 单元测试 - 配置文件删除接口（临时目录）。
-
-测试只操作临时目录，不触碰部署者真实的 config/。删除只作用于磁盘文件：
-本组测试同时守住主配置不可删与路径校验这两条约束。
-"""
+"""bots.web.api 单元测试 - 配置文件删除接口（临时目录）。"""
 
 import inspect
 from pathlib import Path
@@ -16,7 +12,6 @@ from core.tester import Tester, func_case
 
 
 async def _call(call) -> tuple[int, object]:
-    """执行接口，返回 ``(状态码, detail 或响应体)``，便于断言错误分支。"""
     try:
         result = await call()
     except HTTPException as exc:
@@ -25,7 +20,6 @@ async def _call(call) -> tuple[int, object]:
 
 
 def _patched(directory: Path):
-    """把接口读写的配置目录切到临时目录。"""
     return (
         patch.object(web_api, "config_path", directory),
         patch.object(web_api, "verify_jwt", lambda request: None),
@@ -34,7 +28,6 @@ def _patched(directory: Path):
 
 
 async def _test_delete_config_file_removes_file():
-    """测试删除配置文件 - 文件被移除且返回最新的文件列表"""
     endpoint = inspect.unwrap(web_api.delete_config_file)
     with TemporaryDirectory() as temp_dir:
         directory = Path(temp_dir)
@@ -56,7 +49,6 @@ async def _test_delete_config_file_removes_file():
 
 
 async def _test_delete_config_file_rejects_unsafe_names():
-    """测试删除配置文件 - 主配置、非 TOML 与越界路径一律拒绝"""
     endpoint = inspect.unwrap(web_api.delete_config_file)
     with TemporaryDirectory() as temp_dir:
         directory = Path(temp_dir)
@@ -77,7 +69,6 @@ async def _test_delete_config_file_rejects_unsafe_names():
 
 
 async def _test_delete_config_file_reports_missing_config_dir():
-    """测试删除配置文件 - 配置目录不存在时返回 404"""
     endpoint = inspect.unwrap(web_api.delete_config_file)
     with TemporaryDirectory() as temp_dir:
         missing = Path(temp_dir) / "absent"

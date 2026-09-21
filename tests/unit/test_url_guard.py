@@ -1,13 +1,4 @@
-"""未认证链接的呈现方式单元测试。
-
-enable_urlmanager 开启时，未经认证的链接原本一律转为 ROT13 编码的跳板地址。跳板地址
-无从辨识且须经第三方页面中转，故在支持 markdown 的会话上改以代码块呈现原始链接，供用户
-自行复制，同时保留未认证的警示；不支持 markdown 的会话（含用户自行关闭 markdown 者）
-仍走跳板。
-
-易错处有二：其一是取链接须用 original_url——模块显式传入 trusted=False 时 url 字段已被
-替换成跳板地址；其二是代码块内不可再套 [名称](URL)，故该路径须跳过 markdown 格式转换。
-"""
+"""未认证链接的呈现方式单元测试。"""
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -33,11 +24,6 @@ _URL = "https://example.com/wiki/Page"
 
 
 def _session(**kwargs) -> SessionInfo:
-    """构造一个用于考察 URL 呈现的会话。
-
-    :param kwargs: 覆盖到 SessionInfo 上的能力字段。
-    :return: 会话信息。
-    """
     return SessionInfo(
         target_id="QQBot|Group|url_guard",
         sender_id="QQBot|1",
@@ -49,28 +35,15 @@ def _session(**kwargs) -> SessionInfo:
 
 
 def _render(session_info: SessionInfo, trusted: bool | None = None, enable_markdown: bool = True) -> str:
-    """跑一遍消息链转换，取回最终文本。
-
-    :param session_info: 会话信息。
-    :param trusted: 传给 Url 的认证标记；None 表示不表态，交由会话决定。
-    :param enable_markdown: 是否允许 markdown 转换，False 表示在转换时强制禁用 markdown。
-    :return: 转换后各元素拼接成的文本。
-    """
     chain = MessageChain.assign([Url(_URL, trusted=trusted)])
     return "".join(str(x) for x in chain.as_sendable(session_info, enable_markdown=enable_markdown))
 
 
 def _expected_block(session_info: SessionInfo) -> str:
-    """按会话语言拼出预期的代码块，避免把文案写死在断言里。
-
-    :param session_info: 会话信息。
-    :return: 预期的代码块文本。
-    """
     return f"```{session_info.locale.t('message.url.untrusted')}\n{_URL}\n```"
 
 
 async def _test_markdown_session_gets_code_block():
-    """测试代码块呈现 - 支持 markdown 时给出代码块，且不经跳板"""
     try:
         session_info = _session(use_url_manager=True, support_markdown=True, use_url_md_format=True)
         out = _render(session_info)
@@ -84,11 +57,6 @@ async def _test_markdown_session_gets_code_block():
 
 
 async def _test_explicit_untrusted_is_guarded():
-    """测试三态 - 显式标记为不可信者一律保护，纵使会话未启用 URLManager
-
-    wikilib 在内容审查未通过时即以 trusted=False 传入，该场景须无视会话设置。
-    此路径下 url 字段已被替换成跳板地址，须取 original_url 方能拿回原链接。
-    """
     try:
         session_info = _session(use_url_manager=False, support_markdown=True)
         out = _render(session_info, trusted=False)
@@ -102,7 +70,6 @@ async def _test_explicit_untrusted_is_guarded():
 
 
 async def _test_trusted_url_is_never_guarded():
-    """测试三态 - 已认证的链接不受保护，纵使会话启用了 URLManager"""
     try:
         out = _render(_session(use_url_manager=True, support_markdown=True), trusted=True)
         if out != _URL:
@@ -115,7 +82,6 @@ async def _test_trusted_url_is_never_guarded():
 
 
 async def _test_trusted_url_skips_springboard_without_markdown():
-    """测试三态 - 已认证的链接在不支持 markdown 的会话上也不套跳板"""
     try:
         out = _render(_session(use_url_manager=True, support_markdown=False), trusted=True)
         return out == _URL and _MM_HOST not in out
@@ -125,7 +91,6 @@ async def _test_trusted_url_skips_springboard_without_markdown():
 
 
 async def _test_md_format_not_applied_inside_code_block():
-    """测试代码块呈现 - 代码块内不得再套 [名称](URL)"""
     try:
         out = _render(_session(use_url_manager=True, support_markdown=True, use_url_md_format=True))
         return "](" not in out
@@ -135,7 +100,6 @@ async def _test_md_format_not_applied_inside_code_block():
 
 
 async def _test_markdown_off_falls_back_to_springboard():
-    """测试回退 - 不支持 markdown 的会话仍走跳板"""
     try:
         out = _render(_session(use_url_manager=True, support_markdown=False))
         return _MM_HOST in out and not out.startswith("```")
@@ -145,7 +109,6 @@ async def _test_markdown_off_falls_back_to_springboard():
 
 
 async def _test_enable_markdown_falls_back_to_springboard():
-    """测试回退 - 转换时强制禁用 markdown 者同样走跳板"""
     try:
         out = _render(_session(use_url_manager=True, support_markdown=True), enable_markdown=False)
         return _MM_HOST in out and not out.startswith("```")
@@ -155,7 +118,6 @@ async def _test_enable_markdown_falls_back_to_springboard():
 
 
 async def _test_manager_off_leaves_url_untouched():
-    """测试无关会话 - 未启用 URLManager 者链接原样输出"""
     try:
         return _render(_session(use_url_manager=False, support_markdown=True)) == _URL
 
@@ -164,7 +126,6 @@ async def _test_manager_off_leaves_url_untouched():
 
 
 async def _test_global_allowlist_bypasses_guard():
-    """测试全局允许列表 - 未表态链接命中用户规则后不再拦截。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -184,7 +145,6 @@ async def _test_global_allowlist_bypasses_guard():
 
 
 async def _test_explicit_untrusted_overrides_global_allowlist():
-    """测试审计优先级 - 显式不可信链接不得被全局允许列表提升。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -204,7 +164,6 @@ async def _test_explicit_untrusted_overrides_global_allowlist():
 
 
 async def _test_global_blocklist_blocks_trusted_url():
-    """测试全局阻止列表 - 显式可信链接也不得输出原 URL。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -225,7 +184,6 @@ async def _test_global_blocklist_blocks_trusted_url():
 
 
 async def _test_global_blocklist_overrides_allowlist():
-    """测试列表优先级 - 同时命中时必须由阻止列表拦截。"""
     try:
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -254,7 +212,6 @@ async def _test_global_blocklist_overrides_allowlist():
 
 
 async def _test_global_blocklist_removes_embed_url():
-    """测试 Embed - 阻止列表中的跳转链接不得绕过 URL 元素检查。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -290,7 +247,6 @@ async def _test_global_blocklist_removes_embed_url():
 
 
 async def _test_global_blocklist_redacts_plain_text_url():
-    """测试纯文本 - 模块不得用裸 URL 绕过结构化链接检查。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -311,7 +267,6 @@ async def _test_global_blocklist_redacts_plain_text_url():
 
 
 async def _test_global_blocklist_fails_closed_on_regex_budget_exhaustion():
-    """测试正则超时 - 阻止列表不得因匹配预算耗尽而放行链接。"""
     try:
         with TemporaryDirectory() as temp_dir:
             directory = Path(temp_dir)
@@ -334,11 +289,6 @@ async def _test_global_blocklist_fails_closed_on_regex_budget_exhaustion():
 
 
 async def _test_markdown_toggle_keeps_url_manager():
-    """测试平台接入 - 用户关闭 markdown 后仍须保留 URLManager
-
-    关闭 markdown 只应令呈现退回跳板；若连 use_url_manager 一并关闭，未认证链接便
-    完全不再被标记，等同于取消保护。
-    """
     try:
         # 平台能力集在导入时即依配置定型，故另建一份「markdown 与 URLManager 均已开启」
         # 的基准并打桩该开关，使断言只考察覆盖逻辑本身，不受本地配置左右
@@ -361,11 +311,6 @@ async def _test_markdown_toggle_keeps_url_manager():
 
 
 async def _test_trusted_survives_kecode_roundtrip():
-    """测试 KE 码往返 - 认证标记须原样保留
-
-    I18N 参数中的 MessageChain 会被转成 KE 码再解析回来（chain.py:340）。标记若在
-    这一趟丢失，已认证的链接会退化为未表态，进而被会话的 URLManager 套上跳板。
-    """
     try:
         session_info = _session(use_url_manager=True, support_markdown=False)
         code = MessageChain.assign([Url(_URL, trusted=True)]).to_kecode()
@@ -380,11 +325,6 @@ async def _test_trusted_survives_kecode_roundtrip():
 
 
 async def _test_untrusted_not_double_wrapped_by_kecode():
-    """测试 KE 码往返 - 已套跳板者不得再套一层
-
-    trusted 为 False 时 url 字段已是跳板地址，故 kecode 须编码 original_url；
-    若照搬 url，还原时会在跳板地址之上再套一层跳板。
-    """
     try:
         session_info = _session(use_url_manager=True, support_markdown=False)
         code = MessageChain.assign([Url(_URL, trusted=False)]).to_kecode()
@@ -400,7 +340,6 @@ async def _test_untrusted_not_double_wrapped_by_kecode():
 
 
 async def _test_unmarked_url_still_follows_session_after_roundtrip():
-    """测试 KE 码往返 - 未表态者往返后仍随会话而定"""
     try:
         session_info = _session(use_url_manager=True, support_markdown=False)
         code = MessageChain.assign([Url(_URL)]).to_kecode()

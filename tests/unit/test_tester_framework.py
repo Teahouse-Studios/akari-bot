@@ -1,9 +1,4 @@
-"""测试框架自身的单元测试。
-
-框架的 mock 对象需要与被替身的真实实现保持接口一致。一旦真实实现新增参数而
-mock 未同步，模块代码会在测试中抛出 TypeError，且失败信息与被测逻辑毫无关系，
-排查成本极高。此处将这类一致性约束固化为断言。
-"""
+"""测试框架自身的单元测试。"""
 
 import inspect
 import re
@@ -26,7 +21,6 @@ REQUIRED_RESPONSE_FORMATS = ("json", "text", "read", "content")
 
 
 def _test_mock_session_signature_matches_real():
-    """MockMessageSession 覆写的方法不得遗漏真实 MessageSession 的参数"""
     drifted = {}
     for name in dir(MessageSession):
         if name.startswith("__"):
@@ -50,7 +44,6 @@ def _test_mock_session_signature_matches_real():
 
 
 def _test_mock_response_supports_all_formats():
-    """MockHTTPResponse 需支持 request_url 全部 fmt 取值，否则 fixture 无法覆盖对应请求"""
     response = MockHTTPResponse(status_code=200, text="{}", content=b"binary")
     missing = [fmt for fmt in REQUIRED_RESPONSE_FORMATS if not hasattr(response, fmt)]
     if missing:
@@ -59,14 +52,12 @@ def _test_mock_response_supports_all_formats():
 
 
 def _test_mock_response_read_returns_bytes():
-    """read() 应返回二进制内容，未录制二进制时回退为 text 编码"""
     if MockHTTPResponse(content=b"\x89PNG").read() != b"\x89PNG":
         return False
     return MockHTTPResponse(text="abc").read() == b"abc"
 
 
 async def _test_contains_matches_non_text_element():
-    """文本搜索类断言应能命中图片等非文本元素的渲染结果"""
     from core.builtins.message.elements import ImageElement, PlainElement
 
     result = {"output": [PlainElement.assign("hello"), ImageElement.assign(path="https://example.com/a.png")]}
@@ -80,7 +71,6 @@ async def _test_contains_matches_non_text_element():
 
 
 async def _test_contains_still_rejects_absent_text():
-    """回退匹配不得放宽到误报：输出中不存在的文本仍应判定为不匹配"""
     from core.builtins.message.elements import PlainElement
 
     result = {"output": [PlainElement.assign("hello")]}
@@ -88,12 +78,10 @@ async def _test_contains_still_rejects_absent_text():
 
 
 def _test_expectation_has_repr():
-    """断言器需提供 __repr__，否则失败日志只能显示内存地址"""
     return repr(Contains("x")) == str(Contains("x")) and Expectation.__repr__ is not object.__repr__
 
 
 def _test_junit_coerces_error_details_to_text():
-    """JUnit 报告不得因异常详情不是字符串而整体生成失败"""
     case = JUnitTestCase("error")
     case.error = ("Test error", True)
     suite = JUnitTestSuite("tester")
@@ -104,7 +92,6 @@ def _test_junit_coerces_error_details_to_text():
 
 
 async def _test_integrate_preserves_unexpected_exception():
-    """func_case 的普通断言失败时应保留命令异常与 traceback。"""
     error = ValueError("boom")
     raw_result = {
         "input": "~broken",
@@ -125,7 +112,6 @@ async def _test_integrate_preserves_unexpected_exception():
 
 
 async def _test_integrate_expected_exception_is_not_runner_error():
-    """Raise 命中预期异常后应通过，并移除仅供失败报告使用的 traceback。"""
     error = ValueError("boom")
     raw_result = {
         "input": "~broken",
@@ -142,7 +128,6 @@ async def _test_integrate_expected_exception_is_not_runner_error():
 
 
 async def _test_function_entry_timeout_is_structured_failure():
-    """无进展的 func_case 应超时返回，不能阻塞整个测试列表。"""
     from core.tester.process import run_function_entry
 
     async def stuck():
@@ -166,7 +151,6 @@ async def _test_function_entry_timeout_is_structured_failure():
 
 
 async def _test_function_entry_timeout_resets_on_progress():
-    """func_case 持续完成子测试时，总耗时超过单次超时仍应通过。"""
     from core.tester.process import run_function_entry
 
     async def step():
@@ -188,7 +172,6 @@ async def _test_function_entry_timeout_resets_on_progress():
 
 
 async def _test_protocol_exception_is_recorded_without_stopping_function_test():
-    """业务控制流异常应记录为失败，入口异常也必须有界清理。"""
     from core.constants import WaitCancelException
     from core.tester.process import run_function_entry
 
@@ -253,7 +236,6 @@ async def _test_protocol_exception_is_recorded_without_stopping_function_test():
 
 
 async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():
-    """func_case 收尾必须回收遗留任务，避免它们使用上一轮数据库连接。"""
     from core.tester.process import _cancel_orphan_tasks
 
     cancelled = asyncio.Event()
@@ -272,7 +254,6 @@ async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_dat
 
 
 async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context():
-    """注册表用例也必须回收任务，避免 action 持有上一轮数据库连接。"""
     from core.tester.process import run_case_entry
 
     cancelled = asyncio.Event()
@@ -311,7 +292,6 @@ async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context()
 
 
 async def _test_progress_notifications_coalesce_to_latest_revision():
-    """连续完成的子测试应保留最新进度，但不能作为旧通知反复重置 watchdog。"""
     tester = Tester("progress_queue")
     revision = tester._progress_revision
     tester._notify_progress()
@@ -321,7 +301,6 @@ async def _test_progress_notifications_coalesce_to_latest_revision():
 
 
 async def _test_function_entry_bounds_cancellation_cleanup():
-    """子测试延迟响应取消时，watchdog 也必须在固定时间内返回。"""
     from core.tester.process import run_function_entry
 
     cleanup_started = asyncio.Event()
@@ -352,7 +331,6 @@ async def _test_function_entry_bounds_cancellation_cleanup():
 
 
 async def _test_cancelled_progress_waiter_does_not_reset_deadline():
-    """外部取消进度等待器不能冒充子测试完成并无限刷新 watchdog。"""
     from core.tester.process import run_function_entry
 
     async def cancelled_waiter(_self, _after_revision):
@@ -372,7 +350,6 @@ async def _test_cancelled_progress_waiter_does_not_reset_deadline():
 
 
 async def _test_unit_subtest_exception_keeps_running_and_counts_once():
-    """unit 子测试抛异常应记录后继续跑后续子测试，runner 只计一次失败。"""
     import tester as tester_module
 
     async def boom():
@@ -461,7 +438,6 @@ async def _test_unit_subtest_exception_keeps_running_and_counts_once():
 
 
 async def _test_function_entry_does_not_misclassify_test_timeout():
-    """子测试自身的 TimeoutError 应保留堆栈，不能冒充 runner 无进展超时。"""
     from core.tester.process import run_function_entry
 
     async def inner_timeout():
@@ -489,7 +465,6 @@ async def _test_function_entry_does_not_misclassify_test_timeout():
 
 
 async def _test_function_entry_init_failure_is_error():
-    """数据库初始化失败属于基础设施错误，不能被记为跳过或通过。"""
     from core.tester.process import run_function_entry
 
     async def noop(_tester):
@@ -504,7 +479,6 @@ async def _test_function_entry_init_failure_is_error():
 
 
 def _test_union_merge_logs_stay_out_of_repo_data():
-    """合并日志须写进测试隔离的目录，合成记录不得落进 data/。"""
     from core.constants.path import data_path, union_merge_logs_path
     from core.database.models import UNION_SCOPE_SENDER
     from core.utils.union_merge import write_merge_log

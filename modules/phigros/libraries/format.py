@@ -13,19 +13,10 @@ DIFF_NAMES = ("EZ", "HD", "IN", "AT")
 
 
 def decode_challenge(challenge: int) -> tuple[int, int]:
-    """拆分课题分为段位与分数。
-
-    :param challenge: 存档中的课题分原始值。
-    :return: 段位与分数。
-    """
     return challenge // 100, challenge % 100
 
 
 def count_game_keys(key_list: dict) -> dict[str, int]:
-    """按 type 位统计各类解锁数量。
-
-    :param key_list: gameKey 的 keyList 字段。
-    """
     counts = dict.fromkeys(KEY_CATEGORIES, 0)
     for name, key in key_list.items():
         try:
@@ -43,19 +34,11 @@ def count_game_keys(key_list: dict) -> dict[str, int]:
 
 
 def format_data(money: list[int]) -> str:
-    """把 Data 值拼为带单位的文本。
-
-    :param money: gameProgress 的 money 字段，五个数按单位升序排列。
-    """
     parts = [f"{value} {unit}" for value, unit in zip(money, DATA_UNITS) if value]
     return " ".join(reversed(parts)) if parts else f"0 {DATA_UNITS[0]}"
 
 
 def _yes_no(value) -> str:
-    """把布尔状态转为供 i18n 模板插值的标记。
-
-    :param value: 存档中的原始值，通常为 0 或 1。
-    """
     return "✓" if value else "✗"
 
 

@@ -1,12 +1,4 @@
-"""i18n 文案与调用点的参数一致性测试。
-
-含 `${cmd}` 的文案若在某个调用点漏传该参数，用户会直接看到字面量
-「使用“${cmd}”查看……」。此类漏传不会引发任何异常，测试不覆盖就只能靠肉眼。
-
-同一个键在多处调用时尤其容易漏：曾有 `core.message.help.all_modules` 在图片版
-分支传了 cmd、legacy 分支漏传，而按「该键至少有一处传了」来判定的检查放了过去。
-故此处逐个调用点校验。
-"""
+"""i18n 文案与调用点的参数一致性测试。"""
 
 import glob
 import json
@@ -31,14 +23,6 @@ INDIRECT_PROVIDER = "core/utils/union_merge.py"
 
 
 def _iter_call_args(source: str, key: str):
-    """取出源码中每一处以该键起头的调用的完整实参文本。
-
-    以键名字面量为锚点，向前找到本次调用的左括号，再向后按括号配平找到右括号。
-
-    :param source: 源码全文。
-    :param key: i18n 键名。
-    :return: 每处调用的实参片段。
-    """
     for match in re.finditer(re.escape(f'"{key}"'), source):
         depth = 0
         left = match.start()
@@ -64,7 +48,6 @@ def _iter_call_args(source: str, key: str):
 
 
 def _collect_cmd_keys() -> set[str]:
-    """收集所有文案中含 ${cmd} 的键名。"""
     keys = set()
     for path in glob.glob("modules/*/locales/zh_cn.json") + [os.path.join("core", "locales", "zh_cn.json")]:
         with open(path, encoding="utf-8") as f:
@@ -75,7 +58,6 @@ def _collect_cmd_keys() -> set[str]:
 
 
 def _collect_sources() -> dict[str, str]:
-    """读取模块与核心的全部源码。"""
     sources = {}
     for path in glob.glob("modules/**/*.py", recursive=True) + glob.glob("core/**/*.py", recursive=True):
         with open(path, encoding="utf-8") as f:
@@ -84,7 +66,6 @@ def _collect_sources() -> dict[str, str]:
 
 
 def _test_every_call_passes_cmd():
-    """测试含 ${cmd} 的文案在每一处调用点都传了该参数"""
     try:
         keys = _collect_cmd_keys()
         if not keys:
@@ -105,15 +86,6 @@ def _test_every_call_passes_cmd():
 
 
 def _test_indirect_keys_have_provider():
-    """测试间接传参的键确有补上 cmd 的去处
-
-    白名单会掩盖真实的漏传，故要求其对应的补参代码仍然在位：
-    issue_code() 一旦不再构造 ActionText，此处即失守。
-
-    此处逐条报明缘由而不笼统吞掉异常：INDIRECT_PROVIDER 曾随文件迁移而失效，
-    读不到文件的报错被 except 收成了断言不成立，看上去与「补参代码不在位」别无二致，
-    白名单就此形同虚设却无人察觉。
-    """
     try:
         with open(INDIRECT_PROVIDER, encoding="utf-8") as f:
             provider = f.read()
@@ -133,10 +105,6 @@ def _test_indirect_keys_have_provider():
 
 
 def _test_no_stale_cmd_placeholder():
-    """测试不存在只在文案中出现、代码里却无人引用的 ${cmd} 键
-
-    改文案却忘了改调用点时，该键会成为孤儿，渲染出的仍是字面量。
-    """
     try:
         keys = _collect_cmd_keys()
         sources = _collect_sources()

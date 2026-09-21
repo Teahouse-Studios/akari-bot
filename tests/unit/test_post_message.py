@@ -17,9 +17,6 @@ from core.tester import func_case, Tester
 
 
 async def _build_channel(prefix: str) -> list[FetchedSessionInfo]:
-    """
-    构造一组「同一条消息通道、分属两个平台」的会话。
-    """
     union = await TargetUnionInfo.resolve_union(f"{prefix}1|Group|a")
     await union.bind_id(f"{prefix}2|Group|b")
     await TargetUnionBind.filter(union_id=union.union_id).update(channel_id=1)
@@ -57,9 +54,6 @@ async def _register_client(client: str) -> None:
 
 
 async def _take_posted() -> list[tuple[str, list[str]]]:
-    """
-    取出并清空已入队的主动推送任务，返回 ``(目标会话, 下一跳列表)``。
-    """
     rows = await JobQueuesTable.filter(action=PlatformAPI.post_message.name)
     await JobQueuesTable.filter(action=PlatformAPI.post_message.name).delete()
     return [
@@ -68,7 +62,6 @@ async def _take_posted() -> list[tuple[str, list[str]]]:
 
 
 async def _test_channel_posts_once_with_next_hops():
-    """测试主动推送 - 同通道只推队首，其余会话作为下一跳"""
     alive = Alive.values.copy()
     try:
         sessions = await _build_channel("POSTA")
@@ -90,7 +83,6 @@ async def _test_channel_posts_once_with_next_hops():
 
 
 async def _test_offline_client_skipped():
-    """测试主动推送 - 掉线的客户端不做队首，改由在线的顶上"""
     alive = Alive.values.copy()
     try:
         sessions = await _build_channel("POSTB")
@@ -109,7 +101,6 @@ async def _test_offline_client_skipped():
 
 
 async def _test_all_offline_posts_nothing():
-    """测试主动推送 - 通道内全部掉线时直接放弃，不留下无人认领的任务"""
     alive = Alive.values.copy()
     try:
         sessions = await _build_channel("POSTC")
@@ -126,7 +117,6 @@ async def _test_all_offline_posts_nothing():
 
 
 async def _test_rpc_rejects_offline_client():
-    """测试队列 - 目标客户端掉线时当场失败，而不是永久等下去"""
     alive = Alive.values.copy()
     try:
         Alive.values.clear()
@@ -145,7 +135,6 @@ async def _test_rpc_rejects_offline_client():
 
 
 async def _test_muted_target_posts_nothing():
-    """测试主动推送 - 静音场景不接收机器人主动发言"""
     alive = Alive.values.copy()
     try:
         sessions = await _build_channel("POSTG")
@@ -170,7 +159,6 @@ async def _test_muted_target_posts_nothing():
 
 
 async def _test_muted_direct_message_skipped():
-    """测试主动推送 - 静音场景的直发链路同样被拦截"""
     union = await TargetUnionInfo.resolve_union("POSTH1|Group|a")
     union.muted = True
     await union.save()

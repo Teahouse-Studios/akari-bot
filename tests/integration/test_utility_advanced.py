@@ -9,10 +9,7 @@ from core.tester import (
 
 @func_case
 async def test_dice_complex(tester: Tester):
-    """dice 复杂表达式测试
-
-    dice 模块以 K 表示保留高位、Q 表示保留低位，不支持 kh/kl 写法。
-    """
+    """dice 复杂表达式测试"""
     await tester.integrate("~dice 4d6k3", Contains("掷得"), "dice 4d6k3 应输出保留高位结果")
     await tester.integrate("~dice 4d6q3", Contains("掷得"), "dice 4d6q3 应输出保留低位结果")
     await tester.integrate("~dice 2d6+3", Contains("掷得"), "dice 2d6+3 应输出结果")

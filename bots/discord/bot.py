@@ -78,7 +78,6 @@ load_slashcommands()
 
 @discord_bot.event
 async def on_member_join(member: discord.Member):
-    """接收 Discord 服务器成员加入事件。"""
     sender_id = f"{sender_prefix}|{member.id}"
     if member.id == discord_bot.user.id or sender_id in ignored_sender:
         return
@@ -89,7 +88,6 @@ async def on_member_join(member: discord.Member):
 
 @discord_bot.event
 async def on_member_remove(member: discord.Member):
-    """接收 Discord 服务器成员离开事件。"""
     sender_id = f"{sender_prefix}|{member.id}"
     if member.id == discord_bot.user.id or sender_id in ignored_sender:
         return
@@ -113,7 +111,6 @@ async def to_message_chain(message: discord.Message):
 
 @discord_bot.event
 async def on_message(message: discord.Message):
-    # don't respond to ourselves
     if message.author == discord_bot.user or message.author.bot:
         return
     target_from = target_channel_prefix

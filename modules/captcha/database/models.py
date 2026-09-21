@@ -93,12 +93,7 @@ class CaptchaChallenge(DBModel):
         from_union: str,
         to_union: str,
     ) -> None:
-        """把被拆出平台成员仍需处理的挑战改挂到其新 Union。
-
-        已验证挑战和信任属于正向状态，不随“从零开始”的解绑继承；仍处于准备、
-        等待或失败状态的挑战对应真实的平台禁言，必须跟随其 ``sender_id`` 或
-        ``target_id``，否则用户会永久无法用原 token 解禁。
-        """
+        """把被拆出平台成员仍需处理的挑战改挂到其新 Union。"""
         if scope == UNION_SCOPE_SENDER:
             await cls.filter(
                 sender_union_id=from_union,

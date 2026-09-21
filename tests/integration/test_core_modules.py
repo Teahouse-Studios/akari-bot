@@ -154,11 +154,7 @@ async def test_unknown_command(tester: Tester):
 
 @func_case
 async def test_ping(tester: Tester):
-    """ping 命令测试
-
-    ping 为公开命令，须始终只返回简略信息；这里以各语言均保留的专有名词
-    （WebRender、JobQueue、Python）作为锚点，避免断言随默认语言变化。
-    """
+    """ping 命令测试"""
     await tester.integrate(
         "~ping",
         All(

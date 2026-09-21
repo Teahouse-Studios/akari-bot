@@ -88,7 +88,6 @@ class LoggingLogger:
         self.critical = self.log.critical
 
     def exception(self, message: str | None = None):
-        """自带 traceback 的错误日志，用于记录与跟踪异常信息。"""
         if message:
             self.error(f"{message}\n{traceback.format_exc()}")
         else:

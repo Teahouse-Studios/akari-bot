@@ -26,11 +26,6 @@ class CoolDown:
         self.sender_union_id = self.msg.session_info.sender_union_id
 
     def _get_cd_dict(self) -> ExpiringTempDict:
-        """
-        获取或创建冷却事件字典。
-        对于单个用户，返回 sender_union_id -> key 的结构。
-        对于 whole_target，返回 channel_key -> key 的结构。
-        """
         target_dict = _cd_dict[self.channel_key]
 
         # 这些容器嵌在 _cd_dict 之下，清理由根容器递归下来，不必各自登记为根
@@ -45,13 +40,6 @@ class CoolDown:
         return sender_dict[self.key]
 
     def _find_cd_dict(self) -> ExpiringTempDict | None:
-        """
-        只读查找冷却事件字典，缺失或已过期时返回 None。
-
-        与 :meth:`_get_cd_dict` 不同，这里不会创建缺失的层级，因此可以区分
-        「从未使用过」和「冷却已结束」。容器自身在过期后经由代理方法取值会先清理
-        再刷新时间戳，等于把冷却重新续上，故此处直接读取底层字典。
-        """
         target_dict = _cd_dict.data.get(self.channel_key)
         if not isinstance(target_dict, ExpiringTempDict):
             return None
@@ -81,8 +69,6 @@ class CoolDown:
         return remaining if remaining > 0 else 0
 
     def reset(self):
-        """
-        重置冷却事件。
-        """
+        """重置冷却事件。"""
         cd_instance = self._get_cd_dict()
         cd_instance.refresh()

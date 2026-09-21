@@ -36,26 +36,7 @@ class Bind:
             load: bool = True,
             priority: int = 1,
         ):
-            """
-            绑定模块命令。
-
-            命令模板语法参见 :func:`core.builtins.parser.args.parse_template`。
-            模板中的参数与选项可直接映射为被装饰函数的参数：
-
-            - ``<name>``：位置参数，对应同名函数参数；未提供时使用默认值或 ``None``；
-            - ``[flag]``：标志选项，对应同名函数参数，标注为 ``bool`` 时直接得到选项是否传入；
-            - ``[-b]`` / ``[--foo <bar>]``：带杠选项，对应同名函数参数，参数名中的
-              下划线按连字符匹配（如参数 ``no_cover`` 对应 ``--no-cover``）；
-              带子参数且仅有一个子参数时，直接将该子参数的值传入；
-            - 也可直接使用选项的子参数名，如 ``[-p <page>]`` 对应函数参数 ``page``；
-            - ``-i``、``<address:port>`` 等无法作为函数参数名的模板元素，可用 ``Param``
-              标注指定对应的模板元素，如 ``data: Param("-i", bool) = False``。
-
-            示例::
-
-                @module.command("test [-b] [--foo <bar>]")
-                async def _(msg: Bot.MessageSession, b: bool = False, foo: str | None = None):
-                    ...
+            """绑定模块命令。
 
             :param command_template: 命令模板，可传入多个模板作为同一命令的多个变体。
             :param command_templates: 额外的命令模板。

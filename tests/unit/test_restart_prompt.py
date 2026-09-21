@@ -1,8 +1,4 @@
-"""core.server.init 单元测试 - 重启提示的送达（需要数据库）。
-
-server 进程重启后须等目标客户端重新注册为 ready，且以 Peer Registry 的有效租约为准，
-才能投递重启提示，否则 RPC 会以「客户端掉线」为由拒绝请求。
-"""
+"""core.server.init 单元测试 - 重启提示的送达（需要数据库）。"""
 
 import asyncio
 from datetime import UTC, datetime, timedelta
@@ -22,7 +18,6 @@ from core.tester import func_case, Tester
 
 
 async def _write_restart_cache(client: str) -> None:
-    """写入重启缓存，等同于 `modules.core.su_tools.restart.write_restart_cache`。"""
     session_info = await SessionInfo.assign(
         target_id=f"{client}|Group|1",
         target_from=f"{client}|Group",
@@ -40,7 +35,6 @@ async def _write_restart_cache(client: str) -> None:
 
 
 async def _prompt_sent(target_peer: str | None = None) -> bool:
-    """重启提示是否已入队。"""
     query = JobQueuesTable.filter(action=PlatformAPI.send_message.name)
     if target_peer is not None:
         query = query.filter(target_peer=target_peer)
@@ -78,7 +72,6 @@ def _cleanup(alive: dict) -> None:
 
 
 async def _test_ignores_previous_client_lease():
-    """数据库后端不得把重启前仍在有效租约内的旧客户端当作新实例。"""
     client = "RESTARTC"
     old_peer = f"STALE-PEER-{client}"
     new_peer = f"TEST-PEER-{client}"
@@ -104,12 +97,6 @@ async def _test_ignores_previous_client_lease():
 
 
 async def _test_waits_for_client_to_come_online():
-    """测试重启提示 - 客户端在提示发出前尚未注册为 ready 时，应等其上线后再投递
-
-    server 与各 bot 子进程一同重启，`load_prompt` 执行时本地拓扑缓存必然为空；
-    客户端须先在 Peer Registry 注册带有效租约的 ready 实例。若不等待即发送，
-    RPC 的掉线检查会拒绝提示请求。
-    """
     client = "RESTARTA"
     alive = Alive.values.copy()
     try:
@@ -131,10 +118,6 @@ async def _test_waits_for_client_to_come_online():
 
 
 async def _test_gives_up_when_client_never_online():
-    """测试重启提示 - 客户端始终不上线时，应在超时后放弃而非一直等待
-
-    重启提示并非关键路径，客户端确已掉线时无限等待只会让 server 卡在初始化阶段。
-    """
     client = "RESTARTB"
     alive = Alive.values.copy()
     try:
@@ -151,7 +134,6 @@ async def _test_gives_up_when_client_never_online():
 
 
 async def _test_corrupt_author_cache_is_discarded():
-    """损坏的重启发起者缓存不应阻止 Server 启动，也不能留到下次重复解析。"""
     alive = Alive.values.copy()
     author_cache = PrivateData.path / ".cache_restart_author"
     try:

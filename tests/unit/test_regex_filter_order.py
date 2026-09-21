@@ -15,7 +15,6 @@ from core.tester import func_case, Tester
 
 
 def _fake_lock_msg(sender_id: str):
-    """构造一个仅提供 sender_id 的会话替身，执行锁只读取该字段。"""
     return SimpleNamespace(
         session_info=SimpleNamespace(
             sender_id=sender_id,
@@ -26,7 +25,6 @@ def _fake_lock_msg(sender_id: str):
 
 
 async def _test_lock_acquired_once():
-    """测试执行锁 - 首次获取成功，重复获取失败"""
     try:
         from core.builtins.session.lock import ExecutionLockList
 
@@ -41,7 +39,6 @@ async def _test_lock_acquired_once():
 
 
 async def _test_lock_released_can_reacquire():
-    """测试执行锁 - 释放后可以重新获取"""
     try:
         from core.builtins.session.lock import ExecutionLockList
 
@@ -57,7 +54,6 @@ async def _test_lock_released_can_reacquire():
 
 
 def _fake_avail_rfunc(available_for=None, exclude_from=None, load: bool = True):
-    """构造一条仅含平台声明的正则处理函数替身。"""
     return SimpleNamespace(
         available_for=available_for if available_for is not None else ["*"],
         exclude_from=exclude_from if exclude_from is not None else [],
@@ -165,7 +161,6 @@ async def _test_long_message_still_confirms_for_non_exempt_regex():
 
 
 async def _test_wildcard_available_everywhere():
-    """测试正则平台过滤 - 默认通配对任何平台可用"""
     try:
         return regex_func_available(_fake_avail_rfunc(), "QQ|Group", "QQ")
 
@@ -174,7 +169,6 @@ async def _test_wildcard_available_everywhere():
 
 
 async def _test_available_for_restricts_platform():
-    """测试正则平台过滤 - available_for 限定后仅命中的平台可用"""
     try:
         rfunc = _fake_avail_rfunc(available_for=["QQ"])
         hit = regex_func_available(rfunc, "QQ|Group", "QQ")
@@ -186,7 +180,6 @@ async def _test_available_for_restricts_platform():
 
 
 async def _test_available_for_empty_blocks_all():
-    """测试正则平台过滤 - available_for 为空列表时对任何平台都不可用"""
     try:
         rfunc = _fake_avail_rfunc(available_for=[])
         return not regex_func_available(rfunc, "QQ|Group", "QQ") and not regex_func_available(
@@ -198,7 +191,6 @@ async def _test_available_for_empty_blocks_all():
 
 
 async def _test_exclude_from_takes_precedence():
-    """测试正则平台过滤 - exclude_from 优先于 available_for"""
     try:
         rfunc = _fake_avail_rfunc(available_for=["*"], exclude_from=["QQ"])
         return not regex_func_available(rfunc, "QQ|Group", "QQ") and regex_func_available(rfunc, "QQBot|Group", "QQBot")
@@ -208,7 +200,6 @@ async def _test_exclude_from_takes_precedence():
 
 
 async def _test_target_from_also_matches():
-    """测试正则平台过滤 - 场景前缀与客户端名任一命中即可用"""
     try:
         rfunc = _fake_avail_rfunc(available_for=["QQ|Group"])
         hit = regex_func_available(rfunc, "QQ|Group", "QQ")
@@ -220,7 +211,6 @@ async def _test_target_from_also_matches():
 
 
 async def _test_unloaded_is_unavailable():
-    """测试正则平台过滤 - 未加载的正则一律不可用"""
     try:
         return not regex_func_available(_fake_avail_rfunc(load=False), "QQ|Group", "QQ")
 

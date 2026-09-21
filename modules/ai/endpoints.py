@@ -31,8 +31,6 @@ RETRYABLE_EXCEPTIONS = (
 
 @dataclass
 class ToolCall:
-    """统一的工具调用表示，与具体 API 无关。"""
-
     id: str
     name: str
     arguments: dict
@@ -40,8 +38,6 @@ class ToolCall:
 
 @dataclass
 class ParsedResult:
-    """一次 LLM 调用的归一化结果。"""
-
     text: str
     tool_calls: list[ToolCall]
     input_tokens: int
@@ -194,8 +190,6 @@ def _build_assistant_message(text: str, raw_tool_calls: list[dict]) -> dict:
 
 
 class OpenAICompletionsEndpoint:
-    """OpenAI Chat Completions API（默认 endpoint）。"""
-
     def __init__(self, api_url: str, api_key: str, model_name: str):
         self.client = AsyncOpenAI(base_url=api_url, api_key=api_key)
         self.model_name = model_name
@@ -249,8 +243,6 @@ class OpenAICompletionsEndpoint:
 
 
 class OpenAIResponsesEndpoint:
-    """OpenAI Responses API。"""
-
     def __init__(self, api_url: str, api_key: str, model_name: str):
         self.client = AsyncOpenAI(base_url=api_url, api_key=api_key)
         self.model_name = model_name
@@ -311,8 +303,6 @@ class OpenAIResponsesEndpoint:
 
 
 class AnthropicEndpoint:
-    """Anthropic Messages API。"""
-
     def __init__(self, api_url: str, api_key: str, model_name: str):
         self.client = AsyncAnthropic(base_url=api_url, api_key=api_key)
         self.model_name = model_name

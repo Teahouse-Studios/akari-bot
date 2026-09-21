@@ -1,11 +1,4 @@
-"""wiki 站点异常提示单元测试。
-
-InvalidWikiError 的兜底分支原先把异常对象直接并入消息链，而消息链只接受消息元素，
-一旦站点的 interwiki 配置有误便会在兜底处二次抛错，把本应友好的提示变成未捕获异常。
-
-query_pages 另有一条 QueryInfo 入口，但现无调用方，且其在取 locale 时即已失配，
-故此处只覆盖会话入口这条实际可达的路径。
-"""
+"""wiki 站点异常提示单元测试。"""
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -23,19 +16,10 @@ INVALID_IW_MESSAGE = "站点设置的 Interwiki 无效，请联系站点管理�
 
 
 def _texts(message_chain) -> str:
-    """拼接消息链中的纯文本内容，便于断言异常详情是否落入消息。
-
-    :param message_chain: 待检查的消息链或消息元素列表。
-    """
     return "".join(x.text for x in message_chain if isinstance(x, PlainElement))
 
 
 async def _query_with_invalid_wiki(inline_mode: bool) -> dict:
-    """在页面查询抛出 InvalidWikiError 的前提下跑一遍查询，捕获发给用户的消息。
-
-    :param inline_mode: 是否为内联查询。
-    :return: 含 sent 键的字典，未发出消息时为空。
-    """
     session_info = await SessionInfo.assign(
         target_id=f"TEST|Group|wiki_invalid_iw_{int(inline_mode)}",
         target_from="TEST|Group",
@@ -67,13 +51,11 @@ async def _query_with_invalid_wiki(inline_mode: bool) -> dict:
 
 
 async def _test_inline_query_reports_detail():
-    """内联查询遇到无效 interwiki 时应发出含异常详情的提示。"""
     captured = await _query_with_invalid_wiki(inline_mode=True)
     return "sent" in captured and INVALID_IW_MESSAGE in _texts(captured["sent"])
 
 
 async def _test_command_query_reports_detail():
-    """命令查询遇到无效 interwiki 时同样应发出含异常详情的提示。"""
     captured = await _query_with_invalid_wiki(inline_mode=False)
     return "sent" in captured and INVALID_IW_MESSAGE in _texts(captured["sent"])
 

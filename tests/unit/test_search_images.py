@@ -10,14 +10,12 @@ from modules.ai.tools.search_images import search_images
 
 
 def _png_bytes() -> bytes:
-    """生成合法 PNG 内容，用于模拟真实图片响应体。"""
     buffer = BytesIO()
     PILImage.new("RGB", (2, 2), "blue").save(buffer, format="PNG")
     return buffer.getvalue()
 
 
 def _result(name: str) -> dict:
-    """构造一条与 ddgs.images 输出结构一致的搜索结果。"""
     return {
         "title": name,
         "image": f"https://example.com/{name}",
@@ -28,8 +26,6 @@ def _result(name: str) -> dict:
 
 
 class _FakeDDGS:
-    """模拟 ddgs.DDGS 的上下文管理器。"""
-
     def __init__(self, results: list[dict]):
         self.results = results
 
@@ -44,7 +40,6 @@ class _FakeDDGS:
 
 
 def _patched_search(results: list[dict], responses: dict[str, object]):
-    """按 URL 返回预设响应体的 get_url 替身。"""
 
     async def fake_get_url(url, **_kwargs):
         response = responses[url]
@@ -59,7 +54,6 @@ def _patched_search(results: list[dict], responses: dict[str, object]):
 
 
 async def _test_non_image_results_are_dropped() -> bool:
-    """image_url 返回 HTML 或文本时，该结果不得进入工具输出。"""
     results = [_result("ok.png"), _result("html.png"), _result("text.png")]
     responses = {
         "https://example.com/ok.png": _png_bytes(),
@@ -78,7 +72,6 @@ async def _test_non_image_results_are_dropped() -> bool:
 
 
 async def _test_all_results_unavailable_returns_empty_hint() -> bool:
-    """全部结果不可用或请求失败时返回无结果提示。"""
     results = [_result("blocked.png"), _result("offline.png")]
     responses = {
         "https://example.com/blocked.png": b"<html>hotlink protection</html>",
@@ -91,7 +84,6 @@ async def _test_all_results_unavailable_returns_empty_hint() -> bool:
 
 
 async def _test_result_count_limit_is_applied_after_filtering() -> bool:
-    """先过滤非法内容，再按 search_results 截断。"""
     results = [_result("html.png"), _result("ok1.png"), _result("ok2.png")]
     responses = {
         "https://example.com/html.png": b"<html>hotlink protection</html>",

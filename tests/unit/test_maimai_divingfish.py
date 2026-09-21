@@ -1,10 +1,4 @@
-"""水鱼（Diving-Fish）OAuth 的纯逻辑单元测试：客户端形态判定、绑定落盘、取令牌与撤销。
-
-水鱼查分器按应用登记形态区分两类客户端：带 client_secret 的机密客户端走换票，不带凭据的公开
-客户端走 refresh token。两者在令牌端点上互斥——多传与少传 client_secret 得到的是同一个
-`401 invalid_client`，故配置里有没有 client_secret 是唯一判据。本文件把两条分支各跑一遍，并
-确认机密客户端不会在库里留下任何用户凭据。
-"""
+"""水鱼（Diving-Fish）OAuth 的纯逻辑单元测试：客户端形态判定、绑定落盘、取令牌与撤销。"""
 
 from unittest.mock import patch
 
@@ -30,15 +24,11 @@ from modules.maimai.libraries.divingfish_oauth import (
 
 
 class _SessionInfo:
-    """只带联合 ID 的会话信息替身。"""
-
     def __init__(self, union_id: str):
         self.sender_union_id = union_id
 
 
 class _MessageSession:
-    """只带会话信息的消息会话替身；绑定流程里的 finish 仅作收尾。"""
-
     def __init__(self, union_id: str):
         self.session_info = _SessionInfo(union_id)
         self.finished = False
@@ -51,11 +41,6 @@ class _MessageSession:
 
 
 def _recorder(*responses):
-    """伪造表单提交：按序返回预设响应并记录每次请求。
-
-    :param responses: 依次返回的响应体，用尽后重复最后一个。
-    :return: (伪造的 `_post_form`, 调用记录列表)。
-    """
     calls = []
 
     async def fake_post(url, payload, *, attempt=3, expect_json=True):
@@ -66,7 +51,6 @@ def _recorder(*responses):
 
 
 async def _test_authenticated_follows_client_form():
-    """客户端凭据只在机密客户端形态下附加，公开客户端不得多传"""
     with patch.object(divingfish_oauth, "DF_CONFIDENTIAL_CLIENT", False):
         public = divingfish_oauth._authenticated({"client_id": "app-id"})
     with (
@@ -81,7 +65,6 @@ async def _test_authenticated_follows_client_form():
 
 
 async def _test_bind_usable_follows_client_form():
-    """绑定记录可用性随形态判定：公开看 refresh token，机密看水鱼用户 ID"""
     public_bind = DivingProberBindInfo(union_id="u", refresh_token="refresh-token", subject=None)
     confidential_bind = DivingProberBindInfo(union_id="u", refresh_token=None, subject="12345")
     legacy_bind = DivingProberBindInfo(union_id="u", refresh_token="refresh-token", subject="12345")
@@ -97,7 +80,6 @@ async def _test_bind_usable_follows_client_form():
 
 
 async def _test_store_binding_follows_client_form():
-    """机密客户端只落盘水鱼用户 ID 并清空 refresh token，公开客户端必须存下 refresh token"""
     stored = []
 
     async def fake_set(**kwargs):
@@ -131,7 +113,6 @@ async def _test_store_binding_follows_client_form():
 
 
 async def _test_device_poll_follows_client_form():
-    """设备码轮询成功后：机密凭 sub 认人，公开必须拿到 refresh token"""
     with (
         patch.object(divingfish_oauth, "DF_CONFIDENTIAL_CLIENT", True),
         patch.object(divingfish_oauth, "DF_CLIENT_SECRET", "app-secret"),
@@ -180,7 +161,6 @@ async def _test_device_poll_follows_client_form():
 
 
 async def _test_device_poll_error_mapping():
-    """设备码轮询的错误码应分流：待授权对应空结果，其余各自抛出对应异常"""
     results = {}
     for error in ("authorization_pending", "slow_down", "access_denied", "expired_token", "invalid_client"):
         fake, _ = _recorder({"error": error})
@@ -199,7 +179,6 @@ async def _test_device_poll_error_mapping():
 
 
 async def _test_exchange_on_behalf_of_request():
-    """换票请求应带应用凭据与 sub 标识，且不指定 scope 由服务端取授权范围交集"""
     with (
         patch.object(divingfish_oauth, "DF_CONFIDENTIAL_CLIENT", True),
         patch.object(divingfish_oauth, "DF_CLIENT_SECRET", "app-secret"),
@@ -222,7 +201,6 @@ async def _test_exchange_on_behalf_of_request():
 
 
 async def _test_exchange_error_mapping():
-    """换票失败应分流：未授权归入需重新绑定，限流可按 429 重试，其余为一般错误"""
 
     async def _exchange_with(response: dict):
         fake, _ = _recorder(response)
@@ -250,7 +228,6 @@ async def _test_exchange_error_mapping():
 
 
 async def _test_get_access_token_confidential():
-    """机密客户端按需换票并复用缓存，且绝不把轮换令牌写回绑定记录"""
     bind = DivingProberBindInfo(union_id="confidential-union", refresh_token=None, subject="12345")
     subjectless = DivingProberBindInfo(union_id="confidential-union-empty", refresh_token=None, subject=None)
     exchanges = []
@@ -285,7 +262,6 @@ async def _test_get_access_token_confidential():
 
 
 async def _test_get_access_token_public_rotation():
-    """公开客户端刷新后必须先把新 refresh token 落盘再交出令牌，缺失令牌时判为用户需重绑"""
     bind = DivingProberBindInfo(union_id="public-union", refresh_token="old-token", subject=None)
     tokenless = DivingProberBindInfo(union_id="public-union-empty", refresh_token=None, subject="12345")
     refreshed = []
@@ -327,7 +303,6 @@ async def _test_get_access_token_public_rotation():
 
 
 async def _test_refresh_error_mapping():
-    """刷新失败应分流：invalid_grant 视为凭据被撤销，其余为一般错误"""
 
     async def _refresh_with(response: dict):
         fake, calls = _recorder(response)
@@ -349,7 +324,6 @@ async def _test_refresh_error_mapping():
 
 
 async def _test_unbind_revokes_available_token():
-    """解绑时公开客户端撤销 refresh token，机密客户端退而撤销缓存的 access token"""
     holder = {}
     revoked = []
     removed = []

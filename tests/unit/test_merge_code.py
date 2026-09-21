@@ -7,7 +7,6 @@ from core.utils.union_merge import generate_code
 
 
 async def _test_target_code_roundtrip():
-    """测试迁移码 - 场景码可被取出并带回发起方信息"""
     try:
         code = generate_code(
             merge._target_merge_codes,
@@ -29,7 +28,6 @@ async def _test_target_code_roundtrip():
 
 
 async def _test_sender_code_roundtrip():
-    """测试迁移码 - 账号码同时带回场景组与私聊标志"""
     try:
         code = generate_code(
             merge._sender_merge_codes,
@@ -56,7 +54,6 @@ async def _test_sender_code_roundtrip():
 
 
 async def _test_code_consumed_once():
-    """测试迁移码 - 取出后即失效，不可重复使用"""
     try:
         code = generate_code(merge._target_merge_codes, "UTID|CCC", "RETIRETEST|Group|2", {"is_private": False})
         merge._take_merge_code(code)
@@ -67,7 +64,6 @@ async def _test_code_consumed_once():
 
 
 async def _test_invalid_code_returns_none():
-    """测试迁移码 - 无效码返回 None"""
     try:
         return merge._take_merge_code("ZZZZZZ") is None
 
@@ -76,7 +72,6 @@ async def _test_invalid_code_returns_none():
 
 
 async def _test_bind_code_not_consumable():
-    """测试迁移码 - bind 签发的绑定码不会被 merge 消费"""
     try:
         from modules.core.common_tools import bind
 
@@ -90,7 +85,6 @@ async def _test_bind_code_not_consumable():
 
 
 async def _test_unify_channel_merges_two_sessions():
-    """测试通道统一 - 迁移完成后两侧场景共用同一通道号"""
     try:
         union = await TargetUnionInfo.resolve_union("MERGETEST|Group|ch1")
         await union.bind_id("MERGETEST2|Group|ch1")
@@ -108,7 +102,6 @@ async def _test_unify_channel_merges_two_sessions():
 
 
 async def _test_unify_channel_missing_bind_is_safe():
-    """测试通道统一 - 缺少绑定行时不抛异常"""
     try:
         await merge._unify_channel("NOSUCH|Group|x", "NOSUCH|Group|y")
         return True
@@ -118,7 +111,6 @@ async def _test_unify_channel_missing_bind_is_safe():
 
 
 async def _test_unify_channel_missing_initiator_reassigns_current():
-    """测试通道统一 - 发起方绑定缺失时把当前场景移到兜底通道"""
     target_id = "MERGETEST|Group|missing-initiator"
     union = await TargetUnionInfo.resolve_union(target_id)
     await TargetUnionBind.filter(target_id=target_id).update(channel_id=7)

@@ -24,7 +24,6 @@ from core.utils.func import (
 
 
 def _test_convert_list():
-    """测试 convert_list 函数"""
     return (
         convert_list(None) == []
         and convert_list([1, 2]) == [1, 2]
@@ -36,7 +35,6 @@ def _test_convert_list():
 
 
 def _test_is_iterable():
-    """测试 is_iterable 函数"""
     return (
         is_iterable([1, 2]) is True
         and is_iterable((1, 2)) is True
@@ -50,7 +48,6 @@ def _test_is_iterable():
 
 
 def _test_is_json_serializable():
-    """测试 is_json_serializable 函数"""
     return (
         is_json_serializable({"a": 1}) is True
         and is_json_serializable([1, 2, 3]) is True
@@ -65,7 +62,6 @@ def _test_is_json_serializable():
 
 
 def _test_chunk_list():
-    """测试 chunk_list 函数"""
     try:
         return (
             list(chunk_list([1, 2, 3, 4, 5], 2)) == [[1, 2], [3, 4], [5]]
@@ -79,7 +75,6 @@ def _test_chunk_list():
 
 
 def _test_unique_list():
-    """测试 unique_list 函数"""
     try:
         if unique_list([1, 2, 2, 3, 3, 3]) != [1, 2, 3]:
             return False
@@ -95,7 +90,6 @@ def _test_unique_list():
 
 
 def _test_flatten_list():
-    """测试 flatten_list 函数"""
     try:
         return (
             flatten_list([1, [2, 3], [4, [5, 6]]]) == [1, 2, 3, 4, 5, 6]
@@ -109,7 +103,6 @@ def _test_flatten_list():
 
 
 def _test_flatten_dict():
-    """测试 flatten_dict / unflatten_dict 函数"""
     try:
         d = {"a": 1, "b": {"c": 2, "d": {"e": 3}}}
         flat = flatten_dict(d)
@@ -127,7 +120,6 @@ def _test_flatten_dict():
 
 
 def _test_is_float_is_int():
-    """测试 is_float / is_int 函数"""
     return (
         is_float("3.14") is True
         and is_float("42") is True
@@ -143,7 +135,6 @@ def _test_is_float_is_int():
 
 
 def _test_case_conversion():
-    """测试 camel_to_snake / snake_to_camel 函数"""
     return (
         camel_to_snake("CamelCase") == "camel_case"
         and camel_to_snake("simpleTest") == "simple_test"
@@ -154,7 +145,6 @@ def _test_case_conversion():
 
 
 def _test_normalize_space():
-    """测试 normalize_space 函数"""
     return (
         normalize_space("  hello   world  ") == "hello world"
         and normalize_space("hello") == "hello"
@@ -165,7 +155,6 @@ def _test_normalize_space():
 
 
 def _test_truncate_text():
-    """测试 truncate_text 函数"""
     return (
         truncate_text("hello", 10) == "hello"
         and truncate_text("hello world", 5) == "hello..."
@@ -175,7 +164,6 @@ def _test_truncate_text():
 
 
 def _test_parse_time_string():
-    """测试 parse_time_string 函数"""
     return (
         parse_time_string("+8:00") == timedelta(hours=8)
         and parse_time_string("-5:30") == timedelta(hours=-5, minutes=-30)
@@ -187,7 +175,6 @@ def _test_parse_time_string():
 
 
 def _test_generate_progress_bar():
-    """测试 generate_progress_bar 函数"""
     bar1 = generate_progress_bar(75, 100)
     bar2 = generate_progress_bar(100, 100)
     bar3 = generate_progress_bar(0, 100)

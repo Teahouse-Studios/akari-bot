@@ -8,7 +8,6 @@ from core.tester import func_case, Tester
 
 
 def _test_parse_data_clean():
-    """parse_data: 正常文本应返回 status=True"""
     try:
         from core.utils.dirty_check import parse_data
 
@@ -19,7 +18,6 @@ def _test_parse_data_clean():
 
 
 def _test_parse_data_empty():
-    """parse_data: 空结果应返回原始文本"""
     try:
         from core.utils.dirty_check import parse_data
 
@@ -30,7 +28,6 @@ def _test_parse_data_empty():
 
 
 def _test_parse_data_protects_at_code():
-    """parse_data: AT 码整体豁免，其中的命中词不应被替换"""
     try:
         from core.utils.dirty_check import parse_data
 
@@ -55,7 +52,6 @@ def _test_parse_data_protects_at_code():
 
 
 def _test_parse_data_protects_ke_i18n_structure():
-    """parse_data: KE/I18N 的 value 参与过滤，结构与 key 保持原样"""
     try:
         from core.utils.dirty_check import parse_data
 
@@ -79,7 +75,6 @@ def _test_parse_data_protects_ke_i18n_structure():
 
 
 def _test_hash_hmac():
-    """hash_hmac: 应返回 base64 编码的 HMAC"""
     try:
         from core.utils.dirty_check import hash_hmac
 
@@ -90,7 +85,6 @@ def _test_hash_hmac():
 
 
 async def _test_check_no_keys():
-    """check: 无 API 密钥时应跳过检查并返回原始文本"""
     try:
         with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
             from core.utils.dirty_check import check
@@ -104,7 +98,6 @@ async def _test_check_no_keys():
 
 
 async def _test_check_empty_text():
-    """check: 空文本列表应返回空结果"""
     try:
         with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
             from core.utils.dirty_check import check
@@ -116,7 +109,6 @@ async def _test_check_empty_text():
 
 
 def _test_rickroll():
-    """rickroll: 应返回字符串"""
     try:
         from core.utils.dirty_check import rickroll
 
@@ -127,11 +119,6 @@ def _test_rickroll():
 
 
 async def _test_check_bool_clean_is_false():
-    """check_bool: 内容合规时返回 False
-
-    该函数回答的是「是否含有不合规内容」，与 check() 的 status 字段正好相反，
-    调用方曾据其旧有的文档把两个分支写反，故在此把语义钉住。
-    """
     try:
         with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
             from core.utils.dirty_check import check_bool
@@ -142,7 +129,6 @@ async def _test_check_bool_clean_is_false():
 
 
 async def _test_check_bool_dirty_is_true():
-    """check_bool: 含有不合规内容时返回 True"""
     try:
         from core.utils.dirty_check import check_bool
 
@@ -156,7 +142,6 @@ async def _test_check_bool_dirty_is_true():
 
 
 async def _test_aliyun_split_cache_preserves_result():
-    """check: 长文本命中缓存后应保持所有分片的审核结果"""
     try:
         import core.utils.dirty_check as dirty_check
         from core.database.local import DirtyWordCache
@@ -220,7 +205,6 @@ async def _test_aliyun_split_cache_preserves_result():
 
 
 def _test_aliyun_cache_namespace_isolated():
-    """DirtyWordCache: 阿里云 v1 与 v2 的缓存应隔离"""
     try:
         import core.utils.dirty_check as dirty_check
 

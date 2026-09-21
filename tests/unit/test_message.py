@@ -24,7 +24,6 @@ from core.tester import func_case, Tester
 
 
 def _test_assign_from_string():
-    """测试从字符串创建消息链"""
     try:
         chain = MessageChain.assign("Hello World")
         if not isinstance(chain, MessageChain):
@@ -41,7 +40,6 @@ def _test_assign_from_string():
 
 
 def _test_assign_from_none():
-    """测试从 None 创建空消息链"""
     try:
         chain = MessageChain.assign(None)
         if not isinstance(chain, MessageChain):
@@ -54,7 +52,6 @@ def _test_assign_from_none():
 
 
 def _test_assign_from_element():
-    """测试从单个元素创建消息链"""
     try:
         elem = PlainElement.assign("Test")
         chain = MessageChain.assign(elem)
@@ -70,7 +67,6 @@ def _test_assign_from_element():
 
 
 def _test_assign_from_list():
-    """测试从列表创建消息链"""
     try:
         elems = [PlainElement.assign("A"), PlainElement.assign("B")]
         chain = MessageChain.assign(elems)
@@ -88,7 +84,6 @@ def _test_assign_from_list():
 
 
 def _test_assign_from_tuple():
-    """测试从元组创建消息链"""
     try:
         elems = (PlainElement.assign("X"), PlainElement.assign("Y"))
         chain = MessageChain.assign(elems)
@@ -102,7 +97,6 @@ def _test_assign_from_tuple():
 
 
 def _test_assign_from_message_chain():
-    """测试从 MessageChain 创建消息链"""
     try:
         chain1 = MessageChain.assign("Original")
         chain2 = MessageChain.assign(chain1)
@@ -114,7 +108,6 @@ def _test_assign_from_message_chain():
 
 
 def _test_assign_empty_string():
-    """测试空字符串处理"""
     try:
         chain = MessageChain.assign("")
         if not isinstance(chain, MessageChain):
@@ -131,7 +124,6 @@ def _test_assign_empty_string():
 
 
 def _test_assign_mixed_list():
-    """测试混合类型列表"""
     try:
         elems = ["text1", PlainElement.assign("text2")]
         chain = MessageChain.assign(elems)
@@ -143,7 +135,6 @@ def _test_assign_mixed_list():
 
 
 def _test_to_str():
-    """测试 to_str() 方法"""
     try:
         chain = MessageChain.assign("Hello World")
         result = chain.to_str()
@@ -155,7 +146,6 @@ def _test_to_str():
 
 
 def _test_to_str_multiple():
-    """测试多个元素的 to_str()"""
     try:
         chain = MessageChain.assign([PlainElement.assign("Hello "), PlainElement.assign("World")])
         result = chain.to_str()
@@ -167,7 +157,6 @@ def _test_to_str_multiple():
 
 
 def _test_plain_element_multiple_args():
-    """测试 PlainElement.assign() 多参数"""
     try:
         elem = PlainElement.assign("Hello", " ", "World")
         if elem.text != "Hello World":
@@ -178,7 +167,6 @@ def _test_plain_element_multiple_args():
 
 
 def _test_plain_element_kecode():
-    """测试 PlainElement.kecode()"""
     try:
         elem = PlainElement.assign("Hello")
         kecode = elem.kecode()
@@ -190,7 +178,6 @@ def _test_plain_element_kecode():
 
 
 def _test_plain_element_kecode_disable_joke():
-    """测试 PlainElement.kecode() 禁用玩笑"""
     try:
         elem = PlainElement.assign("Hello", disable_joke=True)
         kecode = elem.kecode()
@@ -202,7 +189,6 @@ def _test_plain_element_kecode_disable_joke():
 
 
 def _test_markdown_element_and_plain_conversion():
-    """Markdown 元素应保留原文，并能生成可读的普通文本。"""
     source = (
         "# 标题\n\n**粗体**与[链接](https://example.com)\n"
         "- 条目\n| 列一 | 列二 |\n|---|---|\n| 甲 | 乙 |\n```代码\nprint('ok')\n```"
@@ -220,7 +206,6 @@ def _test_markdown_element_and_plain_conversion():
 
 
 def _test_markdown_sendable_respects_session_capability():
-    """支持 Markdown 时保留元素，不支持或显式禁用时降级。"""
     from types import SimpleNamespace
 
     from core.i18n import Locale
@@ -247,7 +232,6 @@ def _test_markdown_sendable_respects_session_capability():
 
 
 def _test_markdown_roundtrip():
-    """Markdown 元素应能经 KE 码和结构化消息链无损往返。"""
     raw = "**a,b]c**"
     element = Markdown(raw, disable_joke=True)
     restored_kecode = match_kecode(element.kecode()).values[0]
@@ -262,11 +246,6 @@ def _test_markdown_roundtrip():
 
 
 def _test_plain_kecode_roundtrip_separators():
-    """测试含 KE 码分隔符的纯文本能原样往返
-
-    KE 码按顶层逗号切分参数、按方括号判定块边界。写入侧不编码时，含逗号的文本
-    会被切成两段而后半段因缺少等号被静默丢弃，含右方括号的文本则提前结束块。
-    """
     try:
         for raw in ("a,b c", "见 [1] 条", "x=1,y=2", "100% 完成", "混合 a,b] c=d"):
             elem = PlainElement.assign(raw)
@@ -281,7 +260,6 @@ def _test_plain_kecode_roundtrip_separators():
 
 
 def _test_plain_kecode_roundtrip_disable_joke():
-    """测试 disable_joke 在含分隔符时仍能正确往返"""
     try:
         elem = PlainElement.assign("a,b]c", disable_joke=True)
         restored = match_kecode(elem.kecode()).values[0]
@@ -295,7 +273,6 @@ def _test_plain_kecode_roundtrip_disable_joke():
 
 
 def _test_plain_allow_parse_roundtrip_and_behavior():
-    """allow_parse 应跨序列化保留，并阻止消息链继续解析文本标记。"""
     from types import SimpleNamespace
 
     from core.i18n import Locale
@@ -324,11 +301,6 @@ def _test_plain_allow_parse_roundtrip_and_behavior():
 
 
 def _test_formatted_time_kecode_roundtrip():
-    """测试格式化时间的 KE 码往返
-
-    时间文案形如「February 14, 2009 07:31:30 (UTC+8)」，本身就含逗号，
-    是该缺陷必然触发的场景：未编码时往返后只剩「February 14」。
-    """
     try:
         elem = FormattedTimeElement.assign(1234567890.0)
         expected = elem.to_str()
@@ -344,7 +316,6 @@ def _test_formatted_time_kecode_roundtrip():
 
 
 def _test_url_kecode_roundtrip():
-    """测试含逗号的 URL 能原样往返"""
     try:
         raw = "https://example.com/a?x=1,2&y=3"
         elem = URLElement.assign(raw)
@@ -357,10 +328,6 @@ def _test_url_kecode_roundtrip():
 
 
 def _test_url_kecode_missing_text():
-    """测试 url 的 KE 码缺少 text 参数时不产出元素
-
-    此前该分支未作判空，会以 None 构造 URLElement 并在后续字符串化时出错。
-    """
     try:
         chain = match_kecode("[KE:url]")
         for value in chain.values:
@@ -415,7 +382,6 @@ async def test_kecode_roundtrip(tester: Tester):
 
 
 def _test_chain_add():
-    """MessageChain: + 运算符"""
     try:
         c1 = MessageChain.assign("Hello")
         c2 = MessageChain.assign("World")
@@ -430,7 +396,6 @@ def _test_chain_add():
 
 
 def _test_chain_iadd():
-    """MessageChain: += 运算符"""
     try:
         c1 = MessageChain.assign("Hello")
         c1 += MessageChain.assign("World")
@@ -442,7 +407,6 @@ def _test_chain_iadd():
 
 
 def _test_chain_radd():
-    """MessageChain: list + MessageChain"""
     try:
         elems = [PlainElement.assign("A")]
         chain = MessageChain.assign("B")
@@ -455,7 +419,6 @@ def _test_chain_radd():
 
 
 def _test_chain_is_safe():
-    """MessageChain: is_safe 属性"""
     try:
         chain = MessageChain.assign("Hello World")
         return chain.is_safe is True
@@ -464,7 +427,6 @@ def _test_chain_is_safe():
 
 
 def _test_chain_copy():
-    """MessageChain: copy 方法"""
     try:
         chain = MessageChain.assign("Original")
         copy_chain = chain.copy()
@@ -479,7 +441,6 @@ def _test_chain_copy():
 
 
 def _test_chain_to_str_connector():
-    """MessageChain: to_str 自定义连接符"""
     try:
         chain = MessageChain.assign([PlainElement.assign("A"), PlainElement.assign("B")])
         result = chain.to_str(connector=" ")
@@ -489,7 +450,6 @@ def _test_chain_to_str_connector():
 
 
 def _test_image_element_assign():
-    """ImageElement: assign 本地路径"""
     try:
         elem = ImageElement.assign("/tmp/test.png")
         if elem.path != "/tmp/test.png":
@@ -502,7 +462,6 @@ def _test_image_element_assign():
 
 
 def _test_image_element_url():
-    """ImageElement: assign URL"""
     try:
         elem = ImageElement.assign("https://example.com/img.png")
         if elem.need_get is not True:
@@ -513,7 +472,6 @@ def _test_image_element_url():
 
 
 def _test_image_element_max_h_roundtrip():
-    """ImageElement: max_h 参数可跨 KE 码与消息链序列化保留。"""
     try:
         elem = ImageElement.assign("https://example.com/img.png", max_h=512)
         restored_kecode = match_kecode(elem.kecode()).values[0]
@@ -524,7 +482,6 @@ def _test_image_element_max_h_roundtrip():
 
 
 def _test_image_element_allow_split_roundtrip():
-    """ImageElement: allow_split 参数可跨 KE 码与消息链序列化保留。"""
     try:
         elem = ImageElement.assign("https://example.com/img.png", allow_split=False)
         restored_kecode = match_kecode(elem.kecode()).values[0]
@@ -541,7 +498,6 @@ def _test_image_element_allow_split_roundtrip():
 
 
 def _test_image_element_preserves_pil_format():
-    """ImageElement: PIL 输入应保留原始图片格式，无格式时才使用 PNG。"""
     try:
         from io import BytesIO
 
@@ -564,7 +520,6 @@ def _test_image_element_preserves_pil_format():
 
 
 def _test_image_element_preserves_base64_format():
-    """ImageElement: Base64 输入应按实际数据保留扩展名。"""
     try:
         import base64
         from io import BytesIO
@@ -592,7 +547,6 @@ def _test_image_element_preserves_base64_format():
 
 
 def _test_audio_element_assign():
-    """AudioElement: assign"""
     try:
         from core.builtins.message.elements import AudioElement
 
@@ -608,7 +562,6 @@ def _test_audio_element_assign():
 
 
 def _test_video_element_assign():
-    """VideoElement: assign"""
     try:
         from core.builtins.message.elements import VideoElement
 
@@ -624,7 +577,6 @@ def _test_video_element_assign():
 
 
 def _test_mention_element_assign():
-    """MentionElement: assign"""
     try:
         elem = MentionElement.assign("QQ|123456789")
         if elem.client != "QQ":
@@ -637,7 +589,6 @@ def _test_mention_element_assign():
 
 
 def _test_embed_element_assign():
-    """EmbedElement: assign"""
     try:
         elem = EmbedElement.assign(title="Test", description="Desc")
         if elem.title != "Test":
@@ -650,7 +601,6 @@ def _test_embed_element_assign():
 
 
 def _test_button_element_roundtrip():
-    """Button 与 ButtonFrame：构造、KE 码与消息链序列化往返。"""
     try:
         button = Button("帮助", "~help", reply_id="callback-123")
         frame = ButtonFrame(
@@ -676,7 +626,6 @@ def _test_button_element_roundtrip():
 
 
 def _test_button_element_follows_platform_capability():
-    """ButtonElement: 支持按钮时保留，否则发送阶段忽略。"""
     try:
         from types import SimpleNamespace
 
@@ -707,7 +656,6 @@ def _test_button_element_follows_platform_capability():
 
 
 def _test_standalone_buttons_are_auto_arranged():
-    """散落的 Button 自动按每行 10 个、最多 5 行规整。"""
     try:
         buttons = [Button(str(index), f"~button {index}") for index in range(55)]
         sendable = MessageChain.assign(buttons).as_sendable()
@@ -722,7 +670,6 @@ def _test_standalone_buttons_are_auto_arranged():
 
 
 def _test_wrap_sender_id_wraps_sender_id():
-    """发送者 ID 引用应被包装为 AT 码，已包装的不重复包装。"""
     try:
         if wrap_sender_id(r"TEST|0 说 hi", "TEST") != "<AT:TEST|0> 说 hi":
             return False
@@ -732,7 +679,6 @@ def _test_wrap_sender_id_wraps_sender_id():
 
 
 def _test_wrap_sender_id_preserves_backslashes():
-    """文本中的反斜杠是普通字符，转换 AT 码时不得吞掉。"""
     cases = (
         (r"a\b", r"a\b"),
         (r"a\\b", r"a\\b"),

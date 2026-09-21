@@ -1,9 +1,4 @@
-"""Framework-managed module runtime resources.
-
-Modules declare long-lived state, resources and background tasks through the
-``Bind.Module`` helpers. The framework owns their lifecycle across enable,
-disable, reload and shutdown transitions.
-"""
+"""Framework-managed module runtime resources."""
 
 from __future__ import annotations
 

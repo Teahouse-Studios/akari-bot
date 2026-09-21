@@ -1,8 +1,4 @@
-"""core.queue.server 新增 WebUI 相关处理器的单元测试。
-
-这些处理器在服务端进程内运行：状态净化必须产出纯 JSON，渲染测试的参数校验
-必须在触达依赖库之前完成，控制接口必须回写 Info.web_render_status。
-"""
+"""core.queue.server 新增 WebUI 相关处理器的单元测试。"""
 
 import json
 from types import SimpleNamespace
@@ -32,7 +28,6 @@ RAW_STATUS = {
 
 
 def _test_status_payload_is_serializable():
-    """测试状态净化 - 上下文改为编号列表且整体可 JSON 编码"""
     payload = server._web_render_status_payload(RAW_STATUS)
     if payload is None:
         return False
@@ -45,12 +40,10 @@ def _test_status_payload_is_serializable():
 
 
 def _test_status_payload_rejects_non_dict():
-    """测试状态净化 - 非字典输入返回 None"""
     return server._web_render_status_payload(None) is None
 
 
 async def _test_runtime_stats_reports_backend_and_counters():
-    """测试运行时统计 - 后端类型与自启动以来的解析计数"""
     with (
         patch.object(server.JobQueueServer, "backend", SimpleNamespace(name="websocket")),
         patch.object(server.Info, "command_parsed", 5),
@@ -61,21 +54,18 @@ async def _test_runtime_stats_reports_backend_and_counters():
 
 
 async def _test_process_usage_reports_failures_as_data():
-    """测试进程占用 - 扇出失败以 error 字段回报而非抛出异常"""
     with patch.object(server, "gather_process_usage", new=AsyncMock(side_effect=RuntimeError("boom"))):
         result = await server.get_process_usage()
     return result == {"items": [], "failures": [], "error": "RuntimeError"}
 
 
 async def _test_control_web_render_rejects_unknown_action():
-    """测试控制接口 - 未知 action 不触发任何依赖库调用"""
     with patch.object(server, "init_web_render", new=AsyncMock()) as init:
         result = await server.control_web_render("bogus")
     return result["ok"] is False and result["error"] == "invalid_action" and init.await_count == 0
 
 
 async def _test_control_web_render_updates_info_status():
-    """测试控制接口 - 启动成功后回写 WebRender 状态"""
     previous = Info.web_render_status
     try:
         with (
@@ -91,7 +81,6 @@ async def _test_control_web_render_updates_info_status():
 
 
 async def _test_test_web_render_validates_before_rendering():
-    """测试渲染测试 - 非法 mode、缺失目标与未启用均在渲染前拦下"""
     with patch.object(server, "enable_web_render", False):
         disabled = await server.test_web_render({"mode": "screenshot", "url": "https://example.test/"})
     with (
@@ -116,7 +105,6 @@ async def _test_test_web_render_validates_before_rendering():
 
 
 async def _test_test_web_render_returns_base64_images():
-    """测试渲染测试 - 截图经净化后返回裸 base64 列表"""
     with (
         patch.object(server, "enable_web_render", True),
         patch.object(server, "_web_render_status_detail", new=AsyncMock(return_value={"available": True})),
@@ -137,7 +125,6 @@ async def _test_test_web_render_returns_base64_images():
 
 
 async def _test_test_web_render_truncates_source():
-    """测试渲染测试 - 超长源码截断并置位 source_truncated"""
     long_source = "x" * (server.WEB_RENDER_TEST_MAX_SOURCE_CHARS + 1)
     with (
         patch.object(server, "enable_web_render", True),

@@ -1,8 +1,4 @@
-"""介质无关的 JobQueue 数据面协议。
-
-传输实现只负责请求、响应及本地放弃状态的传递，不负责业务参数编解码或
-处理器分发。取消本地等待不等同于撤销已经开始的远端副作用。
-"""
+"""介质无关的 JobQueue 数据面协议。"""
 
 from dataclasses import dataclass, field
 from typing import Protocol

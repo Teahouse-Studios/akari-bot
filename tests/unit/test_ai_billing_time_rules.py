@@ -8,7 +8,6 @@ from modules.ai import setting
 
 
 def _test_time_rules_use_server_time():
-    """计费时间段应按服务器本地时间匹配，且只覆盖规则中显式给出的价格项。"""
     server_now = datetime(2024, 1, 2, 7, 30)
     utc_now = datetime(2024, 1, 2, 23, 30, tzinfo=timezone.utc)
 

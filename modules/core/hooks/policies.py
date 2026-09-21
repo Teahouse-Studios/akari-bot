@@ -1,8 +1,4 @@
-"""消息入口的内置策略。
-
-这些规则属于部署策略而不是 parser 的控制流：它们通过 parser 入口 hook
-参与消息处理，核心 parser 只负责在正确的生命周期阶段分发并消费结果。
-"""
+"""消息入口的内置策略。"""
 
 from __future__ import annotations
 
@@ -42,7 +38,6 @@ def _sender_scope_key(msg) -> str | None:
 
 @policies.hook(point=HookPoint.SESSION_READY, priority=10, name="inbound_gate", server_scope=True)
 async def _inbound_gate(ctx: "Bot.ParserHookContext"):
-    """过滤忽略发送者、同场景其它机器人及受限身份。"""
     msg = ctx.msg
     info = msg.session_info
     sender_info = info.sender_union_info
@@ -63,7 +58,6 @@ async def _inbound_gate(ctx: "Bot.ParserHookContext"):
 
 
 async def _check_target_cooldown(msg, ctx: "Bot.ParserHookContext"):
-    """检查场景冷却，返回入口控制结果。"""
     cooldown_time = int(msg.session_info.target_union_info.target_data.get("cooldown_time", 0))
     if not cooldown_time or await msg.check_permission():
         return None
@@ -103,11 +97,6 @@ async def _regex_cooldown(ctx: "Bot.ParserHookContext"):
 
 @policies.hook(point=HookPoint.COMMAND_ROUTE, priority=20, name="muted", server_scope=True)
 async def _command_muted(ctx: "Bot.ParserHookContext"):
-    """静音场景仅保留解除静音命令。
-
-    必须在候选路由阶段拦下：未匹配的模块会走纠错与默认提示，那些路径不会
-    经过 :attr:`HookPoint.COMMAND_PREPARE`，放到模板解析前就拦不干净。
-    """
     if ctx.msg.session_info.muted and ctx.command_first_word != "mute":
         return ctx.Stop()
     return None
@@ -115,11 +104,6 @@ async def _command_muted(ctx: "Bot.ParserHookContext"):
 
 @policies.hook(point=HookPoint.OUTGOING_BEFORE_SEND, priority=10, name="muted_outgoing", server_scope=True)
 async def _outgoing_muted(ctx: "Bot.ParserHookContext"):
-    """静音场景停止机器人的主动发言。
-
-    被动回复已由 :func:`_command_muted` / :func:`_regex_route` 控制，这里只拦
-    主动获取的会话（``fetch``）；否则解除静音命令本身的确认也会被一并取消。
-    """
     info = ctx.session_info
     if info.fetch and info.muted:
         Logger.debug(f"Suppressed proactive message to muted target: {info.target_id}")
@@ -128,7 +112,6 @@ async def _outgoing_muted(ctx: "Bot.ParserHookContext"):
 
 
 async def _check_superuser_or_authorized(msg, module_name: str) -> bool:
-    """检查超级用户或仍有效的模块授权。"""
     if msg.check_super_user():
         return True
     related_module_names = ModulesManager.get_module_and_alias_first_words(module_name) or [module_name]
@@ -144,7 +127,6 @@ async def _check_superuser_or_authorized(msg, module_name: str) -> bool:
 
 @policies.hook(point=HookPoint.COMMAND_PREPARE, priority=30, name="module_route", server_scope=True, timeout=0)
 async def _module_route(ctx: "Bot.ParserHookContext"):
-    """处理模块级权限、启用状态及无命令模块的默认反馈。"""
     module = ctx.data.get("module")
     if module is None:
         return None
@@ -200,7 +182,6 @@ async def _module_route(ctx: "Bot.ParserHookContext"):
 
 @policies.hook(point=HookPoint.COMMAND_BEFORE_EXECUTE, priority=10, name="command_authorize", server_scope=True)
 async def _command_authorize(ctx: "Bot.ParserHookContext"):
-    """处理命令级权限与平台可用性。"""
     command = ctx.data.get("command")
     if command is None:
         return None
@@ -238,7 +219,6 @@ async def _locked_prompt(ctx: "Bot.ParserHookContext"):
 
 
 def should_skip_regex(trigger_msg: str) -> bool:
-    """判断是否使用配置的正则禁用前缀。"""
     prefixes = tuple(prefix for prefix in CoreConfig.regex_disable_prefix if isinstance(prefix, str) and prefix)
     return bool(prefixes) and trigger_msg.startswith(prefixes)
 
@@ -257,7 +237,6 @@ async def _regex_route(ctx: "Bot.ParserHookContext"):
 
 @policies.hook(point=HookPoint.REGEX_PREPARE, priority=5, name="permission", server_scope=True)
 async def _regex_permission(ctx: "Bot.ParserHookContext"):
-    """正则匹配成功后、通道认领前的权限筛选。"""
     rfunc = ctx.data.get("regex")
     module_name = ctx.module_name or ""
     if rfunc is None:
@@ -276,7 +255,6 @@ async def _regex_permission(ctx: "Bot.ParserHookContext"):
 
 @policies.hook(point=HookPoint.COMMAND_UNMATCHED, priority=100, name="default_feedback", server_scope=True)
 async def _default_command_feedback(ctx: "Bot.ParserHookContext"):
-    """未匹配命令的默认提示；纠错 hook 有建议时会优先短路。"""
     from .errors import INVALID_COMMAND_EMOTES, send_common_emote
 
     kind = ctx.data.get("unmatched_kind")

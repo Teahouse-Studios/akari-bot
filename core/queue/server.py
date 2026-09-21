@@ -208,10 +208,6 @@ WEB_RENDER_TEST_SOURCE_KEYS = ("url", "locale", "stealth", "wait_until", "wait_a
 
 
 def _web_render_status_payload(status: dict | None) -> dict | None:
-    """把依赖库的状态字典转为可经 RPC 与 JSON 传递的结构。
-
-    ``contexts_open_sorted`` 以 BrowserContext 对象为键，无法序列化，改为按出现顺序编号的列表。
-    """
     if not isinstance(status, dict):
         return None
     contexts = []

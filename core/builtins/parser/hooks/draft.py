@@ -1,8 +1,4 @@
-"""SessionInfo 会话草稿：允许入口 hook 修改有限字段，成功才提交。
-
-不 deepcopy 整个 MessageSession / ExecutionState；不暴露 ORM 写方法。
-身份、权限、路由字段只读。提交前先校验并准备全部独立值，再一次性发布。
-"""
+"""SessionInfo 会话草稿：允许入口 hook 修改有限字段，成功才提交。"""
 
 from __future__ import annotations
 
@@ -34,11 +30,7 @@ def _copy_messages(messages):
 
 
 class SessionDraft:
-    """从已提交 SessionInfo 构建的独立草稿。
-
-    getter 返回内部可变容器；``commit()`` 对全部可写字段做校验、准备副本，
-    再一次性写回正式对象，避免半提交。
-    """
+    """从已提交 SessionInfo 构建的独立草稿。"""
 
     __slots__ = (
         "_source",
@@ -185,7 +177,6 @@ class SessionDraft:
         return frozenset(self._dirty)
 
     def _prepare_commit(self) -> dict[str, Any]:
-        """校验并准备独立提交值；任一失败则整体不发布。"""
         tmp_snapshot: dict[str, str] = {}
         for k, v in self._tmp.items():
             if not isinstance(k, str) or not isinstance(v, str):

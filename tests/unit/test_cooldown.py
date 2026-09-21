@@ -8,7 +8,6 @@ from core.tester.mock.session import MockMessageSession
 
 
 async def _test_cooldown_init():
-    """CoolDown: 初始化属性"""
     try:
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
@@ -27,7 +26,6 @@ async def _test_cooldown_init():
 
 
 async def _test_cooldown_init_whole_target():
-    """CoolDown: whole_target=True 初始化"""
     try:
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
@@ -38,7 +36,6 @@ async def _test_cooldown_init_whole_target():
 
 
 async def _test_cooldown_check_no_cooldown():
-    """CoolDown: 未设置冷却时 check() 应返回 0"""
     try:
         _cd_dict.clear()
         msg = MockMessageSession("~test")
@@ -51,7 +48,6 @@ async def _test_cooldown_check_no_cooldown():
 
 
 async def _test_cooldown_reset():
-    """CoolDown: reset() 后应开始计时，check() 返回剩余冷却时间"""
     try:
         _cd_dict.clear()
         msg = MockMessageSession("~test")
@@ -69,7 +65,6 @@ async def _test_cooldown_reset():
 
 
 async def _test_cooldown_expired():
-    """CoolDown: 冷却走完后 check() 应重新返回 0"""
     try:
         _cd_dict.clear()
         msg = MockMessageSession("~test")
@@ -83,7 +78,6 @@ async def _test_cooldown_expired():
 
 
 async def _test_cooldown_check_readonly():
-    """CoolDown: check() 不应写入任何冷却记录"""
     try:
         _cd_dict.clear()
         msg = MockMessageSession("~test")
@@ -96,7 +90,6 @@ async def _test_cooldown_check_readonly():
 
 
 async def _test_cooldown_get_cd_dict_creates():
-    """CoolDown: _get_cd_dict 应创建嵌套结构"""
     try:
         _cd_dict.clear()
         msg = MockMessageSession("~test")
@@ -111,7 +104,6 @@ async def _test_cooldown_get_cd_dict_creates():
 
 
 async def _test_cooldown_multiple_keys():
-    """CoolDown: 不同 key 应独立"""
     try:
         _cd_dict.clear()
         msg = MockMessageSession("~test")

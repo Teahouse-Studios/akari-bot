@@ -1,9 +1,4 @@
-"""
-按钮排布工具 - 将扁平的按钮序列整理为消息底部键盘所需的按行结构。
-
-平台允许单行至多 10 个按钮、至多 5 行，但一行真塞满 10 个会挤到显示不全，
-故另设一个可读性上限作为默认值，仅在按钮总数超出「可读性上限 × 5 行」时才放宽至硬上限。
-"""
+"""按钮排布工具 - 将扁平的按钮序列整理为消息底部键盘所需的按行结构。"""
 
 import math
 import uuid
@@ -37,12 +32,7 @@ def arrange_buttons(
     buttons: list[tuple[str, str]],
     per_row: int = DEFAULT_BUTTONS_PER_ROW,
 ) -> list[ButtonRows]:
-    """
-    将（展示文本, 点击数据）序列整理为 ``ButtonFrame`` 所需的按钮行。
-
-    行数由 ``per_row`` 算出后即固定，再把按钮均分到各行，使各行的数量至多相差一个——
-    直接按 ``per_row`` 切片会得到 ``[3, 3, 3, 1]`` 这样参差的末行。行数超出平台上限时
-    压回上限，此时每行的数量将突破 ``per_row``，至多到 ``MAX_BUTTONS_PER_ROW``。
+    """将（展示文本, 点击数据）序列整理为 ``ButtonFrame`` 所需的按钮行。
 
     :param buttons: （标签, 命令）序列。标签为按钮上展示的文本，命令为点击后发出的内容。
     :param per_row: 每行按钮数量的可读性上限。
@@ -79,7 +69,6 @@ def build_button_rows(rows: list[dict[str, str]]) -> list[ButtonRows]:
 
 
 def _iter_buttons(value):
-    """递归取得消息对象中的按钮，包含 i18n 参数内嵌的消息元素。"""
     if isinstance(value, ButtonElement):
         yield value
     elif isinstance(value, ButtonFrameElement):
@@ -100,11 +89,7 @@ def _iter_buttons(value):
 
 
 def bind_callback_reply_ids(message, callback_id: str | None = None) -> list[str]:
-    """为消息中的按钮绑定 callback 使用的虚拟 ``reply_id``。
-
-    已显式设置 reply_id 的按钮保持原值；其余非链接按钮共享一个自动生成的 ID。
-    返回值是 callback 注册时需要监听的全部虚拟 reply_id，并保持出现顺序。
-    """
+    """为消息中的按钮绑定 callback 使用的虚拟 ``reply_id``。"""
     buttons = []
     reply_ids = []
     for button in _iter_buttons(message):

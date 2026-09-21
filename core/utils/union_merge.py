@@ -54,13 +54,7 @@ def generate_code(store: ExpiringTempDict, union_id: str, holder_id: str, extra:
 
 
 def take_code(code: str, stores: tuple[tuple[str, ExpiringTempDict], ...]) -> tuple[str, dict] | None:
-    """
-    取出并消费一枚绑定码，同时判断它属于哪一个 union 域。
-
-    同一枚绑定码不会同时存在于多个存储中（生成时会查重），因此按 ID 就能唯一定位归属，
-    用户不必再自己说明这是哪一类绑定码。
-
-    签发时随码留存的附加信息一律原样带回，调用方各自取用所需的字段。
+    """取出并消费一枚绑定码，同时判断它属于哪一个 union 域。
 
     :param code: 用户输入的绑定码。
     :param stores: ``(union 域, 存储)`` 的序列，按顺序查找。
@@ -88,11 +82,7 @@ async def issue_code(
     code_key: str = "core.message.bind.code",
     command: str = "bind token",
 ) -> None:
-    """
-    生成绑定码并私信给发起方，随后在当前场景中给出提示。
-
-    绑定码若出现在公开场景中可能被他人取用，因此仅通过私信发送；私信发送失败时连同绑定码一并作废，
-    避免其在有效期内被他人试出。
+    """生成绑定码并私信给发起方，随后在当前场景中给出提示。
 
     :param store: 绑定码存储。
     :param union_id: 发起方所属的组 ID。
@@ -132,21 +122,11 @@ async def issue_code(
 
 
 def id_lines(ids: list[str]) -> list:
-    """
-    将 ID 列表逐行展示，ID 不参与文本替换。
-    """
+    """将 ID 列表逐行展示，ID 不参与文本替换。"""
     return [Plain(i, disable_joke=True) for i in ids]
 
 
 def read_merge_logs(directory: Path | None = None) -> list:
-    """
-    读取目录下的全部合并日志，按文件名（即时间顺序）排列。
-
-    单份文件缺失、无法读取或内容已损坏时跳过该份即可，不牵连其余记录。
-
-    :param directory: 日志目录，缺省为 :data:`union_merge_logs_path`。测试可传入临时目录。
-    :return: 日志记录列表。
-    """
     logs_dir = directory or union_merge_logs_path
     if not logs_dir.is_dir():
         return []
@@ -161,14 +141,7 @@ def read_merge_logs(directory: Path | None = None) -> list:
 
 
 def write_merge_log(new_union: str, scope: str, snapshot: dict, directory: Path | None = None) -> None:
-    """
-    把合并前的快照单独写成一份日志文件，便于人工回溯。
-
-    记录写入 data 下的 JSON 文件而非 ``StoredData``：这类快照只供人工翻阅，
-    存进数据库既要连库才能查看，又会与各模块的正常存储挤在同一张表里。
-
-    每次合并各留一份文件，而非共用一份累积的清单：单份文件写坏只损失那一次记录，
-    并发的两次合并也不必争抢同一份文件。
+    """把合并前的快照单独写成一份日志文件，便于人工回溯。
 
     :param new_union: 合并后新建的组 ID。
     :param scope: union 域。
@@ -224,9 +197,6 @@ async def choose_conflicts(
 
 
 def conflict_lines(conflicts: list[type]) -> list:
-    """
-    冲突模块的提示行，无冲突时为空。
-    """
     if not conflicts:
         return []
     return [
@@ -238,11 +208,7 @@ def conflict_lines(conflicts: list[type]) -> list:
 
 
 async def plan_sender_merge(initiator: SenderUnionInfo, current: SenderUnionInfo) -> dict:
-    """
-    收集一次账号组合并所需的信息：双方 ID、冲突模块与待确认的文案。
-
-    与执行分离，是为了让私聊下的「账号组 + 场景组」两次合并能共用一次确认：
-    先展示两侧的全部变更再一并执行，避免用户在第二次确认时取消而停在只绑一半的状态。
+    """收集一次账号组合并所需的信息：双方 ID、冲突模块与待确认的文案。
 
     :param initiator: 生成绑定码的一方。
     :param current: 输入绑定码的一方。
@@ -364,13 +330,6 @@ async def apply_sender_merge(
 async def merge_sender_unions(
     msg: Bot.MessageSession, initiator: SenderUnionInfo, current: SenderUnionInfo
 ) -> SenderUnionInfo | None:
-    """
-    走完一次账号组合并：展示继承关系 → 确认 → 逐个处理冲突 → 记录快照 → 合并。
-
-    :param initiator: 生成绑定码的一方。
-    :param current: 输入绑定码的一方。
-    :return: 合并后的新账号组，用户取消时为 None。
-    """
     plan = await plan_sender_merge(initiator, current)
     if not await msg.wait_confirm(plan["lines"]):
         return None
@@ -478,11 +437,7 @@ async def merge_target_unions(
 
 
 def channel_hint_lines(msg: Bot.MessageSession) -> list:
-    """
-    消息通道含义的说明，末尾附合并通道的途径。
-
-    ``bind auto`` 未启用时其命令并未注册，提示中不再提及，以免指向一条不存在的命令。
-    """
+    """消息通道含义的说明，末尾附合并通道的途径。"""
     return [
         I18NContext("core.message.bind.channel.hint"),
         I18NContext(

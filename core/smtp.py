@@ -24,12 +24,10 @@ def email_report_enabled() -> bool:
 
 
 def _report_footer(issue_url: str) -> str:
-    """构建上报邮件的页脚，引导不应收到通知的收件人前往项目 issue 反馈。"""
     return locale.t("smtp.report.footer", issue_url=issue_url)
 
 
 def _report_footer_html(issue_url: str) -> str:
-    """将页脚中的反馈地址转换为 HTML 超链接。"""
     footer = _report_footer(issue_url)
     if not issue_url:
         return footer
@@ -101,10 +99,7 @@ async def send_report(
     direct_sender: DirectSender | None = None,
     targets: list | None = None,
 ) -> None:
-    """将上报发送到 SMTP 邮件或配置的上报场景。
-
-    邮件上报配置完整时不会触发任何场景消息；未启用邮件时才使用场景上报。
-    """
+    """将上报发送到 SMTP 邮件或配置的上报场景。"""
     if email_report_enabled():
         subject = f"[AkariBot] {locale.t_str(subject)}"
         if body is None:

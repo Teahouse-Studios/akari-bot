@@ -50,21 +50,10 @@ OBSOLETE_BIND_COLUMNS = (("module_maimai_lxns_prober_bind_info", "friend_code"),
 
 
 def quote_ident(name: str) -> str:
-    """
-    按当前数据库类型给标识符加引号。
-
-    :param name: 表名或列名。
-    """
     return f'"{name}"' if db_type == "sqlite" else f"`{name}`"
 
 
 async def has_table(conn, table: str) -> bool:
-    """
-    判断某张表是否存在。
-
-    :param conn: 数据库连接。
-    :param table: 表名。
-    """
     if db_type == "sqlite":
         rows = await conn.execute_query_dict(
             "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?;", [table]
@@ -78,13 +67,6 @@ async def has_table(conn, table: str) -> bool:
 
 
 async def has_column(conn, table: str, column: str) -> bool:
-    """
-    判断某张表中是否存在指定列，表不存在时同样返回 False。
-
-    :param conn: 数据库连接。
-    :param table: 表名。
-    :param column: 列名。
-    """
     if db_type == "sqlite":
         rows = await conn.execute_query_dict(f"PRAGMA table_info({quote_ident(table)});")
         return any(row["name"] == column for row in rows)
@@ -97,16 +79,6 @@ async def has_column(conn, table: str, column: str) -> bool:
 
 
 async def has_index(conn, table: str, column: str) -> bool:
-    """
-    判断某张表的指定列上是否已有索引（作为任意索引的首列即算）。
-
-    按列而非按索引名判断：新建的库由 ``generate_schemas`` 依模型声明建索引，索引名由 ORM 生成，
-    与迁移里显式指定的名字不同；若按名字判断，已有索引的库会被重复建一份。
-
-    :param conn: 数据库连接。
-    :param table: 表名。
-    :param column: 列名。
-    """
     if db_type == "sqlite":
         indexes = await conn.execute_query_dict(f"PRAGMA index_list({quote_ident(table)});")
         for index in indexes:
@@ -123,7 +95,6 @@ async def has_index(conn, table: str, column: str) -> bool:
 
 
 async def migrate_wiki_url_rules(conn) -> None:
-    """将旧 Wiki API 名单迁入全局 URL 用户规则文件。"""
     for table, rule_list in WIKI_URL_RULE_TABLES:
         if not await has_table(conn, table):
             continue
@@ -133,11 +104,6 @@ async def migrate_wiki_url_rules(conn) -> None:
 
 
 async def update_database_to_v3(conn):
-    """
-    将数据库升级至 v3：平台 ID 与数据解耦，数据改挂 union。
-
-    :param conn: 数据库连接。
-    """
     # 核心表改名。update_database() 已先跑过 generate_schemas()，按新模型建出的目标表此刻为空表，
     # 须先移除再改名，否则改名会与之冲突。目标表若已有数据，说明改名早已完成，跳过即可。
     for old_table, new_table in UNION_RENAME_CORE_TABLES.items():
@@ -255,9 +221,6 @@ async def update_database_to_v4(conn):
 async def update_database_to_v5(conn):
     """将数据库升级至 v5：丢弃旧任务队列表并按当前模型重新创建。
 
-    JobQueue 记录仅表示进程间的临时在途任务，不属于需要跨版本保留的业务数据。协议 v2 的表结构
-    与旧协议不兼容，因此升级时直接删除旧表，避免保留无法可靠解释或继续执行的历史任务。
-
     :param conn: 数据库连接。
     """
     await conn.execute_query(f"DROP TABLE IF EXISTS {quote_ident('job_queues')};")
@@ -266,14 +229,6 @@ async def update_database_to_v5(conn):
 
 async def update_database_to_v6(conn):
     """将数据库升级至 v6：为绑定表调整 OAuth 授权所需的列。
-
-    水鱼分发给用户各自部署的应用属于公开客户端，换票接口对它不可用，只能为每位用户各自保存一把
-    refresh token；落雪侧则改为保存用户的授权令牌。Developer-Token 时代无需保存任何用户凭据，
-    表内因而没有这些列。表若由 ``generate_schemas()`` 新建，列已存在，跳过即可。旧行没有
-    refresh token，仅在用户重新完成一次绑定之前不可用。
-
-    同一批变更里还要删掉落雪的旧好友码列：该字段已彻底退出模型，旧表上却是 NOT NULL 且无默认值，
-    不删除会让新绑定写入直接失败。两段都是先探测再执行，可重复运行。
 
     :param conn: 数据库连接。
     """

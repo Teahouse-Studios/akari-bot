@@ -31,7 +31,6 @@ TOTP_ISSUER = "AkariBot"
 
 
 def _read_password_data() -> dict | None:
-    """读取密码文件，不存在时返回 None。"""
     if not PASSWORD_PATH.exists():
         return None
     with open(PASSWORD_PATH, "rb") as f:
@@ -39,19 +38,16 @@ def _read_password_data() -> dict | None:
 
 
 def _write_password_data(data: dict) -> None:
-    """写入密码文件，必要时自动创建父目录。"""
     PASSWORD_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(PASSWORD_PATH, "wb") as f:
         f.write(orjson.dumps(data))
 
 
 def _is_2fa_enabled(password_data: dict | None) -> bool:
-    """检查是否已启用 2FA。"""
     return bool(password_data and password_data.get("totp_enabled") and password_data.get("totp_secret"))
 
 
 def _get_totp(password_data: dict | None) -> pyotp.TOTP | None:
-    """从密码数据中解密并返回 TOTP 实例，失败时返回 None。"""
     if not _is_2fa_enabled(password_data):
         return None
     try:
@@ -129,9 +125,9 @@ async def auth(request: Request):
     try:
         if not PASSWORD_PATH.exists():
             payload = {
-                "exp": datetime.now(UTC) + timedelta(hours=24),  # 过期时间
-                "iat": datetime.now(UTC),  # 签发时间
-                "iss": "auth-api",  # 签发者
+                "exp": datetime.now(UTC) + timedelta(hours=24),
+                "iat": datetime.now(UTC),
+                "iss": "auth-api",
             }
             jwt_token = jwt.encode(payload, jwt_secret, algorithm="HS256")
 
@@ -264,7 +260,6 @@ async def change_password(request: Request, response: Response):
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        # 2FA 启用时，需要验证 TOTP 码
         if _is_2fa_enabled(password_data):
             totp_code = body.get("totp_code", "")
             backup_code = body.get("backup_code", "")
@@ -418,12 +413,10 @@ async def enable_totp(request: Request):
         if password_data is None:
             raise HTTPException(status_code=400, detail="Password not set")
 
-        # 加密并存储 TOTP 密钥
         encrypted_secret = _totp_cipher.encrypt(secret.encode()).decode()
         password_data["totp_secret"] = encrypted_secret
         password_data["totp_enabled"] = True
 
-        # 生成并存储 backup codes
         backup_codes = _generate_backup_codes()
         password_data["backup_codes"] = [_hash_backup_code(c) for c in backup_codes]
 
@@ -463,13 +456,11 @@ async def reset_backup_codes(request: Request):
         if not password and not (totp_code or backup_code):
             raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a backup code")
 
-        # 验证密码
         try:
             ph.verify(password_data.get("password", ""), password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        # 验证 TOTP
         if backup_code:
             if not _verify_backup_code(password_data, backup_code):
                 Logger.warning(f"[WebUI] {ip} ecovery codes reset failed: invalid backup code.")
@@ -480,7 +471,6 @@ async def reset_backup_codes(request: Request):
                 Logger.warning(f"[WebUI] {ip} backup codes reset failed: invalid TOTP code.")
                 raise HTTPException(status_code=400, detail="Invalid TOTP code")
 
-        # 生成新的 backup codes
         backup_codes = _generate_backup_codes()
         password_data["backup_codes"] = [_hash_backup_code(c) for c in backup_codes]
         _write_password_data(password_data)
@@ -518,13 +508,11 @@ async def disable_totp(request: Request):
         if not password and not (totp_code or backup_code):
             raise HTTPException(status_code=400, detail="Password is required, and provide TOTP code or a backup code")
 
-        # 验证密码
         try:
             ph.verify(password_data.get("password", ""), password)
         except Exception:
             raise HTTPException(status_code=401, detail="Invalid password")
 
-        # 验证 TOTP
         if backup_code:
             if not _verify_backup_code(password_data, backup_code):
                 Logger.warning(f"[WebUI] {ip} 2FA disable failed: invalid backup code.")

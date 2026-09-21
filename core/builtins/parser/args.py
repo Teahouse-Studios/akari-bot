@@ -1,9 +1,4 @@
-"""
-参数解析模块 - 定义命令参数的模式和匹配结果。
-
-该模块提供了用于定义和解析命令参数模式的各种类，包括
-参数模式、可选模式、模板等，是命令解析系统的基础。
-"""
+"""参数解析模块 - 定义命令参数的模式和匹配结果。"""
 
 import itertools
 import re
@@ -16,10 +11,7 @@ MAX_NEST_DEPTH = 10
 
 
 class ArgumentPattern:
-    """
-    参数模式类 - 表示命令中的一个参数占位符。
-
-    用于在命令模板中定义一个需要解析的参数位置。
+    """参数模式类 - 表示命令中的一个参数占位符。
 
     :param name: 参数的名称，用于标识和匹配结果中引用
     """
@@ -35,10 +27,7 @@ class ArgumentPattern:
 
 
 class DescPattern:
-    """
-    描述模式类 - 用于在命令模板中添加文本描述。
-
-    不进行参数匹配，仅用于帮助文档和提示。
+    """描述模式类 - 用于在命令模板中添加文本描述。
 
     :param text: 描述文本
     """
@@ -54,10 +43,7 @@ class DescPattern:
 
 
 class Template:
-    """
-    命令模板类 - 定义一个命令的完整参数结构。
-
-    模板由一系列参数模式组成，用于匹配和解析用户输入。
+    """命令模板类 - 定义一个命令的完整参数结构。
 
     :param args: 参数模式列表，可包含 ArgumentPattern、OptionalPattern、DescPattern
     :param priority: 优先级（用于多个模板匹配时的选择，数值越大优先级越高）
@@ -68,9 +54,7 @@ class Template:
         args: "list[ArgumentPattern | OptionalPattern | DescPattern]",
         priority: int = 1,
     ):
-        # 参数列表
         self.args_ = args
-        # 模板优先级
         self.priority = priority
 
     @property
@@ -94,9 +78,7 @@ class OptionalPattern:
     """
 
     def __init__(self, flag: str, args: list[Template]):
-        # 选项标志
         self.flag = flag
-        # 该选项的模板列表
         self.args = args
 
     def __str__(self):
@@ -107,12 +89,6 @@ class OptionalPattern:
 
 
 class Argument:
-    """
-    参数类 - 表示解析后的单个参数值。
-
-    :param value: 参数值
-    """
-
     def __init__(self, value: str):
         self.value = value
 
@@ -126,29 +102,14 @@ class Optional:
     """
 
     def __init__(self, args: dict[str, dict], flagged=False):
-        # 标志此选项是否被使用
         self.flagged = flagged
-        # 选项的参数
         self.args = args
 
 
 class MatchedResult:
-    """
-    匹配结果类 - 表示命令匹配后的结果。
-
-    包含解析出的所有参数和匹配的原始模板信息。
-
-    :param args: 解析出的参数字典
-    :param original_template: 匹配的原始模板对象
-    :param priority: 匹配的优先级
-    """
-
     def __init__(self, args: dict, original_template, priority: int = 1):
-        # 解析出的参数字典
         self.args = args
-        # 原始模板引用
         self.original_template = original_template
-        # 优先级（用于多模板匹配时排序）
         self.priority = priority
 
     def __str__(self):
@@ -159,21 +120,7 @@ class MatchedResult:
 
 
 def split_multi_arguments(lst: list[str]) -> list[str]:
-    """
-    分割包含多个选项的参数字符串。
-
-    该函数处理形如 "hello(world|everyone)" 的字符串，将其展开为多个变体：
-    ["hello world", "hello everyone"]
-
-    支持嵌套的括号和多个选择组。
-
-    示例:
-    ```
-        >>> split_multi_arguments(["hello(world|earth)"])
-        ["hello world", "hello earth"]
-        >>> split_multi_arguments(["a(b|c)d(e|f)"])
-        ["abde", "abdf", "acde", "acdf"]
-    ```
+    """分割包含多个选项的参数字符串。
 
     :param lst: 包含参数字符串的列表，字符串中可能包含 (option1|option2) 形式的选择组
     :return: 展开后的参数列表，每个变体为一个独立的字符串
@@ -182,11 +129,8 @@ def split_multi_arguments(lst: list[str]) -> list[str]:
     new_lst = []
 
     for item in lst:
-        # 将 "hello(world|earth)foo(a|b)" 拆分为文本块和选项列表
-        # 例如: ["hello", "world|earth", "foo", "a|b", ""]
         parts = patn.split(item)
 
-        # 将选项块按 "|" 分割转换为列表，纯文本直接作为单元素列表
         choices = []
         for i, part in enumerate(parts):
             if i % 2 != 0:
@@ -194,7 +138,6 @@ def split_multi_arguments(lst: list[str]) -> list[str]:
             else:
                 choices.append([part])
 
-        # 使用笛卡尔积生成所有组合
         for combination in itertools.product(*choices):
             new_lst.append("".join(combination))
 
@@ -202,25 +145,7 @@ def split_multi_arguments(lst: list[str]) -> list[str]:
 
 
 def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
-    """
-    解析命令模板字符串为 Template 对象列表。
-
-    该函数是命令解析系统的核心，将用户定义的模板字符串转换为可用于匹配的
-    Template 对象。支持递归处理嵌套的可选参数。
-
-    模板语法:
-        - <arg>: 必需参数，用 < > 包括
-        - [option]: 可选参数，用 [ ] 包括
-        - [flag <arg>]: 带标志的可选参数
-        - {description}: 描述信息，用于生成帮助文本
-
-    示例:
-    ```
-        > parse_template(["<source> [-o <destination>] {Copy a file}"])
-        [Template([ArgumentPattern('source'),
-        OptionalPattern('-o', [Template([ArgumentPattern('destination')])]),
-         DescPattern('Copy a file')])]
-    ```
+    """解析命令模板字符串为 Template 对象列表。
 
     :param argv: 包含模板字符串的列表
     :param depth: 递归深度，用于防止无限递归（最大深度由 MAX_NEST_DEPTH 定义）
@@ -234,162 +159,119 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
     templates = []
     argv_ = []
 
-    # 预处理输入参数
     for a in argv:
         if isinstance(a, str):
             a = a.strip()
-            # 跳过空字符串
             if not a:
                 continue
-            # 分割包含多个选项的参数（如 "a(b|c)" -> ["ab", "ac"]）
             spl = split_multi_arguments([a])
             for split in spl:
                 argv_.append(split)
 
     try:
-        # 主处理循环：处理每一个模板字符串
         for a in argv_:
-            # 检查非法的括号嵌套（如 <[ >{  等）
             if any(x in a for x in ["<[", ">{", "{<", "[{", "{["]):
                 raise InvalidTemplatePattern(f"Illegal mixed bracket nesting: {a}")
 
-            # 创建新的模板对象
             template = Template([])
 
-            # 使用正则表达式分割模板字符串，分离出各种模式：
             # (\[.*?]) - 可选参数块 [...]
-            # (<.*?>) - 参数块 <...>
             # (\{.*}) - 描述块 {...}
-            # 空格作为分隔符
             patterns = list(filter(None, re.split(r"(\[.*?])|(<.*?>)|(\{.*})| ", a)))
 
-            # 跟踪已使用的参数名称（用于检查重复）
             arg_names: set[str] = set()
 
-            # 跟踪最后一个处理的模式类型（用于检查顺序合法性）
-            # 可能的值: "argument", "optional", "optional_no_flag", "desc", "variadic"
             last_type = None
 
-            # 标志是否已经出现过描述块
             seen_desc = False
 
-            # 标志是否已经出现过可变长参数 (...)
             seen_variadic = False
 
-            # 逐个处理每个分割出的模式
             for p in patterns:
                 strip_pattern = p.strip()
                 if not strip_pattern:
                     continue
 
-                # ========== 处理可选参数块 [...]  ==========
                 if strip_pattern.startswith("["):
-                    # 验证括号完整性
                     if not strip_pattern.endswith("]"):
                         raise InvalidTemplatePattern(f"Broken optional block: {p}")
 
-                    # 提取括号内的内容
                     inner = strip_pattern[1:-1].strip()
                     if not inner:
                         raise InvalidTemplatePattern("Empty optional block [] not allowed")
 
-                    # 分割可选参数内容（空格分隔）
                     optional_patterns = inner.split(" ")
-                    flag = None  # 可选参数的标志（如 "-o"）
-                    args = []  # 可选参数包含的参数列表
+                    flag = None
+                    args = []
 
-                    # 判断第一个元素是参数还是标志
-                    # 如果以 < 开头，说明是参数；否则是标志名称
                     if optional_patterns[0].startswith("<"):
-                        # 第一个是参数：如 [<file>] 或 [<file> <mode>]
                         if not optional_patterns[0].endswith(">"):
                             raise InvalidTemplatePattern(f"Broken argument block: {p}")
                         if not optional_patterns[0][1:-1].strip():
                             raise InvalidTemplatePattern("Empty argument block <> not allowed")
-                        args += optional_patterns  # 所有元素都是参数
+                        args += optional_patterns
                     else:
-                        # 第一个是标志：如 [-o <output>]
-                        flag = optional_patterns[0]  # 标志名称
-                        args += optional_patterns[1:]  # 后续元素是该标志的参数
+                        flag = optional_patterns[0]
+                        args += optional_patterns[1:]
 
                     if flag and flag.startswith("-") and not flag.startswith("--") and len(flag) != 2:
                         raise InvalidTemplatePattern(f"Short option must contain exactly one character: {flag}")
 
-                    # 标志不能是描述（描述应该单独使用）
                     if flag and flag.startswith("{"):
                         raise InvalidTemplatePattern(f"Optional flag cannot be description: {flag}")
 
-                    # 检查该可选参数内是否有重复的参数名
                     arg_names_ = set()
                     for arg in args:
                         if arg in arg_names_:
                             raise InvalidTemplatePattern(f'Duplicate argument in optional flag "{flag}": {arg}')
                         arg_names_.add(arg)
 
-                    # 如果没有标志（无标志可选参数），检查是否与已有参数重复
                     if not flag:
                         for arg in args:
                             if arg in arg_names:
                                 raise InvalidTemplatePattern(f"Duplicate required argument: {arg}")
                             arg_names.add(arg)
 
-                    # ========== 顺序验证 ==========
-                    # 描述块必须在最后
                     if last_type == "desc":
                         raise InvalidTemplatePattern(f"Optional argument cannot follow description: {p}")
-                    # 不能有两个无标志的可选参数
                     if last_type == "optional_no_flag" and not flag:
                         raise InvalidTemplatePattern(f"Two no-flag optional arguments not allowed: {p}")
 
-                    # 创建 OptionalPattern 对象
-                    # 如果有参数，递归解析参数的模板；否则为空
                     template.args.append(
                         OptionalPattern(flag=flag, args=parse_template([" ".join(args)], depth + 1) if args else [])
                     )
                     last_type = "optional" if flag else "optional_no_flag"
 
-                # ========== 处理描述块 {...} ==========
                 elif strip_pattern.startswith("{"):
-                    # 验证括号完整性
                     if not strip_pattern.endswith("}"):
                         raise InvalidTemplatePattern(f"Broken description block: {p}")
 
-                    # 只允许一个描述块
                     if seen_desc:
                         raise InvalidTemplatePattern(f"Multiple descriptions not allowed: {p}")
                     seen_desc = True
 
-                    # 提取描述文本
                     desc = strip_pattern[1:-1].strip()
                     if not desc:
                         raise InvalidTemplatePattern("Empty description block {} not allowed")
 
-                    # 添加描述模式（用于生成帮助信息）
                     template.args.append(DescPattern(desc))
                     last_type = "desc"
 
-                # ========== 处理必需参数或特殊符号 ==========
                 else:
-                    # 验证参数块的完整性
                     if strip_pattern.startswith("<"):
                         if not strip_pattern.endswith(">"):
                             raise InvalidTemplatePattern(f"Broken argument block: {p}")
                         if not strip_pattern[1:-1].strip():
                             raise InvalidTemplatePattern("Empty argument block <> not allowed")
 
-                    # ========== 顺序验证 ==========
-                    # 参数不能在可选参数之后
                     if last_type in ("optional", "optional_no_flag"):
                         raise InvalidTemplatePattern(f"Argument cannot follow optional block: {p}")
-                    # 参数不能在描述之后
                     if last_type == "desc":
                         raise InvalidTemplatePattern(f"Argument cannot follow description: {p}")
 
-                    # 检查参数名称的重复
                     if strip_pattern in arg_names:
                         raise InvalidTemplatePattern(f'Duplicate argument: "{strip_pattern}"')
 
-                    # ========== 处理可变长参数 ... ==========
                     # ... 表示可以接收任意多个参数
                     if strip_pattern == "...":
                         if seen_variadic:
@@ -404,29 +286,17 @@ def parse_template(argv: list[str], depth: int = 0) -> list[Template]:
                     template.args.append(ArgumentPattern(strip_pattern))
                     last_type = "argument"
 
-            # 完成一个模板的解析，添加到结果列表
             templates.append(template)
 
         return templates
 
     except InvalidTemplatePattern as e:
-        # 打印异常堆栈用于调试
         traceback.print_exc()
         raise e
 
 
 def templates_to_str(templates: list[Template], with_desc=False, simplify=True) -> list[str]:
-    """
-    将 Template 对象列表转换回字符串表示。
-
-    该函数用于生成帮助文本，将解析后的 Template 对象转换为人类可读的字符串格式。
-
-    示例:
-    ```
-        > template = Template([ArgumentPattern('<source>'), OptionalPattern('-o', [Template([ArgumentPattern('<destination>')])]), DescPattern('Copy a file')])
-        > templates_to_str([template])
-        ['<source> [-o <destination>] - Copy a file']
-    ```
+    """将 Template 对象列表转换回字符串表示。
 
     :param templates: Template 对象列表
     :param with_desc: 是否包含描述信息（用于生成详细帮助）
@@ -434,40 +304,34 @@ def templates_to_str(templates: list[Template], with_desc=False, simplify=True) 
     :return: 字符串列表，每个字符串代表一个模板的可读形式
     """
     text = []
-    last_desc = None  # 用于记录最后的描述，用于简化重复内容
+    last_desc = None
 
     for template in templates:
-        arg_text = []  # 该模板对应的所有参数文本
-        sub_arg_text = []  # 当前子模板的参数文本
-        has_desc = False  # 标记是否包含描述
+        arg_text = []
+        sub_arg_text = []
+        has_desc = False
 
         for arg in template.args:
             if isinstance(arg, ArgumentPattern):
-                # 参数：直接添加名称
                 sub_arg_text.append(arg.name)
             elif isinstance(arg, OptionalPattern):
-                # 可选参数：用 [ ] 包括
                 t = "["
                 if arg.flag:
                     t += arg.flag
                 if arg.args:
                     if arg.flag:
                         t += " "
-                    # 递归处理嵌套模板
                     t += " ".join(templates_to_str(arg.args, simplify=False))
                 t += "]"
                 sub_arg_text.append(t)
             elif isinstance(arg, DescPattern):
-                # 描述：用于生成帮助文本
                 has_desc = True
                 sub_arg_text_ = " ".join(sub_arg_text)
                 sub_arg_text.clear()
 
-                # 简化模式下，重复的描述只显示一次
                 if simplify and last_desc == arg.text:
                     continue
 
-                # 将参数和描述组合
                 if with_desc:
                     if sub_arg_text_:
                         arg_text.append(sub_arg_text_ + " - " + arg.text)
@@ -476,7 +340,6 @@ def templates_to_str(templates: list[Template], with_desc=False, simplify=True) 
 
                 last_desc = arg.text
 
-        # 如果没有描述，直接添加参数文本
         if not has_desc:
             arg_text.append(" ".join(sub_arg_text))
             sub_arg_text.clear()
@@ -492,16 +355,6 @@ OPTION_TERMINATOR = "--"
 
 
 def _split_option_terminator(argv: list[str]) -> tuple[list[str], list[str]]:
-    """
-    按第一个 ``--`` 将参数列表切分为「选项区」与「操作数区」。
-
-    POSIX 约定（Utility Syntax Guideline 10）：第一个 ``--`` 之后的 token 即使以 ``-``
-    开头也应视作操作数，因此选项匹配只应在前半部分进行。``--`` 本身不进入任何参数值，
-    其后再次出现的 ``--`` 作为字面操作数保留。
-
-    :param argv: 待切分的参数列表
-    :return: ``(选项区, 操作数区)`` 二元组，均为新列表（不会与传入的列表共享引用）
-    """
     if OPTION_TERMINATOR in argv:
         index = argv.index(OPTION_TERMINATOR)
         return argv[:index], argv[index + 1 :]
@@ -509,19 +362,6 @@ def _split_option_terminator(argv: list[str]) -> tuple[list[str], list[str]]:
 
 
 def _find_option(argv: list[str], flag: str, allow_inline: bool = True) -> tuple[int, str | None] | None:
-    """
-    在参数列表中定位选项，支持 ``--flag=value`` 形式的内联值。
-
-    - 精确匹配 ``flag`` -> ``(索引, None)``
-    - 内联匹配 ``flag=value`` -> ``(索引, value)``，仅当 ``allow_inline`` 为真且 ``flag``
-      以 ``-`` 开头时启用；按第一个 ``=`` 切分，允许值为空串或自身包含 ``=``。
-    - 非 ``-`` 开头的标志（如无前缀的子命令名）只做精确匹配。
-
-    :param argv: 参数列表（应已剔除 ``--`` 之后的操作数）
-    :param flag: 模板中定义的选项标志，如 ``-p``、``--legacy``
-    :param allow_inline: 是否接受 ``flag=value`` 形式（带子参数的选项应设为真）
-    :return: ``(索引, 内联值或 None)``，未找到时返回 ``None``
-    """
     if not flag:
         return None
 
@@ -537,41 +377,7 @@ def _find_option(argv: list[str], flag: str, allow_inline: bool = True) -> tuple
 
 
 def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
-    """
-    根据给定的模板列表解析命令行参数。
-
-    该函数是参数解析的核心逻辑，尝试用各个模板匹配输入的参数列表。
-    采用贪心匹配算法，逐个尝试每个模板直到找到匹配，然后根据优先级选择最佳结果。
-
-    匹配流程：
-    1. 逐个尝试所有模板
-    2. 对每个模板，按顺序处理可选参数、必需参数和可变长参数
-    3. 构建解析结果字典，存储解析后的参数值
-    4. 过滤出有效的匹配结果（所有必需参数都被满足）
-    5. 对多个有效匹配按优先级进行排序
-    6. 返回优先级最高的匹配结果或抛出异常
-
-    优先级计算规则：
-    - 基础优先级：来自 Template 的 priority 值
-    - 额外优先级：每个被成功匹配的参数加 1 分
-    - 多个相同优先级时：再次按有值参数的个数排序
-
-    参数类型说明：
-    - `<param>`: 值参数，必须消耗一个参数值，如 <file>、<name>
-    - flag: 标志参数，是否存在于参数列表中（True/False），如 -v
-    - ...: 可变长参数，可消耗 0 个或多个参数
-    - `[flag <param>]`: 可选参数，可能带有标志和子参数
-
-    POSIX 兼容行为：
-    - ``--``: 选项终止符，其后的 token 一律按操作数处理（不再作为选项），``--`` 本身丢弃
-    - ``--flag=value`` / ``-p=value``: 带子参数的选项支持内联值，等价于 ``--flag value``；
-      值按第一个 ``=`` 切分，可为空或自身包含 ``=``；无子参数的布尔标志不接受该形式
-    - 选项可出现在操作数之间的任意位置（GNU 风格排列），仅第一个 ``--`` 具有特殊含义
-
-    示例：
-    - 模板: Template([ArgumentPattern('<lang>'), OptionalPattern('-v', [...])])
-    - 输入: argv = ["python", "-v"]
-    - 输出: MatchedResult({"<lang>": "python", "-v": True}, template, priority)
+    """根据给定的模板列表解析命令行参数。
 
     :param argv: 命令行参数列表（不包括命令名本身）
     :param templates: 可用的模板列表，会逐个尝试匹配
@@ -583,91 +389,64 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     """
     matched_result = []
 
-    # ========== 步骤 1: 尝试用每个模板进行匹配 ==========
     for template in templates:
         try:
-            # ========== 步骤 1.5: 分离 `--` 之后的操作数 ==========
             # 选项匹配只在 `--` 之前的 token 上进行，`--` 之后的 token 一律按操作数处理
             # 切片返回新列表，因此后续的删除操作不会修改传入的 argv（保护输入数据）
             argv_copy, operand_argv = _split_option_terminator(argv)
-            parsed_argv = {}  # 存储解析结果的字典
+            parsed_argv = {}
             original_template = template
-            afters = []  # 用于存储可变长参数的处理列表
+            afters = []
 
-            # 提取非描述的参数（DescPattern 仅用于文档，不参与解析）
             args = [x for x in template.args if not isinstance(x, DescPattern)]
             if not args:
-                # 该模板没有可解析的参数，跳过
                 continue
 
-            # ========== 步骤 2: 处理可选参数 ==========
-            # 可选参数由 OptionalPattern 表示，可能带有标志（如 --output、-v 等）
-            for a in args:  # optional first
+            for a in args:
                 if isinstance(a, OptionalPattern):
-                    # 检查是否是无标志的可选参数（如 [<file>] 形式）
                     if not a.flag:
-                        # 无标志的可选参数暂时存储到 afters，后续处理
                         afters.append(a.args[0])
                         continue
 
-                    # 初始化该可选参数为未被设置状态
                     parsed_argv[a.flag] = Optional({}, flagged=False)
 
-                    # 在参数列表中定位该标志（带子参数时同时接受 `--flag=value` 内联形式）
                     has_sub_args = bool(a.args)
                     found = _find_option(argv_copy, a.flag, allow_inline=has_sub_args)
                     if found is not None:
                         index_flag, inline_value = found
-                        # 该可选参数没有子参数，直接标记为已设置并移除标志
                         if not has_sub_args:
                             parsed_argv[a.flag] = Optional({}, flagged=True)
                             del argv_copy[index_flag]
                         else:
-                            # 计算该可选参数需要的子参数个数（以第一个变体为准）
                             len_t_args = len(a.args[0].args)
-                            # 内联值充当第一个子参数，其余子参数继续从后续 token 取
                             sub_argv = [] if inline_value is None else [inline_value]
                             needed = len_t_args - len(sub_argv)
                             consumed = 0
                             if needed > 0:
                                 following = argv_copy[index_flag + 1 :]
-                                # 子参数不足时按实际可用数量取用，缺失的部分由递归解析标记为 False
                                 consumed = min(needed, len(following))
                                 sub_argv.extend(following[:consumed])
 
                             if sub_argv:
-                                # 递归调用 parse_argv 解析可选参数的子参数
                                 parsed_argv[a.flag] = Optional(parse_argv(sub_argv, a.args).args, flagged=True)
-                                # 从参数列表中删除已处理的部分（标志 + 已消耗的子参数）
                                 del argv_copy[index_flag : index_flag + 1 + consumed]
-                            # 子参数完全缺失时保持 flagged=False，标志留待后续按操作数处理
 
-            # ========== 步骤 2.5: 合并 `--` 之后的操作数 ==========
-            # 选项解析阶段只处理 `--` 之前的 token，此后所有 token 均按操作数处理
             argv_copy = argv_copy + operand_argv
 
-            # ========== 步骤 3: 处理必需参数 ==========
-            # 必需参数由 ArgumentPattern 表示（不在可选参数中的参数）
             for a in args:
                 if isinstance(a, ArgumentPattern):
-                    # ========== 处理 <param> 格式（值参数）==========
                     if a.name.startswith("<"):
-                        # 值参数：必须消耗一个参数值
                         if len(argv_copy) > 0:
-                            # 有可用参数，创建 Argument 对象并消耗该参数
                             parsed_argv[a.name] = Argument(argv_copy[0])
                             del argv_copy[0]
                         else:
-                            # 没有可用参数，标记为 False（未满足）
                             parsed_argv[a.name] = False
 
-                    # ========== 处理 ... （可变长参数）==========
                     elif a.name == "...":
                         # 可变长参数：可以消耗 0 个或多个参数
                         # 暂时将其添加到 afters 列表，在剩余参数处理时再处理
                         afters.append(Template([a]))
 
-                    # ========== 处理布尔参数（标志）==========
                     else:
                         # 标志参数：仅接受精确匹配，`flag=value` 形式不视为该标志
                         found = _find_option(argv_copy, a.name, allow_inline=False)
@@ -676,7 +455,6 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                             # 如果标志存在，从参数列表中移除它
                             del argv_copy[found[0]]
 
-            # ========== 步骤 4: 处理剩余参数（可变长参数和无标志可选参数）==========
             if argv_copy:
                 if afters:
                     # 有可变长参数或无标志可选参数需要处理
@@ -685,7 +463,6 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                         subi = 1
                         for sub_args in arg.args:
                             if isinstance(sub_args, ArgumentPattern):
-                                # ========== 处理 <param> 参数 ==========
                                 if sub_args.name.startswith("<"):
                                     if len(argv_copy) > 0:
                                         # 检查是否是最后一个参数
@@ -698,16 +475,13 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                                             parsed_argv[sub_args.name] = Argument(argv_copy[0])
                                             del argv_copy[0]
                                     else:
-                                        # 没有可用参数，标记为 False
                                         parsed_argv[sub_args.name] = False
 
-                                # ========== 处理 ... 可变长参数 ==========
                                 elif sub_args.name == "...":
                                     # 消耗所有剩余参数，每个参数包装为 Argument 对象
                                     parsed_argv[sub_args.name] = [Argument(x) for x in argv_copy]
                                     del argv_copy[:]
 
-                                # ========== 处理布尔标志参数 ==========
                                 else:
                                     found = _find_option(argv_copy, sub_args.name, allow_inline=False)
                                     parsed_argv[sub_args.name] = found is not None
@@ -716,7 +490,6 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                             subi += 1
                         ai += 1
 
-                # ========== 步骤 5: 处理最后的剩余参数 ==========
                 # 如果仍有参数未处理，尝试添加到最后一个值参数
                 if argv_copy:
                     template_arguments = [arg for arg in args if isinstance(arg, ArgumentPattern)]
@@ -735,103 +508,74 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
             # 将成功构建的匹配添加到结果列表
             matched_result.append(MatchedResult(parsed_argv, original_template, template.priority))
         except TypeError:
-            # 类型错误，说明该模板不适用，跳过继续尝试下一个模板
             traceback.print_exc()
             continue
 
-    # ========== 步骤 6: 转换解析结果，将对象转换为实际值 ==========
     filtered_result = []
-    for m in matched_result:  # convert to result dict
-        # 标记该匹配是否被过滤（由于缺少必需参数）
+    for m in matched_result:
         filtered = False
         args_ = m.args
         for keys in args_:
-            # ========== 转换 Optional 对象 ==========
             if isinstance(args_[keys], Optional):
-                # 如果可选参数未被设置（flagged=False），则值为 False
                 if not args_[keys].flagged:
                     args_[keys] = False
                 else:
-                    # 已设置的可选参数
                     if not args_[keys].args:
-                        # 没有子参数，标记为 True
                         args_[keys] = True
                     else:
-                        # 有子参数，使用解析后的参数字典
                         args_[keys] = args_[keys].args
 
-            # ========== 转换 Argument 对象 ==========
             elif isinstance(args_[keys], Argument):
-                # 提取 Argument 对象中的字符串值
                 args_[keys] = args_[keys].value
 
-            # ========== 转换列表参数 ==========
             elif isinstance(args_[keys], list):
-                # 处理 [...] 参数列表，提取每个 Argument 的值
                 args_[keys] = [v.value for v in args_[keys] if isinstance(v, Argument)]
 
-            # ========== 处理布尔参数 ==========
             elif isinstance(args_[keys], bool):
-                # 如果是必需的参数但未被找到（值为 False），标记此匹配为无效
                 if not args_[keys]:
                     filtered = True
                     break
 
-        # 只保留有效的匹配结果（所有必需参数都被成功匹配）
         if not filtered:
             filtered_result.append(m)
 
-    # ========== 步骤 7: 优先级选择和排序 ==========
     len_filtered_result = len(filtered_result)
 
     if len_filtered_result > 1:
-        # 多个匹配存在，需要按优先级选择最佳的
         priority_result = {}
 
-        # 第一轮优先级计算：基础优先级 + 参数匹配度
         for f in filtered_result:
-            # 基础优先级来自模板的 priority 值
             priority = f.priority  # base priority
             for keys in f.args:
-                # 为每个被成功匹配的参数增加优先级分数
-                if f.args[keys] is True:  # if argument is not any else
+                if f.args[keys] is True:
                     priority += 1
 
-            # 按优先级分组
             if priority not in priority_result:
                 priority_result[priority] = [f]
             else:
                 priority_result[priority].append(f)
 
-        # 选择最高优先级的匹配
         max_ = max(priority_result.keys())
 
         if len(priority_result[max_]) > 1:
-            # 仍有多个相同优先级的匹配，进行二次优先级计算
             new_priority_result = {}
             for p in priority_result[max_]:
                 new_priority = p.priority
                 for keys in p.args:
-                    # 统计有值的参数（非 False、非空的参数）
                     if p.args[keys]:
                         new_priority += 1
 
-                # 按新的优先级分组
                 if new_priority not in new_priority_result:
                     new_priority_result[new_priority] = [p]
                 else:
                     new_priority_result[new_priority].append(p)
 
-            # 取最高优先级的第一个匹配
             max_ = max(new_priority_result.keys())
             return new_priority_result[max_][0]
 
         return priority_result[max_][0]
 
-    # ========== 步骤 8: 返回结果或异常 ==========
     if len_filtered_result == 0:
-        # 没有任何模板能匹配给定的参数
         raise InvalidCommandFormatError
 
-    # 返回唯一的有效匹配
     return filtered_result[0]

@@ -1,10 +1,4 @@
-"""
-会话上下文管理模块 - 管理消息会话的生命周期和通信接口。
-
-该模块提供了 ContextManager 抽象基类，定义了会话上下文的管理接口
-以及消息发送、权限检查等核心功能的抽象方法。各个通讯平台的具体实现
-应继承此类并实现所有抽象方法。
-"""
+"""会话上下文管理模块 - 管理消息会话的生命周期和通信接口。"""
 
 import asyncio
 import uuid
@@ -21,29 +15,14 @@ from core.logger import Logger
 
 
 class ContextManager(ABC):
-    """
-    上下文管理器抽象基类。
+    """上下文管理器抽象基类。"""
 
-    定义了会话上下文的管理接口、消息发送接口、权限管理接口等，
-    用于与各种通讯平台的集成。
-
-    属性说明:
-        context: 存储会话上下文的字典，键为 session_id，值为上下文对象
-        features: 会话支持的功能特性对象
-        typing_flags: 输入状态标志的事件对象字典
-        context_marks_hold: 记录上下文被保持的次数（支持嵌套保持）
-    """
-
-    # 会话上下文存储 - 键为 session_id，值为上下文对象（如对应平台框架下的消息实例）
     context: dict[str, Any] = {}
 
-    # 会话功能特性 - 标记该管理器支持的功能
     features: Features = Features()
 
-    # 输入状态标志 - 记录正在输入的会话
     typing_flags: dict[str, asyncio.Event] = {}
 
-    # 上下文持有计数 - 用于支持嵌套的上下文持有/释放
     context_marks_hold: dict[str, int] = {}
 
     @classmethod
@@ -54,41 +33,30 @@ class ContextManager(ABC):
         :param session_info: 会话信息对象
         :param context: 要存储的上下文对象（通常是对应平台框架下的消息实例）
         """
-        # 以 session_id 为键存储上下文
         cls.context[session_info.session_id] = context
 
     @classmethod
     def del_context(cls, session_info: SessionInfo):
-        """
-        删除会话的上下文。
-
-        只有当上下文未被标记为保持时才会删除。如果上下文被保持，则跳过删除。
+        """删除会话的上下文。
 
         :param session_info: 会话信息对象
         """
-        # 检查上下文是否存在且未被保持
         if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
             del cls.context[session_info.session_id]
             Logger.trace(f"Context for session {session_info.session_id} deleted.")
-        # 如果上下文被保持，记录日志但不删除
         if session_info.session_id in cls.context_marks_hold:
             Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
 
     @classmethod
     def hold_context(cls, session_info: SessionInfo):
-        """
-        保持会话的上下文。
-
-        防止上下文被删除。支持嵌套保持，每次调用增加计数。
+        """保持会话的上下文。
 
         :param session_info: 会话信息对象
         :raises SessionContextUnavailable: 如果会话上下文不存在
         """
-        # 检查上下文是否存在
         if session_info.session_id not in cls.context:
             raise SessionContextUnavailable("Session not found in context")
 
-        # 增加持有计数
         if session_info.session_id in cls.context_marks_hold:
             cls.context_marks_hold[session_info.session_id] += 1
         else:
@@ -97,17 +65,12 @@ class ContextManager(ABC):
 
     @classmethod
     def release_context(cls, session_info: SessionInfo):
-        """
-        释放会话的上下文保持。
-
-        保持持有计数。当计数达到 0 时，上下文会被立即删除。
+        """释放会话的上下文保持。
 
         :param session_info: 会话信息对象
         """
-        # 递减保持计数
         if session_info.session_id in cls.context_marks_hold:
             cls.context_marks_hold[session_info.session_id] -= 1
-            # 当计数达到 0 时，删除上下文和计数记录
             if cls.context_marks_hold[session_info.session_id] == 0:
                 # 平台关闭流程可能已先清空上下文字典；release 仍须移除 hold 计数，
                 # 不能因重复清理抛 KeyError 而让后台任务以未取回异常结束。
@@ -126,14 +89,13 @@ class ContextManager(ABC):
         """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加权限检查的逻辑
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
         """Return the bot's membership and platform permission state in a context."""
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -155,15 +117,11 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     def derive_private_session(cls, session_info: SessionInfo, target_id: str, target_from: str) -> SessionInfo:
-        """
-        由当前会话派生出一份指向私聊场景的会话信息，供 :meth:`send_private_msg` 复用发送逻辑。
-
-        派生出的会话不沿用原会话的 session_id 与 message_id：前者会使上下文查找命中原场景的
-        消息实例，从而将私信回复至原场景；后者会使私信引用一条并不存在于私聊中的消息。
+        """由当前会话派生出一份指向私聊场景的会话信息，供 :meth:`send_private_msg` 复用发送逻辑。
 
         :param session_info: 当前会话信息
         :param target_id: 私聊场景 ID
@@ -186,20 +144,14 @@ class ContextManager(ABC):
         user_id: str,
         message: MessageChain | MessageNodes,
     ) -> list[str]:
-        """
-        向指定用户单独发送私聊消息。
-
-        与 :meth:`send_message` 不同，消息不会发往 ``session_info`` 所指的场景，
-        ``session_info`` 仅用于取用语言、平台能力等上下文。
-
-        实现须捕获平台侧的发送异常并返回空列表，调用方以是否取得消息 ID 判定成败。
+        """向指定用户单独发送私聊消息。
 
         :param session_info: 会话信息
         :param user_id: 目标用户 ID（带平台前缀，如 ``QQ|10000``）
         :param message: 消息内容
         :return: 消息 ID 列表，为空表示发送失败（如对方未添加机器人为好友、未开启私信等）
         """
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -221,7 +173,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -244,7 +196,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -263,7 +215,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -283,7 +235,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -303,7 +255,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -322,7 +274,7 @@ class ContextManager(ABC):
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
 
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -334,7 +286,7 @@ class ContextManager(ABC):
         reason: str | None = None,
     ) -> None:
         """为场景成员授予平台原生权限组或角色。"""
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -346,7 +298,7 @@ class ContextManager(ABC):
         reason: str | None = None,
     ) -> None:
         """移除场景成员的平台原生权限组或角色。"""
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -365,8 +317,7 @@ class ContextManager(ABC):
 
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加表情反应的逻辑
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -385,8 +336,7 @@ class ContextManager(ABC):
 
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加表情反应的逻辑
-        raise NotImplementedError  # 请继承 class 后实现方法
+        raise NotImplementedError
 
     @classmethod
     @abstractmethod
@@ -400,7 +350,6 @@ class ContextManager(ABC):
         async def _typing():
             if session_info.session_id not in cls.context:
                 raise ValueError("Session not found in context")
-            # 这里可以添加开始输入状态的逻辑
             Logger.debug(f"Start typing in session: {session_info.session_id}")
             flag = asyncio.Event()
             cls.typing_flags[session_info.session_id] = flag
@@ -421,7 +370,6 @@ class ContextManager(ABC):
         if session_info.session_id in cls.typing_flags:
             cls.typing_flags[session_info.session_id].set()
             del cls.typing_flags[session_info.session_id]
-        # 这里可以添加结束输入状态的逻辑
         Logger.debug(f"End typing in session: {session_info.session_id}")
 
     @classmethod
@@ -434,4 +382,3 @@ class ContextManager(ABC):
         """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")
-        # 这里可以添加错误处理逻辑

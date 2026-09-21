@@ -32,10 +32,6 @@ db_path = "sqlite://database/save.db"
 
 @contextmanager
 def _temp_config():
-    """将 CFGManager 切换至一份空白的临时配置，退出时完整还原。
-
-    :return: 临时配置目录的路径。
-    """
     original_path = CFGManager.config_path
     original_values = CFGManager.values
     original_tss = CFGManager._tss
@@ -58,7 +54,6 @@ def _temp_config():
 
 
 def _test_core_templates_are_grouped_into_domain_files():
-    """核心模板按领域拆分后，应保留旧导入路径并登记到各自的 TOML 文件。"""
     from core.config.base import (
         CoreConfig as CompatibleCoreConfig,
         JobQueueConfig as CompatibleJobQueueConfig,
@@ -101,7 +96,6 @@ def _test_core_templates_are_grouped_into_domain_files():
 
 
 def _test_fresh_process_generates_all_grouped_core_templates():
-    """全新进程只导入扫描器时，也应生成所有领域配置文件与独立说明注释。"""
     from core.config.jobqueue import JobQueueConfig
 
     tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_grouped_"))
@@ -173,7 +167,6 @@ def _test_fresh_process_generates_all_grouped_core_templates():
 
 
 def _test_scan_covers_all_directories_with_config_templates():
-    """模板枚举须覆盖所有含 config.py 的目录，与守护进程按目录挑选平台的依据一致。"""
     import bots
     import modules
     from core.config.scan import iter_config_template_modules
@@ -190,7 +183,6 @@ def _test_scan_covers_all_directories_with_config_templates():
 
 
 def _test_fresh_process_generates_bot_adapter_config():
-    """全新进程扫描后须为各平台生成配置文件，只读子进程方能读取其配置项。"""
     tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_bot_"))
     try:
         current_config = MINIMAL_CONFIG.replace("config_version = 3", f"config_version = {config_version}")
@@ -242,7 +234,6 @@ def _test_fresh_process_generates_bot_adapter_config():
 
 
 def _test_jobqueue_bootstrap_persists_missing_values_once():
-    """JobQueue 共享身份与密钥应在配置生成阶段安全自举，并保留后续已有值。"""
     from core.config.jobqueue import bootstrap_jobqueue_config
 
     generated_uuid = UUID("12345678-1234-4678-9234-567812345678")
@@ -270,7 +261,6 @@ def _test_jobqueue_bootstrap_persists_missing_values_once():
 
 
 def _test_scan_writes_template_fields():
-    """扫描所在的可写进程中，模板导入应将声明的字段及其本地化注释补入配置文件"""
     from core.config.decorator import on_config
 
     # 已被 tester 导入的模板不会再次执行 _process_class，故以此处声明的模板验证补写行为
@@ -286,7 +276,6 @@ def _test_scan_writes_template_fields():
 
 
 def _test_standalone_comment_declaration_is_validated():
-    """独立注释只能由非空 i18n 键元组关联至同一模板内已声明的字段。"""
     from core.config.decorator import on_config
 
     with _temp_config():
@@ -331,7 +320,6 @@ def _test_standalone_comment_declaration_is_validated():
 
 
 def _test_scan_repairs_raw_i18n_comments():
-    """扫描应翻译有效标记并清除无法解析的过时标记，同时保留配置值"""
     with _temp_config() as tmp:
         if scan_config_templates():
             return False
@@ -345,7 +333,6 @@ def _test_scan_repairs_raw_i18n_comments():
 
 
 def _test_importing_daemon_does_not_load_config():
-    """守护进程模块的顶层导入不得提前触发 core.config 的导入期迁移"""
     env = os.environ.copy()
     result = subprocess.run(
         [sys.executable, "-c", "import sys; import bot; print('core.config' in sys.modules)"],
@@ -361,7 +348,6 @@ def _test_importing_daemon_does_not_load_config():
 
 
 def _test_legacy_slower_schedule_migrates_to_multiplier():
-    """旧布尔开关应迁移为等价的计划任务间隔倍率。"""
     tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_migrate_"))
     try:
         (tmp / "config.toml").write_text(

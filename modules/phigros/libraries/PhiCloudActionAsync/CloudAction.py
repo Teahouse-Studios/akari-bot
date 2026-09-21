@@ -17,17 +17,6 @@ from .logger import logger
 
 
 def getSaveModifiedAt(record: dict) -> datetime:
-    """取存档记录的修改时间，用于在多条记录中挑出最新的一条
-
-    优先使用 modifiedAt.iso，缺失时回退到 updatedAt。两者都取不到或格式无法解析时
-    返回可表示的最早时间，使该记录排在最后。
-
-    参数:
-        record (dict): 存档记录原始数据
-
-    返回:
-        (datetime): 记录的修改时间
-    """
     modified = record.get("modifiedAt")
     iso = modified.get("iso") if isinstance(modified, dict) else None
 
@@ -179,11 +168,7 @@ class PhigrosCloud:
         await self.client.aclose()
 
     async def getNickname(self) -> str:
-        """获取玩家昵称
-
-        返回:
-            (str): 玩家昵称
-        """
+        """获取玩家昵称"""
         logger.debug("调用函数：getNickname()")
 
         return_data = (await self.request.get(self.baseUrl + "users/me")).json()["nickname"]
@@ -192,20 +177,7 @@ class PhigrosCloud:
         return return_data
 
     async def getSaveInfo(self) -> dict:
-        """获取当前 sessionToken 名下最新的一条存档记录
-
-        _GameSave 中存放的是全部玩家的存档记录，因此查询时必须以 user 指针过滤，
-        否则服务端会返回该 class 中的任意一条记录，取到他人的存档。
-
-        同一账号也可能存在多条记录，故取回全部后按 modifiedAt 降序排序，
-        只使用最新的一条。
-
-        返回:
-            (dict): 存档记录的原始数据
-
-        异常:
-            ValueError: 当前账号名下没有可用的存档记录，或服务端返回了他人的记录
-        """
+        """获取当前 sessionToken 名下最新的一条存档记录"""
         logger.debug("调用函数：getSaveInfo()")
 
         userObjectId = (await self.request.get(self.baseUrl + "users/me")).json()["objectId"]
@@ -254,11 +226,7 @@ class PhigrosCloud:
         return return_data
 
     async def getSummary(self) -> dict:
-        """获取玩家 summary
-
-        返回:
-            (dict): 玩家 summary 数据
-        """
+        """获取玩家 summary"""
         logger.debug("调用函数：getSummary()")
 
         result = await self.getSaveInfo()
@@ -285,15 +253,7 @@ class PhigrosCloud:
         return return_data
 
     async def getSave(self, url: Optional[str] = None, checksum: Optional[str] = None) -> bytes:
-        """获取存档数据，返回的是压缩包数据
-
-        参数:
-            url (str | None): 存档的 URL。留空则自动获取当前 token 的数据
-            checksum (str | None): 存档的 md5 校验值。留空则自动获取当前 token 的数据
-
-        返回:
-            (bytes): 存档压缩包数据
-        """
+        """获取存档数据，返回的是压缩包数据"""
         logger.debug("调用函数：getSave()")
 
         # 局部变量不使用 summary 作为名称，避免遮蔽模块级导入的同名结构类
@@ -324,13 +284,7 @@ class PhigrosCloud:
         return save_data
 
     async def refreshSessionToken(self) -> str:
-        """刷新 sessionToken
-
-        刷新是即时的，原先的 sessionToken 会立即失效，新的 sessionToken 立即生效。
-
-        返回:
-            (str): 新的 sessionToken
-        """
+        """刷新 sessionToken"""
         logger.debug("调用函数：refreshSessionToken()")
 
         objectId = (await self.request.get(self.baseUrl + "users/me")).json()["objectId"]
@@ -343,14 +297,7 @@ class PhigrosCloud:
         return new_sessionToken
 
     async def uploadNickname(self, name: str):
-        """更新玩家昵称
-
-        参数:
-            name (str): 要更改的昵称
-
-        返回:
-            (None): 无
-        """
+        """更新玩家昵称"""
         logger.debug("调用函数：uploadNickname()")
 
         response = (await self.request.get(self.baseUrl + "users/me")).json()
@@ -369,16 +316,7 @@ class PhigrosCloud:
         logger.debug('函数 "uploadNickname()" 无返回')
 
     async def uploadSummary(self, summary_dict: dict):
-        """上传 summary
-
-        上传后的 summary 仅供查看，覆盖原有数据后不可恢复，且不影响游戏内的实际数据。
-
-        参数:
-            summary_dict (dict): 要上传的 summary
-
-        返回:
-            (None): 无
-        """
+        """上传 summary"""
         logger.debug("调用函数：uploadSummary()")
 
         # 序列化逻辑与 getSummary() 的反序列化保持一致

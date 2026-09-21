@@ -19,9 +19,9 @@ class JUnitTestCase:
         self.name = name
         self.classname = classname
         self.time = time
-        self.failure: tuple[str, str] | None = None  # (message, traceback)
-        self.skipped: str | None = None  # skip reason
-        self.error: tuple[str, str] | None = None  # (message, traceback)
+        self.failure: tuple[str, str] | None = None
+        self.skipped: str | None = None
+        self.error: tuple[str, str] | None = None
 
     def to_xml(self) -> ET.Element:
         """Convert to XML element."""
@@ -64,7 +64,6 @@ class JUnitTestSuite:
         suite.set("name", self.name)
         suite.set("tests", str(len(self.test_cases)))
 
-        # Count failures, errors, and skipped
         failures = sum(1 for tc in self.test_cases if tc.failure)
         errors = sum(1 for tc in self.test_cases if tc.error)
         skipped = sum(1 for tc in self.test_cases if tc.skipped is not None)
@@ -73,12 +72,10 @@ class JUnitTestSuite:
         suite.set("errors", str(errors))
         suite.set("skipped", str(skipped))
 
-        # Calculate total time
         total_time = sum(tc.time for tc in self.test_cases)
         suite.set("time", f"{total_time:.6f}")
         suite.set("timestamp", self.timestamp)
 
-        # Add test cases
         for testcase in self.test_cases:
             suite.append(testcase.to_xml())
 
@@ -99,7 +96,6 @@ class JUnitReport:
         """Generate XML string."""
         root = ET.Element("testsuites")
 
-        # Calculate totals
         total_tests = sum(len(suite.test_cases) for suite in self.test_suites)
         total_failures = sum(sum(1 for tc in suite.test_cases if tc.failure) for suite in self.test_suites)
         total_errors = sum(sum(1 for tc in suite.test_cases if tc.error) for suite in self.test_suites)
@@ -112,44 +108,33 @@ class JUnitReport:
         root.set("skipped", str(total_skipped))
         root.set("time", f"{total_time:.6f}")
 
-        # Add all suites
         for suite in self.test_suites:
             root.append(suite.to_xml())
 
-        # Format XML with proper indentation
         self._indent_element(root)
         xml_str = tostring(root, encoding="unicode")
         return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_str}'
 
     @staticmethod
     def _indent_element(elem, level=0):
-        """Add pretty-print indentation to XML elements."""
         indent = "\n" + ("  " * level)
         child_indent = "\n" + ("  " * (level + 1))
 
-        # Process children
         if len(elem):
-            # Add newline and indentation before first child
             if not elem.text or not elem.text.strip():
                 elem.text = child_indent
 
-            # Add newline and indentation after last child
             if not elem.tail or not elem.tail.strip():
                 elem.tail = indent
 
-            # Process each child
             for i, child in enumerate(elem):
                 JUnitReport._indent_element(child, level + 1)
 
-                # Set proper tail (whitespace after closing tag)
                 if i < len(elem) - 1:
-                    # Not the last child
                     child.tail = child_indent
                 else:
-                    # Last child
                     child.tail = indent
         else:
-            # Leaf element
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = indent
 

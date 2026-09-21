@@ -103,19 +103,6 @@ async def _(msg: Bot.MessageSession):
 
 @define
 class SettingRow:
-    """
-    面板中的一行设置。
-
-    各字段均为已翻译的字符串：模块运行于服务端进程，会话语言在此已经确定，就地翻译
-    可使渲染阶段只关心排版。取值若留作消息元素，还会在充当 :class:`I18NContext` 的
-    参数时被强制转为字符串字面量（见 ``core/builtins/message/chain.py`` 的参数翻译一段）。
-
-    :param label: 设置名。
-    :param value: 当前取值。
-    :param action: 交互入口上展示的文案。
-    :param command: 不含前缀的完整命令，尽可能带上当前取值，前缀由渲染阶段补上。
-    """
-
     label: str
     value: str
     action: str
@@ -123,15 +110,6 @@ class SettingRow:
 
 
 def _toggle_row(locale: Locale, name_key: str, enabled: bool, command: str) -> SettingRow:
-    """
-    构造一个开关型设置行，其取值与入口文案按当前状态选定。
-
-    :param locale: 会话语言。
-    :param name_key: 设置名的多语言键。
-    :param enabled: 当前是否开启。
-    :param command: 不含前缀的切换命令。
-    :return: 设置行。
-    """
     name = locale.t(name_key)
     return SettingRow(
         label=name,
@@ -143,14 +121,7 @@ def _toggle_row(locale: Locale, name_key: str, enabled: bool, command: str) -> S
 
 
 def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
-    """
-    构造场景域的设置行。
-
-    语言与自定义前缀由 setup 自身的子命令维护（``setup locale`` 与 ``setup prefix``），
-    静音仍由 mute 模块维护；此处只读取各自的状态并给出入口，不重复实现切换逻辑。
-
-    带参数的命令一律附上当前取值，使点击后输入框里就是现设定，改动何处一目了然。
-    自定义前缀是例外：它承载的是一个列表，且入口做的是追加而非替换，没有可预填的单值。
+    """构造场景域的设置行。
 
     :param msg: 消息会话。
     :return: 设置行列表。
@@ -218,10 +189,7 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
 
 
 def build_sender_rows(msg: Bot.MessageSession) -> list[SettingRow]:
-    """
-    构造个人域的设置行。
-
-    两项均为随用户走的个人偏好，在任何场景中都由用户自行决定，不受管理员管辖。
+    """构造个人域的设置行。
 
     :param msg: 消息会话。
     :return: 设置行列表。
@@ -255,14 +223,6 @@ def build_sender_rows(msg: Bot.MessageSession) -> list[SettingRow]:
 
 
 def _ends_with_inline_entry(elements: list) -> bool:
-    """
-    判断元素列表是否以行内入口收尾。
-
-    适配器会把紧随行内入口之后的文本并入同一行，故其后的元素须自带换行。
-
-    :param elements: 已积累的消息元素。
-    :return: 末元素是否为行内入口。
-    """
     return bool(elements) and isinstance(elements[-1], ActionTextElement)
 
 
@@ -273,19 +233,7 @@ def render_rows(
     can_edit: bool,
     after_inline: bool = False,
 ) -> list:
-    """
-    将设置行渲染为消息元素。
-
-    每一行都在行尾挂上指令操作，点击即把命令连同当前取值填入输入框。开关不另设底部按钮：
-    按钮虽能一键切换，却与所属的设置行相隔一段距离，需要用户自行对应；把入口一律放回各自
-    那一行，整个面板的读法才是一致的。不支持指令操作的平台由消息链自动降级为纯文本，
-    模块侧无须再分支。
-
-    换行的写法随平台而分：指令操作在支持它的平台上会作为独立元素留给适配器，而适配器会把
-    紧随其后的文本一并并入上一行（见 ``bots/qqbot/context.py`` 的 ``inline_pending``），
-    换行若交由适配器按元素处理，整个面板会塌成一行，故此路径下须把换行写进文本自身。
-    降级平台上指令操作已在消息链阶段并入前一个文本元素，各行本就是独立元素，再写换行反倒
-    会多出空行。标题同样以纯文本构造而非 :class:`I18NContext`，正是为了能在其前补上换行。
+    """将设置行渲染为消息元素。
 
     :param msg: 消息会话。
     :param title_key: 分组标题的多语言键。
@@ -317,14 +265,7 @@ def render_rows(
 
 
 def build_jump_buttons(msg: Bot.MessageSession, show_target: bool, show_sender: bool) -> list[tuple[str, str]]:
-    """
-    构造跳往另一个域的按钮。
-
-    底部键盘只承担跨域跳转，各设置的入口都在自己那一行上。两域同列时无处可跳，返回空列表。
-
-    按钮点击后经 interaction 事件另行建立会话，该会话的可用前缀取自全局配置，并不包含
-    各平台在常规消息入口所用的前缀，故此处须使用 command_prefix 而非会话前缀。文案取自
-    按钮专设的键，而非面板标题：后者带有分隔用的方括号，套进按钮里并不好看。
+    """构造跳往另一个域的按钮。
 
     :param msg: 消息会话。
     :param show_target: 本次是否列出了场景域。

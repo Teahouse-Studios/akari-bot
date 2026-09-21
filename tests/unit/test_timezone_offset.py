@@ -1,7 +1,4 @@
-"""时区偏移取值来源测试。
-
-``~setup timeoffset`` 将偏移量写入场景数据的 timezone_offset 键，会话应读取同一份数据。
-"""
+"""时区偏移取值来源测试。"""
 
 from datetime import timedelta
 
@@ -14,14 +11,6 @@ OFFSET_KEY = "timezone_offset"
 
 
 async def _make_session(offset: str) -> SessionInfo:
-    """建立一个带指定时区偏移的会话。
-
-    须经 assign() 而非直接构造：时区的解析发生在 assign() 中，直接构造得不到它。
-    先建一次会话是为了拿到场景 union 以写入数据，再建一次才能读到写入后的取值。
-
-    :param offset: 写入场景数据的时区偏移量。
-    :return: 会话信息。
-    """
     target_id = "TEST|Group|timezone_offset"
     session_info = await SessionInfo.assign(
         target_id=target_id,
@@ -39,7 +28,6 @@ async def _make_session(offset: str) -> SessionInfo:
 
 
 async def _test_offset_follows_target_data() -> bool:
-    """场景设置的偏移量须反映到会话上，否则 setup timeoffset 形同虚设"""
     session_info = await _make_session("+5:30")
     if session_info.timezone_offset != timedelta(hours=5, minutes=30):
         Logger.error(f"Session should adopt the configured offset, got {session_info.timezone_offset}")

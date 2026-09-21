@@ -58,9 +58,6 @@ class DivingProberBindInfo(DBModel):
     async def update_refresh_token(cls, union_id: str, refresh_token: str, subject: str | None = None):
         """回写轮换后的 refresh token。
 
-        每次刷新都会签发新令牌并立即作废旧的，故新令牌必须在继续任何逻辑之前落盘；
-        单独提供本方法，以免一并改动用户名等由别的流程维护的字段。
-
         :param union_id: 用户联合 ID。
         :param refresh_token: 新签发的 refresh token。
         :param subject: 水鱼用户 ID，仅在响应中带上时更新。
@@ -84,11 +81,7 @@ class DivingProberBindInfo(DBModel):
 
 
 class LxnsProberBindInfo(DBModel):
-    """
-    maimai 落雪绑定信息表。
-
-    落雪的令牌能自行以 refresh token 轮换，不需像水鱼那样拿用户 ID 去换票，故这里不保存令牌响应
-    里的 `sub`——它只在绑定时用于向用户确认账号。
+    """maimai 落雪绑定信息表。
 
     :param union_id: 用户联合 ID
     :param refresh_token: 该用户的落雪账号 refresh token，仅 OAuth 授权后存在
@@ -127,9 +120,6 @@ class LxnsProberBindInfo(DBModel):
     @classmethod
     async def update_refresh_token(cls, union_id: str, refresh_token: str):
         """回写轮换后的 refresh token。
-
-        每次刷新都会签发新令牌并立即作废旧的，故新令牌必须在继续任何逻辑之前落盘；
-        单独提供本方法，以免把只该在绑定时写入的字段一并覆盖掉。
 
         :param union_id: 用户联合 ID。
         :param refresh_token: 新签发的 refresh token。

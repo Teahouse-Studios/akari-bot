@@ -1,11 +1,4 @@
-"""临时的单测运行脚本，仅用于开发期跑单个测试入口。
-
-自研测试框架的 tester.py 会 glob 全部用例且无过滤参数，逐个验证时过于笨重。
-此脚本按文件与函数名跑单个入口，并在收尾时强制退出——框架加载的模块会留下
-未完成的后台任务，不强制退出会一直挂到超时。
-
-用法：uv run --no-sync python tests/run_one.py <文件路径> <入口函数名>
-"""
+"""临时的单测运行脚本，仅用于开发期跑单个测试入口。"""
 
 import asyncio
 import atexit
@@ -26,7 +19,6 @@ os.environ.setdefault(TEST_UNION_MERGE_LOGS_PATH_ENV, str(_test_union_merge_logs
 
 
 def _cleanup_test_union_merge_logs() -> None:
-    """删除临时日志目录；os._exit 不触发 atexit，收尾时须再显式调用一次。"""
     shutil.rmtree(_test_union_merge_logs_path, ignore_errors=True)
 
 
@@ -42,8 +34,7 @@ from core.tester.process import run_function_entry
 
 
 async def main(path: str, entry: str) -> int:
-    """
-    跑单个测试入口并打印每条用例的结果。
+    """跑单个测试入口并打印每条用例的结果。
 
     :param path: 测试文件路径。
     :param entry: 入口函数名。
