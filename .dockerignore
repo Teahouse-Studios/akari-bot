@@ -19,6 +19,7 @@ tester.py
 cache/
 
 # Documentation
+AGENTS.md
 SECURITY.md
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
