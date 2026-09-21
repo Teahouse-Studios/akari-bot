@@ -929,8 +929,8 @@ class QQBotContextManager(ContextManager):
 
             if converted_message.only(PlainElement) and not converted_message.contains(MarkdownElement):
                 _use_markdown = False
-            if converted_message.only(ImageElement) and len(converted_message) == 1:
-                _use_markdown = False
+            # if converted_message.only(ImageElement) and len(converted_message) == 1:
+            #     _use_markdown = False
             if message.contains(URLElement):
                 for x in message.values:
                     if isinstance(x, URLElement):
