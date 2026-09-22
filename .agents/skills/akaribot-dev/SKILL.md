@@ -18,7 +18,7 @@ description: AkariBot 项目开发指南。用于修改核心框架、消息与�
 
 - 面向用户的固定文案使用 `I18NContext`，只在对应的 `locales/zh_cn.json` 新增或修改节点。参数占位符使用 `${name}`。
 - 除非用户明确要求处理翻译或 Weblate 同步结果，禁止创建、修改、删除或补齐 `core/**/locales/`、`bots/**/locales/`、`modules/**/locales/` 中非 `zh_cn.json` 的语言 JSON。其他语言由 Weblate bot 自动提交。
-- `assets/config_store/<语言>/` 是配置模板派生物；只维护简体中文源模板，非 `zh_cn` 版本不要手改，应交给自动化生成。
+- `assets/config_store/<语言>/` 是配置模板派生物；不要手改，应交给自动化生成。
 - 新增配置字段时，在所属的 `zh_cn.json` 添加 `config.comments.<表名>.<字段名>`；未指定 `table_name` 时表名为 `config`。
 - 会话归属的模块数据使用 `union_id` 和正确的 `union_scope`；不要新增按平台割裂的 `sender_id` / `target_id` 状态列。
 - 平台能力必须使用 `Features(...)` 实例声明。不要子类化 `Features`，也不要把类对象赋给 `ContextManager.features`。
