@@ -62,7 +62,6 @@ output/*
 # AI Agent / LLM Tools
 # ==========
 
-.agents/*
 generated_docs/*
 
 # Claude Code
