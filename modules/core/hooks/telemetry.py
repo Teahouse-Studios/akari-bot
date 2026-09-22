@@ -19,7 +19,7 @@ def _enable_analytics() -> bool:
     return bool(getattr(CoreConfig, "enable_analytics", False))
 
 
-telemetry = module("_telemetry", hidden=True, load=True, base=True)
+telemetry = module("telemetry", hidden=True, load=True, base=True)
 
 
 @telemetry.hook(point=HookPoint.EXECUTION_FINISHED, priority=50, name="record", server_scope=True)

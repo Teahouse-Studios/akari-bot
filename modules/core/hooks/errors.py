@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 
-errors = module("_parser_errors", hidden=True, load=True, base=True)
+errors = module("parser_errors", hidden=True, load=True, base=True)
 
 COMMON_EMOTE_DIR = assets_path / "emotes" / "common"
 INVALID_COMMAND_EMOTES = tuple(sorted((COMMON_EMOTE_DIR / "invalid").glob("*.gif")))

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import httpx
-from botpy.protocol import ApiError, MediaFileType, MessageType, TransportError
+from botpy.protocol import ApiError, MediaFileType, TransportError
 
 import bots.qqbot.context as qqbot_context
 from bots.qqbot.context import QQBotContextManager
@@ -76,21 +76,20 @@ def _assert_upload_calls(client, file_types, scope="group"):
         assert upload.kwargs == {"local_path": __file__, "srv_send_msg": False}
 
 
-async def _test_c2c_markdown_single_image_recovers_write_timeout():
-    error = _transport(httpx.WriteTimeout("upload stalled"))
-    client = _client([error, {"file_info": "uploaded-image", "ttl": 600}])
+async def _test_c2c_markdown_single_image_uses_markdown_upload():
+    client = _client([])
     delays = []
-    result = await _send(client, _image_message(), delays, target_from=target_c2c_prefix, markdown=True)
-    assert result == ["sent-media"]
-    assert delays == [1]
-    _assert_upload_calls(client, [MediaFileType.IMAGE, MediaFileType.IMAGE], scope="c2c")
-    client.send.assert_awaited_once()
-    assert client.send.await_args.kwargs == {
-        "content": None,
-        "msg_type": MessageType.MEDIA,
-        "media": {"file_info": "uploaded-image"},
-    }
-    client.send_markdown.assert_not_awaited()
+    with (
+        patch.object(qqbot_context, "_upload_markdown_image", AsyncMock(return_value="https://example.com/image.png")),
+        patch.object(ImageElement, "get_wh", new=AsyncMock(return_value=(1000, 2000))),
+    ):
+        result = await _send(client, _image_message(), delays, target_from=target_c2c_prefix, markdown=True)
+    assert result == ["sent-markdown"]
+    assert delays == []
+    client.upload_media.assert_not_awaited()
+    client.send.assert_not_awaited()
+    client.send_markdown.assert_awaited_once()
+    assert client.send_markdown.await_args.args[1] == "![text #128px #256px](https://example.com/image.png)"
     return True
 
 
@@ -258,7 +257,9 @@ async def _test_partial_send_preserves_ids_without_retry():
 
 @func_case
 async def test_qqbot_upload_retry(tester: Tester):
-    await tester.test(_test_c2c_markdown_single_image_recovers_write_timeout, "C2C Markdown 单图上传超时恢复且只发一次")
+    await tester.test(
+        _test_c2c_markdown_single_image_uses_markdown_upload, "C2C Markdown 单图走 Markdown 图片上传且只发一次"
+    )
     await tester.test(_test_group_media_retry_prepares_everything_before_send, "群图片与音视频重试预上传完成后依次发送")
     await tester.test(_test_upload_exhaustion_preserves_error_without_sending, "上传重试耗尽后保留原始异常且不发送")
     await tester.test(_test_sdk_attempts_count_toward_upload_limit, "SDK 内部尝试次数计入上传重试上限")

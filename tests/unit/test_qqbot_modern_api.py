@@ -508,7 +508,7 @@ async def _test_group_mention_markdown_message() -> bool:
     ]
 
 
-async def _test_markdown_removes_line_break_before_at() -> bool:
+async def _test_markdown_keeps_content_line_breaks() -> bool:
     session = _make_session(target_group_prefix)
     session.support_markdown = True
     client = _CaptureSendClient()
@@ -516,7 +516,7 @@ async def _test_markdown_removes_line_break_before_at() -> bool:
     with patch.object(qqbot_context, "qq_use_markdown", True):
         result = await _send_with_client(session, client, message)
     return result == ["markdown"] and client.calls == [
-        ("markdown", {"content": '<qqbot-at-user id="member" />\nhello', "keyboard": None})
+        ("markdown", {"content": '\r\n<qqbot-at-user id="member" />\nhello', "keyboard": None})
     ]
 
 
@@ -785,7 +785,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
-    await tester.test(_test_markdown_removes_line_break_before_at, "Markdown at 标签前换行清理测试")
+    await tester.test(_test_markdown_keeps_content_line_breaks, "Markdown 正文换行原样保留测试")
     await tester.test(_test_plain_allow_parse_controls_qq_atcode, "Plain.allow_parse 逐段控制 QQ 提及解析测试")
     await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
     await tester.test(_test_markdown_images_over_total_height_use_table_layout, "Markdown 图片总高度超限表格排版测试")

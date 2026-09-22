@@ -28,7 +28,7 @@ typo_check_options_score = CoreConfig.typo_check_options_score
 typo_check_args_diff_ratio = CoreConfig.typo_check_args_diff_ratio
 typo_check_module_diff_ratio = CoreConfig.typo_check_module_diff_ratio
 
-typo = module("_typo", hidden=True, load=True, base=True)
+typo = module("typo", hidden=True, load=True, base=True)
 
 
 def _get_close_matches(word, possibilities, n=1, cutoff=0.6):

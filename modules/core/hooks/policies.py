@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from core.builtins.bot import Bot
 
 
-policies = module("_parser_policies", hidden=True, load=True, base=True)
+policies = module("parser_policies", hidden=True, load=True, base=True)
 
 # 场景冷却属于策略状态；由模块 runtime 管理，热重载同版本时保留。
 target_cooldown_counter = policies.state(
