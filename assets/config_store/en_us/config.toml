@@ -3,13 +3,12 @@
 # EXAMPLE: Boolean values in TOML must be lowercase.
 
 default_locale = "en_us" # Default language environment.
-config_version = 5 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
+config_version = 6 # Config version number, which will be automatically updated with the new features and generally does not need to be modified.
 
 [config]
 # The basic config section. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
 debug = false # Whether to enable debug mode, more log information will be output when enabled.
 timezone_offset = "+8" # The bot's default timezone offset.
-allow_reload_base = false # Whether to allow reloading of the base modules.
 allow_request_private_ip = false # Whether to allow the bot to request local private IP addresses. (Prevent possible leakage)
 schedule_interval_multiplier = 1.0 # The interval multiplier for scheduled task triggers.
 use_emote = false # Whether to use emote resources.
