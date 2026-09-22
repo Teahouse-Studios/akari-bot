@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, petal: int, user: str):
     if petal <= 0:
         await msg.finish(I18NContext("petal.message.count.invalid"))
-    if not user.startswith(f"{msg.session_info.client_name}|"):  # 客户端级隔离
+    if not user.startswith(f"{msg.session_info.client_name}|"):  # 客户端级隔离，避免刷花瓣
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     if user == msg.session_info.sender_id:
         await msg.finish(I18NContext("core.message.petal.give.self"))
