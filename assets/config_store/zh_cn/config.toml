@@ -3,13 +3,12 @@
 # 例如：TOML 中的布尔值必须是小写。
 
 default_locale = "zh_cn" # 默认的语言环境。
-config_version = 5 # 配置版本号，将会随功能更新自增，一般情况请勿手动修改。
+config_version = 6 # 配置版本号，将会随功能更新自增，一般情况请勿手动修改。
 
 [config]
 # 一些基础的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 debug = false # 是否开启调试模式，启用后会输出更多的日志信息。
 timezone_offset = "+8" # 机器人的默认时区偏移量。
-allow_reload_base = false # 是否允许重载基础模块。
 allow_request_private_ip = false # 是否允许机器人请求本地私有 IP 地址。（防止可能的信息泄露）
 schedule_interval_multiplier = 1.0 # 计划任务触发器的间隔时间倍率。
 use_emote = false # 是否使用表情资源。

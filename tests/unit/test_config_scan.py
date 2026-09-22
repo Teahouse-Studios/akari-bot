@@ -380,7 +380,44 @@ def _test_legacy_slower_schedule_migrates_to_multiplier():
             check=False,
         )
         output = result.stdout.splitlines()
-        return result.returncode == 0 and output[-3:] == ["5", "3.0", "False"]
+        return result.returncode == 0 and output[-3:] == ["6", "3.0", "False"]
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _test_legacy_allow_reload_base_is_removed():
+    tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_migrate_"))
+    try:
+        (tmp / "config.toml").write_text(
+            'default_locale = "zh_cn"\nconfig_version = 5\n\n[config]\nallow_reload_base = true\n',
+            encoding="utf-8",
+        )
+        env = os.environ.copy()
+        env["AKARI_CONFIG_PATH"] = str(tmp)
+        env.pop("AKARI_CONFIG_READONLY", None)
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    # 迁移后的 3 秒提示停顿不属于持久化行为；仅在隔离进程中跳过。
+                    "from unittest.mock import patch\n"
+                    "with patch('time.sleep'):\n"
+                    "    from core.config import CFGManager\n"
+                    "print(CFGManager.values['config']['config_version']); "
+                    "print('allow_reload_base' in CFGManager.values['config']['config'])"
+                ),
+            ],
+            cwd=Path(__file__).resolve().parents[2],
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=15,
+            check=False,
+        )
+        output = result.stdout.splitlines()
+        return result.returncode == 0 and output[-2:] == ["6", "False"]
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -398,5 +435,6 @@ async def test_config_scan(tester: Tester):
     await tester.test(_test_scan_repairs_raw_i18n_comments, "原始 i18n 配置注释修复测试")
     await tester.test(_test_importing_daemon_does_not_load_config, "守护进程延迟导入配置系统测试")
     await tester.test(_test_legacy_slower_schedule_migrates_to_multiplier, "旧 slower_schedule 布尔值迁移测试")
+    await tester.test(_test_legacy_allow_reload_base_is_removed, "旧 allow_reload_base 配置项移除测试")
 
     return tester

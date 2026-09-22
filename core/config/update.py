@@ -421,5 +421,13 @@ if config["config_version"] < config_version:
         with open(cfg_file_path, "w", encoding="utf-8") as f:
             f.write(toml_dumps(config))
 
+    if config["config_version"] < 6:
+        core_table = config.get("config", {})
+        core_table.pop("allow_reload_base", None)
+
+        config["config_version"] = 6
+        with open(cfg_file_path, "w", encoding="utf-8") as f:
+            f.write(toml_dumps(config))
+
     logger.success("Config file updated successfully.")
     sleep(3)

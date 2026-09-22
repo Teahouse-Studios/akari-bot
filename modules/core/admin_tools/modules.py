@@ -4,7 +4,6 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
 from core.builtins.parser.command import CommandParser
 from core.component import module
-from core.config.base import CoreConfig
 from core.constants.exceptions import InvalidHelpDocTypeError
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
@@ -234,12 +233,10 @@ async def config_modules(msg: Bot.MessageSession):
                     msglist.append(I18NContext("core.message.module.disable.success", module=x))
     elif msg.parsed_msg.get("reload", False):
 
-        async def module_reload(module, extra_modules, base_module=False):
+        async def module_reload(module, extra_modules):
             status, reload_count = await ModulesManager.reload_module(module)
             if not status:
                 return I18NContext("core.message.module.reload.failed")
-            if base_module and status:
-                return I18NContext("core.message.module.reload.base.success")
             if reload_count > 1:
                 return Plain(
                     str(I18NContext("core.message.module.reload.success", module=module))
@@ -258,30 +255,17 @@ async def config_modules(msg: Bot.MessageSession):
                 )
 
         for module_ in wait_config_list:
-            base_module = False
             if module_ not in modules_:
                 msglist.append(I18NContext("core.message.module.reload.not_found", module=module_))
             else:
                 extra_reload_modules = ModulesManager.search_related_module(module_, False)
-                if modules_[module_].base:
-                    if CoreConfig.allow_reload_base:
-                        if await msg.wait_confirm(
-                            I18NContext("core.message.module.reload.base.confirm"),
-                            append_instruction=False,
-                        ):
-                            base_module = True
-                        else:
-                            await msg.finish()
-                    else:
-                        await msg.finish(I18NContext("core.message.module.reload.base.failed", module=module_))
-
-                elif extra_reload_modules:
+                if extra_reload_modules:
                     if not await msg.wait_confirm(
                         I18NContext("core.message.module.reload.confirm", modules="\n".join(extra_reload_modules)),
                         append_instruction=False,
                     ):
                         await msg.finish()
-                msglist.append(await module_reload(module_, extra_reload_modules, base_module))
+                msglist.append(await module_reload(module_, extra_reload_modules))
     elif msg.parsed_msg.get("load", False):
         for module_ in wait_config_list:
             if module_ not in await ModuleStatus.get_unloaded_modules():

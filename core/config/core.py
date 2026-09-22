@@ -24,7 +24,6 @@ class CoreConfig:
     # 调试与运行
     debug: bool = False
     timezone_offset: str = "+8"
-    allow_reload_base: bool = False
     allow_request_private_ip: bool = False
     schedule_interval_multiplier: float = 1.0
     use_emote: bool = False
