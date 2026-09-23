@@ -75,6 +75,9 @@ ACTION_TEXT_MAX_LENGTH = 100
 QQBOT_MAX_KEYBOARD_ROWS = 5
 QQBOT_MAX_KEYBOARD_COLUMNS = 10
 PASSIVE_REPLY_FALLBACK_ERROR_CODES = frozenset({"40034005", "40034128", "40054005"})
+# 平台按 msg_id + msg_seq 去重，同一组合重复发送会被拒绝；重试沿用首次尝试的 msg_seq 时，
+# 该错误说明更早的尝试已经送达。
+DUPLICATE_MESSAGE_ERROR_CODES = frozenset({"40054005"})
 PROACTIVE_PERMISSION_DENIED_ERROR_CODES = frozenset({"304046", "40034102", "40034105"})
 SILENT_SEND_ABORT_ERROR_CODES = frozenset({"40034101", "40054002", "40054003"})
 PERMISSION_CACHE_TTL = 3600
@@ -85,6 +88,8 @@ HIGH_PRIORITY_BURST = 5
 HIGH_PRIORITY_QUEUE_RESERVE = 16
 ADAPTER_SHUTDOWN_TIMEOUT = 10
 MEDIA_UPLOAD_MAX_ATTEMPTS = 3
+MESSAGE_SEND_RETRY_INITIAL_DELAY = 3.0
+MESSAGE_SEND_TOTAL_TIMEOUT = 60.0
 TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
 TYPING_EMOTES = tuple(sorted(TYPING_EMOTE_DIR.glob("*.gif")))
 
@@ -93,6 +98,11 @@ def _load_s3_storage():
     from core.utils.s3 import S3Storage
 
     return S3Storage
+
+
+def _is_retryable_send_failure(error: BaseException) -> bool:
+    cause = error.cause if isinstance(error, TransportError) else error
+    return isinstance(cause, (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError, TimeoutError))
 
 
 async def _upload_media(
@@ -107,9 +117,7 @@ async def _upload_media(
         except TransportError as error:
             # SDK 报告的尝试次数用于减少后续补充重试；单次调用内的重试仍由 SDK 控制。
             attempts += max(error.attempts or 1, 1)
-            if attempts >= MEDIA_UPLOAD_MAX_ATTEMPTS or not isinstance(
-                error.cause, (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError)
-            ):
+            if attempts >= MEDIA_UPLOAD_MAX_ATTEMPTS or not _is_retryable_send_failure(error):
                 raise
             delay = 2 ** (attempts - 1)
             Logger.warning(
@@ -415,6 +423,89 @@ def _is_silent_send_abort_error(error: ApiError) -> bool:
     return bool(_api_error_codes(error) & SILENT_SEND_ABORT_ERROR_CODES)
 
 
+def _is_duplicate_message_error(error: ApiError) -> bool:
+    return bool(_api_error_codes(error) & DUPLICATE_MESSAGE_ERROR_CODES)
+
+
+def _allocate_reply_sequence(client: botpy.Client, target: ReplyTarget) -> int | None:
+    # 重试只有沿用首次尝试的 msg_seq，平台才能按 msg_id + msg_seq 去重；序号仍交由 SDK 分配，
+    # 否则会与 send_typing 等内部调用撞号，互相把对方的消息顶成重复。
+    if target.message_id is None or target.scope not in ("c2c", "group"):
+        return None
+    allocate = getattr(client, "_next_reply_sequence", None)
+    if allocate is None:
+        return None
+    try:
+        return int(allocate(target.message_id))
+    except Exception:
+        # 序号分配失败只损失重试的幂等性，不应阻断发送本身。
+        return None
+
+
+def _send_retry_delay(retries: int) -> float:
+    # 首次重试 3s，其后第 n 次为 3 + 2^n
+    if retries <= 1:
+        return MESSAGE_SEND_RETRY_INITIAL_DELAY
+    return MESSAGE_SEND_RETRY_INITIAL_DELAY + 2 ** (retries - 1)
+
+
+async def _send_with_retry(sender, target: ReplyTarget, /, *args, **kwargs):
+    sequence = _allocate_reply_sequence(_get_client(), target)
+    if sequence is not None:
+        kwargs["extra"] = {**(kwargs.get("extra") or {}), "msg_seq": sequence}
+
+    deadline = asyncio.get_running_loop().time() + MESSAGE_SEND_TOTAL_TIMEOUT
+    timeout_scope = asyncio.timeout(MESSAGE_SEND_TOTAL_TIMEOUT)
+    retries = 0
+    last_error: TransportError | None = None
+    try:
+        async with timeout_scope:
+            while True:
+                try:
+                    return await sender(target, *args, **kwargs)
+                except ApiError as error:
+                    # 重试沿用同一 msg_seq，平台报告去重即说明首次尝试已经送达：此时转主动消息会
+                    # 重复投递，向上抛出则会让整条命令失败，因此直接按已送达处理。
+                    if retries and _is_duplicate_message_error(error):
+                        Logger.warning(
+                            f"QQBot message to {target.scope}|{target.target_id} was deduplicated by the platform; "
+                            "the earlier attempt is treated as delivered."
+                        )
+                        return []
+                    raise
+                except TransportError as error:
+                    last_error = error
+                    retries += 1
+                    if not _is_retryable_send_failure(error):
+                        raise
+                    delay = _send_retry_delay(retries)
+                    # 下一次尝试放不进总预算时立即失败，不再等待。
+                    if asyncio.get_running_loop().time() + delay >= deadline:
+                        Logger.warning(
+                            f"QQBot message to {target.scope}|{target.target_id} exhausted the "
+                            f"{MESSAGE_SEND_TOTAL_TIMEOUT:g}s send budget after {retries} attempt(s)."
+                        )
+                        raise
+                    Logger.warning(
+                        f"QQBot message to {target.scope}|{target.target_id} failed on attempt {retries} "
+                        f"({type(error.cause).__name__}); retrying in {delay}s."
+                    )
+                    await asyncio.sleep(delay)
+    except TimeoutError as error:
+        if not timeout_scope.expired():
+            raise
+        Logger.warning(
+            f"QQBot message to {target.scope}|{target.target_id} exceeded the "
+            f"{MESSAGE_SEND_TOTAL_TIMEOUT:g}s send budget."
+        )
+        if last_error is not None:
+            raise last_error from error
+        raise TransportError(
+            f"QQBot message send exceeded the {MESSAGE_SEND_TOTAL_TIMEOUT:g}s budget",
+            cause=error,
+        ) from error
+
+
 class _TypingState:
     __slots__ = ("finished", "sending", "spoken")
 
@@ -666,7 +757,7 @@ class QQBotContextManager(ContextManager):
             if send_aborted:
                 return None
             try:
-                return await sender(send_target, *args, **kwargs)
+                return await _send_with_retry(sender, send_target, *args, **kwargs)
             except ApiError as error:
                 if _is_silent_send_abort_error(error):
                     send_aborted = True
@@ -687,7 +778,7 @@ class QQBotContextManager(ContextManager):
                 )
                 send_target = ReplyTarget(scope=send_target.scope, target_id=send_target.target_id)
                 try:
-                    return await sender(send_target, *args, **kwargs)
+                    return await _send_with_retry(sender, send_target, *args, **kwargs)
                 except ApiError as proactive_error:
                     if _is_silent_send_abort_error(proactive_error) or _is_proactive_permission_denied_error(
                         proactive_error
@@ -991,7 +1082,13 @@ class QQBotContextManager(ContextManager):
             async def send_markdown_message() -> list[str]:
                 msg_ids = []
                 if texts:
-                    result = await send_with_proactive_fallback(client.send_markdown, msg, keyboard=keyboard)
+                    # client.send_markdown 不接受 extra，无法固定 msg_seq，故直接走 client.send。
+                    result = await send_with_proactive_fallback(
+                        client.send,
+                        msg_type=MessageType.MARKDOWN,
+                        markdown={"content": msg},
+                        keyboard=keyboard,
+                    )
                     result_ids = _message_ids(result)
                     msg_ids.extend(result_ids)
                     if result_ids and not _typing_prompt:

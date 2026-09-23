@@ -1,15 +1,23 @@
 """QQBot 适配器对 botpy 翻新接口的接入测试。"""
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+import httpx
 from botpy.errors import ServerError
 from botpy.message import GroupMessage
-from botpy.protocol import MediaSendResult
+from botpy.protocol import MediaSendResult, TransportError
 
 import bots.qqbot.context as qqbot_context
 from bots.qqbot.config import QQBotConfig
-from bots.qqbot.context import QQBotContextManager, _message_ids, _reply_target, _resolve_api_message_id
+from bots.qqbot.context import (
+    MESSAGE_SEND_RETRY_INITIAL_DELAY,
+    QQBotContextManager,
+    _message_ids,
+    _reply_target,
+    _resolve_api_message_id,
+)
 from bots.qqbot.info import (
     target_c2c_prefix,
     target_direct_prefix,
@@ -123,10 +131,6 @@ class _FailingSendClient:
         self._record(target, kwargs)
         return {"id": "fallback"}
 
-    async def send_markdown(self, target, content, keyboard=None):
-        self._record(target, {"content": content, "keyboard": keyboard})
-        return {"id": "fallback"}
-
     async def upload_media(self, target, file_type, **kwargs):
         self.uploads.append((target.scope, target.target_id, file_type, kwargs))
         return {"file_info": "uploaded-image"}
@@ -137,16 +141,224 @@ class _CaptureSendClient:
         self.calls = []
 
     async def send(self, target, **kwargs):
+        markdown = kwargs.get("markdown")
+        if markdown is not None:
+            self.calls.append(("markdown", {"content": markdown["content"], "keyboard": kwargs.get("keyboard")}))
+            return {"id": "markdown"}
         self.calls.append(("plain", kwargs))
         return {"id": "plain"}
-
-    async def send_markdown(self, target, content, keyboard=None):
-        self.calls.append(("markdown", {"content": content, "keyboard": keyboard}))
-        return {"id": "markdown"}
 
     async def upload_media(self, target, file_type, **kwargs):
         self.calls.append(("upload", {"file_type": file_type, **kwargs}))
         return {"file_info": "uploaded-image"}
+
+
+class _RetrySendClient:
+    # 按调用次序抛出预设异常（列表耗尽后沿用最后一项），并模拟 SDK 的 msg_seq 分配。
+    def __init__(self, failures: list[BaseException | None], *, sequence: int = 0):
+        self.failures = list(failures)
+        self.calls = []
+        self.sequences = []
+        self._sequence = sequence
+
+    def _next_reply_sequence(self, message_id: str) -> int:
+        self._sequence += 1
+        return self._sequence
+
+    async def send(self, target, **kwargs):
+        self.calls.append((target.scope, target.target_id, target.message_id, dict(kwargs)))
+        self.sequences.append((kwargs.get("extra") or {}).get("msg_seq"))
+        failure = self.failures[min(len(self.calls) - 1, len(self.failures) - 1)]
+        if failure is not None:
+            raise failure
+        return {"id": "sent"}
+
+    async def upload_media(self, target, file_type, **kwargs):
+        return {"file_info": "uploaded-image"}
+
+
+_real_asyncio_sleep = asyncio.sleep
+
+
+async def _skip_retry_delay(delay: float) -> None:
+    await _real_asyncio_sleep(0)
+
+
+def _transport_error(cause: Exception) -> TransportError:
+    return TransportError(
+        "HTTP POST request failed",
+        method="POST",
+        url="https://api.sgroup.qq.com/v2/groups/target/messages",
+        cause=cause,
+        attempts=2,
+    )
+
+
+def _duplicate_error() -> ServerError:
+    message = "消息被去重，请检查请求msgseq"
+    return ServerError(message, status=400, code=40054005, response={"message": message, "code": 40054005})
+
+
+async def _test_transport_timeout_is_retried_with_backoff() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_transport_error(httpx.ConnectTimeout("connect timed out")), None])
+    QQBotContextManager.context[session.session_id] = object()
+    delays = []
+    real_sleep = asyncio.sleep
+
+    async def record_sleep(delay):
+        delays.append(delay)
+        await real_sleep(0)
+
+    try:
+        with patch.object(qqbot_context.asyncio, "sleep", new=record_sleep):
+            result = await _send_with_client(session, client)
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+    if result != ["sent"] or len(client.calls) != 2:
+        Logger.error(f"Expected one retry after a connect timeout: result={result}, calls={client.calls}")
+        return False
+    if client.sequences != [1, 1]:
+        Logger.error(f"Retry should reuse the first msg_seq: {client.sequences}")
+        return False
+    return [delay for delay in delays if delay] == [MESSAGE_SEND_RETRY_INITIAL_DELAY]
+
+
+async def _test_markdown_send_is_retried_with_sequence() -> bool:
+    session = _make_session(target_group_prefix)
+    session.support_markdown = True
+    client = _RetrySendClient([_transport_error(httpx.ConnectTimeout("connect timed out")), None])
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        with (
+            patch.object(qqbot_context, "qq_use_markdown", True),
+            patch.object(qqbot_context.asyncio, "sleep", new=_skip_retry_delay),
+        ):
+            result = await _send_with_client(session, client, MessageChain.assign(MarkdownElement.assign("**hello**")))
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return (
+        result == ["sent"]
+        and client.sequences == [1, 1]
+        and client.calls[0][3].get("markdown", {}).get("content", "").endswith("**hello**")
+    )
+
+
+async def _test_proactive_send_is_retried_without_sequence() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_transport_error(httpx.ReadTimeout("read timed out")), None])
+    with patch.object(qqbot_context.asyncio, "sleep", new=_skip_retry_delay):
+        result = await _send_with_client(session, client)
+    return result == ["sent"] and client.sequences == [None, None]
+
+
+async def _test_send_retry_backoff_follows_budget() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_transport_error(httpx.ConnectTimeout("connect timed out"))])
+    QQBotContextManager.context[session.session_id] = object()
+    delays = []
+    real_sleep = asyncio.sleep
+
+    async def record_sleep(delay):
+        delays.append(delay)
+        await real_sleep(0)
+
+    try:
+        with patch.object(qqbot_context.asyncio, "sleep", new=record_sleep):
+            try:
+                await _send_with_client(session, client)
+            except TransportError:
+                # 3、5、7、11、19、35 的等待仍在 60s 预算内，其后 67s 已放不下。
+                return [delay for delay in delays if delay] == [3.0, 5.0, 7.0, 11.0, 19.0, 35.0] and len(
+                    client.calls
+                ) == 7
+            return False
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+
+async def _test_send_budget_blocks_further_retries() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_transport_error(httpx.ConnectTimeout("connect timed out"))])
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        with patch.object(qqbot_context, "MESSAGE_SEND_TOTAL_TIMEOUT", 1.0):
+            try:
+                await _send_with_client(session, client)
+            except TransportError:
+                return len(client.calls) == 1
+            return False
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+
+async def _test_hanging_send_exceeds_budget() -> bool:
+    class _HangingClient:
+        def __init__(self):
+            self.calls = 0
+
+        async def send(self, target, **kwargs):
+            self.calls += 1
+            await _real_asyncio_sleep(5)
+
+    session = _make_session(target_group_prefix)
+    client = _HangingClient()
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        with patch.object(qqbot_context, "MESSAGE_SEND_TOTAL_TIMEOUT", 0.05):
+            try:
+                await _send_with_client(session, client)
+            except TransportError as error:
+                return client.calls == 1 and "budget" in str(error)
+            return False
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+
+async def _test_non_retryable_transport_error_is_not_retried() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_transport_error(httpx.UnsupportedProtocol("unsupported protocol"))])
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        with patch.object(qqbot_context.asyncio, "sleep", new=_skip_retry_delay):
+            try:
+                await _send_with_client(session, client)
+            except TransportError:
+                return len(client.calls) == 1
+            return False
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+
+async def _test_duplicate_error_during_retry_is_treated_as_delivered() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_transport_error(httpx.ReadTimeout("read timed out")), _duplicate_error()])
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        with patch.object(qqbot_context.asyncio, "sleep", new=_skip_retry_delay):
+            result = await _send_with_client(session, client)
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+
+    if result != []:
+        Logger.error(f"Deduplicated retry should report no new message IDs: {result}")
+        return False
+    if [call[2] for call in client.calls] != ["source-message", "source-message"]:
+        Logger.error(f"Deduplicated retry must not fall back to a proactive message: {client.calls}")
+        return False
+    return client.sequences == [1, 1]
+
+
+async def _test_first_attempt_duplicate_error_still_falls_back_to_proactive() -> bool:
+    session = _make_session(target_group_prefix)
+    client = _RetrySendClient([_duplicate_error(), None])
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        result = await _send_with_client(session, client)
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return result == ["sent"] and [call[2] for call in client.calls] == ["source-message", None]
 
 
 class _PartialFailClient(_CaptureSendClient):
@@ -783,6 +995,18 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_missing_media_keeps_remaining_text, "媒体不可用时保留文本测试")
     await tester.test(_test_other_api_error_is_not_retried, "其他 API 错误不重试测试")
     await tester.test(_test_proactive_error_is_not_retried, "主动消息错误不重复重试测试")
+    await tester.test(_test_transport_timeout_is_retried_with_backoff, "传输超时指数退避重试测试")
+    await tester.test(_test_markdown_send_is_retried_with_sequence, "Markdown 重试复用 msg_seq 测试")
+    await tester.test(_test_proactive_send_is_retried_without_sequence, "主动消息重试测试")
+    await tester.test(_test_send_retry_backoff_follows_budget, "重试退避序列与总预算测试")
+    await tester.test(_test_send_budget_blocks_further_retries, "总预算不足时不再重试测试")
+    await tester.test(_test_hanging_send_exceeds_budget, "发送超过总预算失败测试")
+    await tester.test(_test_non_retryable_transport_error_is_not_retried, "不可重试传输错误不重试测试")
+    await tester.test(_test_duplicate_error_during_retry_is_treated_as_delivered, "重试期间消息去重视为已送达测试")
+    await tester.test(
+        _test_first_attempt_duplicate_error_still_falls_back_to_proactive,
+        "首次尝试消息去重仍转主动消息测试",
+    )
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
     await tester.test(_test_markdown_keeps_content_line_breaks, "Markdown 正文换行原样保留测试")
