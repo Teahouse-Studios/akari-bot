@@ -169,7 +169,7 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
                 t.append(comment)
             t.append(
                 wiki_info.articlepath.replace(
-                    "$1", f"{urllib.parse.quote(title)}?oldid={x['old_revid']}&diff={x['revid']}"
+                    "$1", f"{urllib.parse.quote(title, safe='/:#?=')}?oldid={x['old_revid']}&diff={x['revid']}"
                 )
             )
         if x["type"] == "new":
@@ -216,7 +216,11 @@ async def convert_rc_to_detailed_format(msg: Bot.MessageSession, rc: list, wiki_
             if comment:
                 t.append(comment)
             if x.get("revid", 0) != 0:
-                t.append(wiki_info.articlepath.replace("$1", f"{urllib.parse.quote(title_checked_map[x['title']])}"))
+                t.append(
+                    wiki_info.articlepath.replace(
+                        "$1", f"{urllib.parse.quote(title_checked_map[x['title']], safe='/:#?=')}"
+                    )
+                )
         time = msg.format_time(strptime2ts(x["timestamp"]), simple=True)
         t.append(time)
         if not text_status:

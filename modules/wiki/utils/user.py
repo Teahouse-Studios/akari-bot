@@ -41,7 +41,7 @@ async def get_user_info(msg: Bot.MessageSession, username, wikiurl, headers=None
     if await check_bool(base_user_info["name"], msg):
         return Plain(rickroll())
     data["username"] = base_user_info["name"]
-    data["url"] = re.sub(r"\$1", urllib.parse.quote("User:" + username), wiki.wiki_info.articlepath)
+    data["url"] = re.sub(r"\$1", urllib.parse.quote("User:" + username, safe="/:#?="), wiki.wiki_info.articlepath)
 
     groups = {}
     get_groups = await wiki.get_json(action="query", meta="allmessages", amprefix="group-")
