@@ -73,8 +73,9 @@ class _FakeClient:
     def __init__(self):
         self.calls = []
 
-    async def send_markdown(self, target, content, keyboard=None):
-        self.calls.append({"content": content, "keyboard": keyboard})
+    async def send(self, target, **kwargs):
+        markdown = kwargs.get("markdown") or {}
+        self.calls.append({"content": markdown.get("content"), "keyboard": kwargs.get("keyboard")})
         return {"id": "sent-1"}
 
 

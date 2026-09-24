@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import httpx
-from botpy.protocol import ApiError, MediaFileType, TransportError
+from botpy.protocol import ApiError, MediaFileType, MessageType, TransportError
 
 import bots.qqbot.context as qqbot_context
 from bots.qqbot.context import QQBotContextManager
@@ -76,20 +76,17 @@ def _assert_upload_calls(client, file_types, scope="group"):
         assert upload.kwargs == {"local_path": __file__, "srv_send_msg": False}
 
 
-async def _test_c2c_markdown_single_image_uses_markdown_upload():
-    client = _client([])
+async def _test_c2c_single_image_uses_plain_upload_once():
+    client = _client([{"file_info": "image"}])
     delays = []
-    with (
-        patch.object(qqbot_context, "_upload_markdown_image", AsyncMock(return_value="https://example.com/image.png")),
-        patch.object(ImageElement, "get_wh", new=AsyncMock(return_value=(1000, 2000))),
-    ):
-        result = await _send(client, _image_message(), delays, target_from=target_c2c_prefix, markdown=True)
-    assert result == ["sent-markdown"]
+    result = await _send(client, _image_message(), delays, target_from=target_c2c_prefix, markdown=True)
+    assert result == ["sent-media"]
     assert delays == []
-    client.upload_media.assert_not_awaited()
-    client.send.assert_not_awaited()
-    client.send_markdown.assert_awaited_once()
-    assert client.send_markdown.await_args.args[1] == "![text #128px #256px](https://example.com/image.png)"
+    client.upload_media.assert_awaited_once()
+    client.send.assert_awaited_once()
+    client.send_markdown.assert_not_awaited()
+    assert client.send.await_args.kwargs["msg_type"] == MessageType.MEDIA
+    assert client.send.await_args.kwargs["media"] == {"file_info": "image"}
     return True
 
 
@@ -222,50 +219,46 @@ async def _test_invalid_upload_response_never_sends_or_retries():
     return True
 
 
-async def _test_send_transport_failure_is_not_retried():
+async def _test_send_transport_failure_is_retried_with_same_kwargs():
     failure = _transport(httpx.ReadTimeout("send response lost"))
-    client = _client([{"file_info": "image"}], sends=[failure, {"id": "duplicate"}])
+    client = _client([{"file_info": "image"}], sends=[failure, {"id": "sent-after-retry"}])
     delays = []
-    try:
-        await _send(client, _image_message(), delays)
-    except TransportError as error:
-        assert error is failure
-    else:
-        raise AssertionError("A send timeout must propagate without resending the message")
-    assert delays == []
+    result = await _send(client, _image_message(), delays)
+    assert result == ["sent-after-retry"]
+    assert delays == [qqbot_context.MESSAGE_SEND_RETRY_INITIAL_DELAY]
     client.upload_media.assert_awaited_once()
-    client.send.assert_awaited_once()
+    assert client.send.await_count == 2
+    first_call, second_call = client.send.await_args_list
+    assert first_call.kwargs == second_call.kwargs
     return True
 
 
-async def _test_partial_send_preserves_ids_without_retry():
+async def _test_partial_send_retries_and_preserves_ids():
     failure = _transport(httpx.WriteTimeout("second send stalled"))
     client = _client(
         [{"file_info": "first"}, {"file_info": "second"}],
-        sends=[{"id": "first-image"}, failure, {"id": "duplicate"}],
+        sends=[{"id": "first-image"}, failure, {"id": "second-image"}],
     )
     message = MessageChain.assign(
         [PlainElement.assign("caption"), ImageElement.assign(__file__), ImageElement.assign(__file__)]
     )
     delays = []
-    assert await _send(client, message, delays) == ["first-image"]
-    assert delays == []
+    assert await _send(client, message, delays) == ["first-image", "second-image"]
+    assert delays == [qqbot_context.MESSAGE_SEND_RETRY_INITIAL_DELAY]
     assert client.upload_media.await_count == 2
-    assert client.send.await_count == 2
+    assert client.send.await_count == 3
     return True
 
 
 @func_case
 async def test_qqbot_upload_retry(tester: Tester):
-    await tester.test(
-        _test_c2c_markdown_single_image_uses_markdown_upload, "C2C Markdown 单图走 Markdown 图片上传且只发一次"
-    )
+    await tester.test(_test_c2c_single_image_uses_plain_upload_once, "C2C Markdown 单图走普通上传且只发一次")
     await tester.test(_test_group_media_retry_prepares_everything_before_send, "群图片与音视频重试预上传完成后依次发送")
     await tester.test(_test_upload_exhaustion_preserves_error_without_sending, "上传重试耗尽后保留原始异常且不发送")
     await tester.test(_test_sdk_attempts_count_toward_upload_limit, "SDK 内部尝试次数计入上传重试上限")
     await tester.test(_test_nontransient_upload_errors_are_not_retried, "API、本地与非瞬态传输错误不重试")
     await tester.test(_test_cancelled_upload_propagates_immediately, "上传取消立即传播且不重试")
     await tester.test(_test_invalid_upload_response_never_sends_or_retries, "缺少 file_info 的上传结果不重试或发送")
-    await tester.test(_test_send_transport_failure_is_not_retried, "消息发送阶段传输错误不重复发送")
-    await tester.test(_test_partial_send_preserves_ids_without_retry, "部分发送超时保留已发送 ID 且不重试")
+    await tester.test(_test_send_transport_failure_is_retried_with_same_kwargs, "消息发送阶段瞬态错误沿用同一请求重试")
+    await tester.test(_test_partial_send_retries_and_preserves_ids, "部分发送失败重试后保留已发送 ID")
     return tester

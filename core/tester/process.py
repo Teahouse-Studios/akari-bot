@@ -17,9 +17,12 @@ from core.tester.mock.session import MockMessageSession
 from core.utils.container import ExpiringTempDict
 from .decorator import CaseEntry
 from .expectations import Expectation
+from .timing import TIME_SCALE
 
-DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0
-FUNCTION_TEST_CANCEL_TIMEOUT = 1.0
+# 无进展看门狗随测试时限系数放大，但封顶 5 倍：慢机器上子测试可以更久，
+# 真正卡死时也不能让单个用例占用整个 CI 任务太久。
+DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0 * min(TIME_SCALE, 5.0)
+FUNCTION_TEST_CANCEL_TIMEOUT = 1.0 * TIME_SCALE
 
 
 class _FunctionTestNoProgress(Exception):
