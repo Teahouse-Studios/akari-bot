@@ -13,6 +13,10 @@ qq_typing_emoji = 181 # 使用 QQ 機器人（官方）時，正在處理訊息�
 qq_limited_emoji = 10060 # 使用 QQ 機器人（官方）時，訊息處理失敗時向訊息掛上的回應表情 ID。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_use_markdown = false # 使用 QQ 機器人（官方）時，是否使用 Markdown 格式訊息（需配置 s3 相容 API 儲存圖片）。
 qq_navigation_sync_strict = false # 同步 QQ 機器人（官方）的全域選單與指令面板失敗時，是否阻止用戶端啟動。
+qq_use_webhook = false # 使用 QQ 机器人（官方）时，是否使用 Webhook 接收事件，关闭则连接 Gateway。
+qq_webhook_host = "0.0.0.0" # Webhook 监听地址。
+qq_webhook_port = 8080 # Webhook 监听端口。
+qq_webhook_path = "/" # Webhook 回调路径，需与开放平台配置的回调地址一致。
 qq_bot_uid = "<Replace me with str value>" # QQ 機器人（官方）的 UID。
 qq_bot_qqnum = "<Replace me with str value>" # QQ 機器人（官方）的 QQ 號。
 
