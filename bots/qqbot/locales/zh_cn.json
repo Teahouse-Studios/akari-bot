@@ -13,5 +13,6 @@
     "config.comments.bot_qqbot.qq_use_webhook": "使用 QQ 机器人（官方）时，是否使用 Webhook 接收事件，关闭则连接 Gateway。",
     "config.comments.bot_qqbot.qq_webhook_host": "Webhook 监听地址。",
     "config.comments.bot_qqbot.qq_webhook_path": "Webhook 回调路径，需与开放平台配置的回调地址一致。",
-    "config.comments.bot_qqbot.qq_webhook_port": "Webhook 监听端口。"
+    "config.comments.bot_qqbot.qq_webhook_port": "Webhook 监听端口。",
+    "config.comments.bot_qqbot.qq_api_url": "QQ 机器人（官方）API 地址。"
 }

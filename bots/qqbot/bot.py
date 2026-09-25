@@ -459,6 +459,8 @@ def _build_client() -> MyClient:
             "webhook_port": int(QQBotConfig.qq_webhook_port),
             "webhook_path": str(QQBotConfig.qq_webhook_path),
         }
+    if QQBotConfig.qq_api_url:
+        transport_options["base_url"] = QQBotConfig.qq_api_url
 
     menu, panels = build_navigation()
     return MyClient(

@@ -18,6 +18,7 @@ class QQBotConfig:
     qq_webhook_path: str = "/"
     qq_bot_uid: str = ""
     qq_bot_qqnum: str = ""
+    qq_api_url: str = ""
 
 
 @on_bot_config("qqbot", secret=True)
