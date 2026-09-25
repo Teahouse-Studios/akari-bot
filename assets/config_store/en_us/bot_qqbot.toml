@@ -19,6 +19,7 @@ qq_webhook_port = 8080 # Webhook 监听端口。
 qq_webhook_path = "/" # Webhook 回调路径，需与开放平台配置的回调地址一致。
 qq_bot_uid = "<Replace me with str value>" # The QQ official robot UID.
 qq_bot_qqnum = "<Replace me with str value>" # The QQ official robot number.
+qq_api_url = "<Replace me with str value>" # 自定义 QQ 机器人（官方）API 地址。（可选）
 
 [bot_qqbot_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
