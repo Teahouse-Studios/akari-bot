@@ -177,6 +177,7 @@ async def joined_guild(b: khlBot, event: Event):
         return
 
     sender_id = f"{sender_prefix}|{member_id}"
+    await b.client.fetch_me()
     if member_id == b.client.me.id or sender_id in ignored_sender:
         return
 
