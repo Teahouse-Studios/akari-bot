@@ -6,6 +6,7 @@ from core.component import module
 from core.types import Param
 from core.utils.random import Random
 from core.utils.dirty_check import check_bool
+from .choice import ask_ai_choice
 
 r = module(
     "random",
@@ -29,10 +30,12 @@ async def _(msg: Bot.MessageSession, minimum: int, maximum: int):
 @r.command("choice <choices> ... {{I18N:random.help.choice}}")
 async def _(msg: Bot.MessageSession, choice: Param("<choices>", str) = None, extra_choices: Param("...", list) = None):
     choices = [choice] + (extra_choices or [])
-    c = Random.choice(choices)
+    ai_choice = await ask_ai_choice(msg, choices)
+    if ai_choice is not None:
+        await msg.finish(ai_choice)
     if await check_bool(choice):
-        await msg.finish(I18NContext("random.message.idk"))
-    await msg.finish(c)
+        await msg.finish(I18NContext("random.message.choice.refused"))
+    await msg.finish(Random.choice(choices))
 
 
 @r.command("shuffle <cards> ... {{I18N:random.help.shuffle}}")

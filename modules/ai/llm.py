@@ -49,6 +49,7 @@ async def ask_llm(
     endpoint: str = "openai",
     use_tools: bool = True,
     history: list[dict] | None = None,
+    extra_instructions: str | None = None,
 ) -> tuple[list, int, int, int, int, list]:
     client = build_endpoint(endpoint, api_url, api_key, model_name)
 
@@ -56,18 +57,23 @@ async def ask_llm(
     now_tz = datetime.now(timezone(parse_time_string(tz_)))
     fmt_now = now_tz.strftime("%Y-%m-%d %H:%M:%S %A") + f"(UTC{tz_})" if tz_ != "+0" else "(UTC)"
 
+    session_locale = session.session_info.locale
     system_messages = [
         {"role": "system", "content": INSTRUCTIONS},
         {"role": "system", "content": f"Current datetime: {fmt_now}"},
         {
             "role": "system",
-            "content": f"Session language: {session.session_info.locale.t('language')}. "
-            "Use this language for output unless specified by user.",
+            "content": f"Session language: {session_locale.t('language')} ({session_locale.locale}). "
+            "Always answer in the language of the user's input. "
+            "If the language of the input cannot be determined, answer in the session language.",
         },
     ]
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
     if custom_instructions:
         system_messages.append({"role": "system", "content": custom_instructions})
+    # 调用方附加的任务说明晚于用户自定义指令，以便约束本次调用的输出格式。
+    if extra_instructions:
+        system_messages.append({"role": "system", "content": extra_instructions})
 
     # 延续上下文时，历史对话（不含 system 消息）会被拼接到本次请求之前。
     conversation = list(history) if history else []

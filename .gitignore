@@ -88,6 +88,8 @@ CLAUDE.md
 # Module Data
 modules/*/data/*
 !modules/ai/data/instructions.txt
+!modules/random/data/choice_instructions.txt
+!modules/random/data/choice_prompt.txt
 
 # Module Assets (Manually set)
 modules/maimai/assets/chu_song_info.json

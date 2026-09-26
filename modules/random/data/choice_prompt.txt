@@ -1,0 +1,3 @@
+Candidates:
+${candidates}
+Choose exactly one element from the candidates above and output only its content.

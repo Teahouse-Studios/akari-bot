@@ -4,5 +4,5 @@
     "random.help.number": "生成区间内的随机整数。",
     "random.help.shuffle": "打乱列表的顺序。",
     "random.help.uuid": "生成随机 UUID（v4）。",
-    "random.message.idk": "我不知道。"
+    "random.message.choice.refused": "对不起，我不知道选择哪一个。"
 }

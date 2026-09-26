@@ -2,19 +2,21 @@ from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext, ImageElement, Plain
 from core.builtins.message.chain import MessageChain
 from core.component import module
-from modules.ai.config import AiConfig
 from core.utils.cooldown import CoolDown
 from core.utils.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.constants import WaitCancelException
 from .petal import precount_petal, count_token_petal
-from .setting import get_llm_billing, llm_api_list, llm_list, llm_su_list
+from .setting import default_llm, get_llm_billing, llm_api_list, llm_list, llm_su_list
 from .context import CONTEXT_EXPIRY, create_context, get_context
-
-default_llm = AiConfig.ai_default_llm
-default_llm = default_llm if default_llm in llm_list else None
+from .hook import ask_ai
 
 ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True)
+
+
+@ai.hook("ask", timeout=0)
+async def _(ctx: Bot.ModuleHookContext):
+    return await ask_ai(ctx)
 
 
 def _get_message_images(msg: Bot.MessageSession) -> list[ImageElement]:
@@ -82,7 +84,7 @@ async def _(
 
         billing = get_llm_billing(llm_info)
         if not current_is_superuser and not precount_petal(
-            current_msg,
+            current_msg.session_info,
             billing["input_price"],
             billing["output_price"],
             billing["cache_read_price"],
@@ -127,7 +129,7 @@ async def _(
         )
         billing = get_llm_billing(llm_info, input_tokens)
         petal = await count_token_petal(
-            current_msg,
+            current_msg.session_info,
             billing["input_price"],
             billing["output_price"],
             billing["cache_read_price"],

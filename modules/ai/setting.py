@@ -5,6 +5,7 @@ from decimal import Decimal, InvalidOperation
 import yaml
 
 from core.constants.path import module_data_path
+from .config import AiConfig
 
 ai_module_path = Path(__file__).parent
 ai_data_path = module_data_path(ai_module_path)
@@ -146,3 +147,6 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
 
 llm_list = [llm["name"].lower() for llm in llm_api_list if not llm.get("superuser", False)]
 llm_su_list = [llm["name"].lower() for llm in llm_api_list if llm.get("superuser", False)]
+
+# 配置的默认模型可能已从 llm_api_list 中移除，只有仍可用时才作为默认值。
+default_llm = AiConfig.ai_default_llm if AiConfig.ai_default_llm in llm_list else None
