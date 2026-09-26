@@ -49,6 +49,17 @@ def _test_refusal_texts_come_from_locales():
     return True
 
 
+def _test_instructions_cover_randomness_and_brand_safety():
+    instructions = choice.CHOICE_INSTRUCTIONS
+    # 随机性：要求任意挑选，并明确排除「择优」倾向
+    assert "arbitrarily" in instructions
+    assert "not the best" in instructions
+    # 品牌安全：明确覆盖对机器人及其开发方的侮辱，含「小可是…」句式
+    assert "小可是" in instructions
+    assert "AkariBot" in instructions and "Teahouse Studios" in instructions
+    return True
+
+
 def _test_match_choice():
     choices = ["apple", "banana"]
     assert choice.match_choice("apple", choices) == "apple"
@@ -159,6 +170,7 @@ async def test_random_choice_ai(tester: Tester):
     await tester.test(_test_build_choice_prompt, "候选元素提示词构造")
     await tester.test(_test_build_instructions_injects_localized_refusal, "提示词按会话语言注入拒答语句")
     await tester.test(_test_refusal_texts_come_from_locales, "拒答语句取自各语言本地化文件")
+    await tester.test(_test_instructions_cover_randomness_and_brand_safety, "提示词覆盖任意挑选与品牌侮辱拦截")
     await tester.test(_test_match_choice, "模型输出还原为候选元素")
     await tester.test(_test_ask_ai_choice_fallback_without_hook, "ai 模块未加载时回退")
     await tester.test(_test_ask_ai_choice_fallback_when_not_executed, "hook 未被分发执行时回退")

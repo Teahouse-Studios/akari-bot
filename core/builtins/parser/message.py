@@ -652,7 +652,11 @@ def _regex_matches_message(msg: "Bot.MessageSession", modules) -> bool:
 async def _confirm_long_regex_message(msg: "Bot.MessageSession", modules) -> bool:
     if not _regex_matches_message(msg, modules):
         return True
-    return await msg.wait_confirm(I18NContext("parser.regex.message_too_long"), consume_any_message=True)
+    return await msg.wait_confirm(
+        I18NContext("parser.regex.message_too_long"),
+        consume_any_message=True,
+        append_instruction=not msg.session_info.support_button,
+    )
 
 
 async def _execute_regex(msg: "Bot.MessageSession", modules, identify_str):

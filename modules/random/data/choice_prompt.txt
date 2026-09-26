@@ -1,3 +1,3 @@
 Candidates:
 ${candidates}
-Choose exactly one element from the candidates above and output only its content.
+Pick one candidate arbitrarily, never the best or most reasonable one, and output only its content.
