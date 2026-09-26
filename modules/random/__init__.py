@@ -1,9 +1,11 @@
 import uuid
 
 from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext
 from core.component import module
 from core.types import Param
 from core.utils.random import Random
+from core.utils.dirty_check import check_bool
 
 r = module(
     "random",
@@ -28,6 +30,8 @@ async def _(msg: Bot.MessageSession, minimum: int, maximum: int):
 async def _(msg: Bot.MessageSession, choice: Param("<choices>", str) = None, extra_choices: Param("...", list) = None):
     choices = [choice] + (extra_choices or [])
     c = Random.choice(choices)
+    if await check_bool(choice):
+        await msg.finish(I18NContext("random.message.idk"))
     await msg.finish(c)
 
 
