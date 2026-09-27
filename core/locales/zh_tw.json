@@ -3,7 +3,6 @@
     "check.redacted": "[已編輯:${reason}]",
     "config.comments.bot.enable": "是否啟用此用户端。",
     "config.comments.config_version": "組態檔版本號，將會隨功能更新自動增加，一般情況下請勿修改。",
-    "config.comments.config.allow_reload_base": "是否允許重載基礎模組。",
     "config.comments.config.allow_request_private_ip": "是否允許機器人請求本地私有 IP 位址。（防止可能的資訊外洩）",
     "config.comments.config.auto_purge_crontab": "自動清除快取的 Cron 表達式。",
     "config.comments.config.base_superuser": "機器人的基礎超級使用者清單，此處填寫的值將會在機器人啟動時載入資料庫。",

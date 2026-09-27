@@ -3,7 +3,6 @@
     "check.redacted": "[편집됨:${reason}]",
     "config.comments.bot.enable": "이 클라이언트를 활성화할지 여부.",
     "config.comments.config_version": "버전 번호를 설정합니다. 기능 업데이트 시 자동으로 증가하므로, 일반적으로 수정하지 마십시오.",
-    "config.comments.config.allow_reload_base": "기본 모듈 재로드 허용 여부.",
     "config.comments.config.allow_request_private_ip": "봇이 로컬 사설 IP 주소를 요청하도록 허용할지 여부. (잠재적인 정보 유출을 방지하기 위해)",
     "config.comments.config.auto_purge_crontab": "캐시 자동 삭제를 위한 Cron 표현식.",
     "config.comments.config.base_superuser": "봇의 기본 슈퍼유저 목록입니다. 여기에 입력된 값은 봇이 시작될 때 데이터베이스에 로드됩니다.",
