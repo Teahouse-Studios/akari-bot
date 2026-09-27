@@ -1048,7 +1048,7 @@ class WikiLib:
                                 q_articlepath = query_wiki_info.articlepath.replace("$1", "(.*)")
                                 get_title = re.sub(r"" + q_articlepath, "\\1", langlinks_[lang])
                                 query_langlinks = await query_wiki.parse_page_info(
-                                    urllib.parse.unquote(get_title),
+                                    urllib.parse.unquote(get_title) + urllib.parse.unquote(page_info.args or ""),
                                     session=session,
                                     check_render=check_render,
                                 )
@@ -1081,7 +1081,7 @@ class WikiLib:
                                         if "missing" not in qr_result[x]:
                                             target_site_page_title = qr_result[x]["sitelinks"][target_siteid]["title"]
                                             q_target = await query_target_site.parse_page_info(
-                                                target_site_page_title,
+                                                target_site_page_title + urllib.parse.unquote(page_info.args or ""),
                                                 session=session,
                                                 check_render=check_render,
                                             )
@@ -1103,7 +1103,7 @@ class WikiLib:
                                     self.wiki_info.interwiki[lang],
                                 )
                                 query_langlinks_ = await query_wiki.parse_page_info(
-                                    get_title_schema.replace("$1", title),
+                                    get_title_schema.replace("$1", title) + urllib.parse.unquote(page_info.args or ""),
                                     session=session,
                                     check_render=check_render,
                                 )
@@ -1234,8 +1234,9 @@ class WikiLib:
                     else:
                         _prefix += i["iw"] + ":"
                     # try to query interwiki page
+                    # 章节与查询参数随标题交给目标 wiki，由其按自身章节表校验并判定渲染目标
                     iw_query = await target_wiki.parse_page_info(
-                        iw_title,
+                        iw_title + urllib.parse.unquote(page_info.args or ""),
                         lang=lang,
                         _tried=_tried + 1,
                         _prefix=_prefix,
@@ -1255,7 +1256,8 @@ class WikiLib:
                             if before_page_info.args or page_info.id == -1 or not page_info.id:  # preserve args if any
                                 page_info.before_title += urllib.parse.unquote(before_page_info.args)
                                 t += urllib.parse.unquote(before_page_info.args)
-                                if page_info.link:
+                                # 参数已由目标 wiki 解析并拼入链接，此处不再重复拼接
+                                if page_info.link and not page_info.args:
                                     page_info.link += before_page_info.args
                             else:
                                 # else rebuild link by curid
