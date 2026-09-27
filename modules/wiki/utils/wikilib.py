@@ -1047,7 +1047,11 @@ class WikiLib:
                                 query_wiki_info = query_wiki.wiki_info
                                 q_articlepath = query_wiki_info.articlepath.replace("$1", "(.*)")
                                 get_title = re.sub(r"" + q_articlepath, "\\1", langlinks_[lang])
-                                query_langlinks = await query_wiki.parse_page_info(urllib.parse.unquote(get_title))
+                                query_langlinks = await query_wiki.parse_page_info(
+                                    urllib.parse.unquote(get_title),
+                                    session=session,
+                                    check_render=check_render,
+                                )
                             if "WikibaseClient" in self.wiki_info.extensions and not query_langlinks:
                                 title = (await self.parse_page_info(title)).title
                                 qc_string = {
@@ -1076,7 +1080,11 @@ class WikiLib:
                                     for x in qr_result:
                                         if "missing" not in qr_result[x]:
                                             target_site_page_title = qr_result[x]["sitelinks"][target_siteid]["title"]
-                                            q_target = await query_target_site.parse_page_info(target_site_page_title)
+                                            q_target = await query_target_site.parse_page_info(
+                                                target_site_page_title,
+                                                session=session,
+                                                check_render=check_render,
+                                            )
                                             if q_target.status:
                                                 query_langlinks = q_target
                                                 break
@@ -1095,7 +1103,9 @@ class WikiLib:
                                     self.wiki_info.interwiki[lang],
                                 )
                                 query_langlinks_ = await query_wiki.parse_page_info(
-                                    get_title_schema.replace("$1", title)
+                                    get_title_schema.replace("$1", title),
+                                    session=session,
+                                    check_render=check_render,
                                 )
                                 if query_langlinks_.status:
                                     query_langlinks = query_langlinks_
@@ -1192,6 +1202,9 @@ class WikiLib:
                             page_info.templates = query_langlinks.templates
                             page_info.is_disambiguation = query_langlinks.is_disambiguation
                             page_info.disambiguation_blocks = query_langlinks.disambiguation_blocks
+                            page_info.has_template_doc = query_langlinks.has_template_doc
+                            page_info.is_forum_topic = query_langlinks.is_forum_topic
+                            page_info.renderable = query_langlinks.renderable
         interwiki_: list[dict[str, str]] = query.get("interwiki")
         if interwiki_:
             # handling interwiki pages
@@ -1222,7 +1235,13 @@ class WikiLib:
                         _prefix += i["iw"] + ":"
                     # try to query interwiki page
                     iw_query = await target_wiki.parse_page_info(
-                        iw_title, lang=lang, _tried=_tried + 1, _prefix=_prefix, _iw=_iw
+                        iw_title,
+                        lang=lang,
+                        _tried=_tried + 1,
+                        _prefix=_prefix,
+                        _iw=_iw,
+                        session=session,
+                        check_render=check_render,
                     )
                     before_page_info = page_info
                     page_info = iw_query
