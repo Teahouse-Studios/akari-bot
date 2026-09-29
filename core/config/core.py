@@ -31,6 +31,7 @@ class CoreConfig:
     use_secrets_random: bool = False
     ffmpeg_path: str = ""
     media_compression_threshold: float = 10
+    proxy_disable_ssl: bool = False
 
     # 身份与权限
     base_superuser: list = base_superuser_default
