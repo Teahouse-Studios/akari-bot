@@ -159,6 +159,9 @@ async def _test_aliyun_split_cache_preserves_result():
         class FakeClient:
             calls = 0
 
+            def __init__(self, *args, **kwargs):
+                pass
+
             async def __aenter__(self):
                 return self
 

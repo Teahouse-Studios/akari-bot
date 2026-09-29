@@ -38,6 +38,7 @@
     "config.comments.config.petal_sign_max": "单日签到获取花瓣上限。",
     "config.comments.config.petal_sign_min": "单日签到获取花瓣下限。",
     "config.comments.config.petal_sign_rate": "签到获取花瓣概率，范围 0 到 1 之间，获取数量呈几何分布。",
+    "config.comments.config.proxy_disable_ssl": "使用代理服务时是否跳过 HTTPS 证书校验，仅在代理服务会替换目标站点证书时开启。",
     "config.comments.config.qq_test_group_url": "QQ 机器人的测试群邀请网址，留空时不在关于菜单中展示。",
     "config.comments.config.quick_confirm": "是否开启消息快速确认。",
     "config.comments.config.regex_disable_prefix": "临时关闭正则解析的消息前缀。",

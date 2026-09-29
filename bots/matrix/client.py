@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 from nio import AsyncClient, AsyncClientConfig
 
 from bots.matrix.config import MatrixConfig, MatrixSecretConfig
-from core.config.base import CoreSecretConfig
+from core.config.network import proxy, ssl_verify
 from core.constants.path import data_path
 from core.logger import Logger
 
@@ -12,7 +12,6 @@ device_id = MatrixSecretConfig.matrix_device_id
 device_name = MatrixConfig.matrix_device_name
 token = MatrixSecretConfig.matrix_token
 megolm_backup_passphrase = MatrixSecretConfig.matrix_megolm_backup_passphrase
-proxy = CoreSecretConfig.proxy
 
 store_path = data_path / "private" / "matrix" / "matrix_store"
 store_path_nio = store_path / "nio"
@@ -35,7 +34,12 @@ if homeserver.endswith("/"):
     Logger.warning("The matrix_homeserver ends with a slash(/), and this may cause M_UNRECOGNIZED error.")
 homeserver_host = urlparse(homeserver).hostname
 matrix_bot: AsyncClient = AsyncClient(
-    homeserver, user, store_path=store_path_nio, config=AsyncClientConfig(store_sync_tokens=True), proxy=proxy
+    homeserver,
+    user,
+    store_path=store_path_nio,
+    config=AsyncClientConfig(store_sync_tokens=True),
+    proxy=proxy,
+    ssl=None if ssl_verify else False,
 )
 matrix_bot.restore_login(user, device_id, token)
 if matrix_bot.olm:

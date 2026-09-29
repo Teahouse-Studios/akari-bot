@@ -15,14 +15,14 @@ import httpx
 from aiofile import async_open
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.config.base import CoreConfig, CoreSecretConfig
+from core.config.base import CoreConfig
+from core.config.network import proxy, ssl_verify
 from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path
 from core.constants.info import Info
 from core.logger import Logger
 
 debug = CoreConfig.debug
-proxy = CoreSecretConfig.proxy if CoreSecretConfig.proxy else None
 repo_url = CoreConfig.repo_url
 
 url_pattern = re.compile(
@@ -144,7 +144,9 @@ async def request_url(
         if not CoreConfig.allow_request_private_ip and not request_private_ip:
             event_hooks = {"request": [_validate_public_request]}
 
-        async with httpx.AsyncClient(headers=headers, proxy=proxy, verify=not debug, event_hooks=event_hooks) as client:
+        async with httpx.AsyncClient(
+            headers=headers, proxy=proxy, verify=ssl_verify and not debug, event_hooks=event_hooks
+        ) as client:
             if cookies:
                 ck = SimpleCookie()
                 ck.load(cookies)

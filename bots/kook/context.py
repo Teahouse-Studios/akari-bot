@@ -12,6 +12,7 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
+from core.config.network import proxy, ssl_verify
 from core.logger import Logger
 from core.utils.media import resolve_media_path
 from .client import bot
@@ -34,7 +35,7 @@ class KOOKReactionContext:
 
 async def call_api(endpoint: str, **params):
     url = f"{kook_base}/api/v3/{endpoint}"
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(proxy=proxy, verify=ssl_verify) as client:
         resp = await client.post(url, data=params, headers=kook_headers)
     try:
         data = orjson.loads(resp.text)

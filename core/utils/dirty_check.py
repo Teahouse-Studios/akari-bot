@@ -19,6 +19,7 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
 from core.config.base import CoreConfig, CoreSecretConfig
+from core.config.network import proxy, ssl_verify
 from core.database.local import DirtyWordCache
 from core.logger import Logger
 
@@ -203,7 +204,7 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
             sign = f"acs {access_key_id}:{hash_hmac(access_key_secret, step3)}"
             headers["Authorization"] = sign
 
-            async with httpx.AsyncClient(headers=headers) as client:
+            async with httpx.AsyncClient(headers=headers, proxy=proxy, verify=ssl_verify) as client:
                 resp = await client.post(f"{root}{url}", content=orjson.dumps(body))
                 if resp.status_code == 200:
                     result = orjson.loads(resp.content)
@@ -273,7 +274,7 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
                     else:
                         raise ValueError(resp.text)
 
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(proxy=proxy, verify=ssl_verify) as client:
                 tasks = []
                 for x in call_api_list_:
                     chunks = [x[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(x), TEXT_CHUNK_SIZE)]

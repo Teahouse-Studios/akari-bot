@@ -19,7 +19,7 @@ from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
 from core.config.base import CoreConfig
-from core.config.core import CoreSecretConfig
+from core.config.network import proxy, ssl_verify
 from core.constants.default import confirm_command_default
 from core.logger import Logger
 from core.utils.button_runtime import BUTTON_TOKEN_PREFIX, ButtonConsumeStatus, consume_button
@@ -441,10 +441,6 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, interaction, resolve_features(session))
 
 
-proxy = CoreSecretConfig.proxy if CoreSecretConfig.proxy else None
-proxy_disable_ssl = CoreConfig.proxy_disable_ssl
-
-
 def _build_client() -> MyClient:
     intents = botpy.Intents.none()
     intents.public_guild_messages = True
@@ -476,7 +472,7 @@ def _build_client() -> MyClient:
         panels=panels,
         config_sync_strict=QQBotConfig.qq_navigation_sync_strict,
         proxy=proxy,
-        ssl=False if proxy_disable_ssl else True,
+        ssl=ssl_verify,
         **transport_options,
     )
 

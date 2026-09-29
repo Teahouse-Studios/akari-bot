@@ -21,6 +21,7 @@ from attrs import define
 from filetype import filetype
 from tenacity import retry, stop_after_attempt
 
+from core.config.network import proxy, ssl_verify
 from core.i18n import safe_strftime
 from core.logger import Logger
 from core.utils.cache import random_cache_path
@@ -546,7 +547,7 @@ class ImageElement(BaseElement):
         :raise ValueError: 响应状态码异常或下载到的内容并非图片。
         """
         url = self.path
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(proxy=proxy, verify=ssl_verify) as client:
             resp = await client.get(url, timeout=20.0, headers=self.headers)
             resp.raise_for_status()
             raw = resp.content

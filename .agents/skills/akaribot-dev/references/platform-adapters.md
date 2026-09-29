@@ -8,6 +8,7 @@
 - [消息入口](#84-botpy)
 - [ContextManager 实现](#85-contextpy)
 - [启用适配器](#86-启用适配器)
+- [出站网络设置](#87-出站网络设置)
 
 开始适配器改动前，同时读取主技能直接链接的 `architecture.md` 和 `messaging-and-parser.md`；若涉及配置、JobQueue 或 loader，再读取 `infrastructure.md`。不要把其他 reference 当作唯一入口，路由以主 `SKILL.md` 为准。
 
@@ -194,6 +195,10 @@ class MyPlatformContextManager(ContextManager):
 enable = true
 # 平台特定配置
 ```
+
+### 8.7 出站网络设置
+
+适配器的对外请求统一取 `core.config.network` 的 `proxy` 与 `ssl_verify`，不要直接读 `CoreSecretConfig.proxy`：配置未填写时后者是空字符串，而 SDK 普遍只把 `None` 视作直连。SDK 有 `proxy`/`ssl` 参数时直接传入，只暴露连接器的（aiogram、py-cord）在连接器上落地；SDK 不支持代理时保持原样，不要为此改写 SDK 内部实现。
 
 ---
 
