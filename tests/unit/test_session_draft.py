@@ -23,6 +23,13 @@ from core.types.module.component_meta import HookMeta
 class _FakeLocale:
     lang = "zh_cn"
 
+    def with_locale(self, lang):
+        # 与 Locale.with_locale 一致：换语言渲染时保留其余状态，返回新对象。
+        clone = _FakeLocale()
+        clone.lang = lang
+        clone.locale = lang
+        return clone
+
 
 class _FakeInfo:
     def __init__(self):

@@ -5,7 +5,7 @@
     "ai.help.llm.list": "查看支持的大语言模型列表。",
     "ai.help.llm.list.option.price": "是否显示具体价格信息。",
     "ai.help.llm.price": "查看大语言模型的花瓣价格。",
-    "ai.help.llm.set": "设置场景内默认大语言模型。",
+    "ai.help.llm.set": "设置{TERM:target}内默认大语言模型。",
     "ai.help.option.ctx": "指定要延续的对话轮次 ID。",
     "ai.help.option.llm": "指定使用的大语言模型。",
     "ai.help.option.no_tools": "是否禁止大语言模型调用工具。",

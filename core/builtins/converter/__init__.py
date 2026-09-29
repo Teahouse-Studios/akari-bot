@@ -54,7 +54,7 @@ converter.register_unstructure_hook(
     SenderUnionInfo, lambda obj: {"_type": type(obj).__name__, "union_id": obj.union_id}
 )
 
-converter.register_unstructure_hook(Locale, lambda obj: {"_type": "Locale", "locale": obj.locale})
+converter.register_unstructure_hook(Locale, lambda obj: {"_type": "Locale", **obj.to_state()})
 
 converter.register_unstructure_hook(timedelta, lambda obj: {"_type": "timedelta", "seconds": obj.total_seconds()})
 
@@ -96,7 +96,7 @@ converter.register_structure_hook(TargetUnionInfo, lambda o, _: TargetUnionInfo)
 # 从字典恢复为 SenderUnionInfo 对象（由于需要从数据库异步获取信息，这里实际只返回一个类本身用于占位，信息会在某个流程重新被刷新）
 converter.register_structure_hook(SenderUnionInfo, lambda o, _: SenderUnionInfo)
 
-converter.register_structure_hook(Locale, lambda o, _: Locale(o["locale"]))
+converter.register_structure_hook(Locale, lambda o, _: Locale.from_state(o))
 
 converter.register_structure_hook(timedelta, lambda o, _: timedelta(seconds=o["seconds"]))
 

@@ -150,7 +150,8 @@ class CommandParser:
             return ""
 
         if locale:
-            locale = Locale(locale)
+            # 换语言渲染仍须保留会话的术语作用域，故用派生接口而非新建 Locale。
+            locale = self.lang.with_locale(locale)
         else:
             locale = self.lang
 
@@ -183,7 +184,8 @@ class CommandParser:
             return {}
 
         if locale:
-            locale = Locale(locale)
+            # 换语言渲染仍须保留会话的术语作用域，故用派生接口而非新建 Locale。
+            locale = self.lang.with_locale(locale)
         else:
             locale = self.lang
 

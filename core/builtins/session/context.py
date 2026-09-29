@@ -10,6 +10,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.bot_state import BotState
+from core.builtins.session.terms import build_term_candidates
 from core.constants.exceptions import SessionContextUnavailable
 from core.logger import Logger
 
@@ -132,6 +133,8 @@ class ContextManager(ABC):
         private_session.session_id = str(uuid.uuid4())
         private_session.target_id = target_id
         private_session.target_from = target_from
+        private_session.is_private = True
+        private_session.locale = private_session.locale.with_term_candidates(build_term_candidates(target_from, True))
         private_session.message_id = None
         private_session.reply_id = None
         return private_session

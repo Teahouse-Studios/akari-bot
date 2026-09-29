@@ -108,7 +108,7 @@ async def _(msg: Bot.MessageSession):
 async def _(msg: Bot.MessageSession, lang: str):
     if lang in get_available_locales():
         await msg.session_info.target_union_info.edit_attr("locale", lang)
-        await msg.send_message(Locale(lang).t("message.success"))
+        await msg.send_message(msg.session_info.locale.with_locale(lang).t("message.success"))
         await msg.finish(await build_translation_notice(lang))
     else:
         await msg.finish([I18NContext("core.message.setup.locale.set.invalid"), *build_locale_list(msg)])

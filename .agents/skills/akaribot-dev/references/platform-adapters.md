@@ -44,6 +44,21 @@ target_prefix_list = [target_group_prefix, target_private_prefix]
 
 `sender_prefix_list` 与 `target_prefix_list` 是**必需**的：`core/client/init.py` 登记客户端时要用它们来判断某个 ID 属于哪个平台。中间那几个具体前缀的命名各平台并不统一（onebot / milky 用 `target_group_prefix` + `target_private_prefix`，discord 用 `target_channel_prefix` / `target_dm_channel_prefix` / `target_guild_prefix`，web 只有一个 `target_prefix`），按自己平台的场景类型取名即可，只要都收进 `target_prefix_list`。
 
+**术语词条**：会话称呼（群聊 / 频道 / 私聊）由 i18n 组件的 `{TERM:name}` 占位符解析，候选链由 `target_from` 与 `is_private` 推出（`core/builtins/session/terms.py`）。适配器**不需要**建术语文件，新增平台时只在 `core/locales/terms/zh_cn.json` 追加词条：
+
+```json
+{
+    "target.myplatform": "频道",
+    "target.myplatform.group": "群聊"
+}
+```
+
+- 术语词条集中在 core 的语言目录 `terms/` 子目录，键省略 `term.` 前缀，加载时自动补全；文件名是语言标签（其他语言由 Weblate 生成，不要手写）。集中托管是因为术语是词表而非平台逻辑，且单一归属才能避免共用平台身份（milky 与 onebot 都是 `QQ`）时同名键被判为冲突并整体丢弃。
+- 键名规则：`term.<术语名>.<candidate>`。candidate 是 `target_from` 各段的小写形式以 `.` 连接（`MyPlatform|Group` → `target.myplatform.group`）；只声明平台级默认值（`target.myplatform`）即可覆盖该平台的其余场景。
+- 顶层语言文件里不要再写 `term.*` 键：残留的同名副本会被术语目录覆盖，并由构建期审计报出。
+- `is_private=True` 的会话会命中共享的 `term.target.private`，一般无需平台单独声明。
+- 新增词条后执行一次 `~setup locale reload` 即可生效；构建期 `audit_terms()` 会检查引用与基础键是否齐备。
+
 ### 8.3 features.py
 
 ```python

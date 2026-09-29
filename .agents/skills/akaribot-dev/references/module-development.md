@@ -386,6 +386,7 @@ result = await Bot.Hook.trigger("wiki.autosearch", session_info, args={"title": 
 - 命令模板中的描述使用 `{{I18N:key}}` 语法
 - 模块 `desc` 参数使用 `{I18N:key}` 语法（单花括号）
 - 参数化消息使用 `string.Template` 格式的 `${param}` 占位符
+- 指代「当前会话」时使用术语占位符 `{TERM:target}`，不要写死「场景」
 
 #### 语言文件格式
 
@@ -432,6 +433,24 @@ await msg.finish(I18NContext("my_module.message.greeting", name="World"))
 async def _(msg: Bot.MessageSession):
     await msg.finish(I18NContext("my_module.message.hello"))
 ```
+
+#### 术语占位符 `{TERM:name}`
+
+会话本身（QQ 群聊、Discord 频道、私聊等）在不同平台有不同称呼。文案需要指代当前会话时写 `{TERM:target}`，由 i18n 组件按会话的平台与上下文解析，不要写死「场景」：
+
+```json
+{
+    "my_module.message.blocked": "本{TERM:target}已被停用。",
+    "my_module.message.summary": "{TERM:target,count=${count}} 共有 ${count} 条动态。"
+}
+```
+
+- 解析结果按平台而异：QQ 群显示「群聊」、Discord 频道显示「频道」、私聊显示「私聊」；未声明术语的平台回落到基础术语「场景」。
+- 占位符可带参数（`{TERM:target,count=3}`），参数只插值进术语自身的文本，不参与变体选择；缺参数时术语里的 `${param}` 原样保留。
+- 术语缺失时占位符原样保留在输出里，便于排障；构建期 `audit_terms()` 会把「引用了未声明的术语」并入 `errors`。
+- 术语词条集中在 `core/locales/terms/zh_cn.json`，键**省略 `term.` 前缀**：写 `"target": "场景"`、`"target.private": "私聊"`、`"target.discord": "频道"`，加载时自动补成 `term.target` 等。平台称呼差异也写在这一个文件里，不按适配器拆分——术语是词表而非平台逻辑，单一归属才能避免共用平台身份（milky 与 onebot 都是 `QQ`）时同名键被判为冲突并整体丢弃。
+- 顶层语言文件里不要再写 `term.*` 键：残留的同名副本会被术语目录覆盖，并由构建期审计报出。
+- 模块通常不需要新增术语；确有需要时在 `core/locales/terms/zh_cn.json` 追加词条即可。
 
 #### 错误示例（禁止）
 

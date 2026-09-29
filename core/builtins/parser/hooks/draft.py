@@ -216,9 +216,8 @@ class SessionDraft:
         # 避免其余字段已写回而 locale 静默降级造成的半提交。
         new_locale = None
         if "locale_lang" in self._dirty:
-            from core.i18n import Locale
-
-            new_locale = Locale(prepared["locale_lang"])
+            # 走派生接口以保留术语作用域；新建 Locale 会让本会话之后的渲染退回基础术语。
+            new_locale = target.locale.with_locale(prepared["locale_lang"])
         if "tmp" in self._dirty:
             if not hasattr(target, "tmp") or target.tmp is None:
                 target.tmp = {}

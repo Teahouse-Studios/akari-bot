@@ -171,7 +171,8 @@ async def _test_enable_plain_module_still_works():
 
 
 async def _test_enable_event_module_is_rejected():
-    expected = "失败：此场景无法读取全部消息，不能开启事件模块，请先授予机器人对应权限。"
+    # 该用例刻意使用 QQ 官方群会话，术语随之显示为「群聊」。
+    expected = "失败：此群聊无法读取全部消息，不能开启事件模块，请先授予机器人对应权限。"
     actual = await _enable_prompt("captcha", target_from="QQBot|Group", client_name="QQBot")
     if actual != expected:
         Logger.error(f"Expected event rejection prompt {expected!r}, got {actual!r}")
