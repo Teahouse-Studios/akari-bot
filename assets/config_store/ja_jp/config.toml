@@ -16,6 +16,7 @@ use_font_mirror = false # ウェブページをレンダリングするときに
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
 ffmpeg_path = "<Replace me with str value>" # FFmpeg 実行ファイルのパス。
 media_compression_threshold = 10 # メディア ファイルのサイズしきい値。この値を超えるファイルは FFmpeg による圧縮が試みられます。単位は MB です。
+proxy_disable_ssl = false # 使用代理服务时是否跳过 HTTPS 证书校验，仅在代理服务会替换目标站点证书时开启。
 base_superuser = ["QQ|2596322644"] # ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースにロードされます。
 ignored_sender = ["QQ|2854196310"] # 無視されるユーザーのリスト。このリストに合致するユーザーは無視されます。
 report_targets = [] # レポート コンテキスト リスト。ここに入力されたコンテキスト ID がレポートコンテキストとして認識されます。（例：コマンドの実行エラーが発生すると、ボットは対応するコンテキストにエラー情報を送信します）
