@@ -445,7 +445,7 @@ async def _send_via_context(session: SessionInfo, ctx: _FakeGroupMessage, messag
     previous_client = QQBotContextManager.client
     QQBotContextManager.client = ctx.client
     try:
-        await QQBotContextManager.send_message(session, message, quote=False, _ignore_retries=True)
+        await QQBotContextManager.send_message(session, message, quote=False)
         return state, True
     except Exception:
         return state, False

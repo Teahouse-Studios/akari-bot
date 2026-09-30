@@ -1,4 +1,4 @@
-"""QQBot 事件传输模式配置测试。"""
+"""QQBot 客户端构造配置测试。"""
 
 from unittest.mock import patch
 
@@ -7,6 +7,17 @@ from core.tester import Tester, func_case
 
 with patch.object(QQBotConfig, "enable", False):
     import bots.qqbot.bot as qqbot_bot
+
+
+def _test_certification_selects_proactive_rate_limit() -> bool:
+    with patch.object(QQBotConfig, "qq_bot_certified", False):
+        unverified = qqbot_bot._build_client()
+    with patch.object(QQBotConfig, "qq_bot_certified", True):
+        certified = qqbot_bot._build_client()
+    return (
+        unverified.http.rate_limiter.certification == "unverified"
+        and certified.http.rate_limiter.certification == "certified"
+    )
 
 
 def _test_default_transport_is_websocket() -> bool:
@@ -45,7 +56,8 @@ def _test_webhook_endpoint_values_are_coerced() -> bool:
 
 @func_case
 async def test_qqbot_transport(tester: Tester):
-    """bots.qqbot.bot: 事件传输模式配置测试"""
+    """bots.qqbot.bot: 客户端构造配置测试"""
+    await tester.test(_test_certification_selects_proactive_rate_limit, "主动消息认证档位映射测试")
     await tester.test(_test_default_transport_is_websocket, "默认使用 WebSocket 传输测试")
     await tester.test(_test_webhook_transport_uses_configured_endpoint, "Webhook 传输使用配置端点测试")
     await tester.test(_test_webhook_endpoint_values_are_coerced, "Webhook 端点配置类型转换测试")

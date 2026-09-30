@@ -101,6 +101,21 @@ def _test_initiative_queue_fairness() -> bool:
         onebot_context.OneBotFetchedContextManager._high_priority_count = 0
 
 
+def _test_qqbot_initiative_queue_fairness() -> bool:
+    qqbot_context._tasks_high_priority.clear()
+    qqbot_context._tasks.clear()
+    qqbot_context.QQBotFetchedContextManager._high_priority_count = 0
+    try:
+        qqbot_context._tasks_high_priority.extend((f"high-{index}",) for index in range(6))
+        qqbot_context._tasks.append(("normal",))
+        selected = [qqbot_context.QQBotFetchedContextManager._take_next_task() for _ in range(6)]
+        return selected == [("high-0",), ("high-1",), ("high-2",), ("high-3",), ("high-4",), ("normal",)]
+    finally:
+        qqbot_context._tasks_high_priority.clear()
+        qqbot_context._tasks.clear()
+        qqbot_context.QQBotFetchedContextManager._high_priority_count = 0
+
+
 async def _test_initiative_queue_capacity_and_cancel_cleanup() -> bool:
     onebot_context._tasks_high_priority.clear()
     onebot_context._tasks.clear()
@@ -390,6 +405,7 @@ async def test_platform_memory(tester: Tester):
     await tester.test(_test_onebot_typing_cache_is_bounded_and_expires, "OneBot typing 缓存有界并过期")
     await tester.test(_test_qqbot_permission_cache_is_safe_and_bounded, "QQBot 权限缓存安全且有界")
     await tester.test(_test_initiative_queue_fairness, "主动推送队列公平调度")
+    await tester.test(_test_qqbot_initiative_queue_fairness, "QQBot 主动推送队列公平调度")
     await tester.test(_test_initiative_queue_capacity_and_cancel_cleanup, "主动推送队列容量与取消清理")
     await tester.test(_test_high_priority_queue_keeps_reserved_capacity, "主动推送高优先级保留容量")
     await tester.test(_test_initiative_workers_stop_and_release_waiters, "主动推送 worker 关闭并释放等待者")

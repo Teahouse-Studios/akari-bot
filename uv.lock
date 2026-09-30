@@ -345,7 +345,7 @@ requires-dist = [
     { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=312,<313" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "qq-botpy-sdk", specifier = "==2.0.8" },
+    { name = "qq-botpy-sdk", specifier = "==2.1.0" },
     { name = "qrcode", specifier = ">=8.2,<9.0.0" },
     { name = "rapidfuzz", specifier = ">=3.14.5" },
     { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
@@ -3328,7 +3328,7 @@ wheels = [
 
 [[package]]
 name = "qq-botpy-sdk"
-version = "2.0.8"
+version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "apscheduler" },
@@ -3337,9 +3337,9 @@ dependencies = [
     { name = "httpx-ws" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/68/5d9e85fce18e8ed86315b6ec354e7242ec1d0b6583a02d01e84f5fe75396/qq_botpy_sdk-2.0.8.tar.gz", hash = "sha256:6c7373fbcaded882a410de803f746a705b68164b1d64e88aaaad7fb38593312a", size = 123421, upload-time = "2026-09-29T15:29:47.95Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ea/cf/0c2a7bde98116cc72c911757048081279996649da52dcdcb15c367ddc464/qq_botpy_sdk-2.1.0.tar.gz", hash = "sha256:0a837eaec62f4ffcdc6b907042899f3eb20e8c9a5d9dd6d4eb8e622c27ea814a", size = 143016, upload-time = "2026-09-30T15:19:32.511Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/36/5f5087437b645b3f54036d0d80915ffd8c95b74da2eaa70bce6a232bda04/qq_botpy_sdk-2.0.8-py3-none-any.whl", hash = "sha256:6eff4b6644a904f870fc6953e4dd30fe714785618c52c793988bfb8246b713d2", size = 156175, upload-time = "2026-09-29T15:29:46.344Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/ca/6c554a9bfca73f83a3da9e28ea06a56ec8976521ee41a6e8fd246db7c51a/qq_botpy_sdk-2.1.0-py3-none-any.whl", hash = "sha256:c50fec264e7029df42c9167ed2ba868e3da22d21992daa4e639f5983c1898cab", size = 177312, upload-time = "2026-09-30T15:19:31.196Z" },
 ]
 
 [[package]]

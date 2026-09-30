@@ -473,6 +473,7 @@ def _build_client() -> MyClient:
         config_sync_strict=QQBotConfig.qq_navigation_sync_strict,
         proxy=proxy,
         ssl=ssl_verify,
+        rate_limit={"certification": "certified" if QQBotConfig.qq_bot_certified else "unverified"},
         **transport_options,
     )
 

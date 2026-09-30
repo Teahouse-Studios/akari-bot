@@ -11,6 +11,7 @@ class QQBotConfig:
     qq_typing_emoji: int = 181
     qq_limited_emoji: int = 10060
     qq_use_markdown: bool = False
+    qq_bot_certified: bool = True
     qq_navigation_sync_strict: bool = False
     qq_use_webhook: bool = False
     qq_webhook_host: str = "0.0.0.0"
