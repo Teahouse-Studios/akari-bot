@@ -1,0 +1,1 @@
+{"url": "https://api.mojang.com/user/profile/069a79f444e94726a5befca90e38aaf5", "status_code": 200, "headers": {}, "method": "GET", "text": "{\n  \"id\" : \"069a79f444e94726a5befca90e38aaf5\",\n  \"name\" : \"Notch\"\n}"}
