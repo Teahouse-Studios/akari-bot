@@ -22,6 +22,9 @@ async def test_wiki(tester: Tester):
 async def test_mcplayer(tester: Tester):
     """mcplayer 模块测试 - MC 玩家查询"""
     await tester.integrate("~mcplayer Notch", Contains("Notch"), "mcplayer 应显示玩家名")
+    await tester.integrate(
+        "~mcplayer 069a79f444e94726a5befca90e38aaf5", Contains("Notch"), "mcplayer 按 UUID 查询应显示玩家名"
+    )
     return tester
 
 
