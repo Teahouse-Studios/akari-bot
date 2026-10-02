@@ -5,12 +5,14 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, Image, I18NContext, Url
 from core.component import module
 from core.logger import Logger
+from core.scheduler import IntervalTrigger
 from core.types import Param
 from core.utils.random import Random
 
 from .database.models import PhigrosBindInfo
 from .libraries.assets import (
     DIFF_NAMES,
+    check_and_update_assets,
     illustration_path,
     is_legacy_song_info,
     load_song_info,
@@ -38,6 +40,20 @@ phi = module(
     alias=["pgr", "phi"],
     doc=True,
 )
+
+
+@phi.schedule(IntervalTrigger(hours=1))
+async def _auto_update_assets():
+    try:
+        result = await check_and_update_assets()
+    except Exception:
+        Logger.exception("Phigros resource auto-update raised an unexpected error.")
+        result = False
+    if result is True:
+        Logger.info("Phigros resource auto-update completed.")
+    elif result is False:
+        Logger.warning("Phigros resource auto-update failed; it will be retried later.")
+
 
 # 在这些场景绑定会使会话令牌暴露给他人，须先行告警并撤回。
 PUBLIC_TARGETS = [
