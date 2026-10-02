@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.bot import Bot
+from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonFrameElement, I18NContextElement, URLElement
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
@@ -41,7 +42,9 @@ def _target() -> SimpleNamespace:
     return SimpleNamespace(api_link=API, interwikis={}, headers={}, prefix=None)
 
 
-async def _run_query(page: PageInfo, session: MessageSession) -> tuple[list, list]:
+async def _run_query(
+    page: PageInfo, session: MessageSession, render_preview: AsyncMock | None = None
+) -> tuple[list, list]:
     sent = []
     waits = []
 
@@ -66,6 +69,10 @@ async def _run_query(page: PageInfo, session: MessageSession) -> tuple[list, lis
         patch.object(WikiLib, "parse_page_info", new=AsyncMock(return_value=page)),
         patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=_target())),
         patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
+        patch(
+            "modules.wiki.wiki._render_preview_items",
+            new=render_preview or AsyncMock(return_value=MessageChain.assign("rendered preview")),
+        ),
         patch("modules.wiki.wiki._start_background_with_release", new=_run_background),
         patch.object(MessageSession, "hold", new=AsyncMock()),
         patch.object(MessageSession, "release", new=AsyncMock()),
@@ -140,17 +147,23 @@ async def _test_found_page_keeps_render_buttons():
         renderable=True,
     )
     session = MessageSession(session_info=await _session_info("wiki-found-buttons"))
-    sent, waits = await _run_query(page, session)
+    render_preview = AsyncMock(return_value=MessageChain.assign("rendered preview"))
+    sent, waits = await _run_query(page, session, render_preview)
 
-    if len(sent) != 1 or waits:
+    if len(sent) != 1 or waits or render_preview.await_count != 1:
         return False
     frames = [element for element in sent[0] if isinstance(element, ButtonFrameElement)]
     urls = [element.url for element in sent[0] if isinstance(element, URLElement)]
     buttons = [(button.show, button.value) for frame in frames for row in frame.rows for button in row.buttons]
-    return urls == [ARTICLE] and buttons == [
-        (Locale("zh_cn").t("wiki.message.render.action.button"), "wiki_render_preview"),
-        (Locale("zh_cn").t("wiki.message.render.action.delete"), "wiki_render_delete"),
-    ]
+    return (
+        urls == [ARTICLE]
+        and render_preview.await_args.args[1][0]["link"] == ARTICLE
+        and buttons
+        == [
+            (Locale("zh_cn").t("wiki.message.render.action.button"), "wiki_render_preview"),
+            (Locale("zh_cn").t("wiki.message.render.action.delete"), "wiki_render_delete"),
+        ]
+    )
 
 
 @func_case

@@ -144,7 +144,12 @@ async def _render_preview_items(
     return result
 
 
-def _build_render_preview_callback(items: list[dict], headers: dict, tracker: _WikiMessageTracker):
+def _build_render_preview_callback(
+    items: list[dict],
+    headers: dict,
+    tracker: _WikiMessageTracker,
+    pre_render_task: asyncio.Task | None = None,
+):
 
     async def _callback(session: Bot.MessageSession):
         action = session.as_display(text_only=True).strip()
@@ -157,7 +162,17 @@ def _build_render_preview_callback(items: list[dict], headers: dict, tracker: _W
         if action != "wiki_render_preview":
             return
         try:
-            rendered = await _render_preview_items(session, items, headers)
+            rendered = None
+            if pre_render_task is not None:
+                try:
+                    rendered = await asyncio.shield(pre_render_task)
+                except asyncio.CancelledError:
+                    if not pre_render_task.cancelled():
+                        raise
+                except Exception:
+                    Logger.exception("Wiki WebRender preview preload failed: ")
+            if not rendered:
+                rendered = await _render_preview_items(session, items, headers)
             if rendered:
                 await tracker.add(await session.send_message(rendered, quote=False))
         except Exception:
@@ -962,7 +977,25 @@ async def _query_pages_impl(
                 )
             )
             msg_list.append(ButtonFrame([ButtonRows.assign(render_buttons)]))
-            render_callback = _build_render_preview_callback(render_button_items, headers, message_tracker)
+            pre_render_task = None
+            if render_button_items:
+
+                async def pre_render():
+                    try:
+                        return await _render_preview_items(session, render_button_items, headers)
+                    except Exception:
+                        Logger.exception("Wiki WebRender preview preload failed: ")
+                        return None
+
+                try:
+                    pre_render_task = await _start_background_with_release(
+                        session, pre_render, name="wiki-render-preview-preload"
+                    )
+                except Exception:
+                    Logger.exception("Failed to start Wiki WebRender preview preload: ")
+            render_callback = _build_render_preview_callback(
+                list(render_button_items), headers, message_tracker, pre_render_task=pre_render_task
+            )
         if msg_list:
             quote = not session.session_info.support_markdown
             if all(

@@ -58,6 +58,50 @@ async def _test_render_preview_can_be_deleted_after_preview():
     return delete.await_count == 1 and delete.await_args.args[1] == ["result", "background", "preview"]
 
 
+async def _test_render_preview_uses_pre_rendered_result():
+    owner = MessageSession(
+        SessionInfo(
+            target_id="TEST|Group|wiki-render-preloaded",
+            target_from="TEST|Group",
+            client_name="TEST",
+        )
+    )
+    tracker = _WikiMessageTracker(owner)
+    click = _ClickSession("wiki_render_preview")
+    click.send_message = AsyncMock(return_value=SimpleNamespace(message_id=["preview"]))
+    rendered = MessageChain.assign("pre-rendered preview")
+    preload = asyncio.create_task(asyncio.sleep(0, result=rendered))
+    await preload
+
+    with patch("modules.wiki.wiki._render_preview_items", new=AsyncMock()) as render:
+        callback = _build_render_preview_callback([], {}, tracker, pre_render_task=preload)
+        await callback(click)
+
+    return render.await_count == 0 and click.send_message.await_args.args[0] is rendered
+
+
+async def _test_render_preview_falls_back_when_preload_fails():
+    owner = MessageSession(
+        SessionInfo(
+            target_id="TEST|Group|wiki-render-preload-failure",
+            target_from="TEST|Group",
+            client_name="TEST",
+        )
+    )
+    tracker = _WikiMessageTracker(owner)
+    click = _ClickSession("wiki_render_preview")
+    click.send_message = AsyncMock(return_value=SimpleNamespace(message_id=["preview"]))
+    rendered = MessageChain.assign("fallback preview")
+    preload = asyncio.get_running_loop().create_future()
+    preload.set_exception(RuntimeError("preload failed"))
+
+    with patch("modules.wiki.wiki._render_preview_items", new=AsyncMock(return_value=rendered)) as render:
+        callback = _build_render_preview_callback([], {}, tracker, pre_render_task=preload)
+        await callback(click)
+
+    return render.await_count == 1 and click.send_message.await_args.args[0] is rendered
+
+
 async def _test_section_callback_uses_click_session_and_frozen_page():
     page = SimpleNamespace(
         title="First page",
@@ -265,6 +309,8 @@ async def _test_background_tasks_are_runtime_owned():
 @func_case
 async def test_wiki_lifecycle(tester: Tester):
     await tester.test(_test_render_preview_can_be_deleted_after_preview, "渲染预览后仍可删除全部消息")
+    await tester.test(_test_render_preview_uses_pre_rendered_result, "渲染按钮复用预加载结果")
+    await tester.test(_test_render_preview_falls_back_when_preload_fails, "预加载失败后点击时重新渲染")
     await tester.test(_test_section_callback_uses_click_session_and_frozen_page, "章节回调会话与闭包冻结")
     await tester.test(_test_section_callback_rejects_zero_index, "章节回调拒绝零号索引")
     await tester.test(_test_forum_callback_uses_click_session_and_frozen_page, "论坛回调会话与闭包冻结")
