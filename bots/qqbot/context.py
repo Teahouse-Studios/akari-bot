@@ -589,7 +589,7 @@ class QQBotContextManager(ContextManager):
             if send_aborted:
                 return None
             try:
-                return await client.send(target, **kwargs)
+                result = await client.send(target, **kwargs)
             except ApiError as error:
                 if not _is_delivery_refused(error):
                     raise
@@ -597,6 +597,13 @@ class QQBotContextManager(ContextManager):
                 send_aborted = True
                 Logger.warning(f"QQBot refused to deliver to {target.scope}|{target.target_id}: {error}")
                 return None
+            api_id = result.get("id") if isinstance(result, Mapping) else None
+            Logger.info(
+                f"QQBot send completed: target={target.scope}|{target.target_id} "
+                f"session_id={session_info.session_id} source_message_id={session_info.message_id} "
+                f"api_message_id={api_id} typing_prompt={_typing_prompt}"
+            )
+            return result
 
         if isinstance(message, MessageNodes):
             message = MessageChain.assign(

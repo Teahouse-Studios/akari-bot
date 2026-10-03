@@ -1,5 +1,8 @@
 import re
+import time
+from collections import OrderedDict
 from collections.abc import Mapping
+from functools import wraps
 
 import botpy
 from botpy.interaction import Interaction
@@ -35,10 +38,58 @@ qqbot_secret = QQBotSecretConfig.qq_bot_secret
 ignored_sender = CoreConfig.ignored_sender
 
 initialized = False
+INBOUND_MESSAGE_CACHE_TTL = 300
+INBOUND_MESSAGE_CACHE_MAX_SIZE = 4096
+_inbound_message_cache: OrderedDict[tuple[str, ...], float] = OrderedDict()
 _ignored_msg_startswith = [
     re.compile(r"^\[.*?聊天记录]\n.*"),
     re.compile(r"^\[卡片消息].*"),
 ]  # 暂不解析这些消息，没有实际用途
+
+
+def _inbound_message_key(message) -> tuple[str, ...] | None:
+    message_id = getattr(message, "id", None)
+    if not message_id:
+        return None
+    if group_id := getattr(message, "group_openid", None):
+        return "group", str(group_id), str(message_id)
+    if isinstance(message, DirectMessage):
+        return "dm", str(message.guild_id), str(message_id)
+    if channel_id := getattr(message, "channel_id", None):
+        return "channel", str(getattr(message, "guild_id", "")), str(channel_id), str(message_id)
+    if guild_id := getattr(message, "guild_id", None):
+        return "dm", str(guild_id), str(message_id)
+    if user_id := getattr(getattr(message, "author", None), "user_openid", None):
+        return "c2c", str(user_id), str(message_id)
+    return None
+
+
+def _deduplicate_message(handler):
+    @wraps(handler)
+    async def wrapped(message):
+        key = _inbound_message_key(message)
+        if key is None:
+            return await handler(message)
+        now = time.monotonic()
+        while _inbound_message_cache:
+            if now - next(iter(_inbound_message_cache.values())) < INBOUND_MESSAGE_CACHE_TTL:
+                break
+            _inbound_message_cache.popitem(last=False)
+        if key in _inbound_message_cache:
+            Logger.info(f"Skipped duplicate QQBot message: callback={handler.__name__} identity={key}")
+            return
+        # 去重须在首个 await 前认领，且普通消息与提及回调共用同一消息身份。
+        _inbound_message_cache[key] = now
+        while len(_inbound_message_cache) > INBOUND_MESSAGE_CACHE_MAX_SIZE:
+            _inbound_message_cache.popitem(last=False)
+        try:
+            return await handler(message)
+        except BaseException:
+            if _inbound_message_cache.get(key) == now:
+                _inbound_message_cache.pop(key, None)
+            raise
+
+    return wrapped
 
 
 def _message_application_ids(message) -> tuple[str | None, str | None]:
@@ -155,6 +206,7 @@ class MyClient(botpy.Client):
         QQBotFetchedContextManager.start_task_processor()
 
     @staticmethod
+    @_deduplicate_message
     async def on_at_message_create(message: Message):
         target_id = f"{target_guild_prefix}|{message.guild_id}|{message.channel_id}"
         sender_id = f"{sender_tiny_prefix}|{message.author.id}"
@@ -190,6 +242,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, message, guild_features)
 
     @staticmethod
+    @_deduplicate_message
     async def on_message_create(message: Message):
         target_id = f"{target_guild_prefix}|{message.guild_id}|{message.channel_id}"
         sender_id = f"{sender_tiny_prefix}|{message.author.id}"
@@ -231,6 +284,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, message, guild_features)
 
     @staticmethod
+    @_deduplicate_message
     async def on_message_group_create(message: GroupMessage):
         Logger.debug(message)
         target_id = f"{target_group_prefix}|{message.group_openid}"
@@ -278,6 +332,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, message, resolve_features(session))
 
     @staticmethod
+    @_deduplicate_message
     async def on_group_at_message_create(message: GroupMessage):
 
         target_id = f"{target_group_prefix}|{message.group_openid}"
@@ -319,6 +374,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, message, resolve_features(session, group_disable_read_all_message_features))
 
     @staticmethod
+    @_deduplicate_message
     async def on_direct_message_create(message: DirectMessage):
 
         target_id = f"{target_direct_prefix}|{message.guild_id}"
@@ -351,6 +407,7 @@ class MyClient(botpy.Client):
         await Bot.process_message(session, message, guild_features)
 
     @staticmethod
+    @_deduplicate_message
     async def on_c2c_message_create(message: C2CMessage):
         target_id = f"{target_c2c_prefix}|{message.author.user_openid}"
         sender_id = f"{sender_prefix}|{message.author.user_openid}"
