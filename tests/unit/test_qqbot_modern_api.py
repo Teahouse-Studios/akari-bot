@@ -156,7 +156,8 @@ async def _send_with_client(
     previous_client = QQBotContextManager.client
     QQBotContextManager.client = client
     try:
-        return await QQBotContextManager.send_message(session, message or MessageChain.assign("hello"))
+        with patch.object(qqbot_context, "_convert_qqbot_image", side_effect=lambda path: path):
+            return await QQBotContextManager.send_message(session, message or MessageChain.assign("hello"))
     finally:
         QQBotContextManager.client = previous_client
 

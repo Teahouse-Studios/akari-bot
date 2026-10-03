@@ -44,6 +44,7 @@ async def _send(client, message, *, target_from=target_group_prefix, markdown=Fa
         patch.object(QQBotContextManager, "_shutting_down", False),
         patch.object(qqbot_context, "qq_use_markdown", markdown),
         patch.object(qqbot_context, "resolve_media_path", AsyncMock(side_effect=lambda element: element.path)),
+        patch.object(qqbot_context, "_convert_qqbot_image", side_effect=lambda path: path),
     ):
         return await QQBotContextManager.send_message(session, message, quote=False)
 

@@ -1,13 +1,16 @@
 import asyncio
 import mimetypes
+import shutil
 import time
 from collections import OrderedDict, deque
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Union
 from urllib.parse import quote
 
 import botpy
+from PIL import Image as PILImage
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
 from botpy.protocol import ApiError, MediaFileType, MessageType, ReplyTarget
@@ -50,6 +53,7 @@ from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.button_runtime import register_button_rows
+from core.utils.cache import random_cache_path
 from core.utils.media import resolve_media_path
 from core.utils.random import Random
 from core.utils.table import escape_table_cell, resolve_table_columns
@@ -111,6 +115,56 @@ async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, l
         mime_type = "image/jpeg"
     separator = "&" if "?" in raw_url else "?"
     return f"{raw_url}{separator}response-content-type={quote(mime_type, safe='')}"
+
+
+_QQBOT_IMAGE_EXTENSIONS = {"PNG": (".png",), "JPEG": (".jpg", ".jpeg"), "GIF": (".gif",)}
+
+
+def _convert_qqbot_image(local_path: str) -> str:
+    source = Path(local_path)
+    output = None
+    try:
+        with PILImage.open(source) as image:
+            extensions = _QQBOT_IMAGE_EXTENSIONS.get((image.format or "").upper())
+            if extensions:
+                if source.suffix.lower() in extensions:
+                    return local_path
+                output = random_cache_path(extensions[0].lstrip("."))
+                output.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, output)
+                return str(output)
+
+            # QQBot 支持 PNG、JPEG 和 GIF；其他动画格式仅发送首帧，透明区域使用白色背景。
+            image.seek(0)
+            if "A" in image.getbands() or image.info.get("transparency") is not None:
+                with image.convert("RGBA") as rgba:
+                    converted = PILImage.new("RGB", rgba.size, "white")
+                    converted.paste(rgba, mask=rgba.getchannel("A"))
+            else:
+                converted = image.convert("RGB")
+
+            output = random_cache_path("jpg")
+            output.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                converted.save(output, format="JPEG", quality=95, optimize=True)
+            finally:
+                converted.close()
+            return str(output)
+    except Exception:
+        if output is not None:
+            output.unlink(missing_ok=True)
+        raise
+
+
+async def _resolve_qqbot_image(element: ImageElement) -> str | None:
+    local_path = await resolve_media_path(element)
+    if local_path is None:
+        return None
+    try:
+        return await asyncio.to_thread(_convert_qqbot_image, local_path)
+    except Exception:
+        Logger.exception(f"Unable to prepare QQBot image {local_path}, skipping this element: ")
+        return None
 
 
 def _truncate_action_text(value: str, field: str) -> str:
@@ -663,7 +717,7 @@ class QQBotContextManager(ContextManager):
                     plains.append(x)
                 elif isinstance(x, ImageElement):
                     # 图片不可读（本地文件缺失或下载失败）时跳过该元素
-                    image_path = await resolve_media_path(x)
+                    image_path = await _resolve_qqbot_image(x)
                     if image_path is not None:
                         images.append((x, image_path))
                 elif isinstance(x, (AudioElement, VideoElement)):
@@ -803,7 +857,7 @@ class QQBotContextManager(ContextManager):
                     inline_pending = False
                 elif isinstance(x, ImageElement):
                     # 图片不可读（本地文件缺失或下载失败）时跳过该元素
-                    image_path = await resolve_media_path(x)
+                    image_path = await _resolve_qqbot_image(x)
                     if image_path is not None:
                         try:
                             try:
@@ -827,7 +881,7 @@ class QQBotContextManager(ContextManager):
                                             f"{session_info.session_id}; "
                                         )
                             if markdown_url:
-                                w, h = await x.get_wh()
+                                w, h = await ImageElement.assign(image_path).get_wh()
                                 markdown_images.append((x, markdown_url, w, h))
                                 texts.append("")
                                 markdown_image_positions.append(len(texts) - 1)

@@ -1,6 +1,7 @@
 """QQBot 群聊「正在输入中」提示的撤回时机测试。"""
 
 import asyncio
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -647,6 +648,7 @@ async def _test_not_marked_when_send_fails() -> bool:
 async def _test_not_marked_while_converting_image() -> bool:
     session = _make_session("converting-image")
     ctx = _FakeGroupMessage()
+    image_path = str(Path(__file__).resolve().parents[2] / "assets" / "qqbot_qr_group.png")
     observed: list[tuple[bool, bool]] = []
 
     def observe_state():
@@ -661,7 +663,7 @@ async def _test_not_marked_while_converting_image() -> bool:
     ctx.client.upload_observer = observe_state
     try:
         state, ok = await _send_via_context(
-            session, ctx, MessageChain.assign(_ProbingImage(path="fake.png", need_get=False))
+            session, ctx, MessageChain.assign(_ProbingImage(path=image_path, need_get=False))
         )
     finally:
         _ProbingImage.observer = None
@@ -677,7 +679,7 @@ async def _test_not_marked_while_converting_image() -> bool:
         Logger.error("Image reading and upload_media must finish before entering the send stage")
         return False
     if len(ctx.client.upload_kwargs) != 1 or ctx.client.upload_kwargs[0][2] != {
-        "local_path": "fake.png",
+        "local_path": image_path,
         "srv_send_msg": False,
     }:
         Logger.error(f"Image preparation should call upload_media once, got {ctx.client.upload_kwargs}")
