@@ -663,7 +663,7 @@ class MessageSession:
         # 合并转发消息无从追加提示行，此时略过
         if append_instruction and isinstance(chain, MessageChain):
             chain.append(I18NContext(confirm_prompt_key(self.session_info)))
-        if self.session_info.support_button and isinstance(chain, MessageChain):
+        if self.session_info.support_button and isinstance(chain, MessageChain) and quick_confirm:
             chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
             chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
         send = None
@@ -675,14 +675,11 @@ class MessageSession:
             task_type="wait",
             matcher=None if consume_any_message else _is_confirmation_message,
         )
-        task_info = None
         try:
             # 等待任务须在跨进程发送提示前登记；平台可能已展示消息并收到用户操作，
             # 而发送 action 的结果尚未回到 Server。
             send = await self.send_message(chain, quote)
-            # 添加表情反应需要跨进程网络往返；等待任务必须先登记，否则用户在此期间
-            # 发送文本确认或点击按钮会被当作普通消息处理并永久丢失。
-            if quick_confirm:
+            if quick_confirm and not self.session_info.support_button:
                 await self._add_confirm_reaction(send.message_id)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
