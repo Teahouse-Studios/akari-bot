@@ -3,7 +3,6 @@
     "check.redacted": "[REDACTED:${reason}]",
     "config.comments.bot.enable": "Whether to enable this client.",
     "config.comments.config_version": "Config version number, which will be automatically updated with the new features and generally does not need to be modified.",
-    "config.comments.config.allow_reload_base": "Whether to allow reloading of the base modules.",
     "config.comments.config.allow_request_private_ip": "Whether to allow the bot to request local private IP addresses. (Prevent possible leakage)",
     "config.comments.config.auto_purge_crontab": "Cron expression for automatic cache purging.",
     "config.comments.config.base_superuser": "The bot's base superuser list. The values entered here will be loaded into the database when the bot starts.",
