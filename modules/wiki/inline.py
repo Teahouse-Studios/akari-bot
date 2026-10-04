@@ -17,10 +17,7 @@ from core.utils.button import build_button_rows
 from .database.models import WikiTargetInfo
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.forum import build_forum_markdown_table, build_section_markdown_table
-from .utils.screenshot_image import (
-    generate_screenshot_v1,
-    generate_screenshot_v2,
-)
+from .utils.screenshot_image import generate_screenshot
 from .utils.utils import check_svg
 from .utils.wikilib import WikiLib
 from .wiki import _build_forum_callback, _build_section_callback, _start_background_with_release, query_pages
@@ -184,31 +181,29 @@ async def _(msg: Bot.MessageSession):
                             and get_page.title
                             and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                         ):
-                            if wiki_.wiki_info.realurl not in generate_screenshot_v2_blocklist:
-                                content_mode = (
-                                    get_page.has_template_doc
-                                    or get_page.title.split(":")[0] in ["User"]
-                                    or get_page.is_disambiguation
-                                    or get_page.is_forum_topic
-                                )
-                                get_infobox = await generate_screenshot_v2(
-                                    qq,
-                                    allow_special_page=(q[qq].is_allowed or not msg.session_info.use_url_manager),
-                                    content_mode=content_mode,
-                                    locale=msg.session_info.locale.locale,
-                                )
-                                if get_infobox:
-                                    imgs = []
-                                    for img in get_infobox:
-                                        imgs.append(Image(img))
-                                    await msg.send_message(imgs, quote=False)
-                            else:
-                                get_infobox = await generate_screenshot_v1(q[qq].realurl, qq, headers)
-                                if get_infobox:
-                                    imgs = []
-                                    for img in get_infobox:
-                                        imgs.append(Image(img))
-                                    await msg.send_message(imgs, quote=False)
+                            content_mode = (
+                                get_page.has_template_doc
+                                or get_page.title.split(":")[0] in ["User"]
+                                or get_page.is_disambiguation
+                                or get_page.is_forum_topic
+                            )
+                            get_infobox = await generate_screenshot(
+                                qq,
+                                wiki_info=get_page.info,
+                                title=get_page.title,
+                                headers=headers,
+                                allow_special_page=(
+                                    get_page.info.realurl not in generate_screenshot_v2_blocklist
+                                    and (q[qq].is_allowed or not msg.session_info.use_url_manager)
+                                ),
+                                content_mode=content_mode,
+                                locale=msg.session_info.locale.locale,
+                            )
+                            if get_infobox:
+                                imgs = []
+                                for img in get_infobox:
+                                    imgs.append(Image(img))
+                                await msg.send_message(imgs, quote=False)
                         if (
                             (
                                 get_page.invalid_section
@@ -363,12 +358,13 @@ async def _(msg: Bot.MessageSession):
                     if section_:
                         s = urllib.parse.unquote("".join(section_)[1:])
                         if q[qq].realurl and (q[qq].is_allowed or not msg.session_info.use_url_manager):
-                            if q[qq].realurl in generate_screenshot_v2_blocklist:
-                                get_section = await generate_screenshot_v1(q[qq].realurl, qq, headers, section=s)
-                            else:
-                                get_section = await generate_screenshot_v2(
-                                    qq, section=s, locale=msg.session_info.locale.locale
-                                )
+                            get_section = await generate_screenshot(
+                                qq,
+                                wiki_info=q[qq],
+                                headers=headers,
+                                section=s,
+                                locale=msg.session_info.locale.locale,
+                            )
                             if get_section:
                                 imgs = []
                                 for img in get_section:

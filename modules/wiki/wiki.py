@@ -34,7 +34,6 @@ from core.utils.image_table import image_table_render, ImageTable
 from core.utils.url_audit import evaluate_url_policy
 from core.utils.button import build_button_rows
 from .database.models import WikiSiteInfo, WikiTargetInfo
-from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.forum import build_forum_markdown_table, build_section_markdown_table
 from .utils.disambiguation import (
     build_disambiguation_table,
@@ -42,7 +41,7 @@ from .utils.disambiguation import (
     is_disambiguation_overlong,
 )
 from .utils.recommend import finish_with_start_wiki_not_set
-from .utils.screenshot_image import generate_screenshot_v1, generate_screenshot_v2
+from .utils.screenshot_image import generate_screenshot
 from .utils.utils import check_svg
 from .utils.wikilib import BlockedWikiError, MAX_RESEARCH_SUGGESTIONS, WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
@@ -116,23 +115,16 @@ async def _render_preview_items(
     result = MessageChain.create()
     for item in items:
         try:
-            link = item["link"]
-            if item.get("section"):
-                if item["url"] in generate_screenshot_v2_blocklist:
-                    images = await generate_screenshot_v1(item["url"], link, headers, section=item["section"])
-                else:
-                    images = await generate_screenshot_v2(
-                        link, section=item["section"], locale=session.session_info.locale.locale
-                    )
-            elif item["url"] not in generate_screenshot_v2_blocklist:
-                images = await generate_screenshot_v2(
-                    link,
-                    allow_special_page=item["is_allowed"],
-                    content_mode=item.get("content_mode", False),
-                    locale=session.session_info.locale.locale,
-                )
-            else:
-                images = await generate_screenshot_v1(item["url"], link, headers, allow_special_page=item["is_allowed"])
+            images = await generate_screenshot(
+                item["link"],
+                wiki_info=item["wiki_info"],
+                title=item["title"],
+                headers=headers,
+                section=item.get("section"),
+                allow_special_page=item["is_allowed"],
+                content_mode=item.get("content_mode", False),
+                locale=session.session_info.locale.locale,
+            )
             if images:
                 result.extend([Image(image) for image in images])
             elif report_failure:
@@ -647,6 +639,8 @@ async def _query_pages_impl(
                         section_item = {
                             "link": r.link,
                             "url": r.info.realurl,
+                            "wiki_info": r.info,
+                            "title": r.title,
                             "section": r.selected_section,
                             "is_allowed": render_allowed,
                         }
@@ -663,6 +657,8 @@ async def _query_pages_impl(
                                 {
                                     r.link: {
                                         "url": r.info.realurl,
+                                        "wiki_info": r.info,
+                                        "title": r.title,
                                         "section": r.selected_section,
                                         "is_allowed": render_allowed,
                                     }
@@ -687,6 +683,8 @@ async def _query_pages_impl(
                             infobox_item = {
                                 "link": r.link,
                                 "url": r.info.realurl,
+                                "wiki_info": r.info,
+                                "title": r.title,
                                 "is_allowed": render_allowed,
                                 "content_mode": content_mode,
                             }
@@ -703,6 +701,8 @@ async def _query_pages_impl(
                                     {
                                         r.link: {
                                             "url": r.info.realurl,
+                                            "wiki_info": r.info,
+                                            "title": r.title,
                                             "is_allowed": render_allowed,
                                             "content_mode": content_mode,
                                         }
@@ -1015,26 +1015,18 @@ async def _query_pages_impl(
                 for i in render_infobox_list:
                     for ii in i:
                         Logger.info(i[ii]["url"])
-                        if i[ii]["url"] not in generate_screenshot_v2_blocklist:
-                            get_infobox = await generate_screenshot_v2(
-                                ii,
-                                allow_special_page=i[ii]["is_allowed"],
-                                content_mode=i[ii]["content_mode"],
-                                locale=session.session_info.locale.locale,
-                            )
-                            if get_infobox:
-                                for img in get_infobox:
-                                    infobox_msg_list.append(Image(img))
-                        else:
-                            get_infobox = await generate_screenshot_v1(
-                                i[ii]["url"],
-                                ii,
-                                headers,
-                                allow_special_page=i[ii]["is_allowed"],
-                            )
-                            if get_infobox:
-                                for img in get_infobox:
-                                    infobox_msg_list.append(Image(img))
+                        get_infobox = await generate_screenshot(
+                            ii,
+                            wiki_info=i[ii]["wiki_info"],
+                            title=i[ii]["title"],
+                            headers=headers,
+                            allow_special_page=i[ii]["is_allowed"],
+                            content_mode=i[ii]["content_mode"],
+                            locale=session.session_info.locale.locale,
+                        )
+                        if get_infobox:
+                            for img in get_infobox:
+                                infobox_msg_list.append(Image(img))
                 if infobox_msg_list:
                     await send_message(infobox_msg_list, quote=False)
 
@@ -1044,24 +1036,19 @@ async def _query_pages_impl(
                 for i in render_section_list:
                     for ii in i:
                         if i[ii]["is_allowed"]:
-                            if i[ii]["url"] not in generate_screenshot_v2_blocklist:
-                                get_section = await generate_screenshot_v2(
-                                    ii, section=i[ii]["section"], locale=session.session_info.locale.locale
-                                )
-                                if get_section:
-                                    for img in get_section:
-                                        section_msg_list.append(Image(img))
-                                else:
-                                    section_msg_list.append(I18NContext("wiki.message.error.render_section"))
+                            get_section = await generate_screenshot(
+                                ii,
+                                wiki_info=i[ii]["wiki_info"],
+                                title=i[ii]["title"],
+                                headers=headers,
+                                section=i[ii]["section"],
+                                locale=session.session_info.locale.locale,
+                            )
+                            if get_section:
+                                for img in get_section:
+                                    section_msg_list.append(Image(img))
                             else:
-                                get_section = await generate_screenshot_v1(
-                                    i[ii]["url"], ii, headers, section=i[ii]["section"]
-                                )
-                                if get_section:
-                                    for img in get_section:
-                                        section_msg_list.append(Image(img))
-                                else:
-                                    section_msg_list.append(I18NContext("wiki.message.error.render_section"))
+                                section_msg_list.append(I18NContext("wiki.message.error.render_section"))
                 if section_msg_list:
                     await send_message(section_msg_list, quote=False)
 

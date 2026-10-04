@@ -1193,6 +1193,7 @@ class WikiLib:
                                 )
                         else:
                             # handling langlinks query result, skip normal processing
+                            page_info.info = query_langlinks.info
                             page_info.title = query_langlinks.title
                             page_info.before_title = query_langlinks.title
                             page_info.link = query_langlinks.link

@@ -201,6 +201,8 @@ async def _test_found_page_keeps_render_buttons():
     return (
         urls == [ARTICLE]
         and render_preview.await_args.args[1][0]["link"] == ARTICLE
+        and render_preview.await_args.args[1][0]["wiki_info"] is page.info
+        and render_preview.await_args.args[1][0]["title"] == page.title
         and buttons
         == [
             (Locale("zh_cn").t("wiki.message.render.action.button"), "wiki_render_preview"),

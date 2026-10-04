@@ -152,6 +152,7 @@ async def _test_langlinks_checks_renderable_on_target_wiki():
     return (
         result.status
         and result.link == EN_CURID_URL
+        and result.info.api == EN_API
         and captured.get("render_target") == (EN_API, "Example Page", False)
         and result.renderable is True
     )
@@ -219,6 +220,7 @@ async def _test_interwiki_section_checks_renderable_with_target_wiki():
         and result.link == f"{PLANNED_VERSIONS_URL}#Unnamed%202027%20release"
         and result.renderable is True
         and captured["render_checks"] == []
+        and result.info.api == MINECRAFT_API
     )
 
 
@@ -298,6 +300,7 @@ async def _test_langlinks_section_checks_renderable_with_target_wiki():
         and result.link == f"{PLANNED_VERSIONS_URL}#Unnamed%202027%20release"
         and result.renderable is True
         and captured["render_checks"] == []
+        and result.info.api == MINECRAFT_API
     )
 
 

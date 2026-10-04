@@ -143,7 +143,7 @@ async def _test_manual_anchor_is_delegated_to_webrender():
         patch.object(WikiLib, "parse_page_info", new=AsyncMock(return_value=page)),
         patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target)),
         patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
-        patch("modules.wiki.wiki.generate_screenshot_v2", new=render),
+        patch("modules.wiki.wiki.generate_screenshot", new=render),
         patch("modules.wiki.wiki._start_background_with_release", new=_run_background),
         patch.object(MessageSession, "hold", new=AsyncMock()),
         patch.object(MessageSession, "release", new=AsyncMock()),
@@ -156,6 +156,8 @@ async def _test_manual_anchor_is_delegated_to_webrender():
     return (
         render.await_count == 1
         and render.await_args.args == (page.link,)
+        and render.await_args.kwargs["wiki_info"] is page.info
+        and render.await_args.kwargs["title"] == page.title
         and render.await_args.kwargs["section"] == "manual_anchor"
         and "wiki.message.section.rendering" in keys
         and "wiki.message.invalid_section" not in keys
