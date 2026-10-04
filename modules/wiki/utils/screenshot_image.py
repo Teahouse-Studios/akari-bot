@@ -90,7 +90,7 @@ async def generate_screenshot(
             wiki.wiki_info = wiki_info
             async with asyncio.timeout(15):
                 response = await wiki.get_json(
-                    action="parse", prop="text|headhtml", useskin="vector", redirects=1, formatversion=2, **target
+                    action="parse", prop="text|headhtml", redirects=1, formatversion=2, **target
                 )
             content = None
             if not response.get("error") and not response.get("warnings"):

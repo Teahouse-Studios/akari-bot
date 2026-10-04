@@ -19,7 +19,7 @@ LINK = "https://example.org/wiki/Test#Section"
 HEAD = """<!DOCTYPE html><html lang="zh" dir="ltr"><head>
 <link rel="stylesheet" href="/sub/w/load.php?modules=site.styles&amp;only=styles">
 <noscript><link rel="stylesheet" href="/sub/w/load.php?modules=noscript&amp;only=styles"></noscript>
-<script>window.remoteScript = true</script></head><body class="skin-vector page-Test">"""
+<script>window.remoteScript = true</script></head><body class="skin-timeless page-Test">"""
 BODY = """<div class="mw-parser-output"><style data-mw-deduplicate="TemplateStyles:r1">
 .infobox { background: red }</style><table class="infobox"><tr><td>
 <img src="/images/test.png" srcset="/images/test2.png 2x" loading="lazy" onerror="bad()">
@@ -44,7 +44,7 @@ def _test_styled_document():
     document = _styled_document(_response()["parse"], LINK)
     soup = BeautifulSoup(document, "html.parser")
     assert soup.html["lang"] == "zh" and soup.html["dir"] == "ltr"
-    assert soup.body["class"] == ["skin-vector", "page-Test"]
+    assert soup.body["class"] == ["skin-timeless", "page-Test"]
     assert soup.base["href"] == LINK.split("#")[0]
     stylesheet = soup.select_one('link[rel="stylesheet"]')
     assert urljoin(soup.base["href"], stylesheet["href"]) == (
@@ -114,11 +114,11 @@ async def _test_styled_screenshot_options():
     assert calls[0] == {
         "action": "parse",
         "prop": "text|headhtml",
-        "useskin": "vector",
         "redirects": 1,
         "formatversion": 2,
         "page": "Test",
     }
+    assert all("useskin" not in call for call in calls)
     return True
 
 
