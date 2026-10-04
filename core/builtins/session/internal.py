@@ -705,7 +705,6 @@ class MessageSession:
         delete: bool = False,
         timeout: float | None = 120,
         append_instruction: bool = True,
-        possibly_choices: list[dict[str, str]] | None = None,
     ) -> MessageSession:
         """一次性模板，用于等待对象的下一条消息。
 
@@ -714,7 +713,6 @@ class MessageSession:
         :param delete: 是否在触发后删除消息（默认为 False）
         :param timeout: 超时时间（秒），默认为 120 秒
         :param append_instruction: 是否在发送的消息中附加提示（默认为 True）
-        :param possibly_choices: 可能的选项，用于可能的扩展按钮提示。
         :return: 用户下一条消息的 MessageSession 对象
 
         :raises WaitCancelException: 如果超时或出错
@@ -731,8 +729,6 @@ class MessageSession:
                 # 合并转发消息无从追加提示行，此时略过
                 if append_instruction and isinstance(chain, MessageChain):
                     chain.append(I18NContext("message.wait.next_message.prompt"))
-                if possibly_choices and self.session_info.support_button and isinstance(chain, MessageChain):
-                    chain.append(ButtonFrame(build_button_rows(possibly_choices)))
                 send = await self.send_message(chain, quote)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -771,20 +767,18 @@ class MessageSession:
             if self.session_info.support_button
             else "message.user_verification.prompt.text"
         )
-        possibly_choices = (
-            [{str(choice): str(choice) for choice in choices}] if self.session_info.support_button else None
-        )
         s = message_chain
         if message_chain is None:
             s = MessageChain.assign(I18NContext(prompt_key, number=answer))
         else:
             s += I18NContext(prompt_key, number=answer)
+        if self.session_info.support_button and isinstance(s, MessageChain):
+            s.append(ButtonFrame(build_button_rows([{str(choice): str(choice) for choice in choices}])))
         result = await self.wait_next_message(
             s,
             delete=delete,
             timeout=timeout,
             append_instruction=False,
-            possibly_choices=possibly_choices,
         )
         return result.as_display(text_only=True).strip() == str(answer)
 

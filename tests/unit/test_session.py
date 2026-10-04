@@ -2177,9 +2177,12 @@ async def _test_wait_next_message_registers_before_fast_reply():
 
 
 async def _test_wait_next_message_preserves_choice_rows():
+    from core.builtins.message.chain import MessageChain
     from core.builtins.message.elements import ButtonFrameElement
+    from core.builtins.message.internal import ButtonFrame
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
+    from core.utils.button import build_button_rows
 
     class CaptureSession(MessageSession):
         captured = None
@@ -2203,9 +2206,11 @@ async def _test_wait_next_message_preserves_choice_rows():
     session_info.support_button = True
     msg = CaptureSession(session_info)
     choices = [{f"Page {index}": str(index)} for index in range(1, 6)]
+    message_chain = MessageChain.assign("prompt")
+    message_chain.append(ButtonFrame(build_button_rows(choices)))
     try:
         with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
-            result = await msg.wait_next_message("prompt", possibly_choices=choices, timeout=0.05 * TIME_SCALE)
+            result = await msg.wait_next_message(message_chain, timeout=0.05 * TIME_SCALE)
             frames = [element for element in msg.captured.values if isinstance(element, ButtonFrameElement)]
             return (
                 result is msg

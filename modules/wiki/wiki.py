@@ -318,13 +318,6 @@ def _build_not_found_choice_prompt(
     return prompt
 
 
-def _build_not_found_choice_rows(possible_titles: list[str], start_index: int = 1) -> list[dict[str, str]]:
-    return [
-        {possible_title: str(index)}
-        for index, possible_title in enumerate(possible_titles[:MAX_RESEARCH_SUGGESTIONS], start=start_index)
-    ]
-
-
 def _normalize_page_name(pagename: str) -> str:
     if match := re.fullmatch(r"\[{1,2}\s*(.*?)\s*\]{1,2}", pagename):
         return match.group(1).split("|", 1)[0].strip()
@@ -1115,35 +1108,45 @@ async def _query_pages_impl(
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
-                possibly_choices = []
                 Logger.debug(wait_possible_list)
                 Logger.debug(wait_list)
+                button_rows: list[ButtonRows] = []
                 wi = 1
                 if len(wait_list) == 1:
-                    possibly_choices.append(
-                        {
-                            str(I18NContext("message.button.yes")): confirm_command[0],
-                            str(I18NContext("message.button.no")): "no",
-                        }
+                    button_rows.append(
+                        ButtonRows.assign(
+                            [
+                                Button(str(I18NContext("message.button.yes")), confirm_command[0]),
+                                Button(str(I18NContext("message.button.no")), "no"),
+                            ]
+                        )
                     )
                 elif len(wait_list) > 1:
-                    choices_ = {}
-                    for w in wait_list:
-                        choices_[w] = str(wi)
-                        wi += 1
-                    possibly_choices.append(choices_)
+                    button_rows.append(
+                        ButtonRows.assign(
+                            [
+                                Button(display_title, str(index))
+                                for index, redirect in enumerate(wait_list, start=wi)
+                                for display_title in redirect
+                            ]
+                        )
+                    )
+                    wi += len(wait_list)
                 if wait_possible_list:
                     # [{a: {b: [c,d,e]}}]
                     for w in wait_possible_list:
                         for ww in w:
                             for www in w[ww]:
-                                choice_rows = _build_not_found_choice_rows(w[ww][www], start_index=wi)
-                                possibly_choices.extend(choice_rows)
-                                wi += len(choice_rows)
+                                titles = w[ww][www][:MAX_RESEARCH_SUGGESTIONS]
+                                button_rows.extend(
+                                    ButtonRows.assign([Button(title, str(index))])
+                                    for index, title in enumerate(titles, start=wi)
+                                )
+                                wi += len(titles)
 
-                confirm = await session.wait_next_message(
-                    wait_msg_list, delete=True, append_instruction=False, possibly_choices=possibly_choices
-                )
+                if button_rows and session.session_info.support_button:
+                    wait_msg_list.append(ButtonFrame(button_rows))
+                confirm = await session.wait_next_message(wait_msg_list, delete=True, append_instruction=False)
                 auto_index = False
                 index = 0
                 if confirm.as_display(text_only=True) in confirm_command:

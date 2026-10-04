@@ -269,17 +269,12 @@ class MockMessageSession(MessageSession):
         delete=False,
         timeout=120,
         append_instruction=True,
-        possibly_choices=None,
     ):
         confirm_prompt = None
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
             if append_instruction:
                 message_chain.append(I18NContext("message.wait.next_message.prompt"))
-            if possibly_choices and self.session_info.support_button:
-                for row in possibly_choices:
-                    for show, value in row.items():
-                        message_chain.append(Button(show, value))
             await self.send_message(message_chain, quote)
             confirm_prompt = "\n".join(
                 [x.text if isinstance(x, PlainElement) else str(x) for x in message_chain.as_sendable()]
