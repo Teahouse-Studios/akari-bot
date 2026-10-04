@@ -123,6 +123,7 @@ async def _render_preview_items(
                 section=item.get("section"),
                 allow_special_page=item["is_allowed"],
                 content_mode=item.get("content_mode", False),
+                diff_data=item.get("diff_data"),
                 locale=session.session_info.locale.locale,
             )
             if images:
@@ -687,6 +688,7 @@ async def _query_pages_impl(
                                 "title": r.title,
                                 "is_allowed": render_allowed,
                                 "content_mode": content_mode,
+                                "diff_data": r.diff_data,
                             }
                             if render_mode == WIKI_RENDER_MODE_BUTTON:
                                 if (
@@ -705,6 +707,7 @@ async def _query_pages_impl(
                                             "title": r.title,
                                             "is_allowed": render_allowed,
                                             "content_mode": content_mode,
+                                            "diff_data": r.diff_data,
                                         }
                                     }
                                 )
@@ -1022,6 +1025,7 @@ async def _query_pages_impl(
                             headers=headers,
                             allow_special_page=i[ii]["is_allowed"],
                             content_mode=i[ii]["content_mode"],
+                            diff_data=i[ii].get("diff_data"),
                             locale=session.session_info.locale.locale,
                         )
                         if get_infobox:

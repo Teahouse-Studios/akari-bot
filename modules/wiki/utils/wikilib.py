@@ -23,6 +23,7 @@ from modules.wiki.database.models import WikiSiteInfo
 from modules.wiki.utils.bot import BotAccount
 from modules.wiki.utils.disambiguation import DisambiguationBlock, is_disambiguation_page, parse_disambiguation_html
 from modules.wiki.utils.summarize import extract_summary, truncate_summary
+from .diff import DiffError, fetch_diff, parse_diff_target
 from .mapping import *
 
 default_locale = BaseConfig.default_locale
@@ -97,6 +98,7 @@ class WikiInfo:
     logo_url: str = ""
     lang: str = None
     wikiid: str = None
+    default_skin: str = ""
 
 
 @define
@@ -138,6 +140,7 @@ class PageInfo:
     forum_data: dict = field(factory=dict)
     # MediaWiki parse API pre-check result used by the deferred WebRender button.
     renderable: bool = False
+    diff_data: dict | None = None
 
 
 class WikiLib:
@@ -240,12 +243,18 @@ class WikiLib:
         for interwiki in interwiki_map:
             interwiki_dict[interwiki["prefix"]] = interwiki["url"]
         policy = evaluate_url_policy(wiki_api_link)
+        default_skin = ""
+        for skin in info["query"].get("skins", []):
+            if isinstance(skin, dict) and skin.get("default"):
+                default_skin = skin.get("code", "")
+                break
         return WikiInfo(
             articlepath=real_url + info["query"]["general"]["articlepath"],
             extensions=ext_list,
             name=info["query"]["general"]["sitename"],
             lang=info["query"]["general"].get("lang"),
             wikiid=info["query"]["general"].get("wikiid"),
+            default_skin=default_skin,
             realurl=real_url,
             api=wiki_api_link,
             namespaces=namespaces,
@@ -347,7 +356,7 @@ class WikiLib:
                 wiki_api_link,
                 action="query",
                 meta="siteinfo",
-                siprop="general|namespaces|namespacealiases|interwikimap|extensions",
+                siprop="general|namespaces|namespacealiases|interwikimap|extensions|skins",
             )
             info = await self.rearrange_siteinfo(get_json, wiki_api_link)
         except Exception as e:
@@ -613,6 +622,46 @@ class WikiLib:
 
         return parsed_data
 
+    async def _parse_diff_info(self, title: str, session=None) -> PageInfo | None:
+        try:
+            target = parse_diff_target(title, self.wiki_info)
+            if target is None:
+                return None
+            async with asyncio.timeout(15):
+                data = await fetch_diff(self, target)
+        except BlockedWikiError:
+            raise
+        except Exception as exc:
+            key = str(exc) if isinstance(exc, DiffError) else "wiki.message.diff.unavailable"
+            if not isinstance(exc, DiffError):
+                Logger.exception("Failed to query Wiki comparison: ")
+            return PageInfo(info=self.wiki_info, title=title, status=False, desc=str(I18NContext(key)))
+        page_title = data.get("totitle") or data.get("fromtitle") or title
+        if not self.wiki_info.is_allowed and self.should_check_content(session):
+            content = BeautifulSoup(data["body"], "html.parser").get_text()
+            checked = await check(
+                [page_title, content, data.get("fromcomment", ""), data.get("tocomment", "")], session=session
+            )
+            if any(not item["status"] for item in checked):
+                return PageInfo(info=self.wiki_info, title="", status=False)
+        args = {"oldid": data["fromrevid"], "diff": data["torevid"]}
+        if target.get("uselang"):
+            args["variant"] = target["uselang"]
+        link = self.wiki_info.script + "?" + urllib.parse.urlencode(args)
+        summary = str(
+            I18NContext("wiki.message.diff.summary", title=page_title, old=data["fromrevid"], new=data["torevid"])
+        )
+        if not data["body"].strip():
+            summary += "\n" + str(I18NContext("wiki.message.diff.empty"))
+        return PageInfo(
+            info=self.wiki_info,
+            title=page_title,
+            link=link,
+            desc=summary,
+            renderable=True,
+            diff_data=data,
+        )
+
     async def parse_page_info(
         self,
         title: str | None = None,
@@ -660,6 +709,8 @@ class WikiLib:
                 info=self.wiki_info,
                 templates=[],
             )
+        if title and (diff_info := await self._parse_diff_info(title, session)) is not None:
+            return diff_info
         ban = False
 
         # if redirected too many times, raise AbuseWarning

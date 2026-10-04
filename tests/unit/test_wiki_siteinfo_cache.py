@@ -23,6 +23,7 @@ VALID_SITEINFO = {
         "namespaces": {},
         "namespacealiases": [],
         "interwikimap": [],
+        "skins": [{"code": "vector", "name": "Vector", "default": True}],
     }
 }
 ERROR_SITEINFO = {"error": {"code": "maxlag", "info": "Waiting for replication lag to decrease."}}
@@ -106,6 +107,7 @@ async def _test_siteinfo_uses_global_url_policy():
     return (
         result.is_allowed
         and not result.is_blocked
+        and result.default_skin == "vector"
         and evaluate.call_count == 1
         and evaluate.call_args.args == (API_LINK,)
     )

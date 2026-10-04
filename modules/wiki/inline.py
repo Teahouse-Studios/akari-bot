@@ -15,6 +15,7 @@ from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.button import build_button_rows
 from .database.models import WikiTargetInfo
+from .utils.diff import DiffError, parse_diff_target
 from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.forum import build_forum_markdown_table, build_section_markdown_table
 from .utils.screenshot_image import generate_screenshot
@@ -79,11 +80,21 @@ async def _(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
 
     async def _run_bgtask(query_list):
+        diff_links = set()
         Logger.trace(query_list)
         for q in query_list:
             img_send = False
             for qq in q:
-                wiki_ = WikiLib(qq)
+                wiki_ = WikiLib(qq, headers=headers, locale=msg.session_info.locale.locale)
+                wiki_.wiki_info = q[qq]
+                try:
+                    diff_target = parse_diff_target(qq, q[qq])
+                except DiffError:
+                    diff_target = {}
+                if diff_target is not None:
+                    diff_links.add(qq)
+                    await query_pages(msg, qq, start_wiki_api=q[qq].api, use_prefix=False, inline_mode=True)
+                    continue
                 articlepath = q[qq].articlepath.replace("$1", "(.*)")
                 get_id = re.sub(r".*curid=(\d+)", "\\1", qq)
                 get_title = re.sub(r"" + articlepath, "\\1", qq)
@@ -345,6 +356,8 @@ async def _(msg: Bot.MessageSession):
                 return
             if msg.session_info.support_image:
                 for qq in q:
+                    if qq in diff_links:
+                        continue
                     section_ = []
                     quote_code = False
                     page_name = urllib.parse.unquote(qq)

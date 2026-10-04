@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #fff; color: #202122; font: 16px/1.55 sans-serif; }
+.wiki-diff { padding: 28px; width: 1200px; }
+header { border-bottom: 1px solid #a2a9b1; padding-bottom: 14px; margin-bottom: 18px; }
+h1 { font-size: 26px; margin: 0; }
+.site, .meta, .comment { color: #54595d; font-size: 14px; }
+table { width: 100%; table-layout: fixed; border-spacing: 4px; }
+.marker { width: 22px; }
+th { text-align: left; vertical-align: top; padding: 12px; background: #f8f9fa; overflow-wrap: anywhere; }
+.title { font-size: 19px; }
+.revision { color: #36c; }
+.comment { white-space: pre-wrap; }
+td { vertical-align: top; }
+.diff-context, .diff-addedline, .diff-deletedline {
+    white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4;
+    font-family: monospace; padding: 8px 10px; border: 1px solid #dadde3; border-radius: 3px;
+}
+.diff-context { background: #f8f9fa; color: #54595d; }
+.diff-addedline { border-color: #a3d3ff; background: #edf6ff; }
+.diff-deletedline { border-color: #ffe49c; background: #fff8e6; }
+ins.diffchange { background: #a3d3ff; text-decoration: none; font-weight: bold; }
+del.diffchange { background: #ffe49c; text-decoration: none; font-weight: bold; }
+.diff-marker { text-align: center; font-weight: bold; padding-top: 8px; }
+.diff-marker::before { content: attr(data-marker); }
+.diff-lineno { font-size: 13px; color: #72777d; padding: 12px 4px 3px; }
+.empty { text-align: center; padding: 36px; color: #54595d; }
+</style></head><body><main class="wiki-diff">
+<header><h1>$heading</h1><div class="site">$site</div></header>
+<table class="diff"><colgroup><col class="marker"><col><col class="marker"><col></colgroup>
+<thead><tr><th colspan="2"><div class="title">$from_title</div><div class="revision">$from_revision</div>
+<div class="meta">$from_meta</div><div class="comment">$from_comment</div></th>
+<th colspan="2"><div class="title">$to_title</div><div class="revision">$to_revision</div>
+<div class="meta">$to_meta</div><div class="comment">$to_comment</div></th></tr></thead>
+<tbody>$body</tbody></table></main></body></html>

@@ -8,12 +8,27 @@ from akari_bot_webrender.functions.options import SectionScreenshotOptions, Lega
 from bs4 import BeautifulSoup, Comment
 
 from core.constants.path import cache_path
+from core.i18n import Locale
 from core.logger import Logger
 from core.utils.http import get_url
 from core.utils.image import cb64imglst
 from core.utils.web_render import web_render, ElementScreenshotOptions
+from .diff import DiffError, parse_diff_target, fetch_diff, diff_document
 from .mapping import generate_screenshot_v2_blocklist, infobox_elements
 from .wikilib import WikiInfo, WikiLib
+
+_ISOLATED_RENDER_CSS = """
+html,
+body {
+    background: #ffffff !important;
+}
+
+#mw-content-text,
+.mw-parser-output,
+.bot-sectionbox {
+    background-color: #ffffff !important;
+}
+"""
 
 
 def _styled_document(parsed: dict, page_link: str) -> str | None:
@@ -78,7 +93,35 @@ async def generate_screenshot(
     allow_special_page=False,
     content_mode=False,
     locale: str = "zh_cn",
+    diff_data: dict | None = None,
 ) -> list[PILImage.Image] | bool:
+    try:
+        diff_target = parse_diff_target(page_link, wiki_info)
+    except DiffError:
+        return False
+    if diff_target is not None:
+        if not allow_special_page:
+            return False
+        try:
+            if diff_data is None:
+                wiki = WikiLib(wiki_info.api, headers=headers, locale=locale)
+                wiki.wiki_info = wiki_info
+                async with asyncio.timeout(15):
+                    diff_data = await fetch_diff(wiki, diff_target)
+            images = await web_render.element_screenshot(
+                ElementScreenshotOptions(
+                    content=diff_document(diff_data, wiki_info.name, Locale(locale)),
+                    element=".wiki-diff",
+                    width=1200,
+                    counttime=False,
+                    locale=locale,
+                    stealth=False,
+                )
+            )
+            return cb64imglst(images) if images else False
+        except Exception:
+            Logger.exception("Failed to render Wiki comparison from API: ")
+            return False
     if wiki_info.realurl in generate_screenshot_v2_blocklist:
         return await generate_screenshot_v1(
             wiki_info.realurl, page_link, headers, section=section, allow_special_page=allow_special_page
@@ -89,9 +132,10 @@ async def generate_screenshot(
             wiki = WikiLib(wiki_info.api, headers=headers, locale=locale)
             wiki.wiki_info = wiki_info
             async with asyncio.timeout(15):
-                response = await wiki.get_json(
-                    action="parse", prop="text|headhtml", redirects=1, formatversion=2, **target
-                )
+                parse_args = {"action": "parse", "prop": "text|headhtml", "redirects": 1, "formatversion": 2, **target}
+                if wiki_info.default_skin:
+                    parse_args["useskin"] = wiki_info.default_skin
+                response = await wiki.get_json(**parse_args)
             content = None
             if not response.get("error") and not response.get("warnings"):
                 content = _styled_document(response.get("parse", {}), page_link)
@@ -137,7 +181,12 @@ async def generate_screenshot_v2(
         Logger.info("[WebRender] Generating element screenshot...")
         imgs = await web_render.element_screenshot(
             ElementScreenshotOptions(
-                url=None if content else page_link, content=content, element=elements_, locale=locale, stealth=False
+                url=None if content else page_link,
+                content=content,
+                css=_ISOLATED_RENDER_CSS if content else None,
+                element=elements_,
+                locale=locale,
+                stealth=False,
             )
         )
         if not imgs:
@@ -147,7 +196,12 @@ async def generate_screenshot_v2(
         Logger.info("[WebRender] Generating section screenshot...")
         imgs = await web_render.section_screenshot(
             SectionScreenshotOptions(
-                url=None if content else page_link, content=content, section=section, locale=locale, stealth=False
+                url=None if content else page_link,
+                content=content,
+                css=_ISOLATED_RENDER_CSS if content else None,
+                section=section,
+                locale=locale,
+                stealth=False,
             )
         )
         if not imgs:

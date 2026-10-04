@@ -27,7 +27,13 @@ BODY = """<div class="mw-parser-output"><style data-mw-deduplicate="TemplateStyl
 
 
 def _info():
-    return WikiInfo(api=API, realurl="https://example.org", articlepath="https://example.org/wiki/$1", is_allowed=True)
+    return WikiInfo(
+        api=API,
+        realurl="https://example.org",
+        articlepath="https://example.org/wiki/$1",
+        default_skin="timeless",
+        is_allowed=True,
+    )
 
 
 def _response():
@@ -114,11 +120,12 @@ async def _test_styled_screenshot_options():
     assert calls[0] == {
         "action": "parse",
         "prop": "text|headhtml",
+        "useskin": "timeless",
         "redirects": 1,
         "formatversion": 2,
         "page": "Test",
     }
-    assert all("useskin" not in call for call in calls)
+    assert all(call["useskin"] == "timeless" for call in calls)
     return True
 
 
