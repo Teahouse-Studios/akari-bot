@@ -100,10 +100,7 @@ async def fetch_diff(wiki, target: dict) -> dict:
     return {**data, "body": body}
 
 
-MAX_DIFF_ROWS = 160
-
-
-def _sanitize_diff(body: str) -> tuple[str, bool]:
+def _sanitize_diff(body: str) -> str:
     soup = BeautifulSoup(body, "html.parser")
     for comment in soup.find_all(string=lambda value: isinstance(value, Comment)):
         comment.extract()
@@ -122,10 +119,7 @@ def _sanitize_diff(body: str) -> tuple[str, bool]:
         if tag.get("data-marker") in {"+", "−", "-"}:
             attrs["data-marker"] = tag["data-marker"]
         tag.attrs = attrs
-    rows = soup.find_all("tr")
-    for row in rows[MAX_DIFF_ROWS:]:
-        row.decompose()
-    return str(soup), len(rows) > MAX_DIFF_ROWS
+    return str(soup)
 
 
 def diff_document(data: dict, site_name: str, locale) -> str:
@@ -139,11 +133,9 @@ def diff_document(data: dict, site_name: str, locale) -> str:
     def metadata(side):
         return " · ".join(escape(str(data.get(side + key, ""))) for key in ("timestamp", "user"))
 
-    body, truncated = _sanitize_diff(data["body"])
+    body = _sanitize_diff(data["body"])
     if not body.strip():
         body = f'<tr><td colspan="4" class="empty">{text("empty")}</td></tr>'
-    if truncated:
-        body += f'<tr><td colspan="4" class="empty">{text("truncated", rows=MAX_DIFF_ROWS)}</td></tr>'
     return Template(Path(__file__).with_name("diff.html").read_text(encoding="utf-8")).substitute(
         heading=text("heading"),
         site=escape(site_name),

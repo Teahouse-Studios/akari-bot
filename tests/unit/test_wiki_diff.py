@@ -9,7 +9,7 @@ from PIL import Image
 
 from core.i18n import Locale
 from core.tester import Tester, func_case
-from modules.wiki.utils.diff import MAX_DIFF_ROWS, DiffError, diff_document, fetch_diff, parse_diff_target
+from modules.wiki.utils.diff import DiffError, diff_document, fetch_diff, parse_diff_target
 from modules.wiki.utils.screenshot_image import generate_screenshot
 from modules.wiki.utils.wikilib import WikiInfo, WikiLib
 
@@ -126,10 +126,6 @@ def _test_document():
     assert "<script>alert(1)</script>" in soup.text
     assert "default-src 'none'" in document
     assert "没有内容差异" in diff_document({**data, "body": ""}, "Wiki", Locale("zh_cn"))
-    data["body"] = '<tr><td class="diff-addedline">新行</td></tr>' * (MAX_DIFF_ROWS + 5)
-    soup = BeautifulSoup(diff_document(data, "Wiki", Locale("zh_cn")), "html.parser")
-    assert len(soup.select("tbody tr")) == MAX_DIFF_ROWS + 1
-    assert "完整内容请打开原始链接" in soup.select_one("tbody tr:last-child").text
     return True
 
 
