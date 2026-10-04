@@ -29,6 +29,7 @@ body {
     background-color: #ffffff !important;
 }
 """
+_PAGE_RENDER_TIMEOUT = 15
 
 
 def _styled_document(parsed: dict, page_link: str) -> str | None:
@@ -126,39 +127,102 @@ async def generate_screenshot(
         return await generate_screenshot_v1(
             wiki_info.realurl, page_link, headers, section=section, allow_special_page=allow_special_page
         )
+    # Start the fallback early so a primary-render timeout does not add another full request latency.
+    styled_task = asyncio.create_task(
+        _generate_styled_api_screenshot(
+            page_link,
+            wiki_info,
+            title=title,
+            headers=headers,
+            section=section,
+            allow_special_page=allow_special_page,
+            content_mode=content_mode,
+            locale=locale,
+        )
+    )
     target = _parse_target(page_link, wiki_info, title)
-    if wiki_info.api and target:
+    if not wiki_info.api or not target:
+        styled_task.cancel()
+        await asyncio.gather(styled_task, return_exceptions=True)
+        return await asyncio.wait_for(
+            generate_screenshot_v2(
+                page_link,
+                section=section,
+                allow_special_page=allow_special_page,
+                content_mode=content_mode,
+                locale=locale,
+            ),
+            timeout=_PAGE_RENDER_TIMEOUT,
+        )
+    try:
         try:
-            wiki = WikiLib(wiki_info.api, headers=headers, locale=locale)
-            wiki.wiki_info = wiki_info
-            async with asyncio.timeout(15):
-                parse_args = {"action": "parse", "prop": "text|headhtml", "redirects": 1, "formatversion": 2, **target}
-                if wiki_info.default_skin:
-                    parse_args["useskin"] = wiki_info.default_skin
-                response = await wiki.get_json(**parse_args)
-            content = None
-            if not response.get("error") and not response.get("warnings"):
-                content = _styled_document(response.get("parse", {}), page_link)
-            if content:
-                images = await generate_screenshot_v2(
+            page_images = await asyncio.wait_for(
+                generate_screenshot_v2(
                     page_link,
                     section=section,
                     allow_special_page=allow_special_page,
                     content_mode=content_mode,
                     locale=locale,
-                    content=content,
-                )
-                if images:
-                    return images
+                ),
+                timeout=_PAGE_RENDER_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            Logger.warning("Wiki page rendering exceeded 15 seconds; using styled API HTML fallback.")
+            page_images = False
         except Exception:
-            Logger.exception("Failed to render Wiki API HTML; falling back to page screenshot: ")
-    return await generate_screenshot_v2(
-        page_link,
-        section=section,
-        allow_special_page=allow_special_page,
-        content_mode=content_mode,
-        locale=locale,
-    )
+            Logger.exception("Failed to render Wiki page; using styled API HTML fallback: ")
+            page_images = False
+        if page_images:
+            styled_task.cancel()
+            await asyncio.gather(styled_task, return_exceptions=True)
+            return page_images
+        return await styled_task
+    except asyncio.CancelledError:
+        styled_task.cancel()
+        await asyncio.gather(styled_task, return_exceptions=True)
+        raise
+
+
+async def _generate_styled_api_screenshot(
+    page_link: str,
+    wiki_info: WikiInfo,
+    *,
+    title: str | None,
+    headers: dict | None,
+    section: str | None,
+    allow_special_page: bool,
+    content_mode: bool,
+    locale: str,
+) -> list[PILImage.Image] | bool:
+    target = _parse_target(page_link, wiki_info, title)
+    if not wiki_info.api or not target:
+        return False
+    try:
+        wiki = WikiLib(wiki_info.api, headers=headers, locale=locale)
+        wiki.wiki_info = wiki_info
+        async with asyncio.timeout(_PAGE_RENDER_TIMEOUT):
+            parse_args = {"action": "parse", "prop": "text|headhtml", "redirects": 1, "formatversion": 2, **target}
+            if wiki_info.default_skin:
+                parse_args["useskin"] = wiki_info.default_skin
+            response = await wiki.get_json(**parse_args)
+        content = None
+        if not response.get("error") and not response.get("warnings"):
+            content = _styled_document(response.get("parse", {}), page_link)
+        if not content:
+            return False
+        return await generate_screenshot_v2(
+            page_link,
+            section=section,
+            allow_special_page=allow_special_page,
+            content_mode=content_mode,
+            locale=locale,
+            content=content,
+        )
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        Logger.exception("Failed to render styled Wiki API HTML fallback: ")
+        return False
 
 
 async def generate_screenshot_v2(

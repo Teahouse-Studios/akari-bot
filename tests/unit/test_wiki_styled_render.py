@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from PIL import Image
 
 from core.tester import func_case, Tester
+from modules.wiki.utils import screenshot_image
 from modules.wiki.utils.screenshot_image import _parse_target, _styled_document, generate_screenshot
 from modules.wiki.utils.wikilib import WikiInfo, WikiLib
 from modules.wiki.wiki import _render_preview_items
@@ -96,8 +97,16 @@ async def _test_styled_screenshot_options():
         calls.append(kwargs)
         return _response()
 
+    original_render = screenshot_image.generate_screenshot_v2
+
+    async def render(*args, **kwargs):
+        if kwargs.get("content") is None:
+            return False
+        return await original_render(*args, **kwargs)
+
     with (
         patch.object(WikiLib, "get_json", new=get_json),
+        patch("modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=render),
         patch(
             "modules.wiki.utils.screenshot_image.web_render.element_screenshot",
             new=AsyncMock(return_value=_image_data()),
@@ -109,11 +118,11 @@ async def _test_styled_screenshot_options():
     ):
         result = await generate_screenshot(LINK, info, title="Test", headers=headers)
         assert result and result[0].size == (2, 2)
-        options = element.await_args.args[0]
+        options = element.await_args_list[0].args[0]
         assert options.url is None and "site.styles" in options.content
         assert ".infobox" in options.element and ".diff" not in options.element
         await generate_screenshot(LINK, info, title="Test", headers=headers, content_mode=True, allow_special_page=True)
-        assert element.await_args.args[0].element[0] == ".mw-body-content"
+        assert element.await_args_list[1].args[0].element[0] == ".mw-body-content"
         await generate_screenshot(LINK, info, title="Test", headers=headers, section="Section", locale="zh_cn")
         options = section.await_args.args[0]
         assert options.url is None and options.section == "Section" and options.content
@@ -129,7 +138,7 @@ async def _test_styled_screenshot_options():
     return True
 
 
-async def _test_api_failure_fallback():
+async def _test_api_failure_after_original_failure():
     failures = [
         RuntimeError("API unavailable"),
         TimeoutError(),
@@ -143,27 +152,51 @@ async def _test_api_failure_fallback():
         with (
             patch.object(WikiLib, "get_json", new=request),
             patch(
-                "modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=AsyncMock(return_value=["fallback"])
+                "modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=AsyncMock(return_value=False)
             ) as render,
         ):
             result = await generate_screenshot(LINK, _info(), title="Test", section="Section")
-        assert result == ["fallback"] and render.await_count == 1
+        assert result is False and render.await_count == 1 and request.await_count == 1
         assert "content" not in render.await_args.kwargs and render.await_args.kwargs["section"] == "Section"
     return True
 
 
 async def _test_render_failure_fallback():
-    for failure in [False, RuntimeError("screenshot failed")]:
+    for failure, expected in [(["styled"], ["styled"]), (False, False), (RuntimeError("screenshot failed"), False)]:
+
+        async def render(*args, **kwargs):
+            if kwargs.get("content") is None:
+                return False
+            if isinstance(failure, Exception):
+                raise failure
+            return failure
+
         with (
             patch.object(WikiLib, "get_json", new=AsyncMock(return_value=_response())),
-            patch(
-                "modules.wiki.utils.screenshot_image.generate_screenshot_v2",
-                new=AsyncMock(side_effect=[failure, ["fallback"]]),
-            ) as render,
+            patch("modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=render),
         ):
-            assert await generate_screenshot(LINK, _info(), title="Test") == ["fallback"]
-        assert render.await_count == 2
-        assert render.await_args_list[0].kwargs["content"] and "content" not in render.await_args_list[1].kwargs
+            assert await generate_screenshot(LINK, _info(), title="Test") == expected
+    return True
+
+
+async def _test_original_timeout_uses_concurrent_api_result():
+    calls = []
+
+    async def render(*args, **kwargs):
+        calls.append(kwargs)
+        if kwargs.get("content") is None:
+            await asyncio.sleep(0.05)
+            return False
+        return ["styled"]
+
+    with (
+        patch.object(screenshot_image, "_PAGE_RENDER_TIMEOUT", 0.01),
+        patch.object(WikiLib, "get_json", new=AsyncMock(return_value=_response())),
+        patch("modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=render),
+    ):
+        assert await generate_screenshot(LINK, _info(), title="Test") == ["styled"]
+    assert len(calls) == 2
+    assert any("content" not in call for call in calls) and any("content" in call for call in calls)
     return True
 
 
@@ -188,23 +221,29 @@ async def _test_legacy_and_special_pages():
 
 
 async def _test_cancel_propagates():
-    for cancel_in_api in (True, False):
-        request = (
-            AsyncMock(side_effect=asyncio.CancelledError()) if cancel_in_api else AsyncMock(return_value=_response())
-        )
-        with (
-            patch.object(WikiLib, "get_json", new=request),
-            patch(
-                "modules.wiki.utils.screenshot_image.generate_screenshot_v2",
-                new=AsyncMock(side_effect=asyncio.CancelledError()),
-            ) as render,
-        ):
-            try:
-                await generate_screenshot(LINK, _info(), title="Test")
-            except asyncio.CancelledError:
-                assert render.await_count == (0 if cancel_in_api else 1)
-            else:
-                return False
+    with (
+        patch(
+            "modules.wiki.utils.screenshot_image.generate_screenshot_v2",
+            new=AsyncMock(side_effect=asyncio.CancelledError()),
+        ),
+        patch.object(WikiLib, "get_json", new=AsyncMock(return_value=_response())),
+    ):
+        try:
+            await generate_screenshot(LINK, _info(), title="Test")
+        except asyncio.CancelledError:
+            pass
+        else:
+            return False
+    with (
+        patch.object(WikiLib, "get_json", new=AsyncMock(side_effect=asyncio.CancelledError())),
+        patch("modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=AsyncMock(return_value=False)),
+    ):
+        try:
+            await generate_screenshot(LINK, _info(), title="Test")
+        except asyncio.CancelledError:
+            pass
+        else:
+            return False
     return True
 
 
@@ -227,8 +266,9 @@ async def test_wiki_styled_render(tester: Tester):
     await tester.test(_test_invalid_documents, "正文或样式入口缺失时拒绝 API 文档")
     await tester.test(_test_parse_targets, "正确定位标题与 pageid，绕过特殊页面和行为参数")
     await tester.test(_test_styled_screenshot_options, "信息框、正文和章节通过 content 渲染")
-    await tester.test(_test_api_failure_fallback, "API 错误、超时与不兼容响应回退到页面截图")
-    await tester.test(_test_render_failure_fallback, "空图或截图异常回退到页面截图")
+    await tester.test(_test_api_failure_after_original_failure, "原有渲染失败后 API 错误返回失败")
+    await tester.test(_test_render_failure_fallback, "原有渲染失败后使用 API HTML 渲染")
+    await tester.test(_test_original_timeout_uses_concurrent_api_result, "原有渲染超时后复用并发 API 结果")
     await tester.test(_test_legacy_and_special_pages, "特殊站点使用 v1，特殊页面跳过 API")
     await tester.test(_test_cancel_propagates, "任务取消不触发 fallback")
     await tester.test(_test_preview_target, "按钮预览传递目标 Wiki、标题和章节")
