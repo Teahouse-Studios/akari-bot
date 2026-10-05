@@ -1,0 +1,2318 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=query&meta=siteinfo&siprop=magicwords%7Cfunctionhooks%7Cvariables&format=json",
+  "status_code": 200,
+  "headers": {},
+  "method": "GET",
+  "json_data": {
+    "batchcomplete": "",
+    "query": {
+      "magicwords": [
+        {
+          "name": "expr",
+          "aliases": [
+            "计算式",
+            "表达式",
+            "表達式",
+            "expr"
+          ]
+        },
+        {
+          "name": "if",
+          "aliases": [
+            "非空式",
+            "若",
+            "如果",
+            "if"
+          ]
+        },
+        {
+          "name": "ifeq",
+          "aliases": [
+            "相同式",
+            "匹配式",
+            "若相等",
+            "如果相等",
+            "ifeq"
+          ]
+        },
+        {
+          "name": "iferror",
+          "aliases": [
+            "错误式",
+            "如果错误",
+            "如果錯誤",
+            "iferror"
+          ]
+        },
+        {
+          "name": "switch",
+          "aliases": [
+            "多选式",
+            "多条件式",
+            "双射式",
+            "开关",
+            "转换",
+            "轉換",
+            "switch"
+          ]
+        },
+        {
+          "name": "default",
+          "aliases": [
+            "#默认",
+            "#默認",
+            "#default"
+          ]
+        },
+        {
+          "name": "ifexist",
+          "aliases": [
+            "存在式",
+            "若有",
+            "如有",
+            "ifexist"
+          ]
+        },
+        {
+          "name": "len",
+          "aliases": [
+            "长度",
+            "長度",
+            "len"
+          ]
+        },
+        {
+          "name": "pos",
+          "aliases": [
+            "位置",
+            "终端",
+            "pos"
+          ]
+        },
+        {
+          "name": "rpos",
+          "aliases": [
+            "最近位置",
+            "反终端",
+            "rpos"
+          ]
+        },
+        {
+          "name": "sub",
+          "aliases": [
+            "截取",
+            "PF子",
+            "sub"
+          ]
+        },
+        {
+          "name": "count",
+          "aliases": [
+            "计数",
+            "計算",
+            "count"
+          ]
+        },
+        {
+          "name": "replace",
+          "aliases": [
+            "替换",
+            "取代",
+            "replace"
+          ]
+        },
+        {
+          "name": "explode",
+          "aliases": [
+            "爆炸",
+            "炸开",
+            "粉碎",
+            "explode"
+          ]
+        },
+        {
+          "name": "!",
+          "aliases": [
+            "!"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "anchorencode",
+          "aliases": [
+            "ANCHORENCODE",
+            "锚编码"
+          ]
+        },
+        {
+          "name": "articlepath",
+          "aliases": [
+            "ARTICLEPATH",
+            "条目路径"
+          ]
+        },
+        {
+          "name": "basepagename",
+          "aliases": [
+            "BASEPAGENAME",
+            "基础页面名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "basepagenamee",
+          "aliases": [
+            "BASEPAGENAMEE",
+            "基础页面名称等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "bidi",
+          "aliases": [
+            "BIDI:"
+          ]
+        },
+        {
+          "name": "canonicalurl",
+          "aliases": [
+            "CANONICALURL:",
+            "规范URL:"
+          ]
+        },
+        {
+          "name": "canonicalurle",
+          "aliases": [
+            "CANONICALURLE:",
+            "规范URL等同:"
+          ]
+        },
+        {
+          "name": "cascadingsources",
+          "aliases": [
+            "CASCADINGSOURCES",
+            "级联来源"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "contentlanguage",
+          "aliases": [
+            "CONTENTLANGUAGE",
+            "CONTENTLANG",
+            "内容语言",
+            "內容語言"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentday",
+          "aliases": [
+            "CURRENTDAY",
+            "今天"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentday2",
+          "aliases": [
+            "CURRENTDAY2",
+            "今天2"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentdayname",
+          "aliases": [
+            "CURRENTDAYNAME",
+            "星期",
+            "今天名",
+            "今天名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentdow",
+          "aliases": [
+            "CURRENTDOW",
+            "当前DOW"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currenthour",
+          "aliases": [
+            "CURRENTHOUR",
+            "当前小时"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentmonth",
+          "aliases": [
+            "CURRENTMONTH",
+            "CURRENTMONTH2",
+            "本月",
+            "本月2"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentmonth1",
+          "aliases": [
+            "CURRENTMONTH1",
+            "本月1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentmonthabbrev",
+          "aliases": [
+            "CURRENTMONTHABBREV",
+            "本月简称",
+            "本月縮寫"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentmonthname",
+          "aliases": [
+            "CURRENTMONTHNAME",
+            "本月名",
+            "本月名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentmonthnamegen",
+          "aliases": [
+            "CURRENTMONTHNAMEGEN",
+            "本月名属格",
+            "本月名称属格"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currenttime",
+          "aliases": [
+            "CURRENTTIME",
+            "当前时间",
+            "此时",
+            "目前時間"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currenttimestamp",
+          "aliases": [
+            "CURRENTTIMESTAMP",
+            "当前时间戳"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentversion",
+          "aliases": [
+            "CURRENTVERSION",
+            "当前版本",
+            "目前版本"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentweek",
+          "aliases": [
+            "CURRENTWEEK",
+            "本周"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "currentyear",
+          "aliases": [
+            "CURRENTYEAR",
+            "今年"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "defaultsort",
+          "aliases": [
+            "DEFAULTSORT:",
+            "DEFAULTSORTKEY:",
+            "DEFAULTCATEGORYSORT:",
+            "默认排序:",
+            "默认排序关键字:",
+            "默认分类排序:"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "defaultsort_noerror",
+          "aliases": [
+            "noerror",
+            "不报错"
+          ]
+        },
+        {
+          "name": "defaultsort_noreplace",
+          "aliases": [
+            "noreplace",
+            "不替换"
+          ]
+        },
+        {
+          "name": "directionmark",
+          "aliases": [
+            "DIRECTIONMARK",
+            "DIRMARK",
+            "方向标记"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "displaytitle",
+          "aliases": [
+            "DISPLAYTITLE",
+            "显示标题",
+            "顯示標題"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "displaytitle_noerror",
+          "aliases": [
+            "noerror",
+            "无错误"
+          ]
+        },
+        {
+          "name": "displaytitle_noreplace",
+          "aliases": [
+            "noreplace",
+            "无代替"
+          ]
+        },
+        {
+          "name": "expectunusedcategory",
+          "aliases": [
+            "__EXPECTUNUSEDCATEGORY__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "filepath",
+          "aliases": [
+            "FILEPATH:",
+            "文件路径:"
+          ]
+        },
+        {
+          "name": "forcetoc",
+          "aliases": [
+            "__FORCETOC__",
+            "__强显目录__",
+            "__強制目錄__"
+          ]
+        },
+        {
+          "name": "formatdate",
+          "aliases": [
+            "formatdate",
+            "dateformat",
+            "格式化日期",
+            "日期格式化"
+          ]
+        },
+        {
+          "name": "formatnum",
+          "aliases": [
+            "FORMATNUM",
+            "格式化数字"
+          ]
+        },
+        {
+          "name": "fullpagename",
+          "aliases": [
+            "FULLPAGENAME",
+            "页面全称",
+            "完整页面名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "fullpagenamee",
+          "aliases": [
+            "FULLPAGENAMEE",
+            "完整页面名称等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "fullurl",
+          "aliases": [
+            "FULLURL:",
+            "完整URL:"
+          ]
+        },
+        {
+          "name": "fullurle",
+          "aliases": [
+            "FULLURLE:",
+            "完整URL等同:"
+          ]
+        },
+        {
+          "name": "gender",
+          "aliases": [
+            "GENDER:",
+            "性别:",
+            "性別:",
+            "性:"
+          ]
+        },
+        {
+          "name": "grammar",
+          "aliases": [
+            "GRAMMAR:",
+            "语法:"
+          ]
+        },
+        {
+          "name": "hiddencat",
+          "aliases": [
+            "__HIDDENCAT__",
+            "__隐藏分类__",
+            "__隱藏分類__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_alt",
+          "aliases": [
+            "alt=$1",
+            "替代=$1",
+            "替代文本=$1",
+            "替代文字"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_baseline",
+          "aliases": [
+            "baseline",
+            "基线"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_border",
+          "aliases": [
+            "border",
+            "边框",
+            "邊框"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_bottom",
+          "aliases": [
+            "bottom",
+            "底部",
+            "垂直置底"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_center",
+          "aliases": [
+            "center",
+            "centre",
+            "居中",
+            "置中"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_class",
+          "aliases": [
+            "class=$1",
+            "类=$1",
+            "類別=$1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_framed",
+          "aliases": [
+            "frame",
+            "framed",
+            "enframed",
+            "有框"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_frameless",
+          "aliases": [
+            "frameless",
+            "无框",
+            "無框"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_lang",
+          "aliases": [
+            "lang=$1",
+            "语言=$1",
+            "語言=$1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_left",
+          "aliases": [
+            "left",
+            "左"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_link",
+          "aliases": [
+            "link=$1",
+            "链接=$1",
+            "連結=$1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_manualthumb",
+          "aliases": [
+            "thumbnail=$1",
+            "thumb=$1",
+            "缩略图=$1",
+            "縮圖=$1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_middle",
+          "aliases": [
+            "middle",
+            "中间",
+            "垂直置中"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_none",
+          "aliases": [
+            "none",
+            "无",
+            "無"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_page",
+          "aliases": [
+            "page=$1",
+            "page $1",
+            "页数=$1",
+            "$1页",
+            "頁=$1",
+            "$1頁"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_right",
+          "aliases": [
+            "right",
+            "右"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_sub",
+          "aliases": [
+            "sub",
+            "子",
+            "下標"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_super",
+          "aliases": [
+            "super",
+            "sup",
+            "超",
+            "上標"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_text_bottom",
+          "aliases": [
+            "text-bottom",
+            "文字底部",
+            "文字置底"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_text_top",
+          "aliases": [
+            "text-top",
+            "文字顶部",
+            "文字置頂"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_thumbnail",
+          "aliases": [
+            "thumb",
+            "thumbnail",
+            "缩略图",
+            "縮圖"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_top",
+          "aliases": [
+            "top",
+            "顶部",
+            "垂直置頂"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_upright",
+          "aliases": [
+            "upright",
+            "upright=$1",
+            "upright $1",
+            "右上",
+            "右上=$1",
+            "右上$1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "img_width",
+          "aliases": [
+            "$1px",
+            "$1像素",
+            "width=$1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "index",
+          "aliases": [
+            "__INDEX__",
+            "__索引__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "int",
+          "aliases": [
+            "INT:",
+            "界面:"
+          ]
+        },
+        {
+          "name": "language",
+          "aliases": [
+            "#LANGUAGE",
+            "#语言",
+            "#語言"
+          ]
+        },
+        {
+          "name": "lc",
+          "aliases": [
+            "LC:",
+            "小写:"
+          ]
+        },
+        {
+          "name": "lcfirst",
+          "aliases": [
+            "LCFIRST:",
+            "小写首字:"
+          ]
+        },
+        {
+          "name": "localday",
+          "aliases": [
+            "LOCALDAY",
+            "本地日"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localday2",
+          "aliases": [
+            "LOCALDAY2",
+            "本地日2"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localdayname",
+          "aliases": [
+            "LOCALDAYNAME",
+            "本地日名"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localdow",
+          "aliases": [
+            "LOCALDOW",
+            "本地DOW"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localhour",
+          "aliases": [
+            "LOCALHOUR",
+            "本地小时"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localmonth",
+          "aliases": [
+            "LOCALMONTH",
+            "LOCALMONTH2",
+            "本地月",
+            "本地月2"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localmonth1",
+          "aliases": [
+            "LOCALMONTH1",
+            "本地月1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localmonthabbrev",
+          "aliases": [
+            "LOCALMONTHABBREV",
+            "本地月缩写"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localmonthname",
+          "aliases": [
+            "LOCALMONTHNAME",
+            "本地月份名"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localmonthnamegen",
+          "aliases": [
+            "LOCALMONTHNAMEGEN",
+            "本地月历"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localtime",
+          "aliases": [
+            "LOCALTIME",
+            "本地时间"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localtimestamp",
+          "aliases": [
+            "LOCALTIMESTAMP",
+            "本地时间戳"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localurl",
+          "aliases": [
+            "LOCALURL:",
+            "本地URL:"
+          ]
+        },
+        {
+          "name": "localurle",
+          "aliases": [
+            "LOCALURLE:",
+            "本地URLE:"
+          ]
+        },
+        {
+          "name": "localweek",
+          "aliases": [
+            "LOCALWEEK",
+            "本地周"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "localyear",
+          "aliases": [
+            "LOCALYEAR",
+            "本地年"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "msg",
+          "aliases": [
+            "MSG:",
+            "訊息:"
+          ]
+        },
+        {
+          "name": "msgnw",
+          "aliases": [
+            "MSGNW:"
+          ]
+        },
+        {
+          "name": "namespace",
+          "aliases": [
+            "NAMESPACE",
+            "名字空间",
+            "命名空間"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "namespacee",
+          "aliases": [
+            "NAMESPACEE",
+            "名字空间等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "namespacenumber",
+          "aliases": [
+            "NAMESPACENUMBER",
+            "名字空间编号",
+            "命名空間數"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "newsectionlink",
+          "aliases": [
+            "__NEWSECTIONLINK__",
+            "__新段落链接__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "nocommafysuffix",
+          "aliases": [
+            "NOSEP"
+          ]
+        },
+        {
+          "name": "nocontentconvert",
+          "aliases": [
+            "__NOCONTENTCONVERT__",
+            "__NOCC__",
+            "__不转换内容__",
+            "__不轉換內容__"
+          ]
+        },
+        {
+          "name": "noeditsection",
+          "aliases": [
+            "__NOEDITSECTION__",
+            "__无编辑段落__",
+            "__无段落编辑__",
+            "__無段落編輯__"
+          ]
+        },
+        {
+          "name": "nogallery",
+          "aliases": [
+            "__NOGALLERY__",
+            "__无图库__",
+            "__無圖庫__"
+          ]
+        },
+        {
+          "name": "noindex",
+          "aliases": [
+            "__NOINDEX__",
+            "__无索引__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "nonewsectionlink",
+          "aliases": [
+            "__NONEWSECTIONLINK__",
+            "__无新段落链接__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "notitleconvert",
+          "aliases": [
+            "__NOTITLECONVERT__",
+            "__NOTC__",
+            "__不转换标题__",
+            "__不轉換標題__"
+          ]
+        },
+        {
+          "name": "notoc",
+          "aliases": [
+            "__NOTOC__",
+            "__无目录__",
+            "__無目錄__"
+          ]
+        },
+        {
+          "name": "ns",
+          "aliases": [
+            "NS:",
+            "名称空间:",
+            "命名空間:",
+            "名字空间:"
+          ]
+        },
+        {
+          "name": "nse",
+          "aliases": [
+            "NSE:",
+            "名称空间E:",
+            "命名空間E:",
+            "名字空间E:"
+          ]
+        },
+        {
+          "name": "numberingroup",
+          "aliases": [
+            "NUMBERINGROUP",
+            "NUMINGROUP",
+            "组中用户数"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberofactiveusers",
+          "aliases": [
+            "NUMBEROFACTIVEUSERS",
+            "活跃用户数",
+            "活躍使用者人數"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberofadmins",
+          "aliases": [
+            "NUMBEROFADMINS",
+            "管理员数",
+            "管理員數"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberofarticles",
+          "aliases": [
+            "NUMBEROFARTICLES",
+            "条目数",
+            "文章數"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberofedits",
+          "aliases": [
+            "NUMBEROFEDITS",
+            "编辑数"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberoffiles",
+          "aliases": [
+            "NUMBEROFFILES",
+            "文件数",
+            "檔案數"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberofpages",
+          "aliases": [
+            "NUMBEROFPAGES",
+            "页面数",
+            "頁面數"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "numberofusers",
+          "aliases": [
+            "NUMBEROFUSERS",
+            "用户数",
+            "使用者人數量"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "padleft",
+          "aliases": [
+            "PADLEFT",
+            "左填充"
+          ]
+        },
+        {
+          "name": "padright",
+          "aliases": [
+            "PADRIGHT",
+            "右填充"
+          ]
+        },
+        {
+          "name": "pageid",
+          "aliases": [
+            "PAGEID",
+            "页面ID",
+            "頁面ID"
+          ]
+        },
+        {
+          "name": "pagelanguage",
+          "aliases": [
+            "PAGELANGUAGE"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "pagename",
+          "aliases": [
+            "PAGENAME",
+            "页名",
+            "页面名",
+            "页面名称",
+            "頁面名稱"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "pagenamee",
+          "aliases": [
+            "PAGENAMEE",
+            "页面名等同",
+            "页面名称等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "pagesincategory",
+          "aliases": [
+            "PAGESINCATEGORY",
+            "PAGESINCAT",
+            "分类中页面数"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "pagesincategory_all",
+          "aliases": [
+            "all",
+            "所有"
+          ]
+        },
+        {
+          "name": "pagesincategory_files",
+          "aliases": [
+            "files",
+            "文件",
+            "檔案"
+          ]
+        },
+        {
+          "name": "pagesincategory_pages",
+          "aliases": [
+            "pages",
+            "页面",
+            "頁面"
+          ]
+        },
+        {
+          "name": "pagesincategory_subcats",
+          "aliases": [
+            "subcats",
+            "子分类"
+          ]
+        },
+        {
+          "name": "pagesinnamespace",
+          "aliases": [
+            "PAGESINNAMESPACE:",
+            "PAGESINNS:",
+            "名字空间中页面数:"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "pagesize",
+          "aliases": [
+            "PAGESIZE",
+            "页面大小"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "plural",
+          "aliases": [
+            "PLURAL:",
+            "复数:"
+          ]
+        },
+        {
+          "name": "protectionexpiry",
+          "aliases": [
+            "PROTECTIONEXPIRY"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "protectionlevel",
+          "aliases": [
+            "PROTECTIONLEVEL",
+            "保护级别"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "raw",
+          "aliases": [
+            "RAW:",
+            "原始:"
+          ]
+        },
+        {
+          "name": "rawsuffix",
+          "aliases": [
+            "R"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "redirect",
+          "aliases": [
+            "#REDIRECT",
+            "#重定向",
+            "#重新導向"
+          ]
+        },
+        {
+          "name": "revisionday",
+          "aliases": [
+            "REVISIONDAY",
+            "修订日"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionday2",
+          "aliases": [
+            "REVISIONDAY2",
+            "修订日2"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionid",
+          "aliases": [
+            "REVISIONID",
+            "修订ID"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionmonth",
+          "aliases": [
+            "REVISIONMONTH",
+            "修订月"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionmonth1",
+          "aliases": [
+            "REVISIONMONTH1",
+            "修订月1"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionsize",
+          "aliases": [
+            "REVISIONSIZE",
+            "修订大小"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisiontimestamp",
+          "aliases": [
+            "REVISIONTIMESTAMP",
+            "修订时间戳"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionuser",
+          "aliases": [
+            "REVISIONUSER",
+            "修订用户",
+            "修訂使用者"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "revisionyear",
+          "aliases": [
+            "REVISIONYEAR",
+            "修订年"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "rootpagename",
+          "aliases": [
+            "ROOTPAGENAME",
+            "根页面名称",
+            "根頁面名稱"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "rootpagenamee",
+          "aliases": [
+            "ROOTPAGENAMEE",
+            "根页面名称等同",
+            "根頁面名稱E"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "safesubst",
+          "aliases": [
+            "SAFESUBST:",
+            "安全替代:",
+            "安全替換:"
+          ]
+        },
+        {
+          "name": "scriptpath",
+          "aliases": [
+            "SCRIPTPATH",
+            "脚本路径"
+          ]
+        },
+        {
+          "name": "server",
+          "aliases": [
+            "SERVER",
+            "服务器",
+            "伺服器"
+          ]
+        },
+        {
+          "name": "servername",
+          "aliases": [
+            "SERVERNAME",
+            "服务器名",
+            "伺服器名稱"
+          ]
+        },
+        {
+          "name": "sitename",
+          "aliases": [
+            "SITENAME",
+            "站点名称",
+            "網站名稱"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "special",
+          "aliases": [
+            "special",
+            "特殊"
+          ]
+        },
+        {
+          "name": "speciale",
+          "aliases": [
+            "speciale",
+            "特殊等同"
+          ]
+        },
+        {
+          "name": "staticredirect",
+          "aliases": [
+            "__STATICREDIRECT__",
+            "__静态重定向__",
+            "__靜態重新導向__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "stylepath",
+          "aliases": [
+            "STYLEPATH",
+            "样式路径"
+          ]
+        },
+        {
+          "name": "subjectpagename",
+          "aliases": [
+            "SUBJECTPAGENAME",
+            "ARTICLEPAGENAME",
+            "主名字空间页面名称",
+            "条目页面名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "subjectpagenamee",
+          "aliases": [
+            "SUBJECTPAGENAMEE",
+            "ARTICLEPAGENAMEE",
+            "主名字空间页面名称等同",
+            "条目页面名称等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "subjectspace",
+          "aliases": [
+            "SUBJECTSPACE",
+            "ARTICLESPACE",
+            "主名字空间",
+            "条目名字空间"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "subjectspacee",
+          "aliases": [
+            "SUBJECTSPACEE",
+            "ARTICLESPACEE",
+            "主名字空间等同",
+            "条目名字空间等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "subpagename",
+          "aliases": [
+            "SUBPAGENAME",
+            "子页面名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "subpagenamee",
+          "aliases": [
+            "SUBPAGENAMEE",
+            "子页面名称等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "subst",
+          "aliases": [
+            "SUBST:",
+            "替代:",
+            "替換:"
+          ]
+        },
+        {
+          "name": "tag",
+          "aliases": [
+            "tag",
+            "标记"
+          ]
+        },
+        {
+          "name": "talkpagename",
+          "aliases": [
+            "TALKPAGENAME",
+            "讨论页面名称",
+            "对话页面名称"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "talkpagenamee",
+          "aliases": [
+            "TALKPAGENAMEE",
+            "讨论页面名称等同",
+            "对话页面名称等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "talkspace",
+          "aliases": [
+            "TALKSPACE",
+            "讨论空间",
+            "讨论名字空间",
+            "對話空間"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "talkspacee",
+          "aliases": [
+            "TALKSPACEE",
+            "讨论空间等同",
+            "讨论名字空间等同"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "toc",
+          "aliases": [
+            "__TOC__",
+            "__目录__",
+            "__目錄__"
+          ]
+        },
+        {
+          "name": "uc",
+          "aliases": [
+            "UC:",
+            "大写:"
+          ]
+        },
+        {
+          "name": "ucfirst",
+          "aliases": [
+            "UCFIRST:",
+            "大写首字:"
+          ]
+        },
+        {
+          "name": "urlencode",
+          "aliases": [
+            "URLENCODE:",
+            "URL编码:"
+          ]
+        },
+        {
+          "name": "url_path",
+          "aliases": [
+            "PATH",
+            "路径"
+          ]
+        },
+        {
+          "name": "url_query",
+          "aliases": [
+            "QUERY",
+            "查询",
+            "查詢"
+          ]
+        },
+        {
+          "name": "url_wiki",
+          "aliases": [
+            "WIKI"
+          ]
+        },
+        {
+          "name": "categorytree",
+          "aliases": [
+            "分类树",
+            "分類樹",
+            "categorytree"
+          ]
+        },
+        {
+          "name": "disambiguation",
+          "aliases": [
+            "__消除歧义__",
+            "__DISAMBIG__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "archivedtalk",
+          "aliases": [
+            "__已存档讨论__",
+            "__ARCHIVEDTALK__"
+          ]
+        },
+        {
+          "name": "notalk",
+          "aliases": [
+            "__禁用讨论__",
+            "__NOTALK__"
+          ]
+        },
+        {
+          "name": "ifexpr",
+          "aliases": [
+            "若表达式",
+            "若表達式",
+            "ifexpr"
+          ]
+        },
+        {
+          "name": "time",
+          "aliases": [
+            "时间",
+            "時間",
+            "time"
+          ]
+        },
+        {
+          "name": "timel",
+          "aliases": [
+            "时间l",
+            "時間L",
+            "timel"
+          ]
+        },
+        {
+          "name": "titleparts",
+          "aliases": [
+            "标题组成部分",
+            "titleparts"
+          ]
+        },
+        {
+          "name": "urldecode",
+          "aliases": [
+            "url解码",
+            "URI解碼",
+            "urldecode"
+          ]
+        },
+        {
+          "name": "invoke",
+          "aliases": [
+            "调用",
+            "調動",
+            "invoke"
+          ]
+        },
+        {
+          "name": "description2",
+          "aliases": [
+            "description2"
+          ]
+        },
+        {
+          "name": "dpl",
+          "aliases": [
+            "dpl"
+          ]
+        },
+        {
+          "name": "dplnum",
+          "aliases": [
+            "dplnum"
+          ]
+        },
+        {
+          "name": "dplvar",
+          "aliases": [
+            "dplvar"
+          ]
+        },
+        {
+          "name": "dplreplace",
+          "aliases": [
+            "dplreplace"
+          ]
+        },
+        {
+          "name": "dplchapter",
+          "aliases": [
+            "dplchapter"
+          ]
+        },
+        {
+          "name": "dplmatrix",
+          "aliases": [
+            "dplmatrix"
+          ]
+        },
+        {
+          "name": "DynamicPageList",
+          "aliases": [
+            "DynamicPageList"
+          ]
+        },
+        {
+          "name": "ev",
+          "aliases": [
+            "ev"
+          ]
+        },
+        {
+          "name": "evt",
+          "aliases": [
+            "evt"
+          ]
+        },
+        {
+          "name": "evu",
+          "aliases": [
+            "evu"
+          ]
+        },
+        {
+          "name": "evl",
+          "aliases": [
+            "evl"
+          ]
+        },
+        {
+          "name": "vlink",
+          "aliases": [
+            "vlink"
+          ]
+        },
+        {
+          "name": "ev_start",
+          "aliases": [
+            "start=$1"
+          ]
+        },
+        {
+          "name": "ev_end",
+          "aliases": [
+            "end=$1"
+          ]
+        },
+        {
+          "name": "cover",
+          "aliases": [
+            "cover=$1"
+          ]
+        },
+        {
+          "name": "poster",
+          "aliases": [
+            "poster=$1"
+          ]
+        },
+        {
+          "name": "autoplay",
+          "aliases": [
+            "autoplay"
+          ]
+        },
+        {
+          "name": "loop",
+          "aliases": [
+            "loop"
+          ]
+        },
+        {
+          "name": "nocontrols",
+          "aliases": [
+            "nocontrols"
+          ]
+        },
+        {
+          "name": "gif",
+          "aliases": [
+            "gif"
+          ]
+        },
+        {
+          "name": "muted",
+          "aliases": [
+            "muted"
+          ]
+        },
+        {
+          "name": "lazy",
+          "aliases": [
+            "lazy"
+          ]
+        },
+        {
+          "name": "autoresize",
+          "aliases": [
+            "autoresize"
+          ]
+        },
+        {
+          "name": "title",
+          "aliases": [
+            "title=$1"
+          ]
+        },
+        {
+          "name": "description",
+          "aliases": [
+            "description=$1"
+          ]
+        },
+        {
+          "name": "class",
+          "aliases": [
+            "class=$1"
+          ]
+        },
+        {
+          "name": "img_height",
+          "aliases": [
+            "height=$1"
+          ]
+        },
+        {
+          "name": "model_autostart",
+          "aliases": [
+            "autostart"
+          ]
+        },
+        {
+          "name": "img_thumb",
+          "aliases": [
+            "thumbnailurl=$1"
+          ]
+        },
+        {
+          "name": "img_bg",
+          "aliases": [
+            "background"
+          ]
+        },
+        {
+          "name": "img_ui",
+          "aliases": [
+            "userinterface"
+          ]
+        },
+        {
+          "name": "lst",
+          "aliases": [
+            "lst",
+            "section"
+          ]
+        },
+        {
+          "name": "lstx",
+          "aliases": [
+            "lstx",
+            "section-x"
+          ]
+        },
+        {
+          "name": "lsth",
+          "aliases": [
+            "lsth",
+            "section-h"
+          ]
+        },
+        {
+          "name": "while",
+          "aliases": [
+            "while"
+          ]
+        },
+        {
+          "name": "dowhile",
+          "aliases": [
+            "dowhile"
+          ]
+        },
+        {
+          "name": "forargs",
+          "aliases": [
+            "forargs"
+          ]
+        },
+        {
+          "name": "fornumargs",
+          "aliases": [
+            "fornumargs"
+          ]
+        },
+        {
+          "name": "timef",
+          "aliases": [
+            "timef"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "timefl",
+          "aliases": [
+            "timefl"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "timef-time",
+          "aliases": [
+            "time"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "timef-date",
+          "aliases": [
+            "date"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "timef-both",
+          "aliases": [
+            "both"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "timef-pretty",
+          "aliases": [
+            "pretty"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "rel2abs",
+          "aliases": [
+            "rel2abs"
+          ]
+        },
+        {
+          "name": "hs",
+          "aliases": [
+            "hs"
+          ]
+        },
+        {
+          "name": "choose",
+          "aliases": [
+            "choose"
+          ]
+        },
+        {
+          "name": "batchupload",
+          "aliases": [
+            "batchupload"
+          ]
+        },
+        {
+          "name": "timedmedia_thumbtime",
+          "aliases": [
+            "thumbtime=$1"
+          ]
+        },
+        {
+          "name": "timedmedia_starttime",
+          "aliases": [
+            "start=$1"
+          ]
+        },
+        {
+          "name": "timedmedia_endtime",
+          "aliases": [
+            "end=$1"
+          ]
+        },
+        {
+          "name": "timedmedia_disablecontrols",
+          "aliases": [
+            "disablecontrols=$1"
+          ]
+        },
+        {
+          "name": "timedmedia_loop",
+          "aliases": [
+            "loop"
+          ]
+        },
+        {
+          "name": "timedmedia_muted",
+          "aliases": [
+            "muted"
+          ]
+        },
+        {
+          "name": "timedmedia_autoplay",
+          "aliases": [
+            "autoplay"
+          ]
+        },
+        {
+          "name": "timedmedia_nocontrols",
+          "aliases": [
+            "nocontrols"
+          ]
+        },
+        {
+          "name": "var",
+          "aliases": [
+            "var"
+          ]
+        },
+        {
+          "name": "var_final",
+          "aliases": [
+            "var_final"
+          ]
+        },
+        {
+          "name": "vardefine",
+          "aliases": [
+            "vardefine"
+          ]
+        },
+        {
+          "name": "vardefineecho",
+          "aliases": [
+            "vardefineecho"
+          ]
+        },
+        {
+          "name": "varexists",
+          "aliases": [
+            "varexists"
+          ]
+        },
+        {
+          "name": "=",
+          "aliases": [
+            "="
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "bcp47",
+          "aliases": [
+            "#bcp47"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "contentmodel",
+          "aliases": [
+            "#contentmodel"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "contentmodel_canonical",
+          "aliases": [
+            "canonical"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "contentmodel_local",
+          "aliases": [
+            "local"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "dir",
+          "aliases": [
+            "#dir"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "expectunusedtemplate",
+          "aliases": [
+            "__EXPECTUNUSEDTEMPLATE__"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "formal",
+          "aliases": [
+            "#FORMAL:"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "interlanguagelink",
+          "aliases": [
+            "#interlanguagelink"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "interwikilink",
+          "aliases": [
+            "#interwikilink"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "language_option_bcp47",
+          "aliases": [
+            "bcp47"
+          ],
+          "case-sensitive": ""
+        },
+        {
+          "name": "lossless",
+          "aliases": [
+            "LOSSLESS"
+          ]
+        },
+        {
+          "name": "userlanguage",
+          "aliases": [
+            "USERLANGUAGE"
+          ],
+          "case-sensitive": ""
+        }
+      ],
+      "functionhooks": [
+        "ns",
+        "nse",
+        "urlencode",
+        "lcfirst",
+        "ucfirst",
+        "lc",
+        "uc",
+        "localurl",
+        "localurle",
+        "fullurl",
+        "fullurle",
+        "canonicalurl",
+        "canonicalurle",
+        "formatnum",
+        "grammar",
+        "gender",
+        "plural",
+        "formal",
+        "bidi",
+        "numberingroup",
+        "language",
+        "padleft",
+        "padright",
+        "anchorencode",
+        "defaultsort",
+        "filepath",
+        "pagesincategory",
+        "pagesize",
+        "protectionlevel",
+        "protectionexpiry",
+        "pagename",
+        "pagenamee",
+        "fullpagename",
+        "fullpagenamee",
+        "subpagename",
+        "subpagenamee",
+        "rootpagename",
+        "rootpagenamee",
+        "basepagename",
+        "basepagenamee",
+        "talkpagename",
+        "talkpagenamee",
+        "subjectpagename",
+        "subjectpagenamee",
+        "pageid",
+        "revisionid",
+        "revisionday",
+        "revisionday2",
+        "revisionmonth",
+        "revisionmonth1",
+        "revisionyear",
+        "revisiontimestamp",
+        "revisionuser",
+        "cascadingsources",
+        "namespace",
+        "namespacee",
+        "namespacenumber",
+        "talkspace",
+        "talkspacee",
+        "subjectspace",
+        "subjectspacee",
+        "numberofarticles",
+        "numberoffiles",
+        "numberofusers",
+        "numberofactiveusers",
+        "numberofpages",
+        "numberofadmins",
+        "numberofedits",
+        "bcp47",
+        "dir",
+        "interwikilink",
+        "interlanguagelink",
+        "contentmodel",
+        "int",
+        "special",
+        "speciale",
+        "tag",
+        "formatdate",
+        "displaytitle",
+        "choose",
+        "batchupload",
+        "var",
+        "varexists",
+        "var_final",
+        "vardefine",
+        "vardefineecho",
+        "while",
+        "dowhile",
+        "loop",
+        "forargs",
+        "fornumargs",
+        "if",
+        "ifeq",
+        "switch",
+        "ifexist",
+        "ifexpr",
+        "iferror",
+        "time",
+        "timel",
+        "timef",
+        "timefl",
+        "expr",
+        "rel2abs",
+        "titleparts",
+        "len",
+        "pos",
+        "rpos",
+        "sub",
+        "count",
+        "replace",
+        "explode",
+        "urldecode",
+        "invoke",
+        "dpl",
+        "dplnum",
+        "dplvar",
+        "dplreplace",
+        "dplchapter",
+        "dplmatrix",
+        "ev",
+        "evt",
+        "evu",
+        "evl",
+        "vlink",
+        "description2",
+        "categorytree",
+        "lst",
+        "lstx",
+        "lsth"
+      ],
+      "variables": [
+        "!",
+        "=",
+        "currentmonth",
+        "currentmonth1",
+        "currentmonthname",
+        "currentmonthnamegen",
+        "currentmonthabbrev",
+        "currentday",
+        "currentday2",
+        "currentdayname",
+        "currentyear",
+        "currenttime",
+        "currenthour",
+        "localmonth",
+        "localmonth1",
+        "localmonthname",
+        "localmonthnamegen",
+        "localmonthabbrev",
+        "localday",
+        "localday2",
+        "localdayname",
+        "localyear",
+        "localtime",
+        "localhour",
+        "numberofarticles",
+        "numberoffiles",
+        "numberofedits",
+        "articlepath",
+        "pageid",
+        "sitename",
+        "server",
+        "servername",
+        "scriptpath",
+        "stylepath",
+        "pagename",
+        "pagenamee",
+        "fullpagename",
+        "fullpagenamee",
+        "namespace",
+        "namespacee",
+        "namespacenumber",
+        "currentweek",
+        "currentdow",
+        "localweek",
+        "localdow",
+        "revisionid",
+        "revisionday",
+        "revisionday2",
+        "revisionmonth",
+        "revisionmonth1",
+        "revisionyear",
+        "revisiontimestamp",
+        "revisionuser",
+        "revisionsize",
+        "subpagename",
+        "subpagenamee",
+        "talkspace",
+        "talkspacee",
+        "subjectspace",
+        "subjectspacee",
+        "talkpagename",
+        "talkpagenamee",
+        "subjectpagename",
+        "subjectpagenamee",
+        "numberofusers",
+        "numberofactiveusers",
+        "numberofpages",
+        "currentversion",
+        "rootpagename",
+        "rootpagenamee",
+        "basepagename",
+        "basepagenamee",
+        "currenttimestamp",
+        "localtimestamp",
+        "directionmark",
+        "contentlanguage",
+        "userlanguage",
+        "pagelanguage",
+        "numberofadmins",
+        "cascadingsources",
+        "bcp47",
+        "contentmodel",
+        "dir",
+        "language",
+        "choose"
+      ]
+    }
+  }
+}

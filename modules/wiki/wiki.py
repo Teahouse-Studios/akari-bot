@@ -1,5 +1,6 @@
 import asyncio
 import re
+import urllib.parse
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -14,6 +15,8 @@ from core.builtins.message.internal import (
     Url,
 )
 from core.builtins.session.internal import FinishedSession, MessageSession, confirm_prompt_key
+from core.builtins.parser.args import parse_argv, parse_template
+from core.builtins.parser.command import _split_command
 from core.builtins.utils import confirm_command
 from core.component import module
 from core.constants.exceptions import (
@@ -24,6 +27,7 @@ from core.constants.exceptions import (
 )
 from core.logger import Logger
 from core.utils.func import is_int
+from core.utils.dirty_check import check
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.url_audit import evaluate_url_policy
 from core.utils.button import build_button_rows
@@ -36,6 +40,16 @@ from .utils.disambiguation import (
 )
 from .utils.recommend import finish_with_start_wiki_not_set
 from .utils.media import file_preview
+from .utils.magic import (
+    MAX_EXPRESSION_LENGTH,
+    MAX_INLINE_MAGIC_RESULTS,
+    MAX_RESULT_LENGTH,
+    MAGIC_TIMEOUT,
+    MagicWordError,
+    expand_magic,
+    extract_expressions,
+    get_registry,
+)
 from .utils.screenshot_image import generate_screenshot
 from .utils.wikilib import BlockedWikiError, MAX_RESEARCH_SUGGESTIONS, WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
@@ -351,8 +365,128 @@ async def _(msg: Bot.MessageSession):
 
 @wiki.command("<pagename> [-l <lang>] {{I18N:wiki.help}}", options_desc={"-l": "{I18N:wiki.help.option.l}"})
 async def _(msg: Bot.MessageSession, pagename: str, lang: str | None = None):
+    await _query_page_input(msg, pagename, lang)
+
+
+async def _query_page_input(msg: Bot.MessageSession, pagename: str, lang: str | None = None):
+    if pagename.lstrip().startswith("{{"):
+        await query_expressions(msg, pagename, lang=lang)
+        return
     pagename = _normalize_page_name(pagename)
     await query_pages(msg, pagename, lang=lang)
+
+
+@wiki.command(
+    "magic <expression> [-p <page>] {{I18N:wiki.help.magic}}",
+    options_desc={"-p": "{I18N:wiki.help.magic.option.p}"},
+)
+async def magic_words(msg: Bot.MessageSession, expression: str, page: str | None = None):
+    tokens = _split_command(msg.trigger_msg.partition(" ")[2])
+    if tokens and tokens[0] != "magic":
+        parsed = parse_argv(tokens, parse_template(["<pagename> [-l <lang>]"])).args
+        option = parsed.get("-l")
+        await _query_page_input(msg, parsed["<pagename>"], option.get("<lang>") if isinstance(option, dict) else None)
+        return
+    await query_expressions(msg, expression, page=page, magic_only=True)
+
+
+async def query_expressions(
+    msg: Bot.MessageSession,
+    text: str,
+    *,
+    page: str | None = None,
+    magic_only: bool = False,
+    inline: bool = False,
+    lang: str | None = None,
+):
+    text = text.strip()
+    if magic_only and not text.startswith("{{"):
+        text = "{{" + text + "}}"
+    if not inline and (len(text) > MAX_EXPRESSION_LENGTH or (page and len(page) > MAX_EXPRESSION_LENGTH)):
+        await msg.finish(I18NContext("wiki.message.magic.input_long"))
+    expressions = extract_expressions(text[:4000])
+    if not inline and (len(expressions) != 1 or expressions[0].span != (0, len(text))):
+        await msg.finish(I18NContext("wiki.message.magic.invalid"))
+    if not expressions:
+        return
+    expressions = list({str(node): node for node in expressions}.values())[:5]
+    target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
+    if not target.api_link:
+        await finish_with_start_wiki_not_set(msg)
+    await finish_if_wiki_blocked(msg, target.api_link)
+    site = WikiLib(target.api_link, target.headers, locale=msg.session_info.locale.locale)
+    registry = None
+    try:
+        async with asyncio.timeout(MAGIC_TIMEOUT):
+            registry = await get_registry(site)
+    except BlockedWikiError as error:
+        await finish_if_wiki_blocked(msg, error.url)
+        raise
+    except Exception:
+        Logger.exception("Failed to discover Wiki magic words: ")
+    magic_nodes = []
+    template_names = []
+    template_namespaces = {"template"} | {name.casefold() for name, ns in site.wiki_info.namespaces.items() if ns == 10}
+    for node in expressions:
+        is_magic = registry.lookup(node) is not None if registry else type(node).__name__ == "ParserFunction"
+        if magic_only or is_magic or str(node)[2:-2].lstrip().startswith("#"):
+            magic_nodes.append(node)
+        else:
+            name = node.name.strip()
+            if ":" in name and name.split(":", 1)[0].casefold() in template_namespaces:
+                name = name.split(":", 1)[1].strip()
+            if name and "{" not in name:
+                template_names.append(name)
+    magic_nodes = magic_nodes[:MAX_INLINE_MAGIC_RESULTS]
+    messages = MessageChain.create()
+    errors = set()
+    multiple = len(magic_nodes) > 1
+    limit = MAX_RESULT_LENGTH if not multiple else (MAX_RESULT_LENGTH - 30 * len(magic_nodes)) // len(magic_nodes)
+    for node in magic_nodes:
+        try:
+            if registry is None:
+                raise MagicWordError("unavailable")
+            value, is_url = await expand_magic(
+                site, registry, str(node), page, limit=limit, max_lines=1 if multiple else 3
+            )
+            if not site.wiki_info.is_allowed and site.should_check_content(msg):
+                checked = await check([str(node), value], session=msg)
+                if any(not item["status"] for item in checked):
+                    raise MagicWordError("filtered")
+            if not value:
+                raise MagicWordError("empty")
+            if is_url:
+                trusted = (
+                    site.wiki_info.is_allowed
+                    and urllib.parse.urlsplit(value).netloc == urllib.parse.urlsplit(site.wiki_info.realurl).netloc
+                )
+                result = Url(value, trusted=True if trusted else None)
+            else:
+                result = Plain(value, allow_parse=False)
+            if multiple:
+                call = registry.lookup(node)
+                if not is_url:
+                    result = Plain(f"{call.label[:24]} = {value}", allow_parse=False)
+                messages.append(result)
+            else:
+                messages.append(result)
+        except MagicWordError as error:
+            key = error.key
+            if key not in errors:
+                messages.append(I18NContext(key))
+                errors.add(key)
+        except BlockedWikiError as error:
+            await finish_if_wiki_blocked(msg, error.url)
+            raise
+        except Exception:
+            Logger.exception("Failed to expand Wiki magic word: ")
+            if "wiki.message.magic.unavailable" not in errors:
+                messages.append(I18NContext("wiki.message.magic.unavailable"))
+                errors.add("wiki.message.magic.unavailable")
+    if template_names:
+        await query_pages(msg, template_names, template=True, preset_message=messages, lang=lang)
+    elif messages:
+        await msg.finish(messages)
 
 
 @wiki.command(
@@ -939,10 +1073,6 @@ async def _query_pages_impl(
                                 namespace=r.invalid_namespace,
                             )
                         )
-                    if r.before_page_property == "template":
-                        title_parts = r.before_title.split(":")
-                        if len(title_parts) > 1 and title_parts[1].isupper():
-                            plain_slice.append(I18NContext("wiki.message.magic_word"))
                     if plain_slice:
                         msg_list.extend(plain_slice)
                     if wait_plain_slice:

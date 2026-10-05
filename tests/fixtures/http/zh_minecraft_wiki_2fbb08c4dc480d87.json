@@ -1,0 +1,11 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=expandtemplates&text=%7B%7B%23if%3A1%7C+magic+%7Cnone%7D%7D&prop=wikitext&format=json",
+  "status_code": 200,
+  "headers": {},
+  "method": "GET",
+  "json_data": {
+    "expandtemplates": {
+      "wikitext": "magic"
+    }
+  }
+}

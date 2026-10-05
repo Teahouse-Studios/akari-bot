@@ -1,0 +1,11 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=expandtemplates&text=%7B%7B%E7%AB%99%E7%82%B9%E5%90%8D%E7%A7%B0%7D%7D&prop=wikitext&format=json",
+  "status_code": 200,
+  "headers": {},
+  "method": "GET",
+  "json_data": {
+    "expandtemplates": {
+      "wikitext": "Minecraft Wiki"
+    }
+  }
+}

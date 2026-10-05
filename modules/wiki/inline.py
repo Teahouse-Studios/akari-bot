@@ -25,6 +25,7 @@ from .wiki import (
     _build_section_callback,
     _start_background_with_release,
     _wiki_render_mode,
+    query_expressions,
     query_pages,
 )
 
@@ -49,14 +50,13 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list[:5], inline_mode=True)
 
 
-@wiki_inline.regex(r"\{\{(.*?)\}\}", flags=re.I, mode="A", desc="{I18N:wiki.help.wiki-inline.template}")
-async def _(msg: Bot.MessageSession):
-    query_list = []
-    for x in msg.matched_msg:
-        if x != "" and x not in query_list and x[0] != "#" and x.find("{") == -1:
-            query_list.append(x.split("|")[0])
-    if query_list:
-        await query_pages(msg, query_list[:5], template=True, inline_mode=True)
+@wiki_inline.regex(
+    r"\{\{",
+    mode="A",
+    desc="{I18N:wiki.help.wiki-inline.template}",
+)
+async def inline_templates(msg: Bot.MessageSession):
+    await query_expressions(msg, msg.as_display(text_only=True), inline=True)
 
 
 @wiki_inline.regex(
