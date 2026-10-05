@@ -1,0 +1,90 @@
+{
+  "url": "https://zh.minecraft.wiki/api.php?action=query&prop=info%7Cimageinfo%7Clanglinks%7Ctemplates%7Cextracts%7Cpageprops&llprop=url&inprop=url&iiprop=url&iwurl=true&redirects=true&converttitles=true&titles=Minecraft&ppprop=description%7Cdisplaytitle%7Cdisambiguation%7Cinfoboxes&explaintext=true&exsectionformat=plain&exchars=200&tltemplates=Template%3ADisambiguation%7CTemplate%3ADocumentation%7CTemplate%3AVersion+disambiguation&tllimit=max&format=json",
+  "status_code": 200,
+  "headers": {},
+  "method": "GET",
+  "json_data": {
+    "continue": {
+      "llcontinue": "6665|ko",
+      "continue": "||info|imageinfo|templates|extracts|pageprops"
+    },
+    "query": {
+      "pages": {
+        "6665": {
+          "pageid": 6665,
+          "ns": 0,
+          "title": "Minecraft",
+          "contentmodel": "wikitext",
+          "pagelanguage": "zh",
+          "pagelanguagehtmlcode": "zh",
+          "pagelanguagedir": "ltr",
+          "touched": "2026-10-04T01:20:49Z",
+          "lastrevid": 1495594,
+          "length": 54538,
+          "fullurl": "https://zh.minecraft.wiki/w/Minecraft",
+          "editurl": "https://zh.minecraft.wiki/w/Minecraft?action=edit",
+          "canonicalurl": "https://zh.minecraft.wiki/w/Minecraft",
+          "langlinks": [
+            {
+              "lang": "cs",
+              "url": "https://cs.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "de",
+              "url": "https://de.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "el",
+              "url": "https://el.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "en",
+              "url": "https://minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "es",
+              "url": "https://es.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "fr",
+              "url": "https://fr.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "he",
+              "url": "https://he.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "hu",
+              "url": "https://hu.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "it",
+              "url": "https://it.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            },
+            {
+              "lang": "ja",
+              "url": "https://ja.minecraft.wiki/w/Minecraft",
+              "*": "Minecraft"
+            }
+          ],
+          "extract": "Minecraft（中文译作《我的世界》，又称《当个创世神》或《麦块》）是一款由Mojang Studios开发的3D沙盒类电子游戏。游戏最初于2009年5月17日作为Classic版本发布，历经数年更新后于2011年11月18日发布正式版。至今，Minecraft的游戏平台已涵盖移动设备和游戏主机。\nMinecraft着重于让玩家探索、交互并改变一个动态生成1m³大小方块的世界。除方块外，环境中还包括动植物与物品…",
+          "pageprops": {
+            "description": "探索自己独一无二的世界，挺过漫漫长夜，并创建您能想象的一切！"
+          }
+        }
+      }
+    },
+    "limits": {
+      "templates": 500
+    }
+  }
+}

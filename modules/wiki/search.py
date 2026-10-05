@@ -1,15 +1,18 @@
-import asyncio
 import re
+import urllib.parse
 
 from core.builtins.bot import Bot
-from core.builtins.message.internal import ButtonFrame, I18NContext, Plain
+from core.builtins.message.chain import MessageChain
+from core.builtins.message.internal import ButtonFrame, I18NContext, Plain, Url
 from core.logger import Logger
 from core.utils.button import build_button_rows
 from core.utils.func import is_int
 from .database.models import WikiTargetInfo
 from .utils.recommend import finish_with_start_wiki_not_set
-from .utils.wikilib import BlockedWikiError, WikiLib
+from .utils.wikilib import BlockedWikiError, InvalidWikiError, WikiLib
 from .wiki import finish_if_wiki_blocked, wiki, query_pages
+
+MAX_SEARCH_RESULTS = 5
 
 
 @wiki.command("search <pagename> {{I18N:wiki.help.search}}")
@@ -32,6 +35,8 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
     for t in title:
         if prefix and use_prefix:
             t = prefix + t
+        if not t:
+            continue
         if t[0] == ":":
             if len(t) > 1:
                 query_task[start_wiki]["query"].append(t[1:])
@@ -52,24 +57,43 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
     Logger.debug(query_task)
     msg_list = []
     wait_msg_list = []
+    choices = []
     button_list = []
+    search_links = []
+    error_message = None
     for q in query_task:
         await finish_if_wiki_blocked(msg, q)
         current_task = query_task[q]
         ready_for_query_pages = current_task["query"] if "query" in current_task else []
         iw_prefix = (current_task["iw_prefix"] + ":") if current_task["iw_prefix"] != "" else ""
-        tasks = []
+        site = WikiLib(q, headers)
         for rd in ready_for_query_pages:
-            tasks.append(asyncio.ensure_future(WikiLib(q, headers).search_page(rd)))
-        try:
-            query = await asyncio.gather(*tasks)
-        except BlockedWikiError as e:
-            await finish_if_wiki_blocked(msg, e.url)
-        for result in query:
+            try:
+                result = await site.search_page(rd)
+            except BlockedWikiError as e:
+                await finish_if_wiki_blocked(msg, e.url)
+                raise
+            except Exception as e:
+                Logger.error(f"Wiki search failed: {e}")
+                error_message = (
+                    Plain(str(e)) if isinstance(e, InvalidWikiError) else I18NContext("wiki.message.error.query")
+                )
+                continue
+            if site.search_link:
+                search_links.append(site.search_link)
+            elif site.wiki_info.script:
+                search_url = (
+                    site.wiki_info.script + "?" + urllib.parse.urlencode({"title": "Special:Search", "search": rd})
+                )
+                search_links.append(Url(search_url, trusted=True if site.wiki_info.is_allowed else None))
             for r in result:
                 wait_msg_list.append(iw_prefix + r)
+                choices.append((r, q))
 
     if len(wait_msg_list) != 0:
+        has_more = len(wait_msg_list) > MAX_SEARCH_RESULTS
+        wait_msg_list = wait_msg_list[:MAX_SEARCH_RESULTS]
+        choices = choices[:MAX_SEARCH_RESULTS]
         msg_list.append(I18NContext("wiki.message.search"))
         i = 0
         if not msg.session_info.support_button:
@@ -79,17 +103,22 @@ async def search_pages(msg: Bot.MessageSession, title: str | list | tuple, use_p
             msg_list.append(I18NContext("wiki.message.search.prompt"))
         else:
             msg_list.append(I18NContext("wiki.message.search.prompt.button"))
-            for w in wait_msg_list[0:5]:
+            for w in wait_msg_list:
                 i += 1
                 button_list.append({f"{i}. {w}": str(i)})
+        if has_more and search_links:
+            msg_list.append(I18NContext("wiki.message.search.more", url=MessageChain.assign(search_links[:3])))
+        if error_message:
+            msg_list.append(error_message)
     else:
-        await msg.finish(I18NContext("wiki.message.search.not_found"))
+        await msg.finish(error_message or I18NContext("wiki.message.search.not_found"))
 
     async def _callback(msg: Bot.MessageSession):
         if is_int(msg.as_display(text_only=True)):
-            reply_number = max(0, int(msg.as_display(text_only=True)) - 1)
-            if reply_number < len(wait_msg_list):
-                await query_pages(msg, wait_msg_list[reply_number])
+            reply_number = int(msg.as_display(text_only=True)) - 1
+            if 0 <= reply_number < len(choices):
+                selected_title, api = choices[reply_number]
+                await query_pages(msg, selected_title, start_wiki_api=api, use_prefix=False)
             else:
                 await msg.finish()
 

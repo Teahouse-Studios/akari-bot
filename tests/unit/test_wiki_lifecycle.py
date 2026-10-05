@@ -106,6 +106,7 @@ async def _test_section_callback_uses_click_session_and_frozen_page():
     page = SimpleNamespace(
         title="First page",
         sections=["First section"],
+        revision_id=None,
         info=SimpleNamespace(api="https://first.example/api.php"),
     )
     callback = _build_section_callback(page)
@@ -129,6 +130,7 @@ async def _test_section_callback_rejects_zero_index():
     page = SimpleNamespace(
         title="Page",
         sections=["First", "Last"],
+        revision_id=None,
         info=SimpleNamespace(api="https://example.com/api.php"),
     )
     callback = _build_section_callback(page)

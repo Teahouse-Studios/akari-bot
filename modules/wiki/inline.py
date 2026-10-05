@@ -1,27 +1,32 @@
 import re
 import urllib.parse
 
-import filetype
-
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Audio, Video, Url
+from core.builtins.message.internal import Button, ButtonFrame, ButtonRows, I18NContext, Image, Url
 from core.component import module
 from core.utils.dirty_check import check
 from core.logger import Logger
-from core.utils.func import is_int
-from core.utils.http import download
-from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.button import build_button_rows
 from .database.models import WikiTargetInfo
 from .utils.diff import DiffError, parse_diff_target
-from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.forum import build_forum_markdown_table, build_section_markdown_table
+from .utils.mapping import generate_screenshot_v2_blocklist
 from .utils.screenshot_image import generate_screenshot
-from .utils.utils import check_svg
-from .utils.wikilib import WikiLib
-from .wiki import _build_forum_callback, _build_section_callback, _start_background_with_release, query_pages
+from .utils.media import file_preview
+from .utils.wikilib import WikiLib, PageInfo
+from .wiki import (
+    WIKI_RENDER_MODE_AUTO,
+    WIKI_RENDER_MODE_BUTTON,
+    _WikiMessageTracker,
+    _build_forum_callback,
+    _build_render_preview_callback,
+    _build_section_callback,
+    _start_background_with_release,
+    _wiki_render_mode,
+    query_pages,
+)
 
 wiki_inline = module(
     "wiki-inline",
@@ -67,6 +72,74 @@ async def _(msg: Bot.MessageSession):
         await query_pages(msg, query_list[:5], mediawiki=True, inline_mode=True)
 
 
+async def _read_url_page(wiki: WikiLib, url: str, msg: Bot.MessageSession, *, check_render: bool) -> PageInfo | None:
+    parts = urllib.parse.urlsplit(url)
+    params = urllib.parse.parse_qs(parts.query, keep_blank_values=True)
+    if "oldid" in params and params["oldid"] != ["0"]:
+        return await wiki.parse_page_info(url, session=msg, check_render=check_render)
+    if params.get("oldid") == ["0"]:
+        del params["oldid"]
+    title = WikiLib._title_from_article_url(url, wiki.wiki_info.articlepath) or params.get("title", [None])[0]
+    if title:
+        args = {key: values[0] for key, values in params.items() if key not in {"title", "curid"} and len(values) == 1}
+        if args:
+            title += "?" + urllib.parse.urlencode(args)
+        if parts.fragment:
+            title += "#" + urllib.parse.unquote(parts.fragment)
+        return await wiki.parse_page_info(title, session=msg, check_render=check_render)
+    pageid = params.get("curid", [""])[0]
+    if pageid.isdecimal():
+        page = await wiki.parse_page_info(pageid=int(pageid), session=msg, check_render=check_render)
+        if page.status and parts.fragment:
+            return await wiki.parse_page_info(
+                page.title + "#" + urllib.parse.unquote(parts.fragment), session=msg, check_render=check_render
+            )
+        return page
+    return None
+
+
+async def _send_url_preview(msg: Bot.MessageSession, page: PageInfo, headers: dict) -> None:
+    allowed = page.info.is_allowed or not msg.session_info.use_url_manager
+    if not (page.status and page.link and page.renderable and allowed and msg.session_info.support_image):
+        return
+    item = {
+        "link": page.link,
+        "wiki_info": page.info,
+        "title": page.title,
+        "section": page.selected_section,
+        "is_allowed": allowed and page.info.realurl not in generate_screenshot_v2_blocklist,
+        "content_mode": page.has_template_doc
+        or page.is_disambiguation
+        or page.is_forum_topic
+        or page.title.split(":")[0] == "User",
+        "diff_data": page.diff_data,
+    }
+    tracker = _WikiMessageTracker(msg)
+    buttons = ButtonFrame(
+        [
+            ButtonRows.assign(
+                [
+                    Button(
+                        msg.t("wiki.message.render.action.button"),
+                        "wiki_render_preview",
+                        permission="all",
+                        click_limit=1,
+                    ),
+                    Button(msg.t("wiki.message.render.action.delete"), "wiki_render_delete", click_limit=1),
+                ]
+            )
+        ]
+    )
+    await tracker.add(
+        await msg.send_message(
+            [Url(page.link, trusted=True if page.info.is_allowed else None), buttons],
+            callback=_build_render_preview_callback([item], headers, tracker),
+            callback_once=False,
+            quote=False,
+        )
+    )
+
+
 @wiki_inline.regex(
     r"(https?://[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,4}\b[-a-zA-Z0-9@:%_+.~#?&/=]*)",
     flags=re.I,
@@ -76,14 +149,13 @@ async def _(msg: Bot.MessageSession):
     skip_long_message_confirm=True,
     desc="{I18N:wiki.help.wiki-inline.url}",
 )
-async def _(msg: Bot.MessageSession):
+async def _parse_wiki_urls(msg: Bot.MessageSession):
     match_msg = msg.matched_msg
+    render_mode = _wiki_render_mode(msg)
 
     async def _run_bgtask(query_list):
-        diff_links = set()
         Logger.trace(query_list)
         for q in query_list:
-            img_send = False
             for qq in q:
                 wiki_ = WikiLib(qq, headers=headers, locale=msg.session_info.locale.locale)
                 wiki_.wiki_info = q[qq]
@@ -92,104 +164,41 @@ async def _(msg: Bot.MessageSession):
                 except DiffError:
                     diff_target = {}
                 if diff_target is not None:
-                    diff_links.add(qq)
                     await query_pages(msg, qq, start_wiki_api=q[qq].api, use_prefix=False, inline_mode=True)
                     continue
-                articlepath = q[qq].articlepath.replace("$1", "(.*)")
-                get_id = re.sub(r".*curid=(\d+)", "\\1", qq)
-                get_title = re.sub(r"" + articlepath, "\\1", qq)
-                get_page = None
-                if is_int(get_id):
-                    get_page = await wiki_.parse_page_info(pageid=int(get_id), session=msg)
-                    if not q[qq].is_allowed and msg.session_info.use_url_manager:
-                        for result in await check(get_page.title, session=msg):
-                            if not result["status"]:
-                                return
-                elif get_title != "":
-                    title = urllib.parse.unquote(get_title)
-                    if not q[qq].is_allowed and msg.session_info.use_url_manager:
-                        for result in await check(title, session=msg):
-                            if not result["status"]:
-                                return
-                    get_page = await wiki_.parse_page_info(title, session=msg)
+                try:
+                    get_page = await _read_url_page(wiki_, qq, msg, check_render=render_mode == WIKI_RENDER_MODE_BUTTON)
+                except Exception:
+                    Logger.exception("Failed to query Wiki URL: ")
+                    continue
                 if get_page:
+                    if not get_page.info.is_allowed and msg.session_info.use_url_manager:
+                        checked = await check(get_page.title or "", session=msg)
+                        if any(not result["status"] for result in checked):
+                            continue
                     if get_page.status and get_page.file:
-                        dl = await download(get_page.file)
-                        guess_type = filetype.guess(dl)
-                        if guess_type:
-                            if guess_type.extension in [
-                                "png",
-                                "gif",
-                                "jpg",
-                                "jpeg",
-                                "webp",
-                                "bmp",
-                                "ico",
-                            ]:
-                                if msg.session_info.support_image:
-                                    await msg.send_message(
-                                        [
-                                            I18NContext(
-                                                "wiki.message.wiki-inline.flies",
-                                                file=MessageChain.assign(Url(get_page.file)),
-                                            ),
-                                            Image(dl),
-                                        ],
-                                        quote=False,
-                                    )
-                                    img_send = True
-                            elif guess_type.extension in [
-                                "oga",
-                                "ogg",
-                                "flac",
-                                "mp3",
-                                "wav",
-                            ]:
-                                if msg.session_info.support_audio:
-                                    await msg.send_message(
-                                        [
-                                            I18NContext(
-                                                "wiki.message.wiki-inline.flies",
-                                                file=MessageChain.assign(Url(get_page.file)),
-                                            ),
-                                            Audio(dl),
-                                        ],
-                                        quote=False,
-                                    )
-                        elif guess_type.extension in [
-                            "mp4",
-                            "mkv",
-                            "avi",
-                            "mov",
-                            "flv",
-                            "webm",
-                        ]:
-                            if msg.session_info.support_video:
-                                await msg.send_message(
-                                    [
-                                        I18NContext(
-                                            "wiki.message.wiki-inline.flies",
-                                            file=MessageChain.assign(Url(get_page.file)),
-                                        ),
-                                        Video(dl),
-                                    ],
-                                    quote=False,
-                                )
-                        elif check_svg(dl):
-                            rd = await svg_render(dl)
-                            if msg.session_info.support_image and rd:
-                                chain = [
+                        preview = await file_preview(get_page.file, msg.session_info)
+                        if preview:
+                            await msg.send_message(
+                                [
                                     I18NContext(
-                                        "wiki.message.wiki-inline.flies",
-                                        file=MessageChain.assign(Url(get_page.file)),
-                                    ),
-                                ] + rd
-                                await msg.send_message(chain, quote=False)
-
+                                        "wiki.message.wiki-inline.flies", file=MessageChain.assign(Url(get_page.file))
+                                    )
+                                ]
+                                + list(preview),
+                                quote=False,
+                            )
+                        continue
+                    if render_mode != WIKI_RENDER_MODE_AUTO:
+                        if render_mode == WIKI_RENDER_MODE_BUTTON and Bot.Info.web_render_status:
+                            await _send_url_preview(msg, get_page, headers)
+                        continue
                     if msg.session_info.support_image:
                         if (
-                            get_page.status
+                            Bot.Info.web_render_status
+                            and get_page.status
                             and get_page.title
+                            and not get_page.invalid_section
                             and (wiki_.wiki_info.is_allowed or not msg.session_info.use_url_manager)
                         ):
                             content_mode = (
@@ -199,13 +208,14 @@ async def _(msg: Bot.MessageSession):
                                 or get_page.is_forum_topic
                             )
                             get_infobox = await generate_screenshot(
-                                qq,
+                                get_page.link or qq,
                                 wiki_info=get_page.info,
                                 title=get_page.title,
+                                section=get_page.selected_section,
                                 headers=headers,
                                 allow_special_page=(
                                     get_page.info.realurl not in generate_screenshot_v2_blocklist
-                                    and (q[qq].is_allowed or not msg.session_info.use_url_manager)
+                                    and (get_page.info.is_allowed or not msg.session_info.use_url_manager)
                                 ),
                                 content_mode=content_mode,
                                 locale=msg.session_info.locale.locale,
@@ -352,37 +362,6 @@ async def _(msg: Bot.MessageSession):
                                 await msg.send_message(i_msg_lst)
                             else:
                                 await msg.send_message(i_msg_lst, callback=_build_forum_callback(get_page))
-            if len(query_list) == 1 and img_send:
-                return
-            if msg.session_info.support_image:
-                for qq in q:
-                    if qq in diff_links:
-                        continue
-                    section_ = []
-                    quote_code = False
-                    page_name = urllib.parse.unquote(qq)
-                    for qs in page_name:
-                        if qs == "#":
-                            quote_code = True
-                        if qs == "?":
-                            quote_code = False
-                        if quote_code:
-                            section_.append(qs)
-                    if section_:
-                        s = urllib.parse.unquote("".join(section_)[1:])
-                        if q[qq].realurl and (q[qq].is_allowed or not msg.session_info.use_url_manager):
-                            get_section = await generate_screenshot(
-                                qq,
-                                wiki_info=q[qq],
-                                headers=headers,
-                                section=s,
-                                locale=msg.session_info.locale.locale,
-                            )
-                            if get_section:
-                                imgs = []
-                                for img in get_section:
-                                    imgs.append(Image(img))
-                                await msg.send_message(imgs, quote=False)
 
     _query_list = []
     target = await WikiTargetInfo.get_by_target_id(msg.session_info.target_id)
@@ -404,4 +383,3 @@ async def _(msg: Bot.MessageSession):
             lambda: _run_bgtask(tuple(_query_list)),
             name="wiki-inline-background",
         )
-    # await _run_bgtask()

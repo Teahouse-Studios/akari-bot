@@ -71,7 +71,12 @@ def _styled_document(parsed: dict, page_link: str) -> str | None:
 
 def _parse_target(page_link: str, wiki_info: WikiInfo, title: str | None) -> dict | None:
     query = parse_qs(urlsplit(page_link).query, keep_blank_values=True)
-    if set(query) - {"title", "curid"}:
+    if set(query) - {"title", "curid", "oldid"}:
+        return None
+    if "oldid" in query:
+        values = query["oldid"]
+        if len(values) == 1 and values[0].isdecimal() and int(values[0]) > 0:
+            return {"oldid": int(values[0])}
         return None
     title = title or WikiLib._title_from_article_url(page_link, wiki_info.articlepath) or query.get("title", [None])[0]
     if title:
@@ -201,12 +206,14 @@ async def _generate_styled_api_screenshot(
         wiki = WikiLib(wiki_info.api, headers=headers, locale=locale)
         wiki.wiki_info = wiki_info
         async with asyncio.timeout(_PAGE_RENDER_TIMEOUT):
-            parse_args = {"action": "parse", "prop": "text|headhtml", "redirects": 1, "formatversion": 2, **target}
+            parse_args = {"action": "parse", "prop": "text|headhtml", "formatversion": 2, **target}
+            if "oldid" not in target:
+                parse_args["redirects"] = 1
             if wiki_info.default_skin:
                 parse_args["useskin"] = wiki_info.default_skin
             response = await wiki.get_json(**parse_args)
         content = None
-        if not response.get("error") and not response.get("warnings"):
+        if not response.get("error"):
             content = _styled_document(response.get("parse", {}), page_link)
         if not content:
             return False

@@ -1,8 +1,6 @@
 import asyncio
 import re
 
-import filetype
-
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import (
@@ -13,8 +11,6 @@ from core.builtins.message.internal import (
     Markdown,
     Plain,
     Image,
-    Audio,
-    Video,
     Url,
 )
 from core.builtins.session.internal import FinishedSession, MessageSession, confirm_prompt_key
@@ -28,8 +24,6 @@ from core.constants.exceptions import (
 )
 from core.logger import Logger
 from core.utils.func import is_int
-from core.utils.http import download
-from core.utils.image import svg_render
 from core.utils.image_table import image_table_render, ImageTable
 from core.utils.url_audit import evaluate_url_policy
 from core.utils.button import build_button_rows
@@ -41,8 +35,8 @@ from .utils.disambiguation import (
     is_disambiguation_overlong,
 )
 from .utils.recommend import finish_with_start_wiki_not_set
+from .utils.media import file_preview
 from .utils.screenshot_image import generate_screenshot
-from .utils.utils import check_svg
 from .utils.wikilib import BlockedWikiError, MAX_RESEARCH_SUGGESTIONS, WikiLib, PageInfo, InvalidWikiError, QueryInfo
 
 wiki = module(
@@ -239,6 +233,8 @@ async def _gather_background(*awaitables):
 
 def _build_section_callback(page: PageInfo):
     title = page.title
+    if page.revision_id:
+        title += f"?oldid={page.revision_id}"
     sections = tuple(page.sections or ())
     api = page.info.api
 
@@ -586,8 +582,20 @@ async def _query_pages_impl(
                         )
                     )
                 )
-            query = await asyncio.gather(*tasks)
+            query = await asyncio.gather(*tasks, return_exceptions=True)
+            reported_error = False
             for result in query:
+                if isinstance(result, BaseException):
+                    if not isinstance(result, Exception) or isinstance(result, (BlockedWikiError, AbuseWarning)):
+                        raise result
+                    if not reported_error:
+                        if isinstance(result, InvalidWikiError):
+                            msg_list.extend([I18NContext("message.error"), Plain(str(result))])
+                        else:
+                            Logger.error(f"Wiki page query failed: {result}")
+                            msg_list.append(I18NContext("wiki.message.error.query"))
+                        reported_error = True
+                    continue
                 Logger.debug(result)
                 r: PageInfo = result
                 display_title = None
@@ -1059,43 +1067,9 @@ async def _query_pages_impl(
         async def image_and_audio():
             if dl_list:
                 for f in dl_list:
-                    dl = await download(f)
-                    guess_type = filetype.guess(dl)
-                    if guess_type:
-                        if guess_type.extension in [
-                            "png",
-                            "gif",
-                            "jpg",
-                            "jpeg",
-                            "webp",
-                            "bmp",
-                            "ico",
-                        ]:
-                            if session.session_info.support_image:
-                                await send_message(Image(dl), quote=False)
-                        elif guess_type.extension in [
-                            "oga",
-                            "ogg",
-                            "flac",
-                            "mp3",
-                            "wav",
-                        ]:
-                            if session.session_info.support_audio:
-                                await send_message(Audio(dl), quote=False)
-                        elif guess_type.extension in [
-                            "mp4",
-                            "mkv",
-                            "avi",
-                            "mov",
-                            "flv",
-                            "webm",
-                        ]:
-                            if session.session_info.support_video:
-                                await send_message(Video(dl), quote=False)
-                    elif check_svg(dl):
-                        rd = await svg_render(dl)
-                        if session.session_info.support_image and rd:
-                            await send_message(rd, quote=False)
+                    preview = await file_preview(f, session.session_info)
+                    if preview:
+                        await send_message(preview, quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:

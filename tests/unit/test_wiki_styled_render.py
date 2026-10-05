@@ -83,7 +83,16 @@ def _test_parse_targets():
     assert _parse_target(LINK, info, "Final title") == {"page": "Final title"}
     for title in ["Special:RecentChanges", "特殊:最近更改"]:
         assert _parse_target(LINK, info, title) is None
-    for query in ["diff=42", "oldid=42", "action=history", "variant=zh-tw", "redirect=no"]:
+    assert _parse_target(LINK.split("#")[0] + "?oldid=42", info, "Test") == {"oldid": 42}
+    for query in [
+        "diff=42",
+        "oldid=0",
+        "oldid=bad",
+        "oldid=42&oldid=43",
+        "action=history",
+        "variant=zh-tw",
+        "redirect=no",
+    ]:
         assert _parse_target(LINK.split("#")[0] + "?" + query, info, "Test") is None
     return True
 
@@ -145,7 +154,6 @@ async def _test_api_failure_after_original_failure():
         {"error": {"code": "missingtitle"}},
         {},
         {"parse": {"text": BODY}},
-        {**_response(), "warnings": {"parse": "unsupported skin"}},
     ]
     for failure in failures:
         request = AsyncMock(side_effect=failure) if isinstance(failure, Exception) else AsyncMock(return_value=failure)
@@ -176,6 +184,20 @@ async def _test_render_failure_fallback():
             patch("modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=render),
         ):
             assert await generate_screenshot(LINK, _info(), title="Test") == expected
+    return True
+
+
+async def _test_revision_and_warning_fallback():
+    response = {**_response(), "warnings": {"parse": "Deprecated parameter"}}
+    with (
+        patch.object(WikiLib, "get_json", new=AsyncMock(return_value=response)) as request,
+        patch(
+            "modules.wiki.utils.screenshot_image.generate_screenshot_v2", new=AsyncMock(side_effect=[False, ["styled"]])
+        ) as render,
+    ):
+        result = await generate_screenshot(LINK.split("#")[0] + "?oldid=42", _info(), title="Test")
+    assert result == ["styled"] and request.await_args.kwargs["oldid"] == 42
+    assert "page" not in request.await_args.kwargs and "site.styles" in render.await_args.kwargs["content"]
     return True
 
 
@@ -268,6 +290,7 @@ async def test_wiki_styled_render(tester: Tester):
     await tester.test(_test_styled_screenshot_options, "信息框、正文和章节通过 content 渲染")
     await tester.test(_test_api_failure_after_original_failure, "原有渲染失败后 API 错误返回失败")
     await tester.test(_test_render_failure_fallback, "原有渲染失败后使用 API HTML 渲染")
+    await tester.test(_test_revision_and_warning_fallback, "历史版本回退固定 oldid，警告保留有效样式文档")
     await tester.test(_test_original_timeout_uses_concurrent_api_result, "原有渲染超时后复用并发 API 结果")
     await tester.test(_test_legacy_and_special_pages, "特殊站点使用 v1，特殊页面跳过 API")
     await tester.test(_test_cancel_propagates, "任务取消不触发 fallback")
