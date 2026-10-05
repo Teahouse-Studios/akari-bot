@@ -90,6 +90,7 @@ def _fake_long_regex_message(pattern: str, text: str, *, skip_long_message_confi
             target_from="TEST",
             client_name="TEST",
             target_id="TEST|0",
+            support_button=False,
         ),
         as_display=lambda **_: text,
         wait_confirm=AsyncMock(return_value=False),

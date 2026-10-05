@@ -60,6 +60,7 @@ NON_SESSION_LOCALE_FILES = {
     "modules/core/admin_tools/locale.py": "语言名与翻译进度",
     "modules/weekly/__init__.py": "双语言周刊推送",
     "modules/weekly_rss/__init__.py": "双语言周刊推送",
+    "modules/wiki/utils/screenshot_image.py": "wiki 差异渲染语言",
     "modules/wiki/utils/wikilib.py": "wiki 内容语言",
 }
 

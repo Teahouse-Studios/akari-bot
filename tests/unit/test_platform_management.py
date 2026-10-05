@@ -354,6 +354,9 @@ async def _test_kook_call_api_rejects_business_error():
     sys.modules["bots.kook.client"] = fake_client
 
     class FakeHTTPClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
         async def __aenter__(self):
             return self
 
