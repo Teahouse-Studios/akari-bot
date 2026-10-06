@@ -1,0 +1,16 @@
+{
+    "target": "context",
+    "target.private": "private chat",
+    "target.qq.group": "group chat",
+    "target.qqbot.group": "group chat",
+    "target.qqbot.guild": "channel",
+    "target.discord": "channel",
+    "target.discord.guild": "server",
+    "target.kook": "channel",
+    "target.kook.guild": "server",
+    "target.telegram.group": "group",
+    "target.telegram.supergroup": "supergroup",
+    "target.telegram.channel": "channel",
+    "target.matrix": "room",
+    "target.web.console": "console"
+}

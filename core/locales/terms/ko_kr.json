@@ -1,0 +1,16 @@
+{
+    "target": "컨텍스트",
+    "target.private": "개인 채팅",
+    "target.qq.group": "그룹 채팅",
+    "target.qqbot.group": "그룹 채팅",
+    "target.qqbot.guild": "채널",
+    "target.discord": "채널",
+    "target.discord.guild": "서버",
+    "target.kook": "채널",
+    "target.kook.guild": "서버",
+    "target.telegram.group": "그룹",
+    "target.telegram.supergroup": "슈퍼그룹",
+    "target.telegram.channel": "채널",
+    "target.matrix": "룸",
+    "target.web.console": "콘솔"
+}

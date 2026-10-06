@@ -1,0 +1,16 @@
+{
+    "target": "場景",
+    "target.private": "私聊",
+    "target.qq.group": "群聊",
+    "target.qqbot.group": "群聊",
+    "target.qqbot.guild": "頻道",
+    "target.discord": "頻道",
+    "target.discord.guild": "伺服器",
+    "target.kook": "頻道",
+    "target.kook.guild": "伺服器",
+    "target.telegram.group": "群組",
+    "target.telegram.supergroup": "超級群組",
+    "target.telegram.channel": "頻道",
+    "target.matrix": "聊天室",
+    "target.web.console": "主控台"
+}
