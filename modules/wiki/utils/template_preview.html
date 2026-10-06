@@ -59,7 +59,6 @@
             background-image: url("data:image/svg+xml,{{ watermark_tile(watermark)|urlencode }}");
             background-repeat: repeat;
             background-size: min(100%, {{ watermark_width }}px) auto;
-            rotate: 45deg;
         }
         body > #mw-content-text[data-preview-partial="true"]::after {
             background-image: url("data:image/svg+xml,{{ watermark_tile(watermark_partial)|urlencode }}");
