@@ -183,9 +183,7 @@ async def _local_render(document, requests, locale):
             requests.warning = True
         content = page.locator("body > #mw-content-text")
         await content.evaluate(
-            "(element, partial) => {if (partial) element.dataset.previewPartial = 'true';"
-            "if (typeof window.akariFillCssPanel === 'function') window.akariFillCssPanel();}",
-            requests.warning,
+            "() => {if (typeof window.akariFillCssPanel === 'function') window.akariFillCssPanel();}"
         )
         measure = """element => {
             const bounds = element.getBoundingClientRect();
@@ -203,11 +201,16 @@ async def _local_render(document, requests, locale):
             width, height = math.ceil(size["width"]), math.ceil(size["height"])
             if width * height > _MAX_PIXELS:
                 raise ValueError("Preview dimensions exceed limits")
-        await content.evaluate(
-            "(element, bounds) => {"
-            "element.style.setProperty('--akari-watermark-width', bounds.width + 'px');"
-            "element.style.setProperty('--akari-watermark-height', bounds.height + 'px');}",
-            {"width": width, "height": height},
+        await page.locator("body > #akari-preview-watermark").evaluate(
+            "(element, options) => {"
+            "if (options.partial) element.dataset.previewPartial = 'true';"
+            "const body = document.body;"
+            "element.style.setProperty('--akari-watermark-width',"
+            "Math.max(body.offsetWidth, body.scrollWidth, options.right) + 'px');"
+            "element.style.setProperty('--akari-watermark-height',"
+            "Math.max(body.offsetHeight, body.scrollHeight, options.bottom) + 'px');"
+            "window.akariUpdateWatermark();}",
+            {"right": size["x"] + width, "bottom": size["y"] + height, "partial": requests.warning},
         )
         data = await page.screenshot(
             type="png", full_page=True, clip={"x": size["x"], "y": size["y"], "width": width, "height": height}
@@ -250,10 +253,10 @@ async def _inline_css(css, base, requests, depth=0):
 async def _remote_render(soup, requests, locale):
     # 远程接口不支持请求路由，所有资源须先受控下载并内联，CSP 禁止后续联网。
     requests.warning = True
-    content = soup.select_one("body > #mw-content-text")
-    content["data-preview-partial"] = "true"
+    watermark = soup.select_one("body > #akari-preview-watermark")
+    watermark["data-preview-partial"] = "true"
     for script in soup.find_all("script"):
-        if script.get("data-akari-preview-script") != "css-panel":
+        if script.get("data-akari-preview-script") not in {"css-panel", "watermark"}:
             script.decompose()
     for tag in list(soup.head.find_all("link")):
         if "stylesheet" in tag.get("rel", []) and tag.get("href"):

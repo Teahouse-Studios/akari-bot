@@ -1,10 +1,8 @@
 import asyncio
 import base64
-import re
 from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
-from urllib.parse import unquote
 
 import httpx
 from bs4 import BeautifulSoup
@@ -229,20 +227,22 @@ def _test_watermark_is_safe_inline_css():
         )
         soup = BeautifulSoup(document, "html.parser")
         assert warning is partial
-        assert soup.select_one("body > #mw-content-text")["data-preview-partial"] == str(partial).lower()
+        overlay = soup.select_one("body > #akari-preview-watermark")
+        assert overlay["data-preview-partial"] == str(partial).lower()
+        assert overlay["aria-hidden"] == "true" and overlay.select_one("svg.akari-watermark-pattern")
         css = soup.style.get_text()
-        tiles = re.findall(r'url\("data:image/svg\+xml,([^"\n]+)"\)', css)
-        assert len(tiles) == 2
-        for index, tile in enumerate(tiles):
-            svg = BeautifulSoup(unquote(tile), "xml")
-            assert not svg.script
-            assert svg.find("text").text == Locale("zh_cn").t(
+        for index, variant in enumerate(("normal", "partial")):
+            text = overlay.select_one(".akari-watermark-" + variant)
+            assert not text.find("script")
+            assert text.text == Locale("zh_cn").t(
                 "wiki.message.template_preview.watermark",
                 title=title,
                 status=" · 部分资源未加载" if index else "",
             )
-        assert "injected()" not in document and "background-repeat: repeat" in css
-        assert "rotate(" not in css
+        assert all("injected()" not in script.get_text() for script in soup.find_all("script"))
+        assert overlay.select_one("pattern")["patternunits"] == "userSpaceOnUse"
+        assert "getComputedTextLength()" in document
+        assert "rotate(-30deg)" in css
     return True
 
 
@@ -426,10 +426,11 @@ async def _test_remote_inlines_styles_and_images():
     options = render.await_args.args[0]
     soup = BeautifulSoup(options.content, "html.parser")
     assert image.size == (20, 20) and options.element == "body > #mw-content-text"
-    assert soup.select_one(options.element)["data-preview-partial"] == "true"
-    assert not soup.script and soup.img["src"].startswith("data:image/png;base64,")
+    assert soup.select_one("body > #akari-preview-watermark")["data-preview-partial"] == "true"
+    assert all(script.get("data-akari-preview-script") == "watermark" for script in soup.find_all("script"))
+    assert soup.img["src"].startswith("data:image/png;base64,")
     styles = "\n".join(str(style.string or "") for style in soup.find_all("style"))
-    assert "data:image/svg+xml," in styles
+    assert soup.select_one("#akari-preview-watermark pattern")
     assert ".infobox" in styles and "data:image/png;base64," in styles
     assert soup.select_one('meta[http-equiv="Content-Security-Policy"]') and not soup.select_one("link[href]")
     return True
@@ -506,7 +507,7 @@ async def test_wiki_template_preview(tester: Tester):
         (_test_expression_routing_keeps_complete_parameters, "表达式入口将完整参数传入页面查询，同名调用绑定第一条"),
         (_test_only_parameters_are_audited, "仅审核用户参数，审核缺配置、失败与无效结果拒绝预览"),
         (_test_document_preserves_effects_and_removes_input_scripts, "保留站点样式、图片及渲染模块，参数不能注入脚本"),
-        (_test_watermark_is_safe_inline_css, "CSS 水印按行错位平铺，警告状态与模板标题安全转义"),
+        (_test_watermark_is_safe_inline_css, "CSS 水印浮层旋转 −30°，警告状态与模板标题安全转义"),
         (_test_single_template_document_adds_css_panel, "单模板预览在内容旁展示 CSS 属性面板"),
         (_test_whole_message_preview_keeps_multiple_templates, "多模板预览保留整条消息文本和全部模板"),
         (_test_generation_uses_actual_template_and_only_read_api, "核验真实模板，完整参数只读解析，撤出白名单拒绝执行"),

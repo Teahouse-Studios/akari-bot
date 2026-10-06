@@ -1,17 +1,3 @@
-{% set watermark_width = [360, ([watermark|length, watermark_partial|length]|max) * 16 + 64]|max %}
-{% macro watermark_tile(text) -%}
-<svg xmlns="http://www.w3.org/2000/svg" width="{{ watermark_width }}" height="336">
-    <g fill="#1f344b" stroke="#fff" stroke-width="1" paint-order="stroke"
-       font-family="Noto Sans CJK SC, Noto Sans SC, PingFang SC, Microsoft YaHei, sans-serif"
-       font-size="16" font-weight="600">
-        {% for row in range(3) %}
-        {% set offset = 28 + row * (watermark_width // 3) %}
-        <text x="{{ offset }}" y="{{ 44 + row * 112 }}">{{ text }}</text>
-        {% if row %}<text x="{{ offset - watermark_width }}" y="{{ 44 + row * 112 }}">{{ text }}</text>{% endif %}
-        {% endfor %}
-    </g>
-</svg>
-{%- endmacro %}
 <!doctype html>
 <html{% for key, value in html_attrs.items() %} {{ key }}="{{ value }}"{% endfor %}>
 <head>
@@ -30,7 +16,7 @@
             line-height: 1.65;
             -webkit-font-smoothing: antialiased;
         }
-        body { padding: 24px; box-sizing: border-box; }
+        body { position: relative; padding: 24px; box-sizing: border-box; }
         body > #mw-content-text {
             position: relative;
             isolation: isolate;
@@ -46,23 +32,37 @@
             border-radius: 8px;
             box-shadow: 0 10px 28px rgba(31, 52, 75, .10);
         }
-        body > #mw-content-text::after {
-            content: "";
+        body > #akari-preview-watermark {
             position: absolute;
             inset: 0;
             width: var(--akari-watermark-width, auto);
             height: var(--akari-watermark-height, auto);
             z-index: 2147483647;
             pointer-events: none;
-            border-radius: inherit;
+            overflow: hidden;
+            container-type: size;
+        }
+        #akari-preview-watermark > .akari-watermark-pattern {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* 旋转平面的尺寸取页面在两条旋转坐标轴上的投影，保证四角均被覆盖。 */
+            width: calc(86.60254cqw + 50cqh + 2px);
+            height: calc(50cqw + 86.60254cqh + 2px);
+            transform: translate(-50%, -50%) rotate(-30deg);
+            transform-origin: center;
             opacity: .18;
-            background-image: url("data:image/svg+xml,{{ watermark_tile(watermark)|urlencode }}");
-            background-repeat: repeat;
-            background-size: min(100%, {{ watermark_width }}px) auto;
         }
-        body > #mw-content-text[data-preview-partial="true"]::after {
-            background-image: url("data:image/svg+xml,{{ watermark_tile(watermark_partial)|urlencode }}");
+        #akari-preview-watermark .akari-watermark-text {
+            fill: #1f344b;
+            stroke: #fff;
+            stroke-width: 1px;
+            paint-order: stroke;
+            font: 600 16px "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
         }
+        #akari-preview-watermark .akari-watermark-partial { display: none; }
+        #akari-preview-watermark[data-preview-partial="true"] .akari-watermark-normal { display: none; }
+        #akari-preview-watermark[data-preview-partial="true"] .akari-watermark-partial { display: inline; }
         body > #mw-content-text:has(> #akari-template-output) {
             display: grid;
             grid-template-columns: minmax(0, 1fr) 238px;
@@ -135,7 +135,7 @@
     </style>
 </head>
 <body{% for key, value in body_attrs.items() %} {{ key }}="{{ value }}"{% endfor %}>
-    <div id="mw-content-text" class="mw-body-content" data-preview-partial="{{ 'true' if partial else 'false' }}">
+    <div id="mw-content-text" class="mw-body-content">
         {% if single_template %}
         <div id="akari-template-output">{{ body|safe }}</div>
         <aside id="akari-preview-css-panel" aria-label="CSS">
@@ -156,6 +156,28 @@
         {{ body|safe }}
         {% endif %}
     </div>
+    <div id="akari-preview-watermark" aria-hidden="true" data-preview-partial="{{ 'true' if partial else 'false' }}">
+        <svg class="akari-watermark-pattern" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="akari-watermark-tiles" patternUnits="userSpaceOnUse" width="800" height="96">
+                    <text class="akari-watermark-text akari-watermark-normal" x="24" y="40">{{ watermark }}</text>
+                    <text class="akari-watermark-text akari-watermark-partial" x="24" y="40">{{ watermark_partial }}</text>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#akari-watermark-tiles)"></rect>
+        </svg>
+    </div>
+    <script data-akari-preview-script="watermark">
+        window.akariUpdateWatermark = function() {
+            var overlay = document.querySelector('#akari-preview-watermark');
+            var partial = overlay.dataset.previewPartial === 'true';
+            var text = overlay.querySelector(partial ? '.akari-watermark-partial' : '.akari-watermark-normal');
+            var tiles = overlay.querySelector('#akari-watermark-tiles');
+            tiles.setAttribute('width', Math.ceil(text.getComputedTextLength()) + 48);
+        };
+        window.akariUpdateWatermark();
+        document.fonts.ready.then(window.akariUpdateWatermark);
+    </script>
     <script>
         window.akariPreviewReady = false;
         (function initialize(attempt) {
