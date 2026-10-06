@@ -230,6 +230,8 @@ def _test_watermark_is_safe_inline_css():
         overlay = soup.select_one("body > #akari-preview-watermark")
         assert overlay["data-preview-partial"] == str(partial).lower()
         assert overlay["aria-hidden"] == "true" and overlay.select_one("svg.akari-watermark-pattern")
+        assert len(overlay.select(".akari-watermark-row")) == 4
+        assert overlay.select_one("pattern")["height"] == "384"
         css = soup.style.get_text()
         for index, variant in enumerate(("normal", "partial")):
             text = overlay.select_one(".akari-watermark-" + variant)

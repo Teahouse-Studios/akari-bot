@@ -159,9 +159,15 @@
     <div id="akari-preview-watermark" aria-hidden="true" data-preview-partial="{{ 'true' if partial else 'false' }}">
         <svg class="akari-watermark-pattern" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <pattern id="akari-watermark-tiles" patternUnits="userSpaceOnUse" width="800" height="96">
-                    <text class="akari-watermark-text akari-watermark-normal" x="24" y="40">{{ watermark }}</text>
-                    <text class="akari-watermark-text akari-watermark-partial" x="24" y="40">{{ watermark_partial }}</text>
+                <pattern id="akari-watermark-tiles" patternUnits="userSpaceOnUse" width="800" height="384">
+                    {% for row in range(4) %}
+                    <g class="akari-watermark-row" data-row="{{ row }}">
+                        <text class="akari-watermark-text akari-watermark-normal" x="24" y="{{ 40 + row * 96 }}">{{ watermark }}</text>
+                        <text class="akari-watermark-text akari-watermark-normal" x="24" y="{{ 40 + row * 96 }}">{{ watermark }}</text>
+                        <text class="akari-watermark-text akari-watermark-partial" x="24" y="{{ 40 + row * 96 }}">{{ watermark_partial }}</text>
+                        <text class="akari-watermark-text akari-watermark-partial" x="24" y="{{ 40 + row * 96 }}">{{ watermark_partial }}</text>
+                    </g>
+                    {% endfor %}
                 </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#akari-watermark-tiles)"></rect>
@@ -173,7 +179,14 @@
             var partial = overlay.dataset.previewPartial === 'true';
             var text = overlay.querySelector(partial ? '.akari-watermark-partial' : '.akari-watermark-normal');
             var tiles = overlay.querySelector('#akari-watermark-tiles');
-            tiles.setAttribute('width', Math.ceil(text.getComputedTextLength()) + 48);
+            var width = Math.ceil(text.getComputedTextLength()) + 48;
+            tiles.setAttribute('width', width);
+            overlay.querySelectorAll('.akari-watermark-row').forEach(function(row) {
+                var offset = 24 + Number(row.dataset.row) * 112;
+                row.querySelectorAll('text').forEach(function(item, index) {
+                    item.setAttribute('x', index % 2 === 0 ? offset : offset - width);
+                });
+            });
         };
         window.akariUpdateWatermark();
         document.fonts.ready.then(window.akariUpdateWatermark);
