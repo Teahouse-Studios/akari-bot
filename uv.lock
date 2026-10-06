@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12.0, <4.0.0"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -295,7 +295,7 @@ requires-dist = [
     { name = "aiogram", specifier = "==3.31.0" },
     { name = "akari-bot-i18n", specifier = "==0.2.1" },
     { name = "akari-bot-webrender", specifier = "==0.6.2" },
-    { name = "akari-bot-webui", specifier = "==0.4.5" },
+    { name = "akari-bot-webui", specifier = "==0.4.6" },
     { name = "anthropic", specifier = ">=1.5.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
@@ -405,11 +405,11 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webui"
-version = "0.4.5"
+version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/32/a0/ba2f415b9c7fcdc81b94ef24d6cf82e461f9aac049ef7bab21e486dd79bc/akari_bot_webui-0.4.5.tar.gz", hash = "sha256:0ffad905f733e06feb01c88b776c2f4a643f7a000153741114cc45267c79f9f2", size = 1118588, upload-time = "2026-09-09T08:03:49.22Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/40/3029ca69b00949d5d3944243ec0a768f745672c0d2ffae377162e393212d/akari_bot_webui-0.4.6.tar.gz", hash = "sha256:542b524c3b594d920fdd9d06755c1ffb95b5caf7390fddcbdab6d97967b6dfe4", size = 1117357, upload-time = "2026-10-06T18:04:05.537Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/d4/4ec209b9444c98dc85ffae5a4becf76b5e973e01be826467b1067dedff28/akari_bot_webui-0.4.5-py3-none-any.whl", hash = "sha256:099f428dcbc02f582ba2676248594a3a9a7140a8446f25a0dd1620c84ebf6063", size = 1143132, upload-time = "2026-09-09T08:03:47.378Z" },
+    { url = "https://files.pythonhosted.org/packages/de/6d/f7a23714d50344b003493d529feba8c5f1391f5a12171768b0cd19e8bc77/akari_bot_webui-0.4.6-py3-none-any.whl", hash = "sha256:dc0db504b8f8be0f9ba0b1d8b3ac60de51b94d2e8ff82f311f964d47d441ee75", size = 1141980, upload-time = "2026-10-06T18:04:03.756Z" },
 ]
 
 [[package]]
@@ -1579,8 +1579,8 @@ name = "httpcore2"
 version = "2.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "h11" },
-    { name = "truststore" },
+    { name = "h11", marker = "sys_platform != 'emscripten'" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/be/ad/f4f0e57345f1870f3e8cb624e058d7eca6e5a27d33bcc3311d9b618734cd/httpcore2-2.12.0.tar.gz", hash = "sha256:9293522bba0aa7c4c8e9e3f040c16575bd8868e155a77fa30c7a9085a5eae648", size = 67548, upload-time = "2026-08-18T13:22:08.211Z" }
 wheels = [

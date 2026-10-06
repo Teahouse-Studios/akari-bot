@@ -30,7 +30,7 @@ akari-bot-i18n==0.2.1
     # via akari-bot
 akari-bot-webrender==0.6.2
     # via akari-bot
-akari-bot-webui==0.4.5
+akari-bot-webui==0.4.6
     # via akari-bot
 annotated-doc==0.0.4
     # via fastapi
@@ -419,7 +419,7 @@ pygments==2.20.0
     # via
     #   pytest
     #   rich
-pyjwt==2.13.0
+pyjwt==2.15.1
     # via akari-bot
 pyotp==2.10.0
     # via akari-bot
@@ -561,7 +561,7 @@ tzlocal==5.3.1
     #   dateparser
 unpaddedbase64==2.1.0
     # via matrix-nio
-urllib3==2.7.0
+urllib3==2.8.0
     # via
     #   akari-bot
     #   botocore
