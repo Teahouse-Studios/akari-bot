@@ -1444,8 +1444,8 @@ async def _query_pages_impl(
                     button_rows.append(
                         ButtonRows.assign(
                             [
-                                Button(str(I18NContext("message.button.yes")), confirm_command[0]),
-                                Button(str(I18NContext("message.button.no")), "no"),
+                                Button(session.t("message.button.yes"), confirm_command[0]),
+                                Button(session.t("message.button.no"), "no"),
                             ]
                         )
                     )
@@ -1472,9 +1472,7 @@ async def _query_pages_impl(
                                 )
                                 wi += len(titles)
                     if button_rows:
-                        button_rows[-1].buttons.append(
-                            Button(session.session_info.locale.t("wiki.message.not_found.autofix.close"), "close")
-                        )
+                        button_rows[-1].buttons.append(Button(session.t("wiki.message.render.action.delete"), "close"))
 
                 if button_rows and session.session_info.support_button:
                     wait_msg_list.append(ButtonFrame(button_rows))

@@ -96,11 +96,21 @@
             padding: 6px 0;
             border-top: 1px solid rgba(117, 141, 164, .22);
         }
+        #akari-preview-css-panel .akari-css-row[hidden] { display: none !important; }
         #akari-preview-css-panel .akari-css-name { color: #6a7d8e !important; }
         #akari-preview-css-panel .akari-css-value {
             min-width: 0;
             overflow-wrap: anywhere;
             color: #24384b !important;
+        }
+        #akari-preview-css-panel .akari-css-badge {
+            justify-self: start;
+            padding: 2px 7px;
+            border: 1px solid #c9d9e8;
+            border-radius: 4px;
+            background: #e8f0f7;
+            color: #295579 !important;
+            font-size: 12px;
         }
         #akari-preview-css-panel .akari-css-swatch {
             display: inline-block;
@@ -132,9 +142,12 @@
             <strong class="akari-css-title">{{ css_title }}</strong>
             <div class="akari-css-properties">
                 {% for key, label in css_labels.items() %}
-                <div class="akari-css-row" data-css-property="{{ key }}">
+                {% set layout = 'flex' if key in ('flex_direction', 'flex_wrap') else
+                                'grid' if key in ('grid_columns', 'grid_rows', 'grid_auto_flow') else
+                                'container' if key in ('justify', 'align', 'gap') else '' %}
+                <div class="akari-css-row" data-css-property="{{ key }}"{% if layout %} data-css-layout="{{ layout }}" hidden{% endif %}>
                     <span class="akari-css-name">{{ label }}</span>
-                    <span class="akari-css-value">-</span>
+                    <span class="akari-css-value{% if key in ('display', 'float', 'position') %} akari-css-badge{% endif %}">-</span>
                 </div>
                 {% endfor %}
             </div>
@@ -166,15 +179,44 @@
             var root = document.querySelector('#akari-template-output');
             var panel = document.querySelector('.akari-css-properties');
             if (!root || !panel) return;
-            var target = root.querySelector('table,img,h1,h2,h3,h4,p,ul,ol,pre,blockquote,[style]') || root;
+            var content = root.querySelector(':scope > .mw-parser-output') || root;
+            function children(element) {
+                return Array.from(element.children).filter(function(child) {
+                    return !child.matches('style,link,script,meta,noscript,template') &&
+                        getComputedStyle(child).display !== 'none';
+                });
+            }
+            var candidates = children(content);
+            // 消息正文可能与模板并列，优先选取顶层布局容器。
+            var target = candidates.find(function(element) {
+                var style = getComputedStyle(element);
+                return style.cssFloat !== 'none' || /^(inline-)?(flex|grid|table)$/.test(style.display) ||
+                    style.position === 'absolute' || style.position === 'fixed';
+            }) || candidates.find(function(element) {
+                return element.matches('div,section,aside,article,table,ul,ol,pre,blockquote,[style],[class]');
+            }) || candidates[0] || content;
+            while (getComputedStyle(target).display === 'contents' && children(target).length === 1) {
+                target = children(target)[0];
+            }
             var c = getComputedStyle(target);
+            var isFlex = c.display === 'flex' || c.display === 'inline-flex';
+            var isGrid = c.display === 'grid' || c.display === 'inline-grid';
             var properties = {
+                element: target.localName + (target.id ? '#' + target.id : '') +
+                    Array.from(target.classList).slice(0, 2).map(function(name) { return '.' + name; }).join(''),
+                display: c.display, float: c.cssFloat, position: c.position,
+                flex_direction: c.flexDirection, flex_wrap: c.flexWrap,
+                grid_columns: c.gridTemplateColumns, grid_rows: c.gridTemplateRows, grid_auto_flow: c.gridAutoFlow,
+                justify: c.justifyContent, align: c.alignItems, gap: c.rowGap + ' / ' + c.columnGap,
                 background: c.backgroundColor, color: c.color, font: c.fontFamily,
                 size: c.fontSize + ' / ' + c.lineHeight, border: c.border, radius: c.borderRadius,
                 shadow: c.boxShadow, spacing: c.padding + ' / ' + c.margin
             };
             panel.querySelectorAll('[data-css-property]').forEach(function(row) {
                 var key = row.dataset.cssProperty;
+                var layout = row.dataset.cssLayout;
+                row.hidden = layout === 'flex' ? !isFlex : layout === 'grid' ? !isGrid :
+                    layout === 'container' ? !(isFlex || isGrid) : false;
                 var val = properties[key] || '-';
                 var value = row.querySelector('.akari-css-value');
                 value.textContent = val;

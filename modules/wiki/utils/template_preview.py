@@ -170,7 +170,28 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
     if single_template:
         labels = {
             key: text("css." + key)
-            for key in ("background", "color", "font", "size", "border", "radius", "shadow", "spacing")
+            for key in (
+                "element",
+                "display",
+                "float",
+                "position",
+                "flex_direction",
+                "flex_wrap",
+                "grid_columns",
+                "grid_rows",
+                "grid_auto_flow",
+                "justify",
+                "align",
+                "gap",
+                "background",
+                "color",
+                "font",
+                "size",
+                "border",
+                "radius",
+                "shadow",
+                "spacing",
+            )
         }
     warning = bool(parsed.get("parsewarnings") or markup.select(".error,.mw-broken-media,.scribunto-error"))
     document = _TEMPLATE_ENV.get_template("template_preview.html").render(
