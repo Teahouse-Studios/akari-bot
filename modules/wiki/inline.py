@@ -130,9 +130,17 @@ async def _send_url_preview(msg: Bot.MessageSession, page: PageInfo, headers: di
             )
         ]
     )
+    detection_key = (
+        "wiki.message.wiki-inline.detected.section"
+        if page.selected_section
+        else "wiki.message.wiki-inline.detected.page"
+    )
+    detection_title = (
+        urllib.parse.unquote(page.selected_section).replace("_", " ") if page.selected_section else page.title
+    )
     await tracker.add(
         await msg.send_message(
-            [Url(page.link, trusted=True if page.info.is_allowed else None), buttons],
+            [I18NContext(detection_key, title=detection_title), buttons],
             callback=_build_render_preview_callback([item], headers, tracker),
             callback_once=False,
             quote=False,

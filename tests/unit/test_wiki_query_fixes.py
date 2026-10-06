@@ -10,6 +10,7 @@ from core.builtins.message.elements import (
     I18NContextElement,
     ImageElement,
     PlainElement,
+    URLElement,
     VideoElement,
 )
 from core.builtins.message.internal import Image
@@ -18,7 +19,7 @@ from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
 from core.i18n import Locale
 from core.tester import Tester, func_case
-from modules.wiki.inline import _parse_wiki_urls, _read_url_page
+from modules.wiki.inline import _parse_wiki_urls, _read_url_page, _send_url_preview
 from modules.wiki.search import search_pages
 from modules.wiki.utils.media import file_preview
 from modules.wiki.utils.wikilib import InvalidWikiError, PageInfo, WikiAPIError, WikiInfo, WikiLib, WikiStatus
@@ -372,10 +373,20 @@ async def _test_url_render_modes():
             elif mode == "button":
                 assert len(sent) == 1 and not auto_render.await_count and not button_render.await_count
                 assert any(isinstance(item, ButtonFrameElement) for item in sent[0][0])
+                assert not any(isinstance(item, URLElement) for item in sent[0][0])
+                detected = [item for item in sent[0][0] if isinstance(item, I18NContextElement)]
+                assert detected[0].key == "wiki.message.wiki-inline.detected.section"
+                assert detected[0].kwargs == {"title": "Section"}
                 assert not any(isinstance(item, PlainElement) and "Redundant" in item.text for item in sent[0][0])
                 with patch.object(MessageSession, "as_display", return_value="wiki_render_preview"):
                     await sent[0][1]["callback"](session)
                 assert button_render.await_count == 1
+                page.selected_section = None
+                await _send_url_preview(session, page, {})
+                detected = [item for item in sent[-1][0] if isinstance(item, I18NContextElement)]
+                assert detected[0].key == "wiki.message.wiki-inline.detected.page"
+                assert detected[0].kwargs == {"title": "Target"}
+                assert not any(isinstance(item, URLElement) for item in sent[-1][0])
             else:
                 assert len(sent) == 1 and auto_render.await_count == 1
                 assert auto_render.await_args.kwargs["section"] == "Section"
