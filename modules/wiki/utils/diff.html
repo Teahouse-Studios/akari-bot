@@ -29,10 +29,10 @@ del.diffchange { background: #ffe49c; text-decoration: none; font-weight: bold; 
 .diff-lineno { font-size: 13px; color: #72777d; padding: 12px 4px 3px; }
 .empty { text-align: center; padding: 36px; color: #54595d; }
 </style></head><body><main class="wiki-diff">
-<header><h1>$heading</h1><div class="site">$site</div></header>
+<header><h1>{{ heading }}</h1><div class="site">{{ site }}</div></header>
 <table class="diff"><colgroup><col class="marker"><col><col class="marker"><col></colgroup>
-<thead><tr><th colspan="2"><div class="title">$from_title</div><div class="revision">$from_revision</div>
-<div class="meta">$from_meta</div><div class="comment">$from_comment</div></th>
-<th colspan="2"><div class="title">$to_title</div><div class="revision">$to_revision</div>
-<div class="meta">$to_meta</div><div class="comment">$to_comment</div></th></tr></thead>
-<tbody>$body</tbody></table></main></body></html>
+<thead><tr><th colspan="2"><div class="title">{{ from_title }}</div><div class="revision">{{ from_revision }}</div>
+<div class="meta">{{ from_meta }}</div><div class="comment">{{ from_comment }}</div></th>
+<th colspan="2"><div class="title">{{ to_title }}</div><div class="revision">{{ to_revision }}</div>
+<div class="meta">{{ to_meta }}</div><div class="comment">{{ to_comment }}</div></th></tr></thead>
+<tbody>{% if has_body %}{{ body|safe }}{% else %}<tr><td colspan="4" class="empty">{{ empty }}</td></tr>{% endif %}</tbody></table></main></body></html>

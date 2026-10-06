@@ -1,8 +1,10 @@
 import asyncio
 import base64
+import re
 from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
+from urllib.parse import unquote
 
 import httpx
 from bs4 import BeautifulSoup
@@ -109,7 +111,7 @@ async def _query(*, allowed=True, title="Template:Infobox", mode="button", prefi
     return sent, buttons, preload, parse
 
 
-def _test_parameters_and_caption():
+def _test_parameters():
     assert preview.template_parameters(SOURCE) == ["first", "name", "{{Nested|x=1}}", "name", "second", "empty"]
     for source in ["{{Infobox}}", "{{:Article|x}}", "{{Infobox|" + "x" * 4096 + "}}", "{{Infobox|x}} trailing"]:
         try:
@@ -118,8 +120,6 @@ def _test_parameters_and_caption():
             pass
         else:
             raise AssertionError(source)
-    image = preview.preview_caption(PILImage.new("RGB", (10, 10), "black"), _invocation(), Locale("zh_cn"))
-    assert image.size == (10, 10)
     return True
 
 
@@ -157,6 +157,7 @@ async def _test_expression_routing_keeps_complete_parameters():
     ):
         await query_expressions(session, SOURCE + " {{Infobox|another}}", inline=True)
     assert query.await_args.kwargs["template_invocations"] == {"Infobox": SOURCE}
+    assert query.await_args.kwargs["template_preview_source"] == SOURCE + " {{Infobox|another}}"
     return True
 
 
@@ -194,7 +195,8 @@ async def _test_only_parameters_are_audited():
 
 def _test_document_preserves_effects_and_removes_input_scripts():
     parsed = {
-        "headhtml": '<html><head><link rel="stylesheet" href="/w/load.php?modules=site.styles">'
+        "headhtml": '<html lang="zh" dir="ltr"><head><link rel="stylesheet" href="/w/load.php?modules=site.styles">'
+        '<noscript><link rel="stylesheet" href="/w/load.php?modules=noscript"></noscript>'
         '<script src="/w/load.php?modules=startup"></script></head><body class="skin-vector">',
         "text": '<div class="mw-parser-output"><style>.infobox{background:red}</style>'
         '<table class="infobox"><tr><td><img src="/images/icon.png" loading="lazy" onerror="bad()">'
@@ -208,8 +210,90 @@ def _test_document_preserves_effects_and_removes_input_scripts():
     assert soup.select_one(".infobox img").get("onerror") is None
     assert soup.select_one(".mw-parser-output style").get_text() == ".infobox{background:red}"
     assert soup.select_one('head script[src*="startup"]')
+    assert soup.select_one('head > link[href*="modules=noscript"]')
+    assert soup.html["lang"] == "zh" and soup.html["dir"] == "ltr"
+    assert soup.body["class"] == ["skin-vector"]
+    assert soup.base["href"] == "https://example.org/"
     assert not soup.select_one("#akari-preview-declaration")
-    assert "userInput()" not in document and "\\u003c/script>" in document and not warning
+    assert "userInput()" not in document and "\\u003c/script\\u003e" in document and not warning
+    return True
+
+
+def _test_watermark_is_safe_inline_css():
+    title = 'Template:{{7*7}}<&"</style><script>injected()</script>'
+    invocation = TemplateInvocation(SOURCE, API, title, 42, _info(), {})
+    parsed = {"headhtml": "", "text": "<p>正文</p>"}
+    for partial in [False, True]:
+        document, warning = preview.preview_document(
+            {**parsed, "parsewarnings": ["warning"] if partial else []}, invocation, Locale("zh_cn")
+        )
+        soup = BeautifulSoup(document, "html.parser")
+        assert warning is partial
+        assert soup.select_one("body > #mw-content-text")["data-preview-partial"] == str(partial).lower()
+        css = soup.style.get_text()
+        tiles = re.findall(r'url\("data:image/svg\+xml,([^"\n]+)"\)', css)
+        assert len(tiles) == 2
+        for index, tile in enumerate(tiles):
+            svg = BeautifulSoup(unquote(tile), "xml")
+            assert not svg.script
+            assert svg.find("text").text == Locale("zh_cn").t(
+                "wiki.message.template_preview.watermark",
+                title=title,
+                status=" · 部分资源未加载" if index else "",
+            )
+        assert "injected()" not in document and "background-repeat: repeat" in css
+        assert "rotate(" not in css
+    return True
+
+
+def _test_single_template_document_adds_css_panel():
+    parsed = {
+        "headhtml": "<html><head></head><body>",
+        "text": '<div class="mw-parser-output"><table class="infobox"><tr><td>内容</td></tr></table></div>',
+    }
+    document, warning = preview.preview_document(parsed, _invocation(), Locale("zh_cn"), single_template=True)
+    soup = BeautifulSoup(document, "html.parser")
+    assert not warning
+    assert soup.select_one("#akari-template-output .infobox")
+    assert soup.select_one("#akari-preview-css-panel .akari-css-title").text == "样式属性"
+    assert "grid-template-columns" in soup.find("style").get_text()
+    assert "akariFillCssPanel" in document
+    return True
+
+
+async def _test_whole_message_preview_keeps_multiple_templates():
+    first = _invocation("{{Infobox|title=一}}")
+    second = TemplateInvocation("{{Color|red|二}}", API, "Template:Color", 43, _info(), {})
+    requests = SimpleNamespace(
+        api_json=AsyncMock(
+            side_effect=[
+                {
+                    "query": {
+                        "pages": [
+                            {"ns": 10, "title": "Template:Infobox", "pageid": 42},
+                            {"ns": 10, "title": "Template:Color", "pageid": 43},
+                        ]
+                    }
+                },
+                {"parse": {"text": "<div>一<span>二</span></div>", "headhtml": ""}},
+            ]
+        )
+    )
+    manager = AsyncMock()
+    manager.__aenter__.return_value = requests
+    source = "前缀 {{Infobox|title=一}} 中间 {{Color|red|二}} 后缀"
+    with (
+        patch.object(preview, "evaluate_url_policy", return_value=_policy(True)),
+        patch.object(preview, "check_template_parameters", new=AsyncMock()),
+        patch.object(preview, "PreviewRequests", return_value=manager),
+        patch.object(
+            preview, "render_preview_document", new=AsyncMock(return_value=(PILImage.new("RGB", (12, 8)), False))
+        ),
+    ):
+        image = await preview.generate_template_preview(first, _session(), source=source, invocations=[first, second])
+    assert isinstance(image, PILImage.Image)
+    args = requests.api_json.await_args_list[1].kwargs
+    assert args["text"] == "前缀 {{Template:Infobox|title=一}} 中间 {{Template:Color|red|二}} 后缀"
     return True
 
 
@@ -230,11 +314,12 @@ async def _test_generation_uses_actual_template_and_only_read_api():
         patch.object(preview, "check_template_parameters", new=AsyncMock()) as audit,
         patch.object(preview, "PreviewRequests", return_value=manager),
         patch.object(
-            preview, "render_preview_document", new=AsyncMock(return_value=(PILImage.new("RGB", (10, 10)), False))
-        ),
+            preview, "render_preview_document", new=AsyncMock(return_value=(PILImage.new("RGBA", (10, 10)), False))
+        ) as render,
     ):
         image = await preview.generate_template_preview(invocation, session)
     assert isinstance(image, PILImage.Image)
+    assert image is render.return_value[0]
     assert audit.await_args.args == (SOURCE, session)
     parse_args = requests.api_json.await_args_list[1].kwargs
     assert parse_args["action"] == "parse" and parse_args["preview"] == 1
@@ -341,8 +426,10 @@ async def _test_remote_inlines_styles_and_images():
     options = render.await_args.args[0]
     soup = BeautifulSoup(options.content, "html.parser")
     assert image.size == (20, 20) and options.element == "body > #mw-content-text"
+    assert soup.select_one(options.element)["data-preview-partial"] == "true"
     assert not soup.script and soup.img["src"].startswith("data:image/png;base64,")
     styles = "\n".join(str(style.string or "") for style in soup.find_all("style"))
+    assert "data:image/svg+xml," in styles
     assert ".infobox" in styles and "data:image/png;base64," in styles
     assert soup.select_one('meta[http-equiv="Content-Security-Policy"]') and not soup.select_one("link[href]")
     return True
@@ -414,11 +501,14 @@ async def _test_deletion_cancels_pending_render():
 @func_case
 async def test_wiki_template_preview(tester: Tester):
     for function, note in [
-        (_test_parameters_and_caption, "保留重复、空值及嵌套参数，固定声明栏独立于截图内容"),
+        (_test_parameters, "保留重复、空值及嵌套参数，拒绝无效调用"),
         (_test_buttons_are_whitelisted_and_lazy, "白名单、命名空间、模式与站点路由控制按钮，查询阶段不渲染"),
         (_test_expression_routing_keeps_complete_parameters, "表达式入口将完整参数传入页面查询，同名调用绑定第一条"),
         (_test_only_parameters_are_audited, "仅审核用户参数，审核缺配置、失败与无效结果拒绝预览"),
         (_test_document_preserves_effects_and_removes_input_scripts, "保留站点样式、图片及渲染模块，参数不能注入脚本"),
+        (_test_watermark_is_safe_inline_css, "CSS 水印按行错位平铺，警告状态与模板标题安全转义"),
+        (_test_single_template_document_adds_css_panel, "单模板预览在内容旁展示 CSS 属性面板"),
+        (_test_whole_message_preview_keeps_multiple_templates, "多模板预览保留整条消息文本和全部模板"),
         (_test_generation_uses_actual_template_and_only_read_api, "核验真实模板，完整参数只读解析，撤出白名单拒绝执行"),
         (_test_callback_identity_once_and_delete, "回调仅原发送者触发一次，预览消息纳入删除追踪"),
         (_test_request_whitelist_redirects_and_resources, "API 查询参数不影响白名单，重定向与资源遵守请求范围"),

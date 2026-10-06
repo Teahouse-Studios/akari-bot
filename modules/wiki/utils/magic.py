@@ -16,41 +16,6 @@ MAX_RESULT_LENGTH = 200
 MAX_INLINE_MAGIC_RESULTS = 3
 MAGIC_TIMEOUT = 8
 
-_SITE_VARIABLES = {
-    "sitename",
-    "server",
-    "servername",
-    "currentversion",
-    "contentlanguage",
-    "scriptpath",
-    "articlepath",
-    "numberofarticles",
-    "numberoffiles",
-    "numberofedits",
-    "numberofusers",
-    "numberofactiveusers",
-    "numberofpages",
-    "numberofadmins",
-}
-_TIME_VARIABLES = {
-    prefix + suffix
-    for prefix in ("current", "local")
-    for suffix in (
-        "year",
-        "month",
-        "month1",
-        "monthname",
-        "monthabbrev",
-        "day",
-        "day2",
-        "dayname",
-        "dow",
-        "week",
-        "time",
-        "hour",
-        "timestamp",
-    )
-}
 _TITLE_VARIABLES = {
     "pagename",
     "pagenamee",
@@ -74,7 +39,7 @@ _TITLE_VARIABLES = {
     "subjectpagename",
     "subjectpagenamee",
 }
-_HASH_FUNCTIONS = {"expr", "if", "ifeq", "ifexpr", "iferror", "switch", "time", "timel", "urldecode"}
+# siteinfo 不提供 SFH_NO_HASH 标志，这些核心函数的无井号语法由 MediaWiki 定义。
 _COLON_FUNCTIONS = {
     "urlencode",
     "anchorencode",
@@ -88,15 +53,117 @@ _COLON_FUNCTIONS = {
     "formatnum",
     "ns",
     "nse",
+    "numberingroup",
+    "pagesincategory",
+    "pagesize",
+    "protectionlevel",
+    "protectionexpiry",
+    "pageid",
+    "revisionid",
+    "revisionday",
+    "revisionday2",
+    "revisionmonth",
+    "revisionmonth1",
+    "revisionyear",
+    "revisiontimestamp",
+    "revisionuser",
+    "cascadingsources",
+    "padleft",
+    "padright",
+    "displaytitle",
 }
-_URL_FUNCTIONS = {"fullurl", "canonicalurl", "localurl"}
-_SUPPORTED_WORDS = _SITE_VARIABLES | _TIME_VARIABLES | _TITLE_VARIABLES | _HASH_FUNCTIONS | _COLON_FUNCTIONS
+_URL_FUNCTIONS = {"fullurl", "canonicalurl", "localurl", "fullurle", "canonicalurle", "localurle", "filepath"}
+# 扩展注册信息只有名称与别名；仅启用已确认不写入 Wiki 的解析函数。
+_QUERY_FUNCTIONS = (
+    _TITLE_VARIABLES
+    | _URL_FUNCTIONS
+    | _COLON_FUNCTIONS
+    | {
+        "expr",
+        "if",
+        "ifeq",
+        "ifexpr",
+        "iferror",
+        "switch",
+        "ifexist",
+        "time",
+        "timel",
+        "timef",
+        "timefl",
+        "formatdate",
+        "rel2abs",
+        "titleparts",
+        "len",
+        "pos",
+        "rpos",
+        "sub",
+        "count",
+        "replace",
+        "explode",
+        "urldecode",
+        "var",
+        "varexists",
+        "var_final",
+        "vardefine",
+        "vardefineecho",
+        "grammar",
+        "gender",
+        "plural",
+        "formal",
+        "bidi",
+        "language",
+        "bcp47",
+        "dir",
+        "contentmodel",
+        "special",
+        "speciale",
+        "choose",
+        "numberofarticles",
+        "numberoffiles",
+        "numberofusers",
+        "numberofactiveusers",
+        "numberofpages",
+        "numberofadmins",
+        "numberofedits",
+    }
+)
+_UNSUPPORTED_WORDS = {
+    "invoke",
+    "loop",
+    "while",
+    "dowhile",
+    "forargs",
+    "fornumargs",
+    "lst",
+    "lstx",
+    "lsth",
+    "int",
+    "tag",
+    "defaultsort",
+    "displaytitle",
+    "interwikilink",
+    "interlanguagelink",
+    "batchupload",
+    "padleft",
+    "padright",
+    "revisionid",
+    "revisionday",
+    "revisionday2",
+    "revisionmonth",
+    "revisionmonth1",
+    "revisionyear",
+    "revisiontimestamp",
+    "revisionuser",
+    "revisionsize",
+}
 _REGISTRY_CACHE = ExpiringTempDict(exp=43200)
 
 
 class MagicWordError(Exception):
-    def __init__(self, key: str):
+    def __init__(self, key: str, *, content: str | None = None, is_url: bool = False):
         self.key = "wiki.message.magic." + key
+        self.content = content
+        self.is_url = is_url
         super().__init__(self.key)
 
 
@@ -151,18 +218,26 @@ class MagicRegistry:
         self.template_names = {name.casefold() for name in (template_names or {"Template"})}
         variables = set(query.get("variables", []))
         functions = set(query.get("functionhooks", []))
+        self.supported = (variables | (functions & _QUERY_FUNCTIONS)) - _UNSUPPORTED_WORDS
         for word in query.get("magicwords", []):
+            if not isinstance(word, dict) or not isinstance(word.get("name"), str):
+                continue
             name = word["name"]
             sensitive = "case-sensitive" in word and word["case-sensitive"] is not False
             mapping = self.sensitive if sensitive else self.insensitive
             for alias in word.get("aliases", []):
+                if not isinstance(alias, str) or not alias:
+                    continue
                 has_colon = alias.endswith(":")
-                alias = alias.removesuffix(":")
+                explicit_hash = alias.startswith("#")
+                alias = alias.removesuffix(":").removeprefix("#")
                 key = alias if sensitive else alias.casefold()
                 if name in variables and not has_colon:
-                    mapping[(key, False, False)] = name
+                    mapping[(key, explicit_hash, False)] = name
                 if name in functions:
-                    is_hash = not has_colon and name not in variables and name not in _COLON_FUNCTIONS
+                    is_hash = explicit_hash or (
+                        not has_colon and name not in variables and name not in _COLON_FUNCTIONS
+                    )
                     mapping[(key, is_hash, True)] = name
 
     def lookup(self, node) -> MagicCall | None:
@@ -175,7 +250,9 @@ class MagicRegistry:
         if name is None:
             return None
         argument = str(node)[2:-2].partition(":")[2].split("|", 1)[0].strip() if has_colon else ""
-        needs_page = name in _TITLE_VARIABLES and (not argument or "{{" in argument)
+        needs_page = name in (_TITLE_VARIABLES | {"pageid", "pagelanguage", "contentmodel", "cascadingsources"}) and (
+            not argument or "{{" in argument
+        )
         return MagicCall(name=name, label=("#" if is_hash else "") + head, needs_page=needs_page)
 
     def validate(self, expression: str, page: str | None) -> MagicCall:
@@ -193,7 +270,7 @@ class MagicRegistry:
         root_call = None
         for node in nodes:
             call = self.lookup(node)
-            if call is None or call.name not in _SUPPORTED_WORDS:
+            if call is None or call.name not in self.supported:
                 raise MagicWordError("unsupported")
             depth = sum(other.span[0] <= node.span[0] and node.span[1] <= other.span[1] for other in nodes)
             if depth > MAX_EXPRESSION_DEPTH:
@@ -215,7 +292,9 @@ async def get_registry(wiki: WikiLib) -> MagicRegistry:
         if (registry := record.get("registry")) is not None:
             return registry
         async with asyncio.timeout(MAGIC_TIMEOUT):
-            response = await wiki.get_json(action="query", meta="siteinfo", siprop="magicwords|functionhooks|variables")
+            response = await wiki.get_json(
+                _no_login=True, action="query", meta="siteinfo", siprop="magicwords|functionhooks|variables"
+            )
         query = response.get("query")
         if not isinstance(query, dict) or not all(
             isinstance(query.get(key), list) for key in ("magicwords", "functionhooks", "variables")
@@ -241,7 +320,7 @@ async def expand_magic(
     if page:
         params["title"] = page
     async with asyncio.timeout(MAGIC_TIMEOUT):
-        response = await wiki.get_json(**params)
+        response = await wiki.get_json(_no_login=True, **params)
     if response.get("warnings"):
         raise MagicWordError("context_failed")
     expanded = response.get("expandtemplates")
@@ -254,11 +333,11 @@ async def expand_magic(
     soup = BeautifulSoup(result, "html.parser") if "<" in result else None
     if soup and soup.select(".error"):
         raise MagicWordError("evaluation_failed")
-    if (soup and soup.find(True)) or any(marker in result for marker in ("{{", "[[", "{|")):
+    if (soup and soup.find(True)) or any(marker in result for marker in ("{{", "[[", "{|", "\x7f")):
         raise MagicWordError("not_plain")
-    if len(result) > limit or len(result.splitlines()) > max_lines:
-        raise MagicWordError("output_long")
     is_url = call.name in _URL_FUNCTIONS or result.startswith(("http://", "https://", "//"))
+    if len(result) > limit or len(result.splitlines()) > max_lines:
+        raise MagicWordError("output_long", content=result, is_url=is_url)
     if is_url:
         result = urljoin(wiki.wiki_info.realurl, result)
         parsed_url = urlsplit(result)
@@ -271,5 +350,5 @@ async def expand_magic(
         if any(value not in {"view", "history", "raw"} for value in parse_qs(parsed_url.query).get("action", [])):
             raise MagicWordError("read_only_url")
         if len(result) > limit:
-            raise MagicWordError("output_long")
+            raise MagicWordError("output_long", content=result, is_url=True)
     return result, is_url

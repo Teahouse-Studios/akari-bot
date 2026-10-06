@@ -1,0 +1,197 @@
+{% set watermark_width = [360, ([watermark|length, watermark_partial|length]|max) * 16 + 64]|max %}
+{% macro watermark_tile(text) -%}
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ watermark_width }}" height="336">
+    <g fill="#1f344b" stroke="#fff" stroke-width="1" paint-order="stroke"
+       font-family="Noto Sans CJK SC, Noto Sans SC, PingFang SC, Microsoft YaHei, sans-serif"
+       font-size="16" font-weight="600">
+        {% for row in range(3) %}
+        {% set offset = 28 + row * (watermark_width // 3) %}
+        <text x="{{ offset }}" y="{{ 44 + row * 112 }}">{{ text }}</text>
+        {% if row %}<text x="{{ offset - watermark_width }}" y="{{ 44 + row * 112 }}">{{ text }}</text>{% endif %}
+        {% endfor %}
+    </g>
+</svg>
+{%- endmacro %}
+<!doctype html>
+<html{% for key, value in html_attrs.items() %} {{ key }}="{{ value }}"{% endfor %}>
+<head>
+    <meta charset="utf-8">
+    <base href="{{ base_url }}">
+    {{ head|safe }}
+    <style>
+        :root { color-scheme: light; }
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: #eef2f6;
+            color: #202a36;
+            font-family: "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-size: 16px;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        body { padding: 24px; box-sizing: border-box; }
+        body > #mw-content-text {
+            position: relative;
+            isolation: isolate;
+            box-sizing: border-box;
+            display: flow-root;
+            max-width: 960px;
+            min-height: 120px;
+            margin: 0 auto;
+            padding: 28px 32px;
+            overflow-wrap: anywhere;
+            background: #fff;
+            border: 1px solid #dce3eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 28px rgba(31, 52, 75, .10);
+        }
+        body > #mw-content-text::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: var(--akari-watermark-width, auto);
+            height: var(--akari-watermark-height, auto);
+            z-index: 2147483647;
+            pointer-events: none;
+            border-radius: inherit;
+            opacity: .18;
+            background-image: url("data:image/svg+xml,{{ watermark_tile(watermark)|urlencode }}");
+            background-repeat: repeat;
+            background-size: min(100%, {{ watermark_width }}px) auto;
+            rotate: 45deg;
+        }
+        body > #mw-content-text[data-preview-partial="true"]::after {
+            background-image: url("data:image/svg+xml,{{ watermark_tile(watermark_partial)|urlencode }}");
+        }
+        body > #mw-content-text:has(> #akari-template-output) {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 238px;
+            align-items: start;
+            gap: 22px;
+        }
+        #akari-template-output { min-width: 0; }
+        #akari-preview-css-panel {
+            position: relative;
+            z-index: 20;
+            box-sizing: border-box;
+            min-width: 0;
+            padding: 15px;
+            color: #344454 !important;
+            background: #f6f8fa !important;
+            border: 1px solid #d3dee9 !important;
+            border-radius: 6px !important;
+            box-shadow: none !important;
+            font: 13px/1.45 "Noto Sans CJK SC", "Noto Sans SC", sans-serif !important;
+        }
+        #akari-preview-css-panel .akari-css-title {
+            display: block;
+            margin-bottom: 10px;
+            color: #203a55 !important;
+            font-size: 15px !important;
+        }
+        #akari-preview-css-panel .akari-css-row {
+            display: grid;
+            grid-template-columns: 78px minmax(0, 1fr);
+            gap: 6px;
+            padding: 6px 0;
+            border-top: 1px solid rgba(117, 141, 164, .22);
+        }
+        #akari-preview-css-panel .akari-css-name { color: #6a7d8e !important; }
+        #akari-preview-css-panel .akari-css-value {
+            min-width: 0;
+            overflow-wrap: anywhere;
+            color: #24384b !important;
+        }
+        #akari-preview-css-panel .akari-css-swatch {
+            display: inline-block;
+            width: 13px;
+            height: 13px;
+            margin-right: 5px;
+            vertical-align: -2px;
+            border: 1px solid rgba(0,0,0,.18);
+            border-radius: 3px;
+        }
+        body > #mw-content-text img { max-width: 100%; height: auto; }
+        body > #mw-content-text table { max-width: 100%; border-collapse: collapse; }
+        body > #mw-content-text th, body > #mw-content-text td { vertical-align: top; }
+        body > #mw-content-text pre {
+            max-width: 100%;
+            overflow: auto;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: #f4f6f8;
+        }
+        body > #mw-content-text a { color: #2468a8; }
+    </style>
+</head>
+<body{% for key, value in body_attrs.items() %} {{ key }}="{{ value }}"{% endfor %}>
+    <div id="mw-content-text" class="mw-body-content" data-preview-partial="{{ 'true' if partial else 'false' }}">
+        {% if single_template %}
+        <div id="akari-template-output">{{ body|safe }}</div>
+        <aside id="akari-preview-css-panel" aria-label="CSS">
+            <strong class="akari-css-title">{{ css_title }}</strong>
+            <div class="akari-css-properties">
+                {% for key, label in css_labels.items() %}
+                <div class="akari-css-row" data-css-property="{{ key }}">
+                    <span class="akari-css-name">{{ label }}</span>
+                    <span class="akari-css-value">-</span>
+                </div>
+                {% endfor %}
+            </div>
+        </aside>
+        {% else %}
+        {{ body|safe }}
+        {% endif %}
+    </div>
+    <script>
+        window.akariPreviewReady = false;
+        (function initialize(attempt) {
+            if (!window.mw || typeof mw.loader.using !== 'function') {
+                if (attempt < 100) setTimeout(function() { initialize(attempt + 1); }, 50);
+                return;
+            }
+            mw.config.set({{ config|tojson }});
+            mw.loader.using({{ modules|tojson }}).then(function() {
+                mw.hook('wikipage.content').fire(jQuery('#mw-content-text'));
+                window.akariPreviewReady = true;
+            }, function() {
+                window.akariPreviewPartial = true;
+                window.akariPreviewReady = true;
+            });
+        })(0);
+    </script>
+    {% if single_template %}
+    <script data-akari-preview-script="css-panel">
+        window.akariFillCssPanel = function() {
+            var root = document.querySelector('#akari-template-output');
+            var panel = document.querySelector('.akari-css-properties');
+            if (!root || !panel) return;
+            var target = root.querySelector('table,img,h1,h2,h3,h4,p,ul,ol,pre,blockquote,[style]') || root;
+            var c = getComputedStyle(target);
+            var properties = {
+                background: c.backgroundColor, color: c.color, font: c.fontFamily,
+                size: c.fontSize + ' / ' + c.lineHeight, border: c.border, radius: c.borderRadius,
+                shadow: c.boxShadow, spacing: c.padding + ' / ' + c.margin
+            };
+            panel.querySelectorAll('[data-css-property]').forEach(function(row) {
+                var key = row.dataset.cssProperty;
+                var val = properties[key] || '-';
+                var value = row.querySelector('.akari-css-value');
+                value.textContent = val;
+                if (key === 'background' || key === 'color') {
+                    var swatch = document.createElement('i');
+                    swatch.className = 'akari-css-swatch';
+                    swatch.style.background = val;
+                    value.prepend(swatch);
+                }
+            });
+        };
+        (function waitForPreview(attempt) {
+            if (window.akariPreviewReady || !window.mw || attempt >= 100) window.akariFillCssPanel();
+            else setTimeout(function() { waitForPreview(attempt + 1); }, 50);
+        })(0);
+    </script>
+    {% endif %}
+</body>
+</html>

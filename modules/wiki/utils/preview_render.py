@@ -181,16 +181,18 @@ async def _local_render(document, requests, locale):
         )
         if await page.evaluate("Boolean(window.akariPreviewResourcePartial)"):
             requests.warning = True
-        declaration = page.locator("body > #akari-preview-declaration")
-        if await declaration.count():
-            await declaration.evaluate("element => element.remove()")
+        content = page.locator("body > #mw-content-text")
+        await content.evaluate(
+            "(element, partial) => {if (partial) element.dataset.previewPartial = 'true';"
+            "if (typeof window.akariFillCssPanel === 'function') window.akariFillCssPanel();}",
+            requests.warning,
+        )
         measure = """element => {
             const bounds = element.getBoundingClientRect();
             return {x: Math.max(0,bounds.x), y: Math.max(0,bounds.y),
                 width:Math.max(bounds.width,element.scrollWidth),
                 height:Math.max(bounds.height,element.scrollHeight)};
         }"""
-        content = page.locator("body > #mw-content-text")
         size = await content.evaluate(measure)
         width, height = math.ceil(size["width"]), math.ceil(size["height"])
         if width < 1 or height < 1 or width * height > _MAX_PIXELS or width > 4096 or height > 16000:
@@ -201,6 +203,12 @@ async def _local_render(document, requests, locale):
             width, height = math.ceil(size["width"]), math.ceil(size["height"])
             if width * height > _MAX_PIXELS:
                 raise ValueError("Preview dimensions exceed limits")
+        await content.evaluate(
+            "(element, bounds) => {"
+            "element.style.setProperty('--akari-watermark-width', bounds.width + 'px');"
+            "element.style.setProperty('--akari-watermark-height', bounds.height + 'px');}",
+            {"width": width, "height": height},
+        )
         data = await page.screenshot(
             type="png", full_page=True, clip={"x": size["x"], "y": size["y"], "width": width, "height": height}
         )
@@ -241,8 +249,12 @@ async def _inline_css(css, base, requests, depth=0):
 
 async def _remote_render(soup, requests, locale):
     # 远程接口不支持请求路由，所有资源须先受控下载并内联，CSP 禁止后续联网。
+    requests.warning = True
+    content = soup.select_one("body > #mw-content-text")
+    content["data-preview-partial"] = "true"
     for script in soup.find_all("script"):
-        script.decompose()
+        if script.get("data-akari-preview-script") != "css-panel":
+            script.decompose()
     for tag in list(soup.head.find_all("link")):
         if "stylesheet" in tag.get("rel", []) and tag.get("href"):
             try:
@@ -274,13 +286,10 @@ async def _remote_render(soup, requests, locale):
             "meta",
             attrs={
                 "http-equiv": "Content-Security-Policy",
-                "content": "default-src 'none'; style-src 'unsafe-inline' data:; img-src data:; font-src data:; base-uri 'none'",
+                "content": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' data:; img-src data:; font-src data:; base-uri 'none'",
             },
         ),
     )
-    declaration = soup.select_one("body > #akari-preview-declaration")
-    if declaration:
-        declaration.decompose()
     images = await web_render.element_screenshot(
         ElementScreenshotOptions(
             content=str(soup),
@@ -316,5 +325,4 @@ async def render_preview_document(document, requests, locale):
         image = await _local_render(str(soup), requests, locale)
     else:
         image = await _remote_render(soup, requests, locale)
-        requests.warning = True
     return image, requests.warning

@@ -117,8 +117,9 @@ async def _test_not_found_sends_no_button_only_message():
     ]
     return (
         keys == ["wiki.message.not_found.autofix.choice"]
-        and [show for row in rows for show, _ in row] == SUGGESTIONS
-        and [value for row in rows for _, value in row] == ["1", "2", "3", "4", "5"]
+        and [show for row in rows for show, _ in row] == SUGGESTIONS[:-1] + [SUGGESTIONS[-1], "关闭"]
+        and [value for row in rows for _, value in row] == ["1", "2", "3", "4", "5", "close"]
+        and rows[-1] == [(SUGGESTIONS[-1], "5"), ("关闭", "close")]
     )
 
 

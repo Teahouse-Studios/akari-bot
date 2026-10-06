@@ -1,12 +1,17 @@
 import re
-from html import escape
 from pathlib import Path
-from string import Template
 from urllib.parse import parse_qs, unquote, urlsplit
 
 from bs4 import BeautifulSoup, Comment
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from core.builtins.message.internal import I18NContext
+
+
+_TEMPLATE_ENV = Environment(
+    loader=FileSystemLoader(Path(__file__).parent),
+    autoescape=select_autoescape(["html"]),
+)
 
 
 class DiffError(ValueError):
@@ -125,27 +130,27 @@ def _sanitize_diff(body: str) -> str:
 def diff_document(data: dict, site_name: str, locale) -> str:
     def text(key, **kwargs):
         context = I18NContext("wiki.message.diff." + key, **kwargs)
-        return escape(locale.t(context.key, **context.kwargs))
+        return locale.t(context.key, **context.kwargs)
 
     def revision(side):
         return text("revision", revision=data.get(side + "revid", ""))
 
     def metadata(side):
-        return " · ".join(escape(str(data.get(side + key, ""))) for key in ("timestamp", "user"))
+        return " · ".join(str(data.get(side + key, "")) for key in ("timestamp", "user"))
 
     body = _sanitize_diff(data["body"])
-    if not body.strip():
-        body = f'<tr><td colspan="4" class="empty">{text("empty")}</td></tr>'
-    return Template(Path(__file__).with_name("diff.html").read_text(encoding="utf-8")).substitute(
+    return _TEMPLATE_ENV.get_template("diff.html").render(
         heading=text("heading"),
-        site=escape(site_name),
-        from_title=escape(data.get("fromtitle", "")),
-        to_title=escape(data.get("totitle", "")),
+        site=site_name,
+        from_title=data.get("fromtitle", ""),
+        to_title=data.get("totitle", ""),
         from_revision=revision("from"),
         to_revision=revision("to"),
         from_meta=metadata("from"),
         to_meta=metadata("to"),
-        from_comment=escape(data.get("fromcomment", "")),
-        to_comment=escape(data.get("tocomment", "")),
+        from_comment=data.get("fromcomment", ""),
+        to_comment=data.get("tocomment", ""),
         body=body,
+        has_body=bool(body.strip()),
+        empty=text("empty"),
     )

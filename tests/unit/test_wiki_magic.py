@@ -2,8 +2,9 @@ import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import PlainElement, URLElement
+from core.builtins.message.elements import ImageElement, PlainElement, URLElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.constants.exceptions import SessionFinished
@@ -40,6 +41,18 @@ def _metadata():
                 "urldecode",
                 "invoke",
                 "padleft",
+                "len",
+                "replace",
+                "var",
+                "vardefine",
+                "language",
+                "bcp47",
+                "formal",
+                "loop",
+                "dpl",
+                "customwrite",
+                "numberofarticles",
+                "pagesize",
             ],
             "magicwords": [
                 {"name": "sitename", "aliases": ["SITENAME", "站点名称"], "case-sensitive": ""},
@@ -58,6 +71,17 @@ def _metadata():
                 {"name": "urldecode", "aliases": ["urldecode", "URI解碼"]},
                 {"name": "invoke", "aliases": ["invoke"]},
                 {"name": "padleft", "aliases": ["PADLEFT:"]},
+                {"name": "len", "aliases": ["len", "长度"]},
+                {"name": "replace", "aliases": ["replace", "替换"]},
+                {"name": "var", "aliases": ["var"]},
+                {"name": "vardefine", "aliases": ["vardefine"]},
+                {"name": "language", "aliases": ["#LANGUAGE", "#语言"]},
+                {"name": "bcp47", "aliases": ["#bcp47"], "case-sensitive": True},
+                {"name": "formal", "aliases": ["#FORMAL:"], "case-sensitive": True},
+                {"name": "loop", "aliases": ["loop", "循环"]},
+                {"name": "dpl", "aliases": ["dpl"]},
+                {"name": "customwrite", "aliases": ["customwrite"]},
+                {"name": "pagesize", "aliases": ["PAGESIZE"]},
             ],
         }
     }
@@ -156,6 +180,7 @@ async def _test_registry_cache_and_invalid_response():
     wiki.get_json = AsyncMock(return_value=_metadata())
     first = await get_registry(wiki)
     assert await get_registry(wiki) is first and wiki.get_json.await_count == 1
+    assert wiki.get_json.await_args.kwargs["_no_login"] is True
     other = _wiki("https://other.org/api.php")
     other.get_json = AsyncMock(return_value=_metadata())
     assert await get_registry(other) is not first and other.get_json.await_count == 1
@@ -179,6 +204,7 @@ async def _test_expand_values_and_context():
     wiki.get_json = AsyncMock(return_value={"expandtemplates": {"wikitext": "10"}})
     assert await expand_magic(wiki, _registry(), "{{#expr:2*3+4}}") == ("10", False)
     assert wiki.get_json.await_args.kwargs == {
+        "_no_login": True,
         "action": "expandtemplates",
         "text": "{{#expr:2*3+4}}",
         "prop": "wikitext",
@@ -199,6 +225,7 @@ async def _test_expansion_errors_and_bounds():
         ({"expandtemplates": {"wikitext": "x" * 201}}, "output_long"),
         ({"expandtemplates": {"wikitext": "1\n2\n3\n4"}}, "output_long"),
         ({"expandtemplates": {"wikitext": "10"}, "warnings": {"expandtemplates": "Bad title"}}, "context_failed"),
+        ({"expandtemplates": {"wikitext": "\x7fUNIQ--opaque-QINU\x7f"}}, "not_plain"),
     ]
     wiki = _wiki()
     for response, key in cases:
@@ -207,6 +234,8 @@ async def _test_expansion_errors_and_bounds():
             await expand_magic(wiki, _registry(), "{{#expr:1/0}}")
         except MagicWordError as error:
             assert error.key.endswith("." + key)
+            if key == "output_long" and isinstance(response["expandtemplates"]["wikitext"], str):
+                assert error.content == response["expandtemplates"]["wikitext"]
         else:
             return False
     wiki.get_json = AsyncMock(
@@ -238,6 +267,100 @@ async def _test_expansion_errors_and_bounds():
     return True
 
 
+def _test_extension_aliases_and_read_only_validation():
+    registry = _registry()
+    for source, name in [
+        ("{{#len:AkariBot}}", "len"),
+        ("{{#长度:小可}}", "len"),
+        ("{{#替换:AkariBot|Bot|Wiki}}", "replace"),
+        ("{{#LANGUAGE:zh|en}}", "language"),
+        ("{{#语言:zh}}", "language"),
+        ("{{#bcp47:zh-cn}}", "bcp47"),
+        ("{{#FORMAL:Du}}", "formal"),
+        ("{{NUMBEROFARTICLES:R}}", "numberofarticles"),
+        ("{{PAGESIZE:Main Page}}", "pagesize"),
+        ("{{#if:{{#vardefine:sample|42}}|no|{{#var:sample}}}}", "if"),
+    ]:
+        assert registry.validate(source, None).name == name, source
+    for source in ["{{#BCP47:zh-cn}}", "{{#formal:Du}}", "{{LANGUAGE:zh}}", "{{Template:len|abc}}"]:
+        assert registry.lookup(_node(source)) is None, source
+    for source in [
+        "{{#循环:100|x}}",
+        "{{#dpl:updaterules=replace}}",
+        "{{#customwrite:page}}",
+        "{{#replace:x|x|{{:Article}}}}",
+        "{{#var:sample|{{#invoke:Example|main}}}}",
+    ]:
+        try:
+            registry.validate(source, None)
+        except MagicWordError as error:
+            assert error.key.endswith(".unsupported")
+        else:
+            raise AssertionError(source)
+    absent = _metadata()["query"]
+    absent["functionhooks"] = [name for name in absent["functionhooks"] if name != "len"]
+    assert MagicRegistry(absent).lookup(_node("{{#len:abc}}")) is None
+    return True
+
+
+def _test_site_variables_and_registry_isolation():
+    query = _metadata()["query"]
+    query["variables"] += ["sitebuild", "pagelanguage", "contentmodel"]
+    query["functionhooks"] += ["contentmodel"]
+    query["magicwords"] += [
+        {"name": "sitebuild", "aliases": ["SITEBUILD", "站点构建版本"], "case-sensitive": True},
+        {"name": "pagelanguage", "aliases": ["PAGELANGUAGE"], "case-sensitive": True},
+        {"name": "contentmodel", "aliases": ["#contentmodel"], "case-sensitive": True},
+    ]
+    registry = MagicRegistry(query, {"Template", "模板"})
+    assert registry.validate("{{站点构建版本}}", None).name == "sitebuild"
+    assert registry.lookup(_node("{{sitebuild}}")) is None
+    assert _registry().lookup(_node("{{SITEBUILD}}")) is None
+    assert registry.validate("{{#contentmodel:Example}}", None).name == "contentmodel"
+    for expression in ("{{PAGELANGUAGE}}", "{{#contentmodel}}"):
+        try:
+            registry.validate(expression, None)
+        except MagicWordError as error:
+            assert error.key.endswith(".page_required")
+        else:
+            return False
+        assert registry.validate(expression, "Example").needs_page
+    return True
+
+
+async def _test_extension_functions_expand_anonymously():
+    wiki = _wiki()
+    for source, value in [
+        ("{{#len:AkariBot}}", "8"),
+        ("{{#replace:AkariBot|Bot|Wiki}}", "AkariWiki"),
+        ("{{#var:sample|默认值}}", "默认值"),
+    ]:
+        wiki.get_json = AsyncMock(return_value={"expandtemplates": {"wikitext": value}})
+        assert await expand_magic(wiki, _registry(), source) == (value, False)
+        assert wiki.get_json.await_args.kwargs["_no_login"] is True
+        assert wiki.get_json.await_args.kwargs["text"] == source
+    wiki.get_json = AsyncMock()
+    for source in ["{{#customwrite:page}}", "{{#dpl:deleterules=delete}}", "{{#loop:100000|x}}"]:
+        try:
+            await expand_magic(wiki, _registry(), source)
+        except MagicWordError:
+            pass
+        else:
+            return False
+    assert not wiki.get_json.await_count
+    return True
+
+
+async def _test_extension_functions_route_automatically():
+    for source in ["{{#长度:AkariBot}}", "{{#语言:zh|en}}", "{{NUMBEROFARTICLES:R}}"]:
+        captured, expand, templates, _ = await _route(source, inline=True, value="8")
+        assert expand.await_count == 1 and not templates.await_count
+        assert captured["messages"].values[0].text == "8"
+    _, expand, templates, _ = await _route("{{Template:len|abc}}", inline=True)
+    assert not expand.await_count and templates.await_args.args[1] == ["len"]
+    return True
+
+
 async def _test_cancellation_is_not_swallowed():
     wiki = _wiki()
     wiki.get_json = AsyncMock(side_effect=asyncio.CancelledError)
@@ -249,7 +372,18 @@ async def _test_cancellation_is_not_swallowed():
 
 
 async def _route(
-    text, *, magic_only=False, inline=False, page=None, registry=None, value="10", is_url=False, registry_error=None
+    text,
+    *,
+    magic_only=False,
+    inline=False,
+    page=None,
+    registry=None,
+    value="10",
+    is_url=False,
+    registry_error=None,
+    expand_error=None,
+    support_wait=False,
+    support_image=False,
 ):
     session = MessageSession(
         session_info=SessionInfo(
@@ -258,6 +392,8 @@ async def _route(
             client_name="TEST",
             sender_id="TEST|1",
             locale=Locale("zh_cn"),
+            support_wait=support_wait,
+            support_image=support_image,
         )
     )
     captured = {}
@@ -278,7 +414,10 @@ async def _route(
         patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target)),
         patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
         patch("modules.wiki.wiki.get_registry", new=prepare),
-        patch("modules.wiki.wiki.expand_magic", new=AsyncMock(return_value=(value, is_url))) as expand,
+        patch(
+            "modules.wiki.wiki.expand_magic",
+            new=AsyncMock(side_effect=expand_error, return_value=(value, is_url)),
+        ) as expand,
         patch("modules.wiki.wiki.query_pages", new=AsyncMock()) as templates,
         patch.object(MessageSession, "finish", new=finish),
     ):
@@ -287,6 +426,72 @@ async def _route(
         except SessionFinished:
             pass
     return captured, expand, templates, session
+
+
+async def _test_long_result_confirmation():
+    long_result = "line 1\nline 2\nline 3\nline 4"
+    with (
+        patch.object(Bot.Info, "web_render_status", True),
+        patch.object(MessageSession, "wait_confirm", new=AsyncMock(return_value=True)) as confirm,
+        patch(
+            "modules.wiki.wiki.msgchain2image",
+            new=AsyncMock(return_value=[ImageElement.assign("rendered")]),
+        ) as render,
+    ):
+        captured, _, _, _ = await _route(
+            "{{#expr:1+1}}",
+            expand_error=MagicWordError("output_long", content=long_result),
+            support_wait=True,
+            support_image=True,
+        )
+    assert isinstance(captured["messages"].values[0], ImageElement)
+    assert confirm.await_args.args[0].key == "wiki.message.magic.output_long.confirm"
+    assert confirm.await_args.kwargs["no_confirm_action"] is False
+    assert render.await_args.args[0].values[0].text == long_result
+    return True
+
+
+async def _test_long_result_rejection_and_url_policy():
+    with (
+        patch.object(Bot.Info, "web_render_status", True),
+        patch.object(MessageSession, "wait_confirm", new=AsyncMock(return_value=False)) as confirm,
+    ):
+        captured, _, _, _ = await _route(
+            "{{#expr:1+1}}",
+            expand_error=MagicWordError("output_long", content="long result"),
+            support_wait=True,
+            support_image=True,
+        )
+    assert captured["messages"].values[0].key == "wiki.message.magic.output_long"
+    assert confirm.await_count == 1
+
+    with (
+        patch.object(Bot.Info, "web_render_status", True),
+        patch.object(MessageSession, "wait_confirm", new=AsyncMock(return_value=True)) as confirm,
+        patch("modules.wiki.wiki.msgchain2image", new=AsyncMock()) as render,
+    ):
+        captured, _, _, _ = await _route(
+            "{{#fullurl:Stone}}",
+            expand_error=MagicWordError("output_long", content="https://example.org/" * 50, is_url=True),
+            support_wait=True,
+            support_image=True,
+        )
+    assert captured["messages"].values[0].key == "wiki.message.magic.output_long"
+    assert not confirm.await_count and not render.await_count
+
+    with (
+        patch.object(Bot.Info, "web_render_status", True),
+        patch.object(MessageSession, "wait_confirm", new=AsyncMock(return_value=True)),
+        patch("modules.wiki.wiki.msgchain2image", new=AsyncMock(return_value=False)),
+    ):
+        captured, _, _, _ = await _route(
+            "{{#expr:1+1}}",
+            expand_error=MagicWordError("output_long", content="long result"),
+            support_wait=True,
+            support_image=True,
+        )
+    assert captured["messages"].values[0].key == "wiki.message.magic.output_long_unavailable"
+    return True
 
 
 async def _test_routing_templates_and_magic():
@@ -350,6 +555,15 @@ async def test_wiki_magic(tester: Tester):
         (_test_explicit_shorthand_and_context, "显式入口支持短写表达式和页面上下文"),
         (_test_output_is_literal_and_url_policy, "结果不解析消息标记，外站链接保持 URL 策略"),
         (_test_inline_batch_limit_and_registry_failure, "内联结果合并限量，能力发现失败保留普通模板查询"),
+        (
+            _test_extension_aliases_and_read_only_validation,
+            "按站点注册启用扩展、井号别名与大小写规则，拒绝有副作用的函数",
+        ),
+        (_test_extension_functions_expand_anonymously, "扩展函数匿名只读展开，未核实函数与循环不发起请求"),
+        (_test_extension_functions_route_automatically, "站点扩展与变量参数自动识别，显式模板名仍查询模板"),
+        (_test_site_variables_and_registry_isolation, "站点扩展变量按 API 隔离，页面属性要求明确上下文"),
+        (_test_long_result_confirmation, "长文本结果确认后转为图片发送"),
+        (_test_long_result_rejection_and_url_policy, "长文本拒绝确认与长链接保持短提示"),
     ]:
         await tester.test(function, note)
     return tester

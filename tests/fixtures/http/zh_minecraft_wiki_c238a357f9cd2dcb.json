@@ -1,0 +1,1 @@
+{"url": "https://zh.minecraft.wiki/api.php?action=expandtemplates&text=%7B%7B%23var%3Asample%7C%E9%BB%98%E8%AE%A4%E5%80%BC%7D%7D&prop=wikitext&format=json", "status_code": 200, "headers": {}, "method": "GET", "json_data": {"expandtemplates": {"wikitext": "默认值"}}}

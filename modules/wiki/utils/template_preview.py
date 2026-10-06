@@ -1,13 +1,13 @@
 import asyncio
-import orjson
+from pathlib import Path
+
 import wikitextparser as wtp
 from attrs import define
 from bs4 import BeautifulSoup
-from PIL import Image as PILImage, ImageDraw, ImageFont
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from core.builtins.filter import contain_badwords
 from core.builtins.message.internal import I18NContext
-from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path
 from core.utils import dirty_check
 from core.utils.url_audit import evaluate_url_policy
 from .magic import extract_expressions
@@ -20,6 +20,10 @@ TEMPLATE_PREVIEW_TIMEOUT = 30
 PREVIEW_CONTEXT = "AkariBot"
 _RENDER_SLOTS = asyncio.Semaphore(2)
 _ACTIVE_SENDERS = set()
+_TEMPLATE_ENV = Environment(
+    loader=FileSystemLoader(Path(__file__).parent),
+    autoescape=select_autoescape(["html"]),
+)
 
 
 class TemplatePreviewError(Exception):
@@ -39,12 +43,12 @@ class TemplateInvocation:
     language: str | None = None
 
 
-def template_parameters(source: str) -> list[str]:
+def template_parameters(source: str, *, allow_empty: bool = False) -> list[str]:
     roots = extract_expressions(source)
     if len(source) > MAX_TEMPLATE_LENGTH or len(roots) != 1 or roots[0].span != (0, len(source)):
         raise TemplatePreviewError("invalid")
     root = roots[0]
-    if type(root).__name__ != "Template" or not root.arguments or len(root.arguments) > 50:
+    if type(root).__name__ != "Template" or (not root.arguments and not allow_empty) or len(root.arguments) > 50:
         raise TemplatePreviewError("invalid")
     parsed = wtp.parse(source)
     nodes = [*parsed.templates, *parsed.parser_functions]
@@ -63,7 +67,7 @@ def template_parameters(source: str) -> list[str]:
 
 
 async def check_template_parameters(source, session):
-    parameters = template_parameters(source)
+    parameters = template_parameters(source, allow_empty=True)
     if any(contain_badwords(parameter) for parameter in parameters):
         raise TemplatePreviewError("filtered")
     if parameters:
@@ -81,7 +85,40 @@ async def check_template_parameters(source, session):
             raise TemplatePreviewError("filtered")
 
 
-def preview_document(parsed, invocation, locale):
+def _template_name(source: str) -> str:
+    node = extract_expressions(source)[0]
+    return node.name.strip().replace("_", " ").casefold()
+
+
+def _template_name_variants(source: str) -> set[str]:
+    name = _template_name(source)
+    return {name, name.split(":", 1)[-1]}
+
+
+def _canonicalize_source(source: str, invocations: list[TemplateInvocation]) -> str:
+    names = {name: item.title for item in invocations for name in _template_name_variants(item.source)}
+    parsed = wtp.parse(source)
+    roots = {node.span for node in extract_expressions(source)}
+    for node in reversed(parsed.templates):
+        name = node.name.strip().replace("_", " ").casefold()
+        if node.span in roots:
+            for variant in (name, name.split(":", 1)[-1]):
+                if variant in names:
+                    node.name = names[variant]
+                    break
+    return str(parsed)
+
+
+def _preview_sources(source: str, invocations: list[TemplateInvocation]) -> list[str]:
+    names = {name for item in invocations for name in _template_name_variants(item.source)}
+    return [
+        str(node)
+        for node in extract_expressions(source)
+        if type(node).__name__ == "Template" and _template_name_variants(str(node)) & names
+    ]
+
+
+def preview_document(parsed, invocation, locale, *, single_template: bool = False):
     def value(key):
         result = parsed.get(key, "")
         return result.get("*", "") if isinstance(result, dict) else result
@@ -92,11 +129,7 @@ def preview_document(parsed, invocation, locale):
         raise TemplatePreviewError("empty")
     if len((head + body).encode()) > 1024 * 1024:
         raise TemplatePreviewError("too_large")
-    soup = BeautifulSoup(head + "</body></html>", "html.parser")
-    if not soup.html or not soup.head or not soup.body:
-        soup = BeautifulSoup("<html><head></head><body></body></html>", "html.parser")
-    soup.body.clear()
-    content = soup.new_tag("div", id="mw-content-text", attrs={"class": "mw-body-content"})
+    soup = BeautifulSoup(head, "html.parser")
     markup = BeautifulSoup(body, "html.parser")
     for tag in markup.find_all(["script", "iframe", "object", "embed", "base", "meta"]):
         tag.decompose()
@@ -110,135 +143,85 @@ def preview_document(parsed, invocation, locale):
             image["src"] = image["data-src"]
         if image.get("data-srcset"):
             image["srcset"] = image["data-srcset"]
-    content.append(markup)
-    soup.body.append(content)
     for base in soup.find_all("base"):
         base.decompose()
-    soup.head.insert(0, soup.new_tag("base", href=invocation.wiki_info.realurl.rstrip("/") + "/"))
     for tag in soup.find_all("meta"):
         if tag.get("http-equiv", "").lower() == "refresh":
             tag.decompose()
-    for noscript in soup.find_all("noscript"):
+    head_content = list(soup.head.contents) if soup.head else []
+    for noscript in [*soup.find_all("noscript"), *markup.find_all("noscript")]:
         for style in noscript.find_all(["style", "link"]):
-            soup.head.append(style.extract())
-    style = soup.new_tag("style")
-    style.string = """
-        :root { color-scheme: light; }
-        html, body {
-            margin: 0;
-            min-height: 100%;
-            background: #eef2f6;
-            color: #202a36;
-            font-family: "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-            font-size: 16px;
-            line-height: 1.65;
-            -webkit-font-smoothing: antialiased;
-        }
-        body { padding: 24px; box-sizing: border-box; }
-        body > #mw-content-text {
-            box-sizing: border-box;
-            display: flow-root;
-            max-width: 960px;
-            min-height: 120px;
-            margin: 0 auto;
-            padding: 28px 32px;
-            overflow-wrap: anywhere;
-            background: #ffffff;
-            border: 1px solid #dce3eb;
-            border-radius: 14px;
-            box-shadow: 0 10px 28px rgba(31, 52, 75, 0.10);
-        }
-        body > #mw-content-text img { max-width: 100%; height: auto; }
-        body > #mw-content-text table { max-width: 100%; border-collapse: collapse; }
-        body > #mw-content-text th, body > #mw-content-text td { vertical-align: top; }
-        body > #mw-content-text pre {
-            max-width: 100%;
-            overflow: auto;
-            padding: 12px 14px;
-            border-radius: 8px;
-            background: #f4f6f8;
-        }
-        body > #mw-content-text a { color: #2468a8; }
-    """
-    soup.head.append(style)
+            head_content.append(style.extract())
     config = parsed.get("jsconfigvars", {})
     modules = parsed.get("modules", [])
-    script = soup.new_tag("script")
-    script.string = (
-        "window.akariPreviewReady=false;(function initialize(attempt){"
-        "if(!window.mw||typeof mw.loader.using!=='function'){"
-        "if(attempt<100){setTimeout(function(){initialize(attempt+1);},50);}return;}"
-        "mw.config.set("
-        + orjson.dumps(config if isinstance(config, dict) else {}).decode().replace("<", "\\u003c")
-        + ");mw.loader.using("
-        + orjson.dumps(["mediawiki.page.ready", *modules]).decode().replace("<", "\\u003c")
-        + ").then(function(){mw.hook('wikipage.content').fire(jQuery('#mw-content-text'));"
-        "window.akariPreviewReady=true;},function(){window.akariPreviewPartial=true;"
-        "window.akariPreviewReady=true;});})(0);"
-    )
-    soup.body.append(script)
+
+    def text(key, **kwargs):
+        context = I18NContext("wiki.message.template_preview." + key, **kwargs)
+        return locale.t(context.key, locale_failed_prompt=False, **context.kwargs)
+
+    def attributes(tag):
+        return {
+            key: " ".join(value) if isinstance(value, list) else value
+            for key, value in (tag.attrs.items() if tag else [])
+            if key in {"class", "lang", "dir"}
+        }
+
+    labels = {}
+    if single_template:
+        labels = {
+            key: text("css." + key)
+            for key in ("background", "color", "font", "size", "border", "radius", "shadow", "spacing")
+        }
     warning = bool(parsed.get("parsewarnings") or markup.select(".error,.mw-broken-media,.scribunto-error"))
-    return str(soup), warning
-
-
-def preview_caption(image, invocation, locale, warning=False):
-    image = image.convert("RGB")
-    image.thumbnail((1600, 3800), PILImage.Resampling.LANCZOS)
-    font = ImageFont.truetype(str(noto_sans_bold_path if image.width >= 900 else noto_sans_demilight_path), 16)
-    status = " · " + locale.t(I18NContext("wiki.message.template_preview.partial").key) if warning else ""
-    watermark = locale.t(
-        I18NContext("wiki.message.template_preview.watermark").key,
-        title=invocation.title,
-        status=status,
+    document = _TEMPLATE_ENV.get_template("template_preview.html").render(
+        html_attrs=attributes(soup.html),
+        body_attrs=attributes(soup.body),
+        base_url=invocation.wiki_info.realurl.rstrip("/") + "/",
+        head="".join(str(item) for item in head_content),
+        body=str(markup),
+        config=config if isinstance(config, dict) else {},
+        modules=["mediawiki.page.ready", *modules],
+        single_template=single_template,
+        css_labels=labels,
+        css_title=text("css.title"),
+        watermark=text("watermark", title=invocation.title, status=""),
+        watermark_partial=text("watermark", title=invocation.title, status=" · " + text("partial")),
+        partial=warning,
     )
-    tile_width = max(360, int(font.getlength(watermark)) + 64)
-    tile = PILImage.new("RGBA", (tile_width, 92), (0, 0, 0, 0))
-    tile_draw = ImageDraw.Draw(tile)
-    tile_draw.text(
-        (28, 33),
-        watermark,
-        fill=(31, 52, 75, 46),
-        stroke_width=1,
-        stroke_fill=(255, 255, 255, 38),
-        font=font,
-    )
-    tile = tile.rotate(24, resample=PILImage.Resampling.BICUBIC, expand=True)
-    overlay = PILImage.new("RGBA", image.size, (0, 0, 0, 0))
-    step_x = max(180, tile.width - 80)
-    step_y = max(100, tile.height - 30)
-    for y in range(-tile.height, image.height + tile.height, step_y):
-        for x in range(-tile.width, image.width + tile.width, step_x):
-            overlay.alpha_composite(tile, (x, y))
-    return PILImage.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
+    return document, warning
 
 
-async def generate_template_preview(invocation, session):
+async def generate_template_preview(invocation, session, *, source=None, invocations=None):
     if not evaluate_url_policy(invocation.api).allowed:
         raise TemplatePreviewError("not_allowed")
+    invocations = list(invocations or [invocation])
+    source = source if source is not None else invocation.source
+    if not source or len(source) > MAX_TEMPLATE_LENGTH or any(item.api != invocation.api for item in invocations):
+        raise TemplatePreviewError("invalid")
+    sources = _preview_sources(source, invocations)
+    if not sources:
+        raise TemplatePreviewError("invalid")
     sender = session.session_info.sender_union_id or session.session_info.sender_id
     if sender in _ACTIVE_SENDERS:
         raise TemplatePreviewError("busy")
     _ACTIVE_SENDERS.add(sender)
     try:
         async with asyncio.timeout(TEMPLATE_PREVIEW_TIMEOUT), _RENDER_SLOTS:
-            await check_template_parameters(invocation.source, session)
+            for template_source in sources:
+                await check_template_parameters(template_source, session)
             async with PreviewRequests(invocation.api, invocation.wiki_info.realurl, invocation.headers) as requests:
-                query = await requests.api_json(action="query", prop="info", pageids=invocation.pageid)
+                query = await requests.api_json(
+                    action="query", prop="info", pageids="|".join(str(item.pageid) for item in invocations)
+                )
                 pages = query.get("query", {}).get("pages", [])
                 if isinstance(pages, dict):
                     pages = list(pages.values())
-                if (
-                    not pages
-                    or pages[0].get("ns") != 10
-                    or pages[0].get("title") != invocation.title
-                    or pages[0].get("pageid") != invocation.pageid
-                ):
+                found = {(page.get("pageid"), page.get("title"), page.get("ns")) for page in pages}
+                if any((item.pageid, item.title, 10) not in found for item in invocations):
                     raise TemplatePreviewError("missing")
-                source = wtp.parse(invocation.source)
-                source.templates[0].name = invocation.title
                 args = dict(
                     action="parse",
-                    text=str(source),
+                    text=_canonicalize_source(source, invocations),
                     title=PREVIEW_CONTEXT,
                     contentmodel="wikitext",
                     preview=1,
@@ -269,11 +252,16 @@ async def generate_template_preview(invocation, session):
                         for info in page.get("imageinfo", []):
                             if info.get("url"):
                                 requests.allow_resource(info["url"])
-                document, warning = preview_document(parsed, invocation, session.session_info.locale)
-                image, resource_warning = await render_preview_document(document, requests, session.session_info.locale)
+                document, _ = preview_document(
+                    parsed,
+                    invocation,
+                    session.session_info.locale,
+                    single_template=len(sources) == 1,
+                )
+                image, _ = await render_preview_document(document, requests, session.session_info.locale)
                 if not evaluate_url_policy(invocation.api).allowed:
                     raise TemplatePreviewError("not_allowed")
-                return preview_caption(image, invocation, session.session_info.locale, warning or resource_warning)
+                return image
     except TimeoutError as error:
         raise TemplatePreviewError("timeout") from error
     finally:

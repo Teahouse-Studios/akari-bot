@@ -115,15 +115,20 @@ def _test_document():
     data = _data()
     data["totitle"] = '<img src="https://example.org/test">'
     data["tocomment"] = "<script>alert(1)</script>"
+    data["fromcomment"] = '<b>A & B</b> {{7*7}} "quoted"'
+    data["fromuser"] = "A & B"
     data["body"] += '<script>alert(1)</script><img src="https://example.org/test"><tr><td onclick="bad()" '
     data["body"] += 'style="background:url(https://example.org/test)"><a href="https://example.org">link</a></td></tr>'
-    document = diff_document(data, "Minecraft Wiki", Locale("zh_cn"))
+    document = diff_document(data, "Minecraft & Wiki", Locale("zh_cn"))
     soup = BeautifulSoup(document, "html.parser")
     assert not soup.find(["script", "img", "a", "link"])
     assert not soup.select("[onclick], [src], [href]")
     assert soup.select_one(".diff-addedline ins.diffchange").text == "新内容"
     assert "版本差异" in soup.text and "版本 1500031" in soup.text
     assert "<script>alert(1)</script>" in soup.text
+    assert soup.select_one(".site").text == "Minecraft & Wiki"
+    assert soup.select_one(".comment").text == data["fromcomment"]
+    assert soup.select_one(".meta").text == " · A & B"
     assert "default-src 'none'" in document
     assert "没有内容差异" in diff_document({**data, "body": ""}, "Wiki", Locale("zh_cn"))
     return True

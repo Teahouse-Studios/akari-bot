@@ -1,0 +1,1 @@
+{"url": "https://zh.minecraft.wiki/api.php?action=expandtemplates&text=%7B%7B%23%E9%95%BF%E5%BA%A6%3AAkariBot%7D%7D&prop=wikitext&format=json", "status_code": 200, "headers": {}, "method": "GET", "json_data": {"expandtemplates": {"wikitext": "8"}}}
