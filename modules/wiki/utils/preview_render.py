@@ -181,7 +181,9 @@ async def _local_render(document, requests, locale):
         )
         if await page.evaluate("Boolean(window.akariPreviewResourcePartial)"):
             requests.warning = True
-        await page.locator("body > #akari-preview-declaration").evaluate("element => element.remove()")
+        declaration = page.locator("body > #akari-preview-declaration")
+        if await declaration.count():
+            await declaration.evaluate("element => element.remove()")
         measure = """element => {
             const bounds = element.getBoundingClientRect();
             return {x: Math.max(0,bounds.x), y: Math.max(0,bounds.y),
@@ -276,7 +278,9 @@ async def _remote_render(soup, requests, locale):
             },
         ),
     )
-    soup.select_one("body > #akari-preview-declaration").decompose()
+    declaration = soup.select_one("body > #akari-preview-declaration")
+    if declaration:
+        declaration.decompose()
     images = await web_render.element_screenshot(
         ElementScreenshotOptions(
             content=str(soup),

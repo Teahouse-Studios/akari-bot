@@ -1,6 +1,4 @@
 import asyncio
-from datetime import datetime, UTC
-
 import orjson
 import wikitextparser as wtp
 from attrs import define
@@ -9,7 +7,7 @@ from PIL import Image as PILImage, ImageDraw, ImageFont
 
 from core.builtins.filter import contain_badwords
 from core.builtins.message.internal import I18NContext
-from core.constants.path import noto_sans_demilight_path
+from core.constants.path import noto_sans_bold_path, noto_sans_demilight_path
 from core.utils import dirty_check
 from core.utils.url_audit import evaluate_url_policy
 from .magic import extract_expressions
@@ -124,12 +122,45 @@ def preview_document(parsed, invocation, locale):
         for style in noscript.find_all(["style", "link"]):
             soup.head.append(style.extract())
     style = soup.new_tag("style")
-    style.string = "html,body{margin:0;background:white}#mw-content-text{display:flow-root;padding:16px}"
+    style.string = """
+        :root { color-scheme: light; }
+        html, body {
+            margin: 0;
+            min-height: 100%;
+            background: #eef2f6;
+            color: #202a36;
+            font-family: "Noto Sans CJK SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-size: 16px;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+        }
+        body { padding: 24px; box-sizing: border-box; }
+        body > #mw-content-text {
+            box-sizing: border-box;
+            display: flow-root;
+            max-width: 960px;
+            min-height: 120px;
+            margin: 0 auto;
+            padding: 28px 32px;
+            overflow-wrap: anywhere;
+            background: #ffffff;
+            border: 1px solid #dce3eb;
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(31, 52, 75, 0.10);
+        }
+        body > #mw-content-text img { max-width: 100%; height: auto; }
+        body > #mw-content-text table { max-width: 100%; border-collapse: collapse; }
+        body > #mw-content-text th, body > #mw-content-text td { vertical-align: top; }
+        body > #mw-content-text pre {
+            max-width: 100%;
+            overflow: auto;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: #f4f6f8;
+        }
+        body > #mw-content-text a { color: #2468a8; }
+    """
     soup.head.append(style)
-    declaration = locale.t(I18NContext("wiki.message.template_preview.declaration").key)
-    footer = soup.new_tag("div", id="akari-preview-declaration")
-    footer.string = declaration
-    soup.body.append(footer)
     config = parsed.get("jsconfigvars", {})
     modules = parsed.get("modules", [])
     script = soup.new_tag("script")
@@ -153,37 +184,32 @@ def preview_document(parsed, invocation, locale):
 def preview_caption(image, invocation, locale, warning=False):
     image = image.convert("RGB")
     image.thumbnail((1600, 3800), PILImage.Resampling.LANCZOS)
-    font = ImageFont.truetype(str(noto_sans_demilight_path), 20)
-    lines = [
-        locale.t(I18NContext("wiki.message.template_preview.heading").key),
-        locale.t(I18NContext("wiki.message.template_preview.declaration").key),
-        locale.t(
-            I18NContext("wiki.message.template_preview.source").key,
-            site=invocation.wiki_info.name,
-            title=invocation.title,
-            context=PREVIEW_CONTEXT,
-            time=datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC"),
-        ),
-    ]
-    if warning:
-        lines.append(locale.t(I18NContext("wiki.message.template_preview.partial").key))
-    width = max(720, image.width)
-    wrapped = []
-    for line in lines:
-        current = ""
-        for character in line.replace("\n", " "):
-            if font.getlength(current + character) > width - 40:
-                wrapped.append(current)
-                current = ""
-            current += character
-        wrapped.append(current)
-    result = PILImage.new("RGB", (width, image.height + 24 + len(wrapped) * 30), "white")
-    result.paste(image, (0, 0))
-    draw = ImageDraw.Draw(result)
-    draw.rectangle((0, image.height, width, result.height), fill="#eef2f6")
-    for index, line in enumerate(wrapped):
-        draw.text((20, image.height + 12 + index * 30), line, fill="#253445", font=font)
-    return result
+    font = ImageFont.truetype(str(noto_sans_bold_path if image.width >= 900 else noto_sans_demilight_path), 16)
+    status = " · " + locale.t(I18NContext("wiki.message.template_preview.partial").key) if warning else ""
+    watermark = locale.t(
+        I18NContext("wiki.message.template_preview.watermark").key,
+        title=invocation.title,
+        status=status,
+    )
+    tile_width = max(360, int(font.getlength(watermark)) + 64)
+    tile = PILImage.new("RGBA", (tile_width, 92), (0, 0, 0, 0))
+    tile_draw = ImageDraw.Draw(tile)
+    tile_draw.text(
+        (28, 33),
+        watermark,
+        fill=(31, 52, 75, 46),
+        stroke_width=1,
+        stroke_fill=(255, 255, 255, 38),
+        font=font,
+    )
+    tile = tile.rotate(24, resample=PILImage.Resampling.BICUBIC, expand=True)
+    overlay = PILImage.new("RGBA", image.size, (0, 0, 0, 0))
+    step_x = max(180, tile.width - 80)
+    step_y = max(100, tile.height - 30)
+    for y in range(-tile.height, image.height + tile.height, step_y):
+        for x in range(-tile.width, image.width + tile.width, step_x):
+            overlay.alpha_composite(tile, (x, y))
+    return PILImage.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
 
 
 async def generate_template_preview(invocation, session):

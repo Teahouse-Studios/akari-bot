@@ -119,8 +119,7 @@ def _test_parameters_and_caption():
         else:
             raise AssertionError(source)
     image = preview.preview_caption(PILImage.new("RGB", (10, 10), "black"), _invocation(), Locale("zh_cn"))
-    assert image.width >= 720 and image.height > 100
-    assert image.getpixel((0, image.height - 1)) == (238, 242, 246)
+    assert image.size == (10, 10)
     return True
 
 
@@ -208,8 +207,8 @@ def _test_document_preserves_effects_and_removes_input_scripts():
     assert soup.select_one(".infobox img")["src"] == "/images/icon.png"
     assert soup.select_one(".infobox img").get("onerror") is None
     assert soup.select_one(".mw-parser-output style").get_text() == ".infobox{background:red}"
-    assert soup.select_one('head script[src*="startup"]') and soup.select_one("#akari-preview-declaration")
-    assert "机器人根据用户参数生成" in soup.select_one("#akari-preview-declaration").get_text()
+    assert soup.select_one('head script[src*="startup"]')
+    assert not soup.select_one("#akari-preview-declaration")
     assert "userInput()" not in document and "\\u003c/script>" in document and not warning
     return True
 
