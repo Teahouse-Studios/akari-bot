@@ -60,7 +60,6 @@
     "wiki.message.iw.list.none": "現在 InterWiki は設定されていません。「${cmd}」を使用して追加できます。",
     "wiki.message.iw.list.prompt": "以下は、ボット用に設定されたカスタム InterWiki です。デフォルトウィキの InterWiki を表示するには、${url} をご覧ください。",
     "wiki.message.iw.remove.success": "カスタム InterWiki が削除されました：${iw}",
-    "wiki.message.magic_word": "ヒント：ボットはマジックワードをサポートしていません。",
     "wiki.message.not_found": "[${title}] が見つかりません。",
     "wiki.message.not_found.autofix": "ヒント：[${title}] は存在しません。もしかして [${redirected_title}] のことですか？",
     "wiki.message.not_found.autofix.choice": "ヒント: [${title}] は存在しません。もしかして：",

@@ -56,7 +56,6 @@
     "wiki.message.iw.list.none": "There is currently no interwiki. Can be added using \"${cmd}\".",
     "wiki.message.iw.list.prompt": "Here are the custom interwiki(s) set up for bot. To view the interwiki for the default wiki, see: ${url}",
     "wiki.message.iw.remove.success": "Custom interwiki removed: ${iw}",
-    "wiki.message.magic_word": "Note: The bot does not currently support magic words.",
     "wiki.message.not_found": "[${title}] not found.",
     "wiki.message.not_found.autofix": "Note: [${title}] does not exist. Did you mean: [${redirected_title}]?",
     "wiki.message.not_found.autofix.choice": "Note: [${title}] does not exist. Did you mean: ",
