@@ -3,7 +3,6 @@
     "check.redacted": "[自主規制:${reason}]",
     "config.comments.bot.enable": "このクライアントを有効にするかどうか。",
     "config.comments.config_version": "バージョン番号。機能アップデートに伴い自動的に更新されるので、通常は変更しないでください。",
-    "config.comments.config.allow_reload_base": "基本モジュールのリロードを許可するかどうか。",
     "config.comments.config.allow_request_private_ip": "ボットがローカルのプライベート IP アドレスにリクエストを送信することを許可するかどうか。（情報漏洩を防ぐため）",
     "config.comments.config.auto_purge_crontab": "自動キャッシュ パージ用の Cron 式。",
     "config.comments.config.base_superuser": "ボットの基本スーパーユーザー リスト。ここに入力された値はボットの起動時にデータベースにロードされます。",
