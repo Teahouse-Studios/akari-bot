@@ -6,8 +6,14 @@
     "config.comments.bot_qqbot.qq_private_bot": "Whether it is a private bot when using the QQ official robot.",
     "config.comments.bot_qqbot.qq_typing_emoji": "When using the QQ official robot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_qqbot.qq_bot_openid": "The QQ official robot OpenID.",
-    "config.comments.bot_qqbot.qq_use_markdown": "Whether to use Markdown-formatted messages when using QQ official robot. (requires configuring S3-compatible API storage for images)",
+    "config.comments.bot_qqbot.qq_use_markdown": "Whether to use Markdown-formatted messages when using QQ official robot.",
     "config.comments.bot_qqbot.qq_navigation_sync_strict": "Whether to prevent the client from launching when synchronizing the global menu and command panel of QQ official robot fails.",
     "config.comments.bot_qqbot.qq_bot_qqnum": "The QQ official robot number.",
-    "config.comments.bot_qqbot.qq_bot_uid": "The QQ official robot UID."
+    "config.comments.bot_qqbot.qq_bot_uid": "The QQ official robot UID.",
+    "config.comments.bot_qqbot.qq_bot_certified": "Whether the QQ official robot has obtained enterprise or individual verification. Unverified bots have a lower quota for proactive messages.",
+    "config.comments.bot_qqbot.qq_use_webhook": "Whether to use webhooks to receive events when using the QQ official robot. If disabled, the bot connects via the gateway.",
+    "config.comments.bot_qqbot.qq_webhook_host": "Webhook listener address.",
+    "config.comments.bot_qqbot.qq_webhook_path": "Webhook callback path. Must match the callback address configured on the open platform.",
+    "config.comments.bot_qqbot.qq_webhook_port": "Webhook listening port.",
+    "config.comments.bot_qqbot.qq_api_url": "Customize QQ official robot API address."
 }
