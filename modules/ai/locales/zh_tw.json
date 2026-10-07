@@ -1,11 +1,11 @@
 {
-    "ai.help": "與大語言模型聊天。",
+    "ai.help": "與大語言模型聊天。（需要消耗花瓣）",
     "ai.help.desc": "有問題為什麽不問小可呢？",
     "ai.help.llm.instruct": "設定大語言模型的自訂指令。",
     "ai.help.llm.list": "檢視已支援的大語言模型清單。",
     "ai.help.llm.list.option.price": "是否顯示詳細價格資訊。",
     "ai.help.llm.price": "查看大語言模型的花瓣價格。",
-    "ai.help.llm.set": "設定場景內預設大語言模型。",
+    "ai.help.llm.set": "設定{TERM:target}內預設大語言模型。",
     "ai.help.option.llm": "指定使用的大語言模型。",
     "ai.help.option.no_tools": "是否禁止大語言模型呼叫工具。",
     "ai.message.context.hint": "提示：10 分鐘內使用「${cmd}」可繼續對話。",
