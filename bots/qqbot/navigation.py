@@ -54,7 +54,7 @@ PANEL_COMMANDS = (
     ("dice", "掷一个骰子"),
     ("wordle", "开始 Wordle 游戏"),
     ("emojimix", "合成两个 Emoji"),
-    ("wa", "使用 Wolfram Alpha 查询"),
+    ("phigros", "使用 Phigros 功能"),
     ("hitokoto", "获取随机一言"),
 )
 
