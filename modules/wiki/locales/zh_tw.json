@@ -58,7 +58,6 @@
     "wiki.message.iw.list.none": "當前沒有設定任何 InterWiki，可使用 「${cmd}」新增。",
     "wiki.message.iw.list.prompt": "此處展示的是機器人設定的自訂 InterWiki，如需查看預設 Wiki 的 InterWiki，請見：${url}",
     "wiki.message.iw.remove.success": "已刪除自訂 InterWiki：${iw}",
-    "wiki.message.magic_word": "提示：機器人暫不支援魔術字。",
     "wiki.message.not_found": "未找到 [${title}]。",
     "wiki.message.not_found.autofix": "提示：[${title}] 不存在，你可能要找的是：[${redirected_title}]。",
     "wiki.message.not_found.autofix.choice": "提示：[${title}] 不存在，你是否想要找的是：",

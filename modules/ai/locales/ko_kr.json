@@ -1,11 +1,11 @@
 {
-    "ai.help": "LLM과 채팅합니다.",
+    "ai.help": "LLM과 채팅합니다. (페탈이 필요합니다)",
     "ai.help.desc": "아카리봇에게 물어보자!",
     "ai.help.llm.instruct": "LLM에 대한 맞춤형 지침을 설정합니다.",
     "ai.help.llm.list": "지원되는 LLM 목록을 확인해 보겠습니다.",
     "ai.help.llm.list.option.price": "상세 가격 정보를 표시할지 여부.",
     "ai.help.llm.price": "LLM의 페탈 가격을 확인합니다.",
-    "ai.help.llm.set": "장면 내에서 기본 LLM을 설정합니다.",
+    "ai.help.llm.set": "{TERM:target} 내에서 기본 LLM을 설정합니다.",
     "ai.help.option.ctx": "계속할 대화 턴의 ID를 지정합니다.",
     "ai.help.option.llm": "사용할 LLM을 지정합니다.",
     "ai.help.option.no_tools": "LLM을 도구로 호출하는 기능을 비활성화할지 여부.",

@@ -6,8 +6,14 @@
     "config.comments.bot_qqbot.qq_private_bot": "QQ ロボット（公式）を使用する場合、プライベートドメイン ロボットであるかどうか。",
     "config.comments.bot_qqbot.qq_typing_emoji": "QQ ロボット（公式）メッセージを処理するときにメッセージに添付される応答絵文字の ID。ID の詳細について：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji をご覧ください。",
     "config.comments.bot_qqbot.qq_bot_openid": "QQ ロボット（公式）の OpenID。",
-    "config.comments.bot_qqbot.qq_use_markdown": "QQ ロボット（公式）使用時に、Markdown 形式のメッセージを使用するかどうか。（画像を保存するには、S3 互換 API を設定する必要があります）",
+    "config.comments.bot_qqbot.qq_use_markdown": "QQ ロボット（公式）使用時に、Markdown 形式のメッセージを使用するかどうか。",
     "config.comments.bot_qqbot.qq_navigation_sync_strict": "QQ ボット（公式）のグローバル メニューとコマンド パネルの同期に失敗した場合、クライアントの起動を阻止するかどうか。",
     "config.comments.bot_qqbot.qq_bot_qqnum": "QQ ロボット（公式）の番号。",
-    "config.comments.bot_qqbot.qq_bot_uid": "QQ ロボット（公式）の UID。"
+    "config.comments.bot_qqbot.qq_bot_uid": "QQ ロボット（公式）の UID。",
+    "config.comments.bot_qqbot.qq_bot_certified": "QQ ロボット（公式）が企業認証または個人認証を取得しているかどうか。未認証のボットは能動的に送信できるメッセージの割り当て数が少なくなります。",
+    "config.comments.bot_qqbot.qq_use_webhook": "QQ ロボット（公式）を使用する際、イベントの受信に Webhook を利用するかどうか。無効にした場合、ボットはゲートウェイ経由で接続します。",
+    "config.comments.bot_qqbot.qq_webhook_host": "Webhook のリスニング アドレス。",
+    "config.comments.bot_qqbot.qq_webhook_path": "Webhook コールバックパス。オープン・プラットフォーム上で設定されたコールバック アドレスと一致する必要があります。",
+    "config.comments.bot_qqbot.qq_webhook_port": "Webhook リッスン ポート。",
+    "config.comments.bot_qqbot.qq_api_url": "QQ ボット（公式）API のカスタマイズ アドレス。"
 }

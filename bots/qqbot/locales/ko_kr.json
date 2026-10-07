@@ -6,8 +6,14 @@
     "config.comments.bot_qqbot.qq_private_bot": "QQ 공식 로봇을 사용할 때 비공개 봇인지 여부.",
     "config.comments.bot_qqbot.qq_typing_emoji": "QQ 공식 로봇을 사용할 때, 이는 메시지 처리 중에 메시지에 첨부되는 응답 이모티콘 ID를 의미합니다. 프로토콜 지원이 필요합니다. ID는 다음을 참조하십시오: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji",
     "config.comments.bot_qqbot.qq_bot_openid": "QQ 공식 로봇의 OpenID.",
-    "config.comments.bot_qqbot.qq_use_markdown": "QQ 공식 로봇을 사용할 때 Markdown 형식의 메시지를 사용할지 여부. (이미지를 저장하려면 S3 호환 API를 설정해야 합니다)",
+    "config.comments.bot_qqbot.qq_use_markdown": "QQ 공식 로봇을 사용할 때 Markdown 형식의 메시지를 사용할지 여부.",
     "config.comments.bot_qqbot.qq_navigation_sync_strict": "QQ 공식 로봇의 글로벌 메뉴와 명령 패널 동기화가 실패할 경우 클라이언트 실행을 차단할지 여부.",
     "config.comments.bot_qqbot.qq_bot_qqnum": "QQ 공식 로봇의 번호.",
-    "config.comments.bot_qqbot.qq_bot_uid": "QQ 공식 로봇의 UID."
+    "config.comments.bot_qqbot.qq_bot_uid": "QQ 공식 로봇의 UID.",
+    "config.comments.bot_qqbot.qq_bot_certified": "QQ 공식 로봇이 기업 인증 또는 개인 인증을 획득했는지 여부. 미인증 봇은 능동적으로 발송할 수 있는 메시지 할당량이 적습니다.",
+    "config.comments.bot_qqbot.qq_use_webhook": "QQ 공식 로봇을 사용할 때, 이벤트 수신에 Webhook을 이용할지 여부입니다. 비활성화할 경우, 봇은 게이트웨이를 통해 연결됩니다.",
+    "config.comments.bot_qqbot.qq_webhook_host": "웹훅(webhook) 수신 주소.",
+    "config.comments.bot_qqbot.qq_webhook_path": "웹훅(webhook) 콜백 경로. 오픈 플랫폼에 설정된 콜백 주소와 일치해야 합니다.",
+    "config.comments.bot_qqbot.qq_webhook_port": "웹훅(webhook) 수신 포트.",
+    "config.comments.bot_qqbot.qq_api_url": "QQ 공식 로봇 API의 커스텀 주소."
 }
