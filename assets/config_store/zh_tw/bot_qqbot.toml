@@ -11,16 +11,16 @@ qq_bot_enable_send_url = false # 使用 QQ 機器人（官方）時，是否啟�
 qq_private_bot = false # 使用 QQ 機器人（官方）時，是否為私域機器人。
 qq_typing_emoji = 181 # 使用 QQ 機器人（官方）時，正在處理訊息時向訊息掛上的回應表情 ID。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_limited_emoji = 10060 # 使用 QQ 機器人（官方）時，訊息處理失敗時向訊息掛上的回應表情 ID。ID 詳見：https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
-qq_use_markdown = false # 使用 QQ 機器人（官方）時，是否使用 Markdown 格式訊息（需配置 s3 相容 API 儲存圖片）。
-qq_bot_certified = true # QQ 机器人（官方）是否已通过企业或个人认证，未认证时主动消息配额更低。
+qq_use_markdown = false # 使用 QQ 機器人（官方）時，是否使用 Markdown 格式訊息。
+qq_bot_certified = true # QQ 機器人（官方）是否已通過企業或個人認證，未認證時主動訊息配額較低。
 qq_navigation_sync_strict = false # 同步 QQ 機器人（官方）的全域選單與指令面板失敗時，是否阻止用戶端啟動。
-qq_use_webhook = false # 使用 QQ 机器人（官方）时，是否使用 Webhook 接收事件，关闭则连接 Gateway。
-qq_webhook_host = "0.0.0.0" # Webhook 监听地址。
-qq_webhook_port = 8080 # Webhook 监听端口。
-qq_webhook_path = "/" # Webhook 回调路径，需与开放平台配置的回调地址一致。
+qq_use_webhook = false # 使用 QQ 機器人（官方）時，是否使用 Webhook 接收事件，關閉則連接 Gateway。
+qq_webhook_host = "0.0.0.0" # Webhook 監聽位址。
+qq_webhook_port = 8080 # Webhook 監聽連接埠。
+qq_webhook_path = "/" # Webhook 回呼路徑，需與開放平台配置的回呼位址一致。
 qq_bot_uid = "<Replace me with str value>" # QQ 機器人（官方）的 UID。
 qq_bot_qqnum = "<Replace me with str value>" # QQ 機器人（官方）的 QQ 號。
-qq_api_url = "<Replace me with str value>" # 自定义 QQ 机器人（官方）API 地址。（可选）
+qq_api_url = "<Replace me with str value>" # 自訂 QQ 機器人（官方）API 位址。
 
 [bot_qqbot_secret]
 # 用戶端的金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。

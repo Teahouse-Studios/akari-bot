@@ -11,16 +11,16 @@ qq_bot_enable_send_url = false # Whether to enable sending URLs when using QQ of
 qq_private_bot = false # Whether it is a private bot when using the QQ official robot.
 qq_typing_emoji = 181 # When using the QQ official robot, the response emoji ID attached to the message when processing the message. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
 qq_limited_emoji = 10060 # When using the QQ official robot, the response emoji ID attached to the message when message processing fails. For details of emoji ID, see: https://bot.q.qq.com/wiki/develop/api-v2/openapi/emoji/model.html#Emoji
-qq_use_markdown = false # Whether to use Markdown-formatted messages when using QQ official robot. (requires configuring S3-compatible API storage for images)
-qq_bot_certified = true # QQ 机器人（官方）是否已通过企业或个人认证，未认证时主动消息配额更低。
+qq_use_markdown = false # Whether to use Markdown-formatted messages when using QQ official robot.
+qq_bot_certified = true # Whether the QQ official robot has obtained enterprise or individual verification. Unverified bots have a lower quota for proactive messages.
 qq_navigation_sync_strict = false # Whether to prevent the client from launching when synchronizing the global menu and command panel of QQ official robot fails.
-qq_use_webhook = false # 使用 QQ 机器人（官方）时，是否使用 Webhook 接收事件，关闭则连接 Gateway。
-qq_webhook_host = "0.0.0.0" # Webhook 监听地址。
-qq_webhook_port = 8080 # Webhook 监听端口。
-qq_webhook_path = "/" # Webhook 回调路径，需与开放平台配置的回调地址一致。
+qq_use_webhook = false # Whether to use webhooks to receive events when using the QQ official robot. If disabled, the bot connects via the gateway.
+qq_webhook_host = "0.0.0.0" # Webhook listener address.
+qq_webhook_port = 8080 # Webhook listening port.
+qq_webhook_path = "/" # Webhook callback path. Must match the callback address configured on the open platform.
 qq_bot_uid = "<Replace me with str value>" # The QQ official robot UID.
 qq_bot_qqnum = "<Replace me with str value>" # The QQ official robot number.
-qq_api_url = "<Replace me with str value>" # 自定义 QQ 机器人（官方）API 地址。（可选）
+qq_api_url = "<Replace me with str value>" # Customize QQ official robot API address.
 
 [bot_qqbot_secret]
 # The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
