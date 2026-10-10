@@ -136,9 +136,7 @@ def _template_invocation(page, source, headers, language=None, *, allow_empty=Fa
         template_parameters(source, allow_empty=allow_empty)
     except TemplatePreviewError:
         return None
-    return TemplateInvocation(
-        source, page.info.api, page.title, page.id, page.info, dict(headers), language, page_url=page.link
-    )
+    return TemplateInvocation(source, page.info.api, page.title, page.id, page.info, dict(headers), language)
 
 
 def _build_template_preview_callback(invocation, tracker, *, source=None, invocations=None, preload_session=None):

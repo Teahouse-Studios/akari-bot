@@ -1,6 +1,5 @@
 import asyncio
 from pathlib import Path
-from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 import wikitextparser as wtp
 from attrs import define
@@ -42,7 +41,6 @@ class TemplateInvocation:
     wiki_info: WikiInfo
     headers: dict
     language: str | None = None
-    page_url: str | None = None
 
 
 def template_parameters(source: str, *, allow_empty: bool = False) -> list[str]:
@@ -220,18 +218,7 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
 
 
 def _template_page_url(invocation: TemplateInvocation) -> str:
-    if invocation.page_url:
-        return invocation.page_url
-    articlepath = invocation.wiki_info.articlepath
-    query_title = "$1" in urlsplit(articlepath).query
-    title = quote(invocation.title.replace(" ", "_"), safe="" if query_title else ":/()")
-    if "$1" in articlepath:
-        return articlepath.replace("$1", title)
-    return (
-        (invocation.wiki_info.script or urljoin(invocation.api, "index.php"))
-        + "?"
-        + urlencode({"curid": invocation.pageid})
-    )
+    return invocation.wiki_info.realurl.rstrip("/") + "/"
 
 
 async def _render_template_shell(document, parsed, invocation, locale, requests):

@@ -640,7 +640,7 @@ def _test_shell_fragment_preserves_site_container():
     assert not soup.select_one("#akari-template-output") and not soup.select_one("#mw-content-text")
     assert soup.select_one("#akari-preview-css-panel") and soup.select_one("#akari-preview-watermark")
     assert "injected()" not in document and "akariFillCssPanel" in document
-    assert preview._template_page_url(_invocation()) == "https://example.org/wiki/Template:Infobox"
+    assert preview._template_page_url(_invocation()) == "https://example.org/"
     return True
 
 
