@@ -1,5 +1,6 @@
 import asyncio
 from pathlib import Path
+from urllib.parse import quote, urlencode, urljoin, urlsplit
 
 import wikitextparser as wtp
 from attrs import define
@@ -11,13 +12,13 @@ from core.builtins.message.internal import I18NContext
 from core.utils import dirty_check
 from core.utils.url_audit import evaluate_url_policy
 from .magic import extract_expressions
-from .preview_render import PreviewRequests, render_preview_document
+from .preview_render import PreviewRequests, render_preview_document, render_shell_document
 from .wikilib import WikiInfo
 
 MAX_TEMPLATE_LENGTH = 4096
 TEMPLATE_PREVIEW_TTL = 300
 TEMPLATE_PREVIEW_TIMEOUT = 30
-PREVIEW_CONTEXT = "AkariBot"
+TEMPLATE_SHELL_TIMEOUT = 15
 _RENDER_SLOTS = asyncio.Semaphore(2)
 _ACTIVE_SENDERS = set()
 _TEMPLATE_ENV = Environment(
@@ -41,6 +42,7 @@ class TemplateInvocation:
     wiki_info: WikiInfo
     headers: dict
     language: str | None = None
+    page_url: str | None = None
 
 
 def template_parameters(source: str, *, allow_empty: bool = False) -> list[str]:
@@ -118,7 +120,7 @@ def _preview_sources(source: str, invocations: list[TemplateInvocation]) -> list
     ]
 
 
-def preview_document(parsed, invocation, locale, *, single_template: bool = False):
+def preview_document(parsed, invocation, locale, *, single_template: bool = False, shell: bool = False):
     def value(key):
         result = parsed.get(key, "")
         return result.get("*", "") if isinstance(result, dict) else result
@@ -143,6 +145,10 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
             image["src"] = image["data-src"]
         if image.get("data-srcset"):
             image["srcset"] = image["data-srcset"]
+    if shell and single_template:
+        output = markup.select_one(".mw-parser-output") or markup.find(True)
+        if output:
+            output["data-akari-template-output"] = ""
     for base in soup.find_all("base"):
         base.decompose()
     for tag in soup.find_all("meta"):
@@ -194,7 +200,8 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
             )
         }
     warning = bool(parsed.get("parsewarnings") or markup.select(".error,.mw-broken-media,.scribunto-error"))
-    document = _TEMPLATE_ENV.get_template("template_preview.html").render(
+    template_name = "template_preview_shell.html" if shell else "template_preview.html"
+    document = _TEMPLATE_ENV.get_template(template_name).render(
         html_attrs=attributes(soup.html),
         body_attrs=attributes(soup.body),
         base_url=invocation.wiki_info.realurl.rstrip("/") + "/",
@@ -210,6 +217,28 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
         partial=warning,
     )
     return document, warning
+
+
+def _template_page_url(invocation: TemplateInvocation) -> str:
+    if invocation.page_url:
+        return invocation.page_url
+    articlepath = invocation.wiki_info.articlepath
+    query_title = "$1" in urlsplit(articlepath).query
+    title = quote(invocation.title.replace(" ", "_"), safe="" if query_title else ":/()")
+    if "$1" in articlepath:
+        return articlepath.replace("$1", title)
+    return (
+        (invocation.wiki_info.script or urljoin(invocation.api, "index.php"))
+        + "?"
+        + urlencode({"curid": invocation.pageid})
+    )
+
+
+async def _render_template_shell(document, parsed, invocation, locale, requests):
+    async with PreviewRequests(invocation.api, invocation.wiki_info.realurl, invocation.headers) as shell_requests:
+        shell_requests.origins.update(requests.origins)
+        image, _ = await render_shell_document(document, parsed, _template_page_url(invocation), shell_requests, locale)
+        return image
 
 
 async def generate_template_preview(invocation, session, *, source=None, invocations=None):
@@ -243,7 +272,7 @@ async def generate_template_preview(invocation, session, *, source=None, invocat
                 args = dict(
                     action="parse",
                     text=_canonicalize_source(source, invocations),
-                    title=PREVIEW_CONTEXT,
+                    title=invocation.title,
                     contentmodel="wikitext",
                     preview=1,
                     disableeditsection=1,
@@ -279,7 +308,31 @@ async def generate_template_preview(invocation, session, *, source=None, invocat
                     session.session_info.locale,
                     single_template=len(sources) == 1,
                 )
-                image, _ = await render_preview_document(document, requests, session.session_info.locale)
+                shell_document, _ = preview_document(
+                    parsed,
+                    invocation,
+                    session.session_info.locale,
+                    single_template=len(sources) == 1,
+                    shell=True,
+                )
+                parse_task = asyncio.create_task(
+                    render_preview_document(document, requests, session.session_info.locale)
+                )
+                shell_task = asyncio.create_task(
+                    _render_template_shell(shell_document, parsed, invocation, session.session_info.locale, requests)
+                )
+                try:
+                    try:
+                        image = await asyncio.wait_for(shell_task, TEMPLATE_SHELL_TIMEOUT)
+                        if image is None:
+                            raise TemplatePreviewError("unavailable")
+                    except Exception:
+                        image, _ = await parse_task
+                finally:
+                    for task in (shell_task, parse_task):
+                        if not task.done():
+                            task.cancel()
+                    await asyncio.gather(shell_task, parse_task, return_exceptions=True)
                 if not evaluate_url_policy(invocation.api).allowed:
                     raise TemplatePreviewError("not_allowed")
                 return image

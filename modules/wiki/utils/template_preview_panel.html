@@ -1,0 +1,14 @@
+        <aside id="akari-preview-css-panel" aria-label="CSS">
+            <strong class="akari-css-title">{{ css_title }}</strong>
+            <div class="akari-css-properties">
+                {% for key, label in css_labels.items() %}
+                {% set layout = 'flex' if key in ('flex_direction', 'flex_wrap') else
+                                'grid' if key in ('grid_columns', 'grid_rows', 'grid_auto_flow') else
+                                'container' if key in ('justify', 'align', 'gap') else '' %}
+                <div class="akari-css-row" data-css-property="{{ key }}"{% if layout %} data-css-layout="{{ layout }}" hidden{% endif %}>
+                    <span class="akari-css-name">{{ label }}</span>
+                    <span class="akari-css-value{% if key in ('display', 'float', 'position') %} akari-css-badge{% endif %}">-</span>
+                </div>
+                {% endfor %}
+            </div>
+        </aside>

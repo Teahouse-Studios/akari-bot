@@ -9,6 +9,7 @@ from akari_bot_webrender.functions.options import (
     SectionScreenshotOptions,
     LegacyScreenshotOptions,
     RawOptions,
+    ReplaceElementScreenshotOptions,
 )
 
 from core.config import format_url
@@ -78,4 +79,5 @@ __all__ = [
     "SectionScreenshotOptions",
     "LegacyScreenshotOptions",
     "RawOptions",
+    "ReplaceElementScreenshotOptions",
 ]

@@ -17,18 +17,6 @@ from .diff import DiffError, parse_diff_target, fetch_diff, diff_document
 from .mapping import generate_screenshot_v2_blocklist, infobox_elements
 from .wikilib import WikiInfo, WikiLib
 
-_ISOLATED_RENDER_CSS = """
-html,
-body {
-    background: #ffffff !important;
-}
-
-#mw-content-text,
-.mw-parser-output,
-.bot-sectionbox {
-    background-color: #ffffff !important;
-}
-"""
 _PAGE_RENDER_TIMEOUT = 15
 
 
@@ -128,10 +116,20 @@ async def generate_screenshot(
         except Exception:
             Logger.exception("Failed to render Wiki comparison from API: ")
             return False
-    if wiki_info.realurl in generate_screenshot_v2_blocklist:
-        return await generate_screenshot_v1(
-            wiki_info.realurl, page_link, headers, section=section, allow_special_page=allow_special_page
+
+    async def render_page():
+        if wiki_info.realurl in generate_screenshot_v2_blocklist:
+            return await generate_screenshot_v1(
+                wiki_info.realurl, page_link, headers, section=section, allow_special_page=allow_special_page
+            )
+        return await generate_screenshot_v2(
+            page_link,
+            section=section,
+            allow_special_page=allow_special_page,
+            content_mode=content_mode,
+            locale=locale,
         )
+
     # Start the fallback early so a primary-render timeout does not add another full request latency.
     styled_task = asyncio.create_task(
         _generate_styled_api_screenshot(
@@ -150,25 +148,13 @@ async def generate_screenshot(
         styled_task.cancel()
         await asyncio.gather(styled_task, return_exceptions=True)
         return await asyncio.wait_for(
-            generate_screenshot_v2(
-                page_link,
-                section=section,
-                allow_special_page=allow_special_page,
-                content_mode=content_mode,
-                locale=locale,
-            ),
+            render_page(),
             timeout=_PAGE_RENDER_TIMEOUT,
         )
     try:
         try:
             page_images = await asyncio.wait_for(
-                generate_screenshot_v2(
-                    page_link,
-                    section=section,
-                    allow_special_page=allow_special_page,
-                    content_mode=content_mode,
-                    locale=locale,
-                ),
+                render_page(),
                 timeout=_PAGE_RENDER_TIMEOUT,
             )
         except asyncio.TimeoutError:
@@ -254,7 +240,6 @@ async def generate_screenshot_v2(
             ElementScreenshotOptions(
                 url=None if content else page_link,
                 content=content,
-                css=_ISOLATED_RENDER_CSS if content else None,
                 element=elements_,
                 locale=locale,
                 stealth=False,
@@ -269,7 +254,6 @@ async def generate_screenshot_v2(
             SectionScreenshotOptions(
                 url=None if content else page_link,
                 content=content,
-                css=_ISOLATED_RENDER_CSS if content else None,
                 section=section,
                 locale=locale,
                 stealth=False,

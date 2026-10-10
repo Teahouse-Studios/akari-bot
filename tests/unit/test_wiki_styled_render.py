@@ -242,6 +242,30 @@ async def _test_legacy_and_special_pages():
     return True
 
 
+async def _test_legacy_timeout_uses_skin_api_fallback():
+    info = _info()
+    info.realurl = "https://zh.moegirl.org.cn"
+    cancelled = asyncio.Event()
+
+    async def legacy(*_, **kwargs):
+        try:
+            await asyncio.Event().wait()
+        finally:
+            cancelled.set()
+
+    with (
+        patch.object(screenshot_image, "_PAGE_RENDER_TIMEOUT", 0.03),
+        patch.object(WikiLib, "get_json", new=AsyncMock(return_value=_response())) as request,
+        patch.object(screenshot_image, "generate_screenshot_v1", new=legacy),
+        patch.object(screenshot_image, "generate_screenshot_v2", new=AsyncMock(return_value=["styled"])) as render,
+    ):
+        result = await generate_screenshot(LINK, info, title="Test")
+    assert result == ["styled"] and cancelled.is_set()
+    assert request.await_args.kwargs["useskin"] == "timeless"
+    assert render.await_args.kwargs["content"] and render.await_args.args[0] == LINK
+    return True
+
+
 async def _test_cancel_propagates():
     with (
         patch(
@@ -293,6 +317,9 @@ async def test_wiki_styled_render(tester: Tester):
     await tester.test(_test_revision_and_warning_fallback, "历史版本回退固定 oldid，警告保留有效样式文档")
     await tester.test(_test_original_timeout_uses_concurrent_api_result, "原有渲染超时后复用并发 API 结果")
     await tester.test(_test_legacy_and_special_pages, "特殊站点使用 v1，特殊页面跳过 API")
+    await tester.test(
+        _test_legacy_timeout_uses_skin_api_fallback, "v1 渲染也受 15 秒限制，超时使用并发的 parse + useskin 兜底"
+    )
     await tester.test(_test_cancel_propagates, "任务取消不触发 fallback")
     await tester.test(_test_preview_target, "按钮预览传递目标 Wiki、标题和章节")
     return tester

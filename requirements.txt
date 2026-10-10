@@ -28,7 +28,7 @@ aiosqlite==0.22.1
     # via tortoise-orm
 akari-bot-i18n==0.2.1
     # via akari-bot
-akari-bot-webrender==0.6.2
+akari-bot-webrender==0.7.0
     # via akari-bot
 akari-bot-webui==0.4.6
     # via akari-bot

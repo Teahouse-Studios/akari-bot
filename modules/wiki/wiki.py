@@ -136,13 +136,44 @@ def _template_invocation(page, source, headers, language=None, *, allow_empty=Fa
         template_parameters(source, allow_empty=allow_empty)
     except TemplatePreviewError:
         return None
-    return TemplateInvocation(source, page.info.api, page.title, page.id, page.info, dict(headers), language)
+    return TemplateInvocation(
+        source, page.info.api, page.title, page.id, page.info, dict(headers), language, page_url=page.link
+    )
 
 
-def _build_template_preview_callback(invocation, tracker, *, source=None, invocations=None):
+def _build_template_preview_callback(invocation, tracker, *, source=None, invocations=None, preload_session=None):
     created = time.monotonic()
     attempted = False
     task = None
+    start_lock = asyncio.Lock()
+
+    async def prepare(session):
+        try:
+            kwargs = {}
+            if source is not None:
+                kwargs["source"] = source
+            if invocations is not None:
+                kwargs["invocations"] = invocations
+            return Image(await generate_template_preview(invocation, session, **kwargs))
+        except TemplatePreviewError as error:
+            return I18NContext(error.key)
+        except Exception:
+            Logger.exception("Failed to preload Wiki template preview: ")
+            return I18NContext("wiki.message.template_preview.unavailable")
+
+    async def preload(session=None):
+        nonlocal task
+        async with start_lock:
+            if task is None and not tracker.deleted:
+                session = session or preload_session
+                if session is None:
+                    return None
+                task = await _start_background_with_release(
+                    session, lambda: prepare(session), name="wiki-template-preview-preload"
+                )
+                if tracker.deleted and task and not task.done():
+                    task.cancel()
+        return task
 
     async def callback(session):
         nonlocal attempted, task
@@ -156,39 +187,34 @@ def _build_template_preview_callback(invocation, tracker, *, source=None, invoca
             return
         action = session.as_display(text_only=True).strip()
         if action == "wiki_render_delete":
+            await tracker.delete()
             if task and not task.done():
                 task.cancel()
-            await tracker.delete()
+                await asyncio.gather(task, return_exceptions=True)
             return
         if action != "wiki_template_preview" or attempted or tracker.deleted:
             return
         attempted = True
 
-        async def render():
-            try:
-                if time.monotonic() - created > TEMPLATE_PREVIEW_TTL:
-                    raise TemplatePreviewError("expired")
-                if _wiki_render_mode(session) == WIKI_RENDER_MODE_OFF or not Bot.Info.web_render_status:
-                    raise TemplatePreviewError("unavailable")
-                preview_kwargs = {}
-                if source is not None:
-                    preview_kwargs["source"] = source
-                if invocations is not None:
-                    preview_kwargs["invocations"] = invocations
-                image = await generate_template_preview(invocation, session, **preview_kwargs)
-                result = Image(image)
-            except TemplatePreviewError as error:
-                result = I18NContext(error.key)
-            except Exception:
-                Logger.exception("Failed to render Wiki template invocation: ")
-                result = I18NContext("wiki.message.template_preview.unavailable")
-            if not tracker.deleted:
-                await tracker.add(await session.send_message(result, quote=False))
+        if time.monotonic() - created > TEMPLATE_PREVIEW_TTL:
+            if task and not task.done():
+                task.cancel()
+            result = I18NContext("wiki.message.template_preview.expired")
+        elif (
+            _wiki_render_mode(session) == WIKI_RENDER_MODE_OFF
+            or not Bot.Info.web_render_status
+            or not evaluate_url_policy(invocation.api).allowed
+        ):
+            result = I18NContext("wiki.message.template_preview.unavailable")
+        else:
+            pending = await preload(session)
+            if pending is None:
+                return
+            result = await asyncio.shield(pending)
+        if not tracker.deleted:
+            await tracker.add(await session.send_message(result, quote=False))
 
-        task = await _start_background_with_release(session, render, name="wiki-template-preview")
-        if task:
-            await task
-
+    callback.preload = preload
     return callback
 
 
@@ -236,6 +262,9 @@ def _build_render_preview_callback(
         if action == "wiki_render_delete":
             try:
                 await tracker.delete()
+                if pre_render_task and not pre_render_task.done():
+                    pre_render_task.cancel()
+                    await asyncio.gather(pre_render_task, return_exceptions=True)
             except Exception:
                 Logger.exception("Failed to delete Wiki result messages: ")
             return
@@ -1312,6 +1341,7 @@ async def _query_pages_impl(
                 message_tracker,
                 source=preview_source,
                 invocations=preview_invocations,
+                preload_session=session,
             )
         elif render_mode == WIKI_RENDER_MODE_BUTTON and session.session_info.support_button and has_message_content:
             render_buttons = []
@@ -1373,6 +1403,8 @@ async def _query_pages_impl(
                 except SessionFinished as error:
                     if message_tracker and error.args:
                         await message_tracker.add(error.args[0])
+                    if preview_ready and render_callback:
+                        await render_callback.preload()
                     raise
             else:
                 await send_message(
@@ -1382,6 +1414,8 @@ async def _query_pages_impl(
                     quote=quote,
                     callback_timeout=TEMPLATE_PREVIEW_TTL if preview_ready else SessionTaskManager.CALLBACK_TTL,
                 )
+                if preview_ready and render_callback:
+                    await render_callback.preload()
 
         async def infobox():
             if render_infobox_list and session.session_info.support_image:

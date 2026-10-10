@@ -1,0 +1,27 @@
+<style>
+#akari-preview-css-panel {
+    clear: both; box-sizing: border-box; margin: 18px 0; padding: 15px; color: #344454 !important;
+    background: #f6f8fa !important; border: 1px solid #d3dee9 !important; border-radius: 6px !important;
+    font: 13px/1.45 "Noto Sans CJK SC", "Noto Sans SC", sans-serif !important;
+}
+#akari-preview-css-panel .akari-css-title { display: block; margin-bottom: 10px; color: #203a55 !important; font-size: 15px !important; }
+#akari-preview-css-panel .akari-css-row { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 6px; padding: 6px 0; border-top: 1px solid rgba(117, 141, 164, .22); }
+#akari-preview-css-panel .akari-css-row[hidden] { display: none !important; }
+#akari-preview-css-panel .akari-css-name { color: #6a7d8e !important; }
+#akari-preview-css-panel .akari-css-value { min-width: 0; overflow-wrap: anywhere; color: #24384b !important; }
+#akari-preview-css-panel .akari-css-badge { justify-self: start; padding: 2px 7px; border: 1px solid #c9d9e8; border-radius: 4px; background: #e8f0f7; color: #295579 !important; font-size: 12px; }
+#akari-preview-css-panel .akari-css-swatch { display: inline-block; width: 13px; height: 13px; margin-right: 5px; vertical-align: -2px; border: 1px solid rgba(0,0,0,.18); border-radius: 3px; }
+#akari-preview-watermark { position: absolute; inset: 0; z-index: 2147483647; pointer-events: none; overflow: hidden; container-type: size; }
+.akari-watermark-pattern { position: absolute; top: 50%; left: 50%; width: calc(86.60254cqw + 50cqh + 2px); height: calc(50cqw + 86.60254cqh + 2px); transform: translate(-50%, -50%) rotate(-30deg); transform-origin: center; opacity: .18; }
+.akari-watermark-text { fill: #1f344b; stroke: #fff; stroke-width: 1px; paint-order: stroke; font: 600 12px "Noto Sans CJK SC", "Noto Sans SC", sans-serif; opacity: .3; }
+.akari-watermark-partial { display: none; }
+#akari-preview-watermark[data-preview-partial="true"] .akari-watermark-normal { display: none; }
+#akari-preview-watermark[data-preview-partial="true"] .akari-watermark-partial { display: inline; }
+</style>
+{{ body|safe }}
+{% if single_template %}{% include "template_preview_panel.html" %}{% endif %}
+{% include "template_preview_watermark.html" %}
+<script data-akari-preview-script="watermark">{% include "template_preview_watermark.js" %}</script>
+{% if single_template %}
+<script data-akari-preview-script="css-panel">{% include "template_preview_css.js" %}</script>
+{% endif %}
