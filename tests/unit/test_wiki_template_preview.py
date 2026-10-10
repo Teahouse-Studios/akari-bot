@@ -329,7 +329,9 @@ async def _test_generation_uses_actual_template_and_only_read_api():
     parse_args = requests.api_json.await_args_list[1].kwargs
     assert parse_args["action"] == "parse" and parse_args["preview"] == 1
     assert parse_args["text"] == SOURCE.replace("{{Infobox", "{{Template:Infobox", 1)
-    assert parse_args["title"] == invocation.title and parse_args["useskin"] == "vector"
+    assert parse_args["title"] == preview.PREVIEW_CONTEXT
+    assert not parse_args["title"].startswith("Template:")
+    assert parse_args["useskin"] == "vector"
     with patch.object(preview, "evaluate_url_policy", return_value=_policy(False)):
         try:
             await preview.generate_template_preview(invocation, session)
