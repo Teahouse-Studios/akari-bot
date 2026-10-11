@@ -145,7 +145,7 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
             image["src"] = image["data-src"]
         if image.get("data-srcset"):
             image["srcset"] = image["data-srcset"]
-    if shell and single_template:
+    if shell:
         output = markup.select_one(".mw-parser-output") or markup.find(True)
         if output:
             output["data-akari-template-output"] = ""
