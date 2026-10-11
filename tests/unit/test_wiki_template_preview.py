@@ -655,7 +655,8 @@ async def _test_remote_shell_keeps_ancestors_and_rejects_other_origins():
         return_value=(
             b"<html><head><style>.skin-special #content article .mw-body-content > .mw-parser-output > .box {display:flex}</style></head>"
             b'<body class="skin-special"><main id="content"><article><div id="mw-content-text" class="mw-body-content">'
-            b"<p>Old body</p><script>siteCode()</script></div></article></main></body></html>",
+            b"<p>Old body</p><script>siteCode()</script></div></article></main>"
+            b'<footer><img src="https://meta.weirdgloop.org/images/footer.png"></footer></body></html>',
             "text/html",
             page_url,
         )
@@ -679,6 +680,7 @@ async def _test_remote_shell_keeps_ancestors_and_rejects_other_origins():
         assert soup.select_one("#akari-preview-css-panel") and soup.select_one("#akari-preview-watermark")
         assert "Old body" not in soup.text and "siteCode()" not in options.content
         assert soup.select_one('meta[http-equiv="Content-Security-Policy"]')
+        assert ("https", "meta.weirdgloop.org", 443) in requests.origins
         calls = requests.fetch.await_count
         try:
             await render_shell_document(

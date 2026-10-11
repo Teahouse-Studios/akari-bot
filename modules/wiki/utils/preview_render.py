@@ -173,7 +173,7 @@ class PreviewRequests:
         return response
 
 
-def _document_resources(document, requests):
+def _document_resources(document, requests, *, include_images=False):
     soup = BeautifulSoup(document, "html.parser")
     head = soup.head or soup
     for tag in head.find_all("link", href=True):
@@ -183,6 +183,14 @@ def _document_resources(document, requests):
         target = urlsplit(urljoin(requests.site, tag["src"]))
         requests.allow_resource(tag["src"])
         requests.script_paths.add((target.netloc, target.path))
+    if include_images:
+        for tag in soup.find_all(["img", "source"], src=True):
+            requests.allow_resource(tag["src"])
+        for tag in soup.find_all(["img", "source"], srcset=True):
+            for candidate in tag["srcset"].split(","):
+                target = candidate.strip().split(maxsplit=1)[0]
+                if target:
+                    requests.allow_resource(target)
     return soup
 
 
@@ -401,7 +409,7 @@ async def render_shell_document(fragment, parsed, page_url, requests, locale):
     for base in soup.find_all("base"):
         base.decompose()
     soup.head.insert(0, soup.new_tag("base", href=final_url))
-    _document_resources(str(soup), requests)
+    _document_resources(str(soup), requests, include_images=True)
     return await _remote_render(soup, requests, locale, element="#mw-content-text"), True
 
 
