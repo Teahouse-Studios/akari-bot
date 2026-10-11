@@ -93,7 +93,8 @@ class PreviewRequests:
                     raise ValueError("Wiki API is not allowed")
             elif not self.resource_allowed(url, kind):
                 raise ValueError("Preview resource is not allowed")
-            await private_ip_check(url)
+            if not CoreConfig.allow_request_private_ip:
+                await private_ip_check(url)
             async with self.client.stream(
                 "POST" if body else "GET",
                 url,
