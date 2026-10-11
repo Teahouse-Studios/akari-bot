@@ -694,6 +694,21 @@ async def _test_remote_shell_keeps_ancestors_and_rejects_other_origins():
     return True
 
 
+def _test_shell_document_discovers_image_origins_without_scripts():
+    requests = PreviewRequests(API, "https://example.org", {})
+    _document_resources(
+        '<html><head><script src="https://cdn.example.org/site.js"></script></head>'
+        '<body><img src="https://meta.weirdgloop.org/images/footer.png" srcset="https://meta.weirdgloop.org/images/footer@2x.png 2x"></body></html>',
+        requests,
+        include_images=True,
+        include_scripts=False,
+    )
+    assert ("https", "meta.weirdgloop.org", 443) in requests.origins
+    assert ("https", "cdn.example.org", 443) not in requests.origins
+    assert ("cdn.example.org", "/site.js") not in requests.script_paths
+    return True
+
+
 @func_case
 async def test_wiki_template_preview(tester: Tester):
     for function, note in [
@@ -722,6 +737,7 @@ async def test_wiki_template_preview(tester: Tester):
             _test_remote_shell_keeps_ancestors_and_rejects_other_origins,
             "远端渲染保留皮肤祖先 DOM，清理原正文与脚本，拒绝站外外壳",
         ),
+        (_test_shell_document_discovers_image_origins_without_scripts, "本地外壳导航登记图片来源但不放行外部脚本"),
     ]:
         await tester.test(function, note)
     return tester

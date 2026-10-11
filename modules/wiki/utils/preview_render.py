@@ -173,16 +173,17 @@ class PreviewRequests:
         return response
 
 
-def _document_resources(document, requests, *, include_images=False):
+def _document_resources(document, requests, *, include_images=False, include_scripts=True):
     soup = BeautifulSoup(document, "html.parser")
     head = soup.head or soup
     for tag in head.find_all("link", href=True):
         if "stylesheet" in tag.get("rel", []):
             requests.allow_resource(tag["href"])
-    for tag in head.find_all("script", src=True):
-        target = urlsplit(urljoin(requests.site, tag["src"]))
-        requests.allow_resource(tag["src"])
-        requests.script_paths.add((target.netloc, target.path))
+    if include_scripts:
+        for tag in head.find_all("script", src=True):
+            target = urlsplit(urljoin(requests.site, tag["src"]))
+            requests.allow_resource(tag["src"])
+            requests.script_paths.add((target.netloc, target.path))
     if include_images:
         for tag in soup.find_all(["img", "source"], src=True):
             requests.allow_resource(tag["src"])
@@ -433,6 +434,10 @@ async def _local_shell_render(fragment, parsed, page_url, requests, locale):
                 kind = "document"
             try:
                 data, content_type, _ = await requests.fetch(request.url, kind)
+                if kind == "document":
+                    # The shell document is fetched during browser navigation, so discover its
+                    # declared image origins before Chromium starts requesting those images.
+                    _document_resources(data, requests, include_images=True, include_scripts=False)
                 await route.fulfill(body=data, content_type=content_type)
             except Exception as error:
                 requests.mark_warning(
