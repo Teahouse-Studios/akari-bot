@@ -10,6 +10,7 @@ from core.builtins.filter import contain_badwords
 from core.builtins.message.internal import I18NContext
 from core.utils import dirty_check
 from core.utils.url_audit import evaluate_url_policy
+from core.logger import Logger
 from .magic import extract_expressions
 from .preview_render import PreviewRequests, render_preview_document, render_shell_document
 from .wikilib import WikiInfo
@@ -199,6 +200,15 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
             )
         }
     warning = bool(parsed.get("parsewarnings") or markup.select(".error,.mw-broken-media,.scribunto-error"))
+    if warning and not shell:
+        reasons = []
+        if parsed.get("parsewarnings"):
+            reasons.append("MediaWiki parsewarnings")
+        if markup.select(".error,.mw-broken-media,.scribunto-error"):
+            reasons.append("rendered error marker")
+        Logger.warning(
+            f"[Wiki preview] API content marked as partial: title={invocation.title!r}; reason={', '.join(reasons)}"
+        )
     template_name = "template_preview_shell.html" if shell else "template_preview.html"
     document = _TEMPLATE_ENV.get_template(template_name).render(
         html_attrs=attributes(soup.html),
