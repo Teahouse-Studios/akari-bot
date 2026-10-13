@@ -1280,7 +1280,8 @@ class QQBotContextManager(ContextManager):
         state_waiter = None
         try:
             elements = [I18NContext("message.typing")]
-            if CoreConfig.use_emote:
+            target_data = (session_info.target_union_info.target_data or {}) if session_info.target_union_info else {}
+            if CoreConfig.use_emote and target_data.get("use_emote", True):
                 if TYPING_EMOTES:
                     elements.append(Image(Random.choice(TYPING_EMOTES)))
                 else:

@@ -407,6 +407,12 @@ class SessionInfo:
         """
         return self.target_union_info.target_data.get("invalid_module_prompt", True)
 
+    @property
+    def emote_enabled(self) -> bool:
+        """本会话是否使用表情资源。"""
+        target_data = (self.target_union_info.target_data or {}) if self.target_union_info else {}
+        return CoreConfig.use_emote and target_data.get("use_emote", True)
+
 
 @define
 class FetchedSessionInfo(SessionInfo):

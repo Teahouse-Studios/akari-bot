@@ -1,6 +1,9 @@
 """输入提示开关的取值来源测试。"""
 
+from unittest.mock import patch
+
 from core.builtins.session.info import SessionInfo
+from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester
@@ -51,6 +54,18 @@ def _test_switch_without_sender_union() -> bool:
     return True
 
 
+def _test_emote_switch_defaults_to_global_config() -> bool:
+    with patch.object(CoreConfig, "use_emote", True):
+        session = _make_session({}, target_data={})
+        return session.emote_enabled is True
+
+
+def _test_emote_switch_respects_target_setting() -> bool:
+    with patch.object(CoreConfig, "use_emote", True):
+        session = _make_session({}, target_data={"use_emote": False})
+        return session.emote_enabled is False
+
+
 @func_case
 async def test_typing_prompt(tester: Tester):
     """core.builtins.session.info: 输入提示开关的取值来源测试"""
@@ -58,5 +73,7 @@ async def test_typing_prompt(tester: Tester):
     await tester.test(_test_switch_respects_user_setting, "开关跟随用户设置测试")
     await tester.test(_test_switch_ignores_target_data, "开关不受场景数据影响测试")
     await tester.test(_test_switch_without_sender_union, "无用户 union 不提示测试")
+    await tester.test(_test_emote_switch_defaults_to_global_config, "表情资源跟随全局配置测试")
+    await tester.test(_test_emote_switch_respects_target_setting, "表情资源跟随场景设置测试")
 
     return tester

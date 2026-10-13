@@ -36,7 +36,7 @@ BUG_EMOTES = tuple(sorted((COMMON_EMOTE_DIR / "bug").glob("*.gif")))
 
 
 async def send_common_emote(msg: "Bot.MessageSession", emotes: tuple[Path, ...]) -> None:
-    if not CoreConfig.use_emote or not msg.session_info.support_image or not emotes:
+    if not msg.session_info.emote_enabled or not msg.session_info.support_image or not emotes:
         return
     try:
         await msg.send_message(Image(Random.choice(emotes)), quote=False)

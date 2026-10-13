@@ -1,5 +1,7 @@
 """设置面板单元测试 - 设置行的构造与渲染。"""
 
+from unittest.mock import patch
+
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ActionTextElement, PlainElement
 from core.builtins.session.info import SessionInfo
@@ -264,6 +266,19 @@ def _test_invalid_prompt_row() -> bool:
     return True
 
 
+def _test_emote_row_follows_setting() -> bool:
+    with patch.object(CoreConfig, "use_emote", True):
+        enabled = _row_by_label(build_target_rows(_make_msg()), "表情")
+        disabled = _row_by_label(build_target_rows(_make_msg(target_data={"use_emote": False})), "表情")
+    if not enabled or enabled.value != "已开启" or enabled.command != "setup emote":
+        Logger.error(f"An unset emote switch should be enabled, got {enabled}")
+        return False
+    if not disabled or disabled.value != "已关闭" or disabled.action != "开启":
+        Logger.error(f"A disabled emote switch should offer to enable, got {disabled}")
+        return False
+    return True
+
+
 def _test_no_entries_without_permission() -> bool:
     elements = _render(support_button=True, can_edit=False)
     if any(isinstance(x, ActionTextElement) for x in elements):
@@ -360,6 +375,7 @@ async def test_setup_panel(tester: Tester):
     await tester.test(_test_markdown_row_follows_capability, "markdown 项随能力测试")
     await tester.test(_test_markdown_row_follows_setting, "markdown 项跟随取值测试")
     await tester.test(_test_invalid_prompt_row, "模块不存在提示项测试")
+    await tester.test(_test_emote_row_follows_setting, "表情资源设置行测试")
     await tester.test(_test_commands_carry_current_value, "命令预填当前值测试")
     await tester.test(_test_rows_carry_no_prefix, "设置行不含前缀测试")
     await tester.test(_test_every_row_gets_an_inline_entry, "每行均有入口测试")
