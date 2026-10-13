@@ -294,12 +294,12 @@ requires-dist = [
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = "==3.31.0" },
     { name = "akari-bot-i18n", specifier = "==0.2.1" },
-    { name = "akari-bot-webrender", specifier = "==0.7.0" },
+    { name = "akari-bot-webrender", specifier = "==0.7.1" },
     { name = "akari-bot-webui", specifier = "==0.4.6" },
     { name = "anthropic", specifier = ">=1.5.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
-    { name = "attrs", specifier = ">=25.0.0,<26.0.0" },
+    { name = "attrs", specifier = ">=26.1.0" },
     { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
     { name = "boto3", specifier = ">=1.35.0,<2.0.0" },
     { name = "cattrs", specifier = ">=26.1.0,<26.2.0" },
@@ -321,7 +321,7 @@ requires-dist = [
     { name = "httpx-ws", specifier = ">=0.9.0,<1.0.0" },
     { name = "jinja2", specifier = ">=3.1.6,<4.0.0" },
     { name = "khl-py", specifier = ">=0.3.16,<1.0.0" },
-    { name = "langconv", git = "https://github.com/Teahouse-Studios/langconv.py.git" },
+    { name = "langconv", specifier = "==0.4.0" },
     { name = "loguru", specifier = ">=0.7.0,<1.0.0" },
     { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
     { name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" },
@@ -385,7 +385,7 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.7.0"
+version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -398,9 +398,9 @@ dependencies = [
     { name = "tf-playwright-stealth" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d4/19/e8e53bbcb9b4219aef7f3d0f56131ddcef0bd175d681b86d3c32848f1870/akari_bot_webrender-0.7.0.tar.gz", hash = "sha256:d8c8ab54f44769c419a14c098d33be2f2136c7631b78a2ed4acb52c47fead61f", size = 19897, upload-time = "2026-10-10T16:39:40.666Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/29/63/4c127e72c0552a85db1bd94132ac560fa22a7bcd9eb1680c2f094e03da6e/akari_bot_webrender-0.7.1.tar.gz", hash = "sha256:7d3f9efbda4f29d93f899313c48a6ae2295eef1386c3379914f44f8cc9c61a32", size = 19889, upload-time = "2026-10-13T12:23:19.285Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2f/3b/534f7dd9a91426857e575340da78e97c33ebd2113544042c3a455c0108f4/akari_bot_webrender-0.7.0-py3-none-any.whl", hash = "sha256:c18fc153be75a710a367d479d6f41afd4409fb3bf23788610accda63e3bd3212", size = 23992, upload-time = "2026-10-10T16:39:39.218Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/c9/98a90ecec2dc2a7c322da9214257a02ab9de35c6de118f63aa7e65f5f76f/akari_bot_webrender-0.7.1-py3-none-any.whl", hash = "sha256:3c4baf13a5d37ecef08f845f1717d590a2ccafd0acde04d2eba68c2af8c935d6", size = 23987, upload-time = "2026-10-13T12:23:17.747Z" },
 ]
 
 [[package]]
@@ -551,11 +551,11 @@ wheels = [
 
 [[package]]
 name = "attrs"
-version = "25.4.0"
+version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6b/5c/685e6633917e101e5dcb62b9dd76946cbb57c26e133bae9e0cd36033c0a9/attrs-25.4.0.tar.gz", hash = "sha256:16d5969b87f0859ef33a48b35d55ac1be6e42ae49d5e853b597db70c35c57e11", size = 934251, upload-time = "2025-10-06T13:54:44.725Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/8e/82a0fe20a541c03148528be8cac2408564a6c9a0cc7e9171802bc1d26985/attrs-26.1.0.tar.gz", hash = "sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32", size = 952055, upload-time = "2026-03-19T14:22:25.026Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/2a/7cc015f5b9f5db42b7d48157e23356022889fc354a2813c15934b7cb5c0e/attrs-25.4.0-py3-none-any.whl", hash = "sha256:adcf7e2a1fb3b36ac48d97835bb6d8ade15b8dcce26aba8bf1d14847b57a3373", size = 67615, upload-time = "2025-10-06T13:54:43.17Z" },
+    { url = "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl", hash = "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309", size = 67548, upload-time = "2026-03-19T14:22:23.645Z" },
 ]
 
 [[package]]
@@ -1975,11 +1975,15 @@ wheels = [
 
 [[package]]
 name = "langconv"
-version = "0.3.0"
-source = { git = "https://github.com/Teahouse-Studios/langconv.py.git#c46b775d67c3bf2de3506927a4ac7aabba30b8b0" }
+version = "0.4.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
     { name = "iso639-lang" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f8/4b/301b7452c55fdfbf33d89396538fd0b321688b62977c8d1878d91613bf85/langconv-0.4.0.tar.gz", hash = "sha256:50740a4e1ea5ed29b4a1e0593dfa2147db759ee1b248f4740d95e1fcf6703b95", size = 161315, upload-time = "2026-10-13T04:47:59.432Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/4b/392253c36670be6b41821e46f4cb259086c518b96319eb4e0e60201bdb92/langconv-0.4.0-py3-none-any.whl", hash = "sha256:e2482011b3842f1fd90049177458564c1a7986a005a02af01c78ca07f56ff85a", size = 158981, upload-time = "2026-10-13T04:47:57.577Z" },
 ]
 
 [[package]]
