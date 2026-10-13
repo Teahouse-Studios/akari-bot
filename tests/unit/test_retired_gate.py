@@ -376,6 +376,48 @@ async def _probe_merge_command_route(command: str, order: tuple[str, str], prefi
         module._db_load = previous_load
 
 
+async def _test_invalid_command_keeps_alive_route():
+    original = CoreConfig.retired_clients
+    try:
+        retired_client = "ARCAEATEST_R"
+        alive_client = "ARCAEATEST_A"
+        retired_target = f"{retired_client}|Group|syntax"
+        alive_target = f"{alive_client}|Group|syntax"
+        _use_routes([f"{retired_client} -> {alive_client}"])
+
+        union = await TargetUnionInfo.resolve_union(retired_target)
+        await union.bind_id(alive_target)
+        await TargetUnionBind.filter(union_id=union.union_id).update(channel_id=1)
+
+        sessions = {
+            "retired": await _session(retired_target, retired_client, "~arcaea"),
+            "alive": await _session(alive_target, alive_client, "~arcaea"),
+        }
+        executed: list[str] = []
+        module = ModulesManager.modules["arcaea"]
+        previous_load = module._db_load
+        module._db_load = True
+
+        async def _record(msg, modules, command_first_word, identify_str):
+            executed.append(msg.session_info.client_name)
+
+        channel_claim_cache.clear()
+        with (
+            patch.object(ModulesManager, "return_modules_list", return_value={"arcaea": module}),
+            patch("core.builtins.parser.message._execute_module", new=_record),
+        ):
+            await parser(sessions["alive"])
+            await parser(sessions["retired"])
+        return executed == [alive_client]
+    except Exception:
+        return False
+    finally:
+        channel_claim_cache.clear()
+        if "module" in locals():
+            module._db_load = previous_load
+        _restore_routes(original)
+
+
 async def _test_merge_start_routes_to_retired_source():
     original = CoreConfig.retired_clients
     try:
@@ -445,6 +487,7 @@ async def test_retired_gate(tester: Tester):
     await tester.test(_test_retired_keeps_wait_task_when_alone, "独占通道保留等待任务测试")
     await tester.test(_test_merge_start_routes_to_retired_source, "迁移发起命令路由测试")
     await tester.test(_test_merge_token_routes_to_alive_target, "迁移兑换命令路由测试")
+    await tester.test(_test_invalid_command_keeps_alive_route, "混合通道普通模块语法错误路由测试")
     await tester.test(_test_union_push_skips_retired, "组内推送滤除退役测试")
 
     return tester

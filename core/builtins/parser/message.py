@@ -245,7 +245,9 @@ async def parser(msg: "Bot.MessageSession"):
             command_first_word = await _process_command(msg, modules, disable_prefix, in_prefix_list)
 
             routed_command_available = None
+            routed_module_available = False
             if command_first_word in modules:
+                routed_module_available = _module_available_for_current_session(msg, modules[command_first_word])
                 routed_command_available = _command_available_for_current_session(
                     msg, modules[command_first_word], command_first_word
                 )
@@ -255,7 +257,10 @@ async def parser(msg: "Bot.MessageSession"):
                 msg,
                 module_name=command_first_word,
                 command_first_word=command_first_word,
-                data={"routed_command_available": routed_command_available},
+                data={
+                    "routed_command_available": routed_command_available,
+                    "routed_module_available": routed_module_available,
+                },
             )
             if isinstance(route_result, Stop):
                 return
@@ -265,7 +270,10 @@ async def parser(msg: "Bot.MessageSession"):
                 msg,
                 module_name=command_first_word,
                 command_first_word=command_first_word,
-                data={"routed_command_available": routed_command_available},
+                data={
+                    "routed_command_available": routed_command_available,
+                    "routed_module_available": routed_module_available,
+                },
             )
             if isinstance(claim_outcome, Stop):
                 return
@@ -331,6 +339,17 @@ def _command_available_for_current_session(msg: "Bot.MessageSession", module: Mo
     except InvalidCommandFormatError:
         return False
     return bool(parsed and parsed[0])
+
+
+def _module_available_for_current_session(msg: "Bot.MessageSession", module: Module) -> bool:
+    return bool(
+        module.command_list.get(
+            msg.session_info.target_from,
+            show_required_superuser=msg.check_super_user(),
+            show_required_base_superuser=msg.session_info.sender_id in exports["Bot"].base_superuser_list,
+            show_required_admin=True,
+        )
+    )
 
 
 def _get_prefixes(msg: "Bot.MessageSession"):

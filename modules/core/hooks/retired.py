@@ -65,11 +65,16 @@ async def _(ctx: "Bot.ParserHookContext"):
         return None
 
     routed_available = ctx.data.get("routed_command_available")
+    module_available = ctx.data.get("routed_module_available")
     mixed_channel = any(is_retired_target(target_id) for target_id in channel_targets) and any(
         not is_retired_target(target_id) for target_id in channel_targets
     )
     if mixed_channel and routed_available is False:
-        return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
+        if module_available is False:
+            return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
+        original_word = getattr(ctx.msg, "command_original_word", "")
+        if not is_retired_target(info.target_id) and is_module_allowed_when_retired(original_word):
+            return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
     if routed_available is not True and should_yield_channel(info.target_id, channels, channel_id):
         return ctx.Stop(scope=ctx.StopScope.CANDIDATE)
     return None
