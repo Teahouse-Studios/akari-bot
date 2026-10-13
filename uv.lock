@@ -294,7 +294,7 @@ requires-dist = [
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = "==3.31.0" },
     { name = "akari-bot-i18n", specifier = "==0.2.1" },
-    { name = "akari-bot-webrender", specifier = "==0.7.1" },
+    { name = "akari-bot-webrender", specifier = "==0.7.2" },
     { name = "akari-bot-webui", specifier = "==0.4.6" },
     { name = "anthropic", specifier = ">=1.5.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
@@ -385,7 +385,7 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.7.1"
+version = "0.7.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -398,9 +398,9 @@ dependencies = [
     { name = "tf-playwright-stealth" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/29/63/4c127e72c0552a85db1bd94132ac560fa22a7bcd9eb1680c2f094e03da6e/akari_bot_webrender-0.7.1.tar.gz", hash = "sha256:7d3f9efbda4f29d93f899313c48a6ae2295eef1386c3379914f44f8cc9c61a32", size = 19889, upload-time = "2026-10-13T12:23:19.285Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/e2/c1827534be7f012ce0434a2a8cab4eeac8d881aa3465422b4caaa2c062c0/akari_bot_webrender-0.7.2.tar.gz", hash = "sha256:2da1cebcd58b53d0e1862db6ecec10862a6666d7bbf5463801d2dd38e3cf06b2", size = 19891, upload-time = "2026-10-13T12:35:27.954Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/c9/98a90ecec2dc2a7c322da9214257a02ab9de35c6de118f63aa7e65f5f76f/akari_bot_webrender-0.7.1-py3-none-any.whl", hash = "sha256:3c4baf13a5d37ecef08f845f1717d590a2ccafd0acde04d2eba68c2af8c935d6", size = 23987, upload-time = "2026-10-13T12:23:17.747Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/07/9e930fbabdeb48265d980a51a2d328b22d9cc56268ea356c229e5aeefe3f/akari_bot_webrender-0.7.2-py3-none-any.whl", hash = "sha256:81536435b2f52994a77fe4527e3f22df486757a5d728247a8f03dbc0a62d4b3f", size = 23982, upload-time = "2026-10-13T12:35:26.546Z" },
 ]
 
 [[package]]
