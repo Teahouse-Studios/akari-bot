@@ -57,6 +57,11 @@ def _content_to_text(content: str | list) -> str:
     return "".join(part.get("text", "") for part in content if isinstance(part, dict) and part.get("type") == "text")
 
 
+def _strip_internal_keys(messages: list[dict]) -> list[dict]:
+    # 历史消息会带有其他端点的内部键（如 _anthropic_blocks、_responses_reasoning），透传前需剔除。
+    return [{k: v for k, v in msg.items() if not k.startswith("_")} for msg in messages]
+
+
 def _responses_tools() -> list[dict]:
     tools = []
     for tool in TOOLS:
@@ -131,6 +136,8 @@ def _messages_to_responses(messages: list[dict]) -> tuple[str, list[dict]]:
         elif role == "user":
             items.append({"type": "message", "role": "user", "content": _content_to_responses_input(content)})
         elif role == "assistant":
+            # 手动管理上下文时，Responses API 要求回传上一轮的 reasoning 条目，否则续轮丢失思维链。
+            items.extend(msg.get("_responses_reasoning") or [])
             if content:
                 items.append({"type": "message", "role": "assistant", "content": content})
             for tc in msg.get("tool_calls") or []:
@@ -161,6 +168,10 @@ def _messages_to_anthropic(messages: list[dict]) -> tuple[str, list[dict]]:
             last_is_tool_result = False
         elif role == "assistant":
             blocks = []
+            # 启用思考时 Anthropic 要求原样回传上一轮的 thinking 块，否则工具续轮报错。
+            for raw in msg.get("_anthropic_blocks") or []:
+                if raw.get("type") in ("thinking", "redacted_thinking"):
+                    blocks.append(raw)
             if content:
                 blocks.append({"type": "text", "text": content})
             for tc in msg.get("tool_calls") or []:
@@ -189,13 +200,14 @@ def _build_assistant_message(
     text: str,
     raw_tool_calls: list[dict],
     reasoning_content: str | None = None,
+    deepseek_compat: bool = False,
 ) -> dict:
     message = {"role": "assistant", "content": text}
 
-    # DeepSeek 思考模式下，工具调用轮次必须保留 reasoning_content。
     if reasoning_content is not None:
         message["reasoning_content"] = reasoning_content
-    elif raw_tool_calls and enable_reasoning == "enabled":
+    # DeepSeek 思考模式下，工具调用轮次必须保留 reasoning_content，缺失时补空串。
+    elif deepseek_compat and raw_tool_calls and enable_reasoning == "enabled":
         message["reasoning_content"] = ""
 
     if raw_tool_calls:
@@ -208,15 +220,16 @@ class OpenAICompletionsEndpoint:
     def __init__(self, api_url: str, api_key: str, model_name: str):
         self.client = AsyncOpenAI(base_url=api_url, api_key=api_key)
         self.model_name = model_name
+        self.is_deepseek = "deepseek" in model_name.lower()
 
     async def create(self, messages: list[dict], tool_choice: str) -> ParsedResult:
         extra_body = {}
-        if "deepseek" in self.model_name.lower():  # 兼容 DeepSeek
+        if self.is_deepseek:  # 兼容 DeepSeek
             extra_body = {"thinking": {"type": enable_reasoning}}
-        
+
         response = await self.client.chat.completions.create(
             model=self.model_name,
-            messages=messages,
+            messages=_strip_internal_keys(messages),
             tool_choice=tool_choice,
             tools=TOOLS,
             max_completion_tokens=max_tokens,
@@ -263,6 +276,7 @@ class OpenAICompletionsEndpoint:
                 res_msg.content or "",
                 raw_tool_calls,
                 reasoning_content=reasoning_content,
+                deepseek_compat=self.is_deepseek,
             ),
         )
 
@@ -299,13 +313,19 @@ class OpenAIResponsesEndpoint:
         tool_calls = []
         raw_tool_calls = []
         reasoning_parts = []
+        reasoning_items = []
         for item in response.output or []:
             item_type = getattr(item, "type", None)
 
             if item_type == "reasoning":
+                if hasattr(item, "model_dump"):
+                    reasoning_items.append(item.model_dump(exclude_none=True))
+                for part in getattr(item, "summary", None) or []:
+                    if getattr(part, "type", None) == "summary_text":
+                        reasoning_parts.append(part.text)
                 for part in getattr(item, "content", None) or []:
-                   if getattr(part, "type", None) == "reasoning_text":
-                       reasoning_parts.append(part.text)
+                    if getattr(part, "type", None) == "reasoning_text":
+                        reasoning_parts.append(part.text)
 
             elif item_type == "function_call":
                 tool_calls.append(
@@ -324,6 +344,15 @@ class OpenAIResponsesEndpoint:
                         text_parts.append(c.text)
 
         text = "".join(text_parts)
+        assistant_message = _build_assistant_message(
+            text,
+            raw_tool_calls,
+            reasoning_content="".join(reasoning_parts) or None,
+        )
+        # Responses API 无状态续轮依赖原样回传 reasoning 条目（含 encrypted_content）。
+        if reasoning_items:
+            assistant_message["_responses_reasoning"] = reasoning_items
+
         return ParsedResult(
             text=text,
             tool_calls=tool_calls,
@@ -331,12 +360,24 @@ class OpenAIResponsesEndpoint:
             output_tokens=usage.output_tokens,
             cache_read_tokens=cache_read_tokens,
             cache_write_tokens=cache_write_tokens,
-            assistant_message=_build_assistant_message(
-                res_msg.content or "",
-                raw_tool_calls,
-                reasoning_content="".join(reasoning_parts)
-            ),
+            assistant_message=assistant_message,
         )
+
+
+def _anthropic_thinking() -> dict | None:
+    if enable_reasoning == "disabled":
+        return {"type": "disabled"}
+    # Anthropic 的思考预算最低 1024，且必须小于 max_tokens，否则无法启用思考。
+    budget_tokens = max(1024, max_tokens // 2)
+    if budget_tokens >= max_tokens:
+        return None
+    return {"type": "enabled", "budget_tokens": budget_tokens}
+
+
+def _anthropic_effort() -> str | None:
+    # Anthropic 仅接受 low/medium/high/xhigh/max，OpenAI 的 none/minimal 需剔除。
+    effort = reasoning_effort.lower()
+    return effort if effort in ("low", "medium", "high", "xhigh", "max") else None
 
 
 class AnthropicEndpoint:
@@ -355,9 +396,13 @@ class AnthropicEndpoint:
             "tools": self.tools,
             "tool_choice": {"type": tool_choice},
             "timeout": timeout,
-            "thinking": {"type": enable_reasoning},
-            "output_config": {"effort": reasoning_effort},
         }
+        thinking = _anthropic_thinking()
+        if thinking is not None:
+            kwargs["thinking"] = thinking
+        effort = _anthropic_effort()
+        if effort is not None:
+            kwargs["output_config"] = {"effort": effort}
         if system:
             kwargs["system"] = system
         response = await self.client.messages.create(**kwargs)
@@ -373,9 +418,7 @@ class AnthropicEndpoint:
         raw_anthropic_blocks = []
         for block in response.content or []:
             if hasattr(block, "model_dump"):
-                raw_anthropic_blocks.append(
-                    block.model_dump(exclude_none=True)
-                )
+                raw_anthropic_blocks.append(block.model_dump(exclude_none=True))
 
             block_type = getattr(block, "type", None)
 
@@ -385,23 +428,23 @@ class AnthropicEndpoint:
             elif block_type == "tool_use":
                 arguments = block.input or {}
                 tool_calls.append(
-                ToolCall(
-                    id=block.id,
-                    name=block.name,
-                    arguments=arguments,
+                    ToolCall(
+                        id=block.id,
+                        name=block.name,
+                        arguments=arguments,
+                    )
                 )
-            )
-            raw_tool_calls.append(
-                {
-                    "id": block.id,
-                    "type": "function",
-                    "function": {
-                        "name": block.name,
-                        "arguments": orjson.dumps(arguments).decode("utf-8"),
-                    },
-                }
-            )
-            
+                raw_tool_calls.append(
+                    {
+                        "id": block.id,
+                        "type": "function",
+                        "function": {
+                            "name": block.name,
+                            "arguments": orjson.dumps(arguments).decode("utf-8"),
+                        },
+                    }
+                )
+
         text = "".join(text_parts)
         assistant_message = _build_assistant_message(text, raw_tool_calls)
         assistant_message["_anthropic_blocks"] = raw_anthropic_blocks
