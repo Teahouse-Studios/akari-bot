@@ -6,6 +6,7 @@ from PIL import Image as PILImage
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ImageElement, Image, Markdown, Plain, PlainElement
 from core.builtins.message.chain import MessageChain
+from core.builtins.utils import command_prefix
 from core.constants.exceptions import ExternalException
 from core.utils.dirty_check import check
 from core.logger import Logger
@@ -60,14 +61,14 @@ async def ask_llm(
 
     session_locale = session.session_info.locale
     system_messages = [
-        {"role": "system", "content": INSTRUCTIONS},
-        {"role": "system", "content": f"Current datetime: {fmt_now}"},
         {
             "role": "system",
-            "content": f"Session language: {session_locale.t('language')} ({session_locale.locale}). "
-            "Always answer in the language of the user's input. "
-            "If the language of the input cannot be determined, answer in the session language.",
+            "content": INSTRUCTIONS.safe_substitute(
+                prefix=command_prefix[0],
+                language=f"{session_locale.t('language')} ({session_locale.locale})",
+            ),
         },
+        {"role": "system", "content": f"Current datetime: {fmt_now}"},
     ]
     ai_persona = session.session_info.sender_union_info.sender_data.get("ai_enable_persona")
     if ai_persona:

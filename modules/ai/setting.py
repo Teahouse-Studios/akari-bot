@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import datetime, time
 from decimal import Decimal, InvalidOperation
+from string import Template
 
 import yaml
 
@@ -10,12 +11,18 @@ from .config import AiConfig
 ai_module_path = Path(__file__).parent
 ai_data_path = module_data_path(ai_module_path)
 
+
+class _InstructionsTemplate(Template):
+    # 指令文本含 LaTeX 的 $$，标准 Template 会把它折叠成 $；该模式只识别 ${name}，其余 $ 原样保留。
+    pattern = r"\$\{(?P<braced>[_a-z][_a-z0-9]*)\}|(?P<named>(?!))|(?P<escaped>(?!))|(?P<invalid>(?!))"
+
+
 instructions_path = ai_data_path / "instructions.txt"
 if instructions_path.exists():
     with open(instructions_path, "r", encoding="utf-8") as f:
-        INSTRUCTIONS = f.read()
+        INSTRUCTIONS = _InstructionsTemplate(f.read())
 else:
-    INSTRUCTIONS = ""
+    INSTRUCTIONS = _InstructionsTemplate("")
 
 persona_path = ai_data_path / "persona.txt"
 if persona_path.exists():

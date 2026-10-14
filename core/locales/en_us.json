@@ -128,7 +128,6 @@
     "error.message.discord.thread.permission_denied": "Unable to send message. This is probably because the bot lacks sufficient permissions (create threads) in this channel.",
     "error.message.limited": "Failed to send message. The message might be blocked. Please try again later.",
     "error.message.limited.msg2img": "The message has been blocked. Try sending by image: ",
-    "error.message.paused": "Group message delivery was blocked by the server. Group message delivery is suspended. Use \"${prefix}resume\" to resume pushing.",
     "error.message.prompt": "An error occurred while executing the command:",
     "error.message.prompt.address": "Report this issue: ${url}",
     "error.message.prompt.external": "This error may be caused by external systems. If the error occurs repeatedly, please report the following message to the bot owner.",
