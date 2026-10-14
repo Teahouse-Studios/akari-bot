@@ -269,6 +269,58 @@ async def _test_completions_keeps_reasoning_effort_when_set():
     return True
 
 
+def _test_anthropic_thinking_omitted_when_none():
+    assert endpoints._anthropic_thinking("none") is None
+    return True
+
+
+def _test_anthropic_thinking_adaptive_when_enabled():
+    assert endpoints._anthropic_thinking("high") == {"type": "adaptive"}
+    # minimal 不映射到 output_config，但仍开启思考
+    assert endpoints._anthropic_thinking("minimal") == {"type": "adaptive"}
+    return True
+
+
+async def _test_anthropic_uses_adaptive_thinking():
+    endpoint = endpoints.AnthropicEndpoint("http://127.0.0.1", "k", "claude-sonnet-5-5")
+    captured = {}
+
+    class _Messages:
+        async def create(self, **kwargs):
+            captured.update(kwargs)
+            raise _Stop
+
+    endpoint.client = SimpleNamespace(messages=_Messages())
+    with patch.object(endpoints, "reasoning_effort", "high"):
+        try:
+            await endpoint.create([{"role": "user", "content": "hi"}], "auto")
+        except _Stop:
+            pass
+    assert captured["thinking"] == {"type": "adaptive"}
+    assert captured["output_config"] == {"effort": "high"}
+    return True
+
+
+async def _test_anthropic_omits_thinking_when_none():
+    endpoint = endpoints.AnthropicEndpoint("http://127.0.0.1", "k", "claude-sonnet-5-5")
+    captured = {}
+
+    class _Messages:
+        async def create(self, **kwargs):
+            captured.update(kwargs)
+            raise _Stop
+
+    endpoint.client = SimpleNamespace(messages=_Messages())
+    with patch.object(endpoints, "reasoning_effort", "none"):
+        try:
+            await endpoint.create([{"role": "user", "content": "hi"}], "auto")
+        except _Stop:
+            pass
+    assert "thinking" not in captured
+    assert "output_config" not in captured
+    return True
+
+
 @func_case
 async def test_ai_reasoning_effort(tester: Tester):
     """modules.ai: 采样、思考强度与对数概率支持按模型覆盖或空值省略"""
@@ -292,4 +344,8 @@ async def test_ai_reasoning_effort(tester: Tester):
         _test_completions_keeps_reasoning_effort_when_set,
         "Chat Completions 端点在非 none 时保留 reasoning_effort",
     )
+    await tester.test(_test_anthropic_thinking_omitted_when_none, "Anthropic 未开启思考时不传 thinking")
+    await tester.test(_test_anthropic_thinking_adaptive_when_enabled, "Anthropic 开启思考时使用 adaptive")
+    await tester.test(_test_anthropic_uses_adaptive_thinking, "Anthropic 端点开启思考并透传思考强度")
+    await tester.test(_test_anthropic_omits_thinking_when_none, "Anthropic 端点未开启思考时不透传 thinking")
     return tester

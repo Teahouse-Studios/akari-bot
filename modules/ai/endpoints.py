@@ -423,13 +423,7 @@ class OpenAIResponsesEndpoint:
 
 
 def _anthropic_thinking(effort: str) -> dict | None:
-    if _reasoning_state(effort) == "disabled":
-        return {"type": "disabled"}
-    # Anthropic 的思考预算最低 1024，且必须小于 max_tokens，否则无法启用思考。
-    budget_tokens = max(1024, max_tokens // 2)
-    if budget_tokens >= max_tokens:
-        return None
-    return {"type": "enabled", "budget_tokens": budget_tokens}
+    return None if _reasoning_state(effort) == "disabled" else {"type": "adaptive"}
 
 
 def _anthropic_effort(effort: str) -> str | None:
