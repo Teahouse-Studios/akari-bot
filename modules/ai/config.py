@@ -9,6 +9,7 @@ class AiConfig:
     llm_reasoning_effort = "none"
     llm_temperature: float = 1.0
     llm_top_p: float = 1.0
+    llm_top_logprobs: int = -1
     llm_frequency_penalty: float = 0.0
     llm_presence_penalty: float = 0.0
     llm_max_calling_iteration: int = 5

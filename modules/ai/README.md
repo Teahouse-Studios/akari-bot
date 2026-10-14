@@ -89,6 +89,36 @@ llm_api_list:
   * `true`：仅限超级用户使用。
   * `false` 或 `null`：无须权限。
 
+### 生成参数
+
+以下参数用于覆盖模块配置中的同名默认值，未设置时沿用模块配置：
+
+* `temperature`：模型的温度采样。
+* `top_p`：模型的核采样。
+* `top_logprobs`：模型返回的候选 Token 对数概率数量，范围 0 到 20。
+* `reasoning_effort`：模型的思考强度，若为 `none` 则不启用思维链。
+
+`temperature`、`top_p` 与 `top_logprobs` 可显式设为 `null`，表示不向模型传入该参数，适用于不支持相应参数的模型。
+
+```yaml
+llm_api_list:
+  - api_key: sk-1145141919810
+    api_url: https://api.examplellm.com/v1
+    model_name: llm-v1
+    name: example-llm
+    temperature: 0.3
+    top_p: 0.9
+    top_logprobs: 5
+    reasoning_effort: high
+  - api_key: sk-1145141919810
+    api_url: https://api.examplellm.com/v1
+    model_name: llm-v2
+    name: example-llm-no-sampling
+    temperature: null
+    top_p: null
+    top_logprobs: null
+```
+
 ---
 
 ## 计费配置
@@ -449,6 +479,36 @@ llm_api_list:
 
   * `true`: Restricted to superusers only.
   * `false` or `null`: No special permission required.
+
+### Generation Parameters
+
+The following parameters override the module configuration defaults. When omitted, the module configuration is used:
+
+* `temperature`: The temperature sampling of the model.
+* `top_p`: The nucleus sampling of the model.
+* `top_logprobs`: The number of most likely tokens to return log probabilities for, ranging from 0 to 20.
+* `reasoning_effort`: The reasoning effort of the model. If set to `none`, the chain of thought is disabled.
+
+`temperature`, `top_p`, and `top_logprobs` can be set to `null` to omit the parameter from the request, for models that do not support it.
+
+```yaml
+llm_api_list:
+  - api_key: sk-1145141919810
+    api_url: https://api.examplellm.com/v1
+    model_name: llm-v1
+    name: example-llm
+    temperature: 0.3
+    top_p: 0.9
+    top_logprobs: 5
+    reasoning_effort: high
+  - api_key: sk-1145141919810
+    api_url: https://api.examplellm.com/v1
+    model_name: llm-v2
+    name: example-llm-no-sampling
+    temperature: null
+    top_p: null
+    top_logprobs: null
+```
 
 ---
 

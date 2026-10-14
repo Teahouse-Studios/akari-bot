@@ -152,6 +152,22 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
     return prices
 
 
+def get_llm_generation(llm: dict) -> dict:
+    """返回模型自定义的生成参数。
+
+    采样参数显式设为 null 时会被保留，供端点在调用时省略对应请求字段；
+    未配置的键不会出现，由端点在调用时回落到模块默认值。
+
+    :param llm: 模型配置。
+    :return: temperature、top_p、top_logprobs、reasoning_effort 中已配置项的字典。
+    """
+    generation = {key: llm[key] for key in ("temperature", "top_p", "top_logprobs") if key in llm}
+    reasoning_effort = llm.get("reasoning_effort")
+    if reasoning_effort is not None:
+        generation["reasoning_effort"] = reasoning_effort
+    return generation
+
+
 llm_list = [llm["name"].lower() for llm in llm_api_list if not llm.get("superuser", False)]
 llm_su_list = [llm["name"].lower() for llm in llm_api_list if llm.get("superuser", False)]
 

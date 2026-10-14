@@ -35,8 +35,9 @@
     "config.comments.module_ai.llm_max_calling_iteration": "限制大语言模型的最大工具调用迭代次数。",
     "config.comments.module_ai.llm_max_tokens": "限制大语言模型的最大 Token 数。",
     "config.comments.module_ai.llm_presence_penalty": "大语言模型的存在惩罚，范围 -2 到 2 之间。",
-    "config.comments.module_ai.llm_reasoning_effort": "大语言模型的思考强度。",
+    "config.comments.module_ai.llm_reasoning_effort": "大语言模型的思考强度，若为 none 则不启用思维链。",
     "config.comments.module_ai.llm_temperature": "大语言模型的温度采样，范围 0 到 2 之间。不建议与 top_p 同时修改。",
     "config.comments.module_ai.llm_timeout": "大语言模型的超时时间。",
+    "config.comments.module_ai.llm_top_logprobs": "大语言模型返回的候选 Token 对数概率数量，范围 0 到 20 之间，负数则不传入。",
     "config.comments.module_ai.llm_top_p": "大语言模型的核采样，范围 0 到 1 之间。不建议与 temperature 同时修改。"
 }

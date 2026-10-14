@@ -7,7 +7,7 @@ from core.utils.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.constants import WaitCancelException
 from .petal import precount_petal, count_token_petal
-from .setting import default_llm, get_llm_billing, llm_api_list, llm_list, llm_su_list, persona_path
+from .setting import default_llm, get_llm_billing, get_llm_generation, llm_api_list, llm_list, llm_su_list, persona_path
 from .context import CONTEXT_EXPIRY, create_context, get_context
 from .hook import ask_ai
 
@@ -115,6 +115,7 @@ async def _(
             endpoint=llm_info.get("endpoint", "openai"),
             use_tools=use_tools,
             history=history,
+            generation=get_llm_generation(llm_info),
         )
 
         # 每轮建立新的快照，保留旧 ID 以支持从任意一轮分叉。
@@ -238,6 +239,7 @@ def _build_llm_billing_items(llm_info: dict) -> list:
                 ]
             )
     return items
+
 
 @ai.command("llm persona {{I18N:ai.help.llm.persona}}", load=persona_path.exists())
 async def _(msg: Bot.MessageSession):

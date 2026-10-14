@@ -18,10 +18,34 @@ timeout = AiConfig.llm_timeout
 reasoning_effort = AiConfig.llm_reasoning_effort
 temperature = AiConfig.llm_temperature
 top_p = AiConfig.llm_top_p
+top_logprobs = AiConfig.llm_top_logprobs
 frequency_penalty = AiConfig.llm_frequency_penalty
 presence_penalty = AiConfig.llm_presence_penalty
 
-enable_reasoning = "disabled" if reasoning_effort.lower() == "none" else "enabled"
+
+def _resolve_temperature(generation: dict) -> float | None:
+    value = generation["temperature"] if "temperature" in generation else temperature
+    return value if value is not None and value != 1 else None
+
+
+def _resolve_top_p(generation: dict) -> float | None:
+    value = generation["top_p"] if "top_p" in generation else top_p
+    return value if value is not None and value != 1 else None
+
+
+def _resolve_top_logprobs(generation: dict) -> int | None:
+    value = generation["top_logprobs"] if "top_logprobs" in generation else top_logprobs
+    # 显式 null 或负数均表示不请求对数概率。
+    return value if value is not None and value >= 0 else None
+
+
+def _resolve_reasoning_effort(generation: dict) -> str:
+    return generation.get("reasoning_effort", reasoning_effort)
+
+
+def _reasoning_state(effort: str) -> str:
+    return "disabled" if effort.lower() == "none" else "enabled"
+
 
 # 超时 / 限流等可重试异常，统一在 llm.py 中转为 ExternalException。
 RETRYABLE_EXCEPTIONS = (
@@ -201,13 +225,14 @@ def _build_assistant_message(
     raw_tool_calls: list[dict],
     reasoning_content: str | None = None,
     deepseek_compat: bool = False,
+    reasoning_enabled: bool = False,
 ) -> dict:
     message = {"role": "assistant", "content": text}
 
     if reasoning_content is not None:
         message["reasoning_content"] = reasoning_content
     # DeepSeek 思考模式下，工具调用轮次必须保留 reasoning_content，缺失时补空串。
-    elif deepseek_compat and raw_tool_calls and enable_reasoning == "enabled":
+    elif deepseek_compat and raw_tool_calls and reasoning_enabled:
         message["reasoning_content"] = ""
 
     if raw_tool_calls:
@@ -216,32 +241,51 @@ def _build_assistant_message(
     return message
 
 
+def _openai_effort(effort: str) -> str | None:
+    effort = effort.lower()
+    return None if effort == "none" else effort
+
+
 class OpenAICompletionsEndpoint:
-    def __init__(self, api_url: str, api_key: str, model_name: str):
+    def __init__(self, api_url: str, api_key: str, model_name: str, generation: dict | None = None):
         self.client = AsyncOpenAI(base_url=api_url, api_key=api_key)
         self.model_name = model_name
-        self.is_deepseek = "deepseek" in model_name.lower()
+        self.generation = generation or {}
 
     async def create(self, messages: list[dict], tool_choice: str) -> ParsedResult:
-        extra_body = {}
-        if self.is_deepseek:  # 兼容 DeepSeek
-            extra_body = {"thinking": {"type": enable_reasoning}}
+        effort = _resolve_reasoning_effort(self.generation)
+        reasoning_state = _reasoning_state(effort)
+        kwargs = {
+            "model": self.model_name,
+            "messages": _strip_internal_keys(messages),
+            "tool_choice": tool_choice,
+            "tools": TOOLS,
+            "max_completion_tokens": max_tokens,
+            "frequency_penalty": frequency_penalty,
+            "presence_penalty": presence_penalty,
+            "timeout": timeout,
+            "parallel_tool_calls": True,
+        }
+        temperature_value = _resolve_temperature(self.generation)
+        if temperature_value is not None:
+            kwargs["temperature"] = temperature_value
+        top_p_value = _resolve_top_p(self.generation)
+        if top_p_value is not None:
+            kwargs["top_p"] = top_p_value
+        top_logprobs_value = _resolve_top_logprobs(self.generation)
+        if top_logprobs_value is not None:
+            # Chat Completions 需同时开启 logprobs 才会返回对数概率。
+            kwargs["logprobs"] = True
+            kwargs["top_logprobs"] = top_logprobs_value
 
-        response = await self.client.chat.completions.create(
-            model=self.model_name,
-            messages=_strip_internal_keys(messages),
-            tool_choice=tool_choice,
-            tools=TOOLS,
-            max_completion_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-            timeout=timeout,
-            parallel_tool_calls=True,
-            reasoning_effort=reasoning_effort,
-            extra_body=extra_body,
-        )
+        is_deepseek = "deepseek" in self.model_name.lower()
+        if is_deepseek:  # 兼容 DeepSeek
+            kwargs["extra_body"] = {"thinking": {"type": reasoning_state}}
+
+        resolved_effort = _openai_effort(effort)
+        if resolved_effort is not None:
+            kwargs["reasoning_effort"] = resolved_effort
+        response = await self.client.chat.completions.create(**kwargs)
         res_msg = response.choices[0].message
         reasoning_content = getattr(res_msg, "reasoning_content", None)
         usage = response.usage
@@ -276,32 +320,46 @@ class OpenAICompletionsEndpoint:
                 res_msg.content or "",
                 raw_tool_calls,
                 reasoning_content=reasoning_content,
-                deepseek_compat=self.is_deepseek,
+                deepseek_compat=is_deepseek,
+                reasoning_enabled=reasoning_state == "enabled",
             ),
         )
 
 
 class OpenAIResponsesEndpoint:
-    def __init__(self, api_url: str, api_key: str, model_name: str):
+    def __init__(self, api_url: str, api_key: str, model_name: str, generation: dict | None = None):
         self.client = AsyncOpenAI(base_url=api_url, api_key=api_key)
         self.model_name = model_name
         self.tools = _responses_tools()
+        self.generation = generation or {}
 
     async def create(self, messages: list[dict], tool_choice: str) -> ParsedResult:
         instructions, items = _messages_to_responses(messages)
-        response = await self.client.responses.create(
-            model=self.model_name,
-            instructions=instructions,
-            input=items,
-            tool_choice=tool_choice,
-            tools=self.tools,
-            max_output_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            timeout=timeout,
-            parallel_tool_calls=True,
-            reasoning={"effort": reasoning_effort},
-        )
+        kwargs = {
+            "model": self.model_name,
+            "instructions": instructions,
+            "input": items,
+            "tool_choice": tool_choice,
+            "tools": self.tools,
+            "max_output_tokens": max_tokens,
+            "timeout": timeout,
+            "parallel_tool_calls": True,
+        }
+        temperature_value = _resolve_temperature(self.generation)
+        if temperature_value is not None:
+            kwargs["temperature"] = temperature_value
+        top_p_value = _resolve_top_p(self.generation)
+        if top_p_value is not None:
+            kwargs["top_p"] = top_p_value
+        top_logprobs_value = _resolve_top_logprobs(self.generation)
+        if top_logprobs_value is not None:
+            # Responses 需通过 include 声明才会返回对数概率。
+            kwargs["top_logprobs"] = top_logprobs_value
+            kwargs["include"] = ["message.output_text.logprobs"]
+        effort = _openai_effort(_resolve_reasoning_effort(self.generation))
+        if effort is not None:
+            kwargs["reasoning"] = {"effort": effort}
+        response = await self.client.responses.create(**kwargs)
 
         usage = response.usage
         input_details = getattr(usage, "input_tokens_details", None)
@@ -364,8 +422,8 @@ class OpenAIResponsesEndpoint:
         )
 
 
-def _anthropic_thinking() -> dict | None:
-    if enable_reasoning == "disabled":
+def _anthropic_thinking(effort: str) -> dict | None:
+    if _reasoning_state(effort) == "disabled":
         return {"type": "disabled"}
     # Anthropic 的思考预算最低 1024，且必须小于 max_tokens，否则无法启用思考。
     budget_tokens = max(1024, max_tokens // 2)
@@ -374,17 +432,18 @@ def _anthropic_thinking() -> dict | None:
     return {"type": "enabled", "budget_tokens": budget_tokens}
 
 
-def _anthropic_effort() -> str | None:
+def _anthropic_effort(effort: str) -> str | None:
     # Anthropic 仅接受 low/medium/high/xhigh/max，OpenAI 的 none/minimal 需剔除。
-    effort = reasoning_effort.lower()
+    effort = effort.lower()
     return effort if effort in ("low", "medium", "high", "xhigh", "max") else None
 
 
 class AnthropicEndpoint:
-    def __init__(self, api_url: str, api_key: str, model_name: str):
+    def __init__(self, api_url: str, api_key: str, model_name: str, generation: dict | None = None):
         self.client = AsyncAnthropic(base_url=api_url, api_key=api_key)
         self.model_name = model_name
         self.tools = _anthropic_tools()
+        self.generation = generation or {}
 
     async def create(self, messages: list[dict], tool_choice: str) -> ParsedResult:
         system, anthropic_messages = _messages_to_anthropic(messages)
@@ -397,12 +456,13 @@ class AnthropicEndpoint:
             "tool_choice": {"type": tool_choice},
             "timeout": timeout,
         }
-        thinking = _anthropic_thinking()
+        effort = _resolve_reasoning_effort(self.generation)
+        thinking = _anthropic_thinking(effort)
         if thinking is not None:
             kwargs["thinking"] = thinking
-        effort = _anthropic_effort()
-        if effort is not None:
-            kwargs["output_config"] = {"effort": effort}
+        resolved_effort = _anthropic_effort(effort)
+        if resolved_effort is not None:
+            kwargs["output_config"] = {"effort": resolved_effort}
         if system:
             kwargs["system"] = system
         response = await self.client.messages.create(**kwargs)
@@ -460,9 +520,9 @@ class AnthropicEndpoint:
         )
 
 
-def build_endpoint(endpoint: str, api_url: str, api_key: str, model_name: str):
+def build_endpoint(endpoint: str, api_url: str, api_key: str, model_name: str, generation: dict | None = None):
     if endpoint == "openai-response":
-        return OpenAIResponsesEndpoint(api_url, api_key, model_name)
+        return OpenAIResponsesEndpoint(api_url, api_key, model_name, generation)
     if endpoint == "anthropic":
-        return AnthropicEndpoint(api_url, api_key, model_name)
-    return OpenAICompletionsEndpoint(api_url, api_key, model_name)
+        return AnthropicEndpoint(api_url, api_key, model_name, generation)
+    return OpenAICompletionsEndpoint(api_url, api_key, model_name, generation)

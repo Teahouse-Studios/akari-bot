@@ -7,7 +7,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import PlainElement
 from core.logger import Logger
 from .petal import count_token_petal, precount_petal
-from .setting import default_llm, get_llm_billing, llm_api_list, llm_list, llm_su_list
+from .setting import default_llm, get_llm_billing, get_llm_generation, llm_api_list, llm_list, llm_su_list
 
 STATUS_OK = "ok"
 STATUS_UNAVAILABLE = "unavailable"
@@ -103,6 +103,7 @@ async def ask_ai(ctx: Bot.ModuleHookContext) -> AiHookResult:
         endpoint=llm_info.get("endpoint", "openai"),
         use_tools=bool(args.get("use_tools", False)),
         extra_instructions=args.get("instructions"),
+        generation=get_llm_generation(llm_info),
     )
 
     Logger.info(
