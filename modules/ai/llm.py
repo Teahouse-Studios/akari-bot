@@ -68,7 +68,7 @@ async def ask_llm(
             "If the language of the input cannot be determined, answer in the session language.",
         },
     ]
-    ai_persona = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
+    ai_persona = session.session_info.sender_union_info.sender_data.get("ai_enable_persona")
     if ai_persona:
         system_messages.append({"role": "system", "content": PERSONA})
     custom_instructions = session.session_info.sender_union_info.sender_data.get("ai_custom_instructions")
