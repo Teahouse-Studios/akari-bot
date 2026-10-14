@@ -15,10 +15,13 @@ from .tools import TOOLS
 
 max_tokens = AiConfig.llm_max_tokens
 timeout = AiConfig.llm_timeout
+reasoning_effort = AiConfig.reasoning_effort
 temperature = AiConfig.llm_temperature
 top_p = AiConfig.llm_top_p
 frequency_penalty = AiConfig.llm_frequency_penalty
 presence_penalty = AiConfig.llm_presence_penalty
+
+enable_reasoning = "disabled" if reasoning_effort.lower() == "none" else "enabled"
 
 # 超时 / 限流等可重试异常，统一在 llm.py 中转为 ExternalException。
 RETRYABLE_EXCEPTIONS = (
@@ -207,8 +210,9 @@ class OpenAICompletionsEndpoint:
             presence_penalty=presence_penalty,
             timeout=timeout,
             parallel_tool_calls=True,
-        )
-
+            reasoning_effort=reasoning_effort,
+            extra_body={"thinking": {"type": enable_reasoning}}  # 兼容 DeepSeek
+            
         res_msg = response.choices[0].message
         usage = response.usage
         prompt_details = getattr(usage, "prompt_tokens_details", None)
@@ -261,6 +265,7 @@ class OpenAIResponsesEndpoint:
             top_p=top_p,
             timeout=timeout,
             parallel_tool_calls=True,
+            reasoning={"effort": reasoning_effort},
         )
 
         usage = response.usage
@@ -318,6 +323,8 @@ class AnthropicEndpoint:
             "tools": self.tools,
             "tool_choice": {"type": tool_choice},
             "timeout": timeout,
+            "thinking": {"type": enable_reasoning},
+            "output_config": {"effort": reasoning_effort},
         }
         if system:
             kwargs["system"] = system
