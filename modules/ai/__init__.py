@@ -96,7 +96,7 @@ async def _(
         if await check_bool(current_prompt, current_msg):
             await current_msg.finish(rickroll())
 
-        qc = CoolDown("call_ai", current_msg, 60)
+        qc = CoolDown("call_ai", current_msg, 10)
         c = qc.check()
         if c != 0 and not current_is_superuser:
             await current_msg.finish(I18NContext("message.cooldown", time=int(c)))
