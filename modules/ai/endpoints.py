@@ -15,7 +15,7 @@ from .tools import TOOLS
 
 max_tokens = AiConfig.llm_max_tokens
 timeout = AiConfig.llm_timeout
-reasoning_effort = AiConfig.reasoning_effort
+reasoning_effort = AiConfig.llm_reasoning_effort
 temperature = AiConfig.llm_temperature
 top_p = AiConfig.llm_top_p
 frequency_penalty = AiConfig.llm_frequency_penalty
