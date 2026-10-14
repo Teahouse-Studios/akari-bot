@@ -7,7 +7,7 @@ from core.utils.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.constants import WaitCancelException
 from .petal import precount_petal, count_token_petal
-from .setting import default_llm, get_llm_billing, llm_api_list, llm_list, llm_su_list
+from .setting import default_llm, get_llm_billing, llm_api_list, llm_list, llm_su_list, persona_path
 from .context import CONTEXT_EXPIRY, create_context, get_context
 from .hook import ask_ai
 
@@ -238,6 +238,14 @@ def _build_llm_billing_items(llm_info: dict) -> list:
                 ]
             )
     return items
+
+@ai.command("llm persona {{I18N:ai.help.llm.persona}}", load=persona_path.exists())
+async def _(msg: Bot.MessageSession):
+    if msg.session_info.target_union_info.target_data.get("ai_enable_persona"):
+        await msg.session_info.target_union_info.edit_target_data("ai_enable_persona", False)
+        await msg.finish(I18NContext("ai.message.llm.persona.disable"))
+    await msg.session_info.target_union_info.edit_target_data("ai_enable_persona", True)
+    await msg.finish(I18NContext("ai.message.llm.persona.enable"))
 
 
 @ai.command("llm instruct [<instructions>] {{I18N:ai.help.llm.instruct}}")

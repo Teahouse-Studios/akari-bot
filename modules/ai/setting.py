@@ -17,6 +17,13 @@ if instructions_path.exists():
 else:
     INSTRUCTIONS = ""
 
+persona_path = ai_data_path / "persona.txt"
+if persona_path.exists():
+    with open(persona_path, "r", encoding="utf-8") as f:
+        PERSONA = f.read()
+else:
+    PERSONA = ""
+
 llm_api_list_path = next(
     (
         ai_data_path / f"llm_api_list{dot_yaml}"
