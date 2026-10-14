@@ -4,7 +4,7 @@ import trafilatura
 from core.utils.http import get_url
 from core.utils.web_render import web_render, SourceOptions
 
-MAX_LENGTH = 4096
+MAX_LENGTH = 8192
 
 REFERENCE_HINT = (
     "\n\n"
