@@ -185,10 +185,22 @@ def _messages_to_anthropic(messages: list[dict]) -> tuple[str, list[dict]]:
     return "\n\n".join(system), anthropic_messages
 
 
-def _build_assistant_message(text: str, raw_tool_calls: list[dict]) -> dict:
+def _build_assistant_message(
+    text: str,
+    raw_tool_calls: list[dict],
+    reasoning_content: str | None = None,
+) -> dict:
     message = {"role": "assistant", "content": text}
+
+    # DeepSeek 思考模式下，工具调用轮次必须保留 reasoning_content。
+    if reasoning_content is not None:
+        message["reasoning_content"] = reasoning_content
+    elif raw_tool_calls and enable_reasoning == "enabled":
+        message["reasoning_content"] = ""
+
     if raw_tool_calls:
         message["tool_calls"] = raw_tool_calls
+
     return message
 
 
@@ -212,8 +224,9 @@ class OpenAICompletionsEndpoint:
             parallel_tool_calls=True,
             reasoning_effort=reasoning_effort,
             extra_body={"thinking": {"type": enable_reasoning}}  # 兼容 DeepSeek
-            
+        )
         res_msg = response.choices[0].message
+        reasoning_content = getattr(res_msg, "reasoning_content", None)
         usage = response.usage
         prompt_details = getattr(usage, "prompt_tokens_details", None)
         cache_read_tokens = getattr(prompt_details, "cached_tokens", 0) or 0
@@ -242,7 +255,11 @@ class OpenAICompletionsEndpoint:
             output_tokens=usage.completion_tokens,
             cache_read_tokens=cache_read_tokens,
             cache_write_tokens=cache_write_tokens,
-            assistant_message=_build_assistant_message(res_msg.content or "", raw_tool_calls),
+            assistant_message=_build_assistant_message(
+                res_msg.content or "",
+                raw_tool_calls,
+                reasoning_content=reasoning_content,
+            ),
         )
 
 
@@ -277,9 +294,16 @@ class OpenAIResponsesEndpoint:
         text_parts = []
         tool_calls = []
         raw_tool_calls = []
+        reasoning_parts = []
         for item in response.output or []:
             item_type = getattr(item, "type", None)
-            if item_type == "function_call":
+
+            if item_type == "reasoning":
+                for part in getattr(item, "content", None) or []:
+                   if getattr(part, "type", None) == "reasoning_text":
+                       reasoning_parts.append(part.text)
+
+            elif item_type == "function_call":
                 tool_calls.append(
                     ToolCall(id=item.call_id, name=item.name, arguments=orjson.loads(item.arguments or "{}"))
                 )
@@ -303,7 +327,11 @@ class OpenAIResponsesEndpoint:
             output_tokens=usage.output_tokens,
             cache_read_tokens=cache_read_tokens,
             cache_write_tokens=cache_write_tokens,
-            assistant_message=_build_assistant_message(text, raw_tool_calls),
+            assistant_message=_build_assistant_message(
+                res_msg.content or "",
+                raw_tool_calls,
+                reasoning_content="".join(reasoning_parts)
+            ),
         )
 
 
@@ -338,22 +366,42 @@ class AnthropicEndpoint:
         text_parts = []
         tool_calls = []
         raw_tool_calls = []
+        raw_anthropic_blocks = []
         for block in response.content or []:
-            block_type = getattr(block, "type", None)
-            if block_type == "text":
-                text_parts.append(block.text)
-            elif block_type == "tool_use":
-                arguments = block.input or {}
-                tool_calls.append(ToolCall(id=block.id, name=block.name, arguments=arguments))
-                raw_tool_calls.append(
-                    {
-                        "id": block.id,
-                        "type": "function",
-                        "function": {"name": block.name, "arguments": orjson.dumps(arguments).decode("utf-8")},
-                    }
+            if hasattr(block, "model_dump"):
+                raw_anthropic_blocks.append(
+                    block.model_dump(exclude_none=True)
                 )
 
+            block_type = getattr(block, "type", None)
+
+            if block_type == "text":
+                text_parts.append(block.text)
+
+            elif block_type == "tool_use":
+                arguments = block.input or {}
+                tool_calls.append(
+                ToolCall(
+                    id=block.id,
+                    name=block.name,
+                    arguments=arguments,
+                )
+            )
+            raw_tool_calls.append(
+                {
+                    "id": block.id,
+                    "type": "function",
+                    "function": {
+                        "name": block.name,
+                        "arguments": orjson.dumps(arguments).decode("utf-8"),
+                    },
+                }
+            )
+            
         text = "".join(text_parts)
+        assistant_message = _build_assistant_message(text, raw_tool_calls)
+        assistant_message["_anthropic_blocks"] = raw_anthropic_blocks
+
         return ParsedResult(
             text=text,
             tool_calls=tool_calls,
@@ -361,7 +409,7 @@ class AnthropicEndpoint:
             output_tokens=usage.output_tokens,
             cache_read_tokens=cache_read_tokens,
             cache_write_tokens=cache_write_tokens,
-            assistant_message=_build_assistant_message(text, raw_tool_calls),
+            assistant_message=assistant_message,
         )
 
 
