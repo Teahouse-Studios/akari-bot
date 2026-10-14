@@ -241,10 +241,10 @@ def _build_llm_billing_items(llm_info: dict) -> list:
 
 @ai.command("llm persona {{I18N:ai.help.llm.persona}}", load=persona_path.exists())
 async def _(msg: Bot.MessageSession):
-    if msg.session_info.target_union_info.target_data.get("ai_enable_persona"):
-        await msg.session_info.target_union_info.edit_target_data("ai_enable_persona", False)
+    if msg.session_info.sender_union_info.sender_data.get("ai_enable_persona"):
+        await msg.session_info.sender_union_info.edit_sender_data("ai_enable_persona", False)
         await msg.finish(I18NContext("ai.message.llm.persona.disable"))
-    await msg.session_info.target_union_info.edit_target_data("ai_enable_persona", True)
+    await msg.session_info.sender_union_info.edit_sender_data("ai_enable_persona", True)
     await msg.finish(I18NContext("ai.message.llm.persona.enable"))
 
 
