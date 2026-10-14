@@ -210,6 +210,10 @@ class OpenAICompletionsEndpoint:
         self.model_name = model_name
 
     async def create(self, messages: list[dict], tool_choice: str) -> ParsedResult:
+        extra_body = {}
+        if "deepseek" in self.model_name.lower():  # 兼容 DeepSeek
+            extra_body = {"thinking": {"type": enable_reasoning}}
+        
         response = await self.client.chat.completions.create(
             model=self.model_name,
             messages=messages,
@@ -223,7 +227,7 @@ class OpenAICompletionsEndpoint:
             timeout=timeout,
             parallel_tool_calls=True,
             reasoning_effort=reasoning_effort,
-            extra_body={"thinking": {"type": enable_reasoning}}  # 兼容 DeepSeek
+            extra_body=extra_body,
         )
         res_msg = response.choices[0].message
         reasoning_content = getattr(res_msg, "reasoning_content", None)
