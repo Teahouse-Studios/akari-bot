@@ -246,9 +246,7 @@ def _build_llm_billing_items(llm_info: dict) -> list:
 
 @ai.command("persona {{I18N:ai.help.persona}}", load=persona_file_path.is_file())
 async def _(msg: Bot.MessageSession):
-    dark_theme = msg.session_info.target_union_info.target_data.get("ai_enable_persona")
-
-    if dark_theme:
+    if msg.session_info.target_union_info.target_data.get("ai_enable_persona"):
         await msg.session_info.target_union_info.edit_target_data("ai_enable_persona", False)
         await msg.finish(I18NContext("ai.message.persona.disable"))
     await msg.session_info.target_union_info.edit_target_data("ai_enable_persona", True)
