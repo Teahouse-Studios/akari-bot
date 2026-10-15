@@ -3,7 +3,7 @@ from math import ceil
 from core.builtins.session.info import SessionInfo
 from core.config.base import CoreConfig, AiConfig
 
-cost_to_petal = AiConfig.ai_cost_to_petal
+cost_to_petal = max(0, AiConfig.ai_cost_to_petal)
 PREDICT_INPUT_TOKEN = 100
 PREDICT_CACHE_READ_TOKEN = 200
 PREDICT_CACHE_WRITE_TOKEN = 0
