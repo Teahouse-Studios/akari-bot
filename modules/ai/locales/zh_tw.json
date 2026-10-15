@@ -34,5 +34,11 @@
     "config.comments.module_ai.llm_temperature": "大語言模型的溫度取樣，範圍 0 到 2 之間。不建議與 top_p 同時修改。",
     "config.comments.module_ai.llm_timeout": "大語言模型的逾時時間。",
     "config.comments.module_ai.llm_top_p": "大語言模型的核取樣，範圍 0 到 1 之間。不建議與 temperature 同時修改。",
-    "ai.help.option.ctx": "指定要延續的對話輪次 ID。"
+    "ai.help.option.ctx": "指定要延續的對話輪次 ID。",
+    "ai.help.llm.persona": "設定是否啟用人格化，效果因模型而異。",
+    "ai.message.llm.persona.enable": "已啟用人格化。",
+    "ai.message.llm.persona.disable": "已停用人格化。",
+    "config.comments.module_ai.ai_cost_to_petal": "花瓣與呼叫費用的比率。",
+    "config.comments.module_ai.llm_reasoning_effort": "大語言模型的思考強度，若為 none 則不啟用思維鏈。",
+    "config.comments.module_ai.llm_top_logprobs": "大語言模型傳回的候選 Token 對數機率數量，範圍 0 到 20 之間，負數則不傳入。"
 }

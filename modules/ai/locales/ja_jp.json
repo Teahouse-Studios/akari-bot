@@ -34,5 +34,11 @@
     "config.comments.module_ai.llm_presence_penalty": "LLM の存在ペナルティ。範囲は -2 ～ 2 です。",
     "config.comments.module_ai.llm_temperature": "LLM の温度サンプリング。範囲は 0 ～ 2 です。top_p と同時に変更することは推奨されません。",
     "config.comments.module_ai.llm_timeout": "LLM のタイムアウト。",
-    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。"
+    "config.comments.module_ai.llm_top_p": "LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。",
+    "ai.help.llm.persona": "人格化を有効にするかどうかを切り替えます。効果は LLM によって異なります。",
+    "ai.message.llm.persona.enable": "人格化が有効です。",
+    "ai.message.llm.persona.disable": "人格化が無効です。",
+    "config.comments.module_ai.ai_cost_to_petal": "ペタルの数とコール料金の比率。",
+    "config.comments.module_ai.llm_reasoning_effort": "LLM の推論努力度。「none」をなれば、CoT は有効になりません。",
+    "config.comments.module_ai.llm_top_logprobs": "LLM によって返される候補トークンの対数確率カウント。範囲は 0 〜 20 です。負の値の場合は使用されません。"
 }
