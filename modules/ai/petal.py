@@ -36,7 +36,7 @@ def precount_petal(
         cache_read_cost = cache_read_tokens * unit_cache_read_price
         cache_write_cost = cache_write_tokens * unit_cache_write_price
         cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
-        petal = int(cell(cost * cost_to_petal))
+        petal = int(ceil(cost * cost_to_petal))
         petal = 0 if petal < 0 else petal
         if petal == 0:
             return True
@@ -68,7 +68,7 @@ async def count_token_petal(
         cache_read_cost = cache_read_tokens * unit_cache_read_price
         cache_write_cost = cache_write_tokens * unit_cache_write_price
         cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
-        petal = int(cell(cost * cost_to_petal))
+        petal = int(ceil(cost * cost_to_petal))
         petal = 0 if petal < 0 else petal
         if petal != 0:
             sender_union_info = session_info.sender_union_info
