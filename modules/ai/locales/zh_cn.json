@@ -30,6 +30,7 @@
     "ai.message.llm.list.prompt": "使用“${cmd}<模型名称>”切换模型。",
     "ai.message.references.title": "参考资料",
     "config.comments.module_ai_secret.e2b_api_key": "E2B 的 API key。",
+    "config.comments.module_ai.ai_cost_to_petal": "花瓣与调用费用的比例。",
     "config.comments.module_ai.ai_default_llm": "默认使用的大语言模型。",
     "config.comments.module_ai.llm_frequency_penalty": "大语言模型的频率惩罚，范围 -2 到 2 之间。",
     "config.comments.module_ai.llm_max_calling_iteration": "限制大语言模型的最大工具调用迭代次数。",
