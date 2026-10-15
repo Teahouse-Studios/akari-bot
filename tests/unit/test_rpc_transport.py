@@ -12,7 +12,7 @@ from tortoise.queryset import QuerySet
 
 from core.database.models import JobQueuesTable
 from core.logger import Logger
-from core.queue.base import current_peer, JobQueueBase
+from core.queue.base import QueueDrainTimeout, current_peer, JobQueueBase
 from core.queue.errors import (
     RpcCancelledError,
     RpcMethodNotFoundError,
@@ -635,6 +635,89 @@ async def _test_concurrent_maintenance_windows_are_serialized():
             await asyncio.gather(first_task, second_task, return_exceptions=True)
 
 
+async def _test_maintenance_drain_ignores_tasks_waiting_for_the_window():
+    async with _peers() as (caller, receiver):
+        original = receiver.MAINTENANCE_OPERATION_TIMEOUT_SECONDS
+        receiver.MAINTENANCE_OPERATION_TIMEOUT_SECONDS = 0.6
+        go, second_entered, first_entered = asyncio.Event(), asyncio.Event(), asyncio.Event()
+
+        @receiver.register("second_window")
+        async def second_window(payload):
+            await go.wait()
+            async with receiver.maintenance_window(exclusive=False):
+                second_entered.set()
+
+        call = asyncio.create_task(caller.call(receiver.name, "second_window", None, timeout=RPC_TEST_TIMEOUT))
+
+        async def release_handler():
+            await asyncio.sleep(0.2)
+            go.set()
+
+        releaser = asyncio.create_task(release_handler())
+        try:
+            async with asyncio.timeout(RPC_TEST_TIMEOUT):
+                while not receiver._process_tasks:
+                    await asyncio.sleep(0.005)
+
+            async def first_window():
+                async with receiver.maintenance_window(exclusive=False):
+                    first_entered.set()
+                    await asyncio.sleep(0.2)
+
+            await asyncio.wait_for(first_window(), RPC_TEST_TIMEOUT)
+            await asyncio.wait_for(second_entered.wait(), RPC_TEST_TIMEOUT)
+            return (
+                first_entered.is_set()
+                and second_entered.is_set()
+                and receiver.pause_event.is_set()
+                and not receiver._maintenance_active
+                and not receiver._maintenance_waiters
+            )
+        finally:
+            go.set()
+            receiver.MAINTENANCE_OPERATION_TIMEOUT_SECONDS = original
+            for task in (releaser, call):
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(releaser, call, return_exceptions=True)
+
+
+async def _test_maintenance_drain_timeout_names_blocking_handlers():
+    async with _peers() as (caller, receiver):
+        original = receiver.MAINTENANCE_OPERATION_TIMEOUT_SECONDS
+        receiver.MAINTENANCE_OPERATION_TIMEOUT_SECONDS = 0.3
+        started, release = asyncio.Event(), asyncio.Event()
+
+        @receiver.register("parked")
+        async def parked(payload):
+            started.set()
+            await release.wait()
+
+        call = asyncio.create_task(caller.call(receiver.name, "parked", None, timeout=RPC_TEST_TIMEOUT))
+        try:
+            await asyncio.wait_for(started.wait(), RPC_TEST_TIMEOUT)
+            try:
+                async with receiver.maintenance_window(exclusive=False):
+                    return False
+            except QueueDrainTimeout as exception:
+                blocked = exception.pending
+                reported = str(exception)
+            return (
+                len(blocked) == 1
+                and blocked[0].get_name().startswith("rpc:parked:")
+                and blocked[0].get_name() in reported
+                and receiver.pause_event.is_set()
+                and not receiver._maintenance_active
+                and not receiver._maintenance_waiters
+            )
+        finally:
+            release.set()
+            receiver.MAINTENANCE_OPERATION_TIMEOUT_SECONDS = original
+            if not call.done():
+                call.cancel()
+            await asyncio.gather(call, return_exceptions=True)
+
+
 @func_case
 async def test_rpc_transport(tester: Tester):
     await tester.test(_test_roundtrip_preserves_json_and_registry_isolation, "RPC 空值与 peer 状态隔离")
@@ -661,4 +744,8 @@ async def test_rpc_transport(tester: Tester):
     await tester.test(_test_malformed_deadline_is_protocol_failure, "非法布尔 deadline 明确返回协议错误")
     await tester.test(_test_nested_maintenance_window_is_reentrant_for_owner, "同任务嵌套维护窗口不会自锁")
     await tester.test(_test_concurrent_maintenance_windows_are_serialized, "并发维护窗口串行执行")
+    await tester.test(
+        _test_maintenance_drain_ignores_tasks_waiting_for_the_window, "排空不等待同样在等维护锁的 handler"
+    )
+    await tester.test(_test_maintenance_drain_timeout_names_blocking_handlers, "排空超时报告阻塞的 handler")
     return tester

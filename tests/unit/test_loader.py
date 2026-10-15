@@ -17,6 +17,7 @@ from core.constants import PrivateData
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from core.module_runtime import ModuleRuntimeManager
+from core.queue.base import QueueDrainTimeout
 from core.queue.server import JobQueueServer
 from core.scheduler import SchedulerLifecycle
 from core.tester import func_case, Tester
@@ -1233,6 +1234,38 @@ async def _test_load_state_changes_only_after_persistence():
         _restore_module_manager(snapshot)
 
 
+async def _test_queue_drain_timeout_skips_reload_and_unload():
+    module_name = "__test_loader_queue_drain_timeout"
+    snapshot = _snapshot_module_manager()
+    reload_impl = AsyncMock(return_value=(True, 1))
+    suspend_impl = AsyncMock(return_value=None)
+
+    @asynccontextmanager
+    async def blocked_window(*_args, **_kwargs):
+        raise QueueDrainTimeout("TEST-PEER", [])
+        yield
+
+    try:
+        module = Module.assign(module_name=module_name, alias=None, recommend_modules=None, developers=None)
+        module._db_load = True
+        ModulesManager.add_module(module, f"modules.{module_name}")
+        with (
+            patch.object(JobQueueServer, "maintenance_window", new=blocked_window),
+            patch.object(ModulesManager, "_reload_module", new=reload_impl),
+            patch.object(ModuleRuntimeManager, "suspend", new=suspend_impl),
+        ):
+            reload_result = await ModulesManager.reload_module(module_name)
+            unload_result = await ModulesManager.unload_module(module_name)
+        return (
+            reload_result == (False, 0)
+            and unload_result is False
+            and reload_impl.await_count == 0
+            and suspend_impl.await_count == 0
+        )
+    finally:
+        _restore_module_manager(snapshot)
+
+
 async def _test_unload_drains_queue_before_stopping_runtime():
     module_name = "__test_loader_unload_order"
     snapshot = _snapshot_module_manager()
@@ -1337,4 +1370,5 @@ async def test_loader(tester: Tester):
     await tester.test(_test_cancelled_commit_keeps_committed_generation, "取消 commit 等待完成且不回滚新代")
     await tester.test(_test_load_state_changes_only_after_persistence, "全局加载状态持久化后更新内存")
     await tester.test(_test_unload_drains_queue_before_stopping_runtime, "unload 先排空 Queue 再停止 runtime")
+    await tester.test(_test_queue_drain_timeout_skips_reload_and_unload, "队列排空超时放弃 reload 与 unload")
     return tester

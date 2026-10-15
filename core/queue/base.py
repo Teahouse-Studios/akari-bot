@@ -55,6 +55,16 @@ _RPC_CONTEXT_MARKER = "--- RPC request context ---"
 _RPC_CALLER_TRACEBACK_MARKER = "caller traceback (originating process):"
 
 
+class QueueDrainTimeout(TimeoutError):
+    """维护窗口未能在预算内排空在途 handler；调用方应放弃本轮维护。"""
+
+    def __init__(self, peer_name: str, pending: list[asyncio.Task]):
+        blocked = ", ".join(task.get_name() for task in pending)
+        super().__init__(f"{len(pending)} JobQueue handler(s) did not drain for {peer_name}: {blocked}")
+        self.peer_name = peer_name
+        self.pending = list(pending)
+
+
 class JobQueueBase:
     name = "Internal|" + str(uuid4())
     _auto_peer_id = True
@@ -66,6 +76,7 @@ class JobQueueBase:
     SHUTDOWN_OPERATION_TIMEOUT_SECONDS = 1.0
     MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS = 5.0
     MAINTENANCE_OPERATION_TIMEOUT_SECONDS = 15.0
+    MAINTENANCE_DRAIN_POLL_SECONDS = 0.05
     POLL_INTERVAL_SECONDS = 0.1
     backend: JobQueueBackend | None = None
     registry: PeerRegistry
@@ -86,6 +97,7 @@ class JobQueueBase:
     _maintenance_active = False
     _maintenance_owner: asyncio.Task | None = None
     _maintenance_exclusive_owner: asyncio.Task | None = None
+    _maintenance_waiters: set[asyncio.Task] = set()
     is_running = False
     _shutting_down = False
     HEARTBEAT_INTERVAL_SECONDS = 15
@@ -111,6 +123,7 @@ class JobQueueBase:
         cls._maintenance_active = False
         cls._maintenance_owner = None
         cls._maintenance_exclusive_owner = None
+        cls._maintenance_waiters = set()
         cls.is_running = False
         cls._shutting_down = False
         cls._next_heartbeat = 0.0
@@ -209,6 +222,7 @@ class JobQueueBase:
         cls._maintenance_active = False
         cls._maintenance_owner = None
         cls._maintenance_exclusive_owner = None
+        cls._maintenance_waiters.clear()
         cls._shutting_down = False
         cls.pause_event.set()
         from core.constants import Info
@@ -1478,10 +1492,28 @@ class JobQueueBase:
             cls._cleanup_tasks.difference_update(done)
 
     @classmethod
-    async def wait_process_tasks(cls) -> None:
-        tasks = [task for task in cls._process_tasks if task is not asyncio.current_task()]
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+    async def wait_process_tasks(cls, timeout: float | None = None) -> list[asyncio.Task]:
+        deadline = None if timeout is None else time.monotonic() + max(0.0, timeout)
+        while True:
+            current = asyncio.current_task()
+            # 等维护锁的任务只有在本窗口释放后才会继续，等它们必然互锁；它们在
+            # 此之前也不会执行模块代码，因此不计入排空范围。
+            tasks = [
+                task
+                for task in cls._process_tasks
+                if task is not current and not task.done() and task not in cls._maintenance_waiters
+            ]
+            if not tasks:
+                return []
+            if deadline is None:
+                wait_timeout = cls.MAINTENANCE_DRAIN_POLL_SECONDS
+            else:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    return tasks
+                wait_timeout = min(remaining, cls.MAINTENANCE_DRAIN_POLL_SECONDS)
+            # 分片等待：在途 handler 随时可能转为等待维护锁，须重新筛选。
+            await asyncio.wait(tasks, timeout=wait_timeout)
 
     @classmethod
     async def stop_job_queue(cls) -> None:
@@ -1567,52 +1599,61 @@ class JobQueueBase:
                 # asyncio.Lock 不可重入；嵌套窗口复用同一任务已有的范围。
                 yield
             return
-        async with cls._maintenance_lock:
-            cls.pause_event.clear()
-            maintenance_started = False
-            try:
-                poll_lock_acquired = await cls._acquire_poll_lock(
-                    cls.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS,
-                    "maintenance",
-                )
-                if not poll_lock_acquired:
-                    raise TimeoutError("Timed out waiting for JobQueue poll lock during maintenance.")
-                if poll_lock_acquired:
-                    cls._poll_lock.release()
-                async with asyncio.timeout(cls.MAINTENANCE_OPERATION_TIMEOUT_SECONDS):
-                    maintenance_started = await cls._begin_maintenance()
-                    await cls.wait_process_tasks()
-                cls._maintenance_owner = current
+        cls._maintenance_waiters.add(current)
+        try:
+            async with cls._maintenance_lock:
+                cls._maintenance_waiters.discard(current)
+                cls.pause_event.clear()
+                maintenance_started = False
                 try:
-                    if exclusive:
-                        poll_lock_acquired = await cls._acquire_poll_lock(
-                            cls.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS,
-                            "maintenance",
-                        )
-                        if not poll_lock_acquired:
-                            raise TimeoutError("Timed out waiting for JobQueue poll lock during maintenance.")
-                        try:
-                            cls._maintenance_exclusive_owner = current
-                            try:
-                                yield
-                            finally:
-                                cls._maintenance_exclusive_owner = None
-                        finally:
-                            if poll_lock_acquired:
-                                cls._poll_lock.release()
-                    else:
-                        yield
-                finally:
-                    cls._maintenance_owner = None
-            finally:
-                if maintenance_started or cls._maintenance_active:
+                    poll_lock_acquired = await cls._acquire_poll_lock(
+                        cls.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS,
+                        "maintenance",
+                    )
+                    if not poll_lock_acquired:
+                        raise TimeoutError("Timed out waiting for JobQueue poll lock during maintenance.")
+                    cls._poll_lock.release()
+                    deadline = time.monotonic() + cls.MAINTENANCE_OPERATION_TIMEOUT_SECONDS
+                    async with asyncio.timeout_at(deadline):
+                        maintenance_started = await cls._begin_maintenance()
+                    pending = await cls.wait_process_tasks(deadline - time.monotonic())
+                    if pending:
+                        error = QueueDrainTimeout(cls.name, pending)
+                        Logger.warning(str(error))
+                        raise error
+                    cls._maintenance_owner = current
                     try:
-                        async with asyncio.timeout(cls.MAINTENANCE_OPERATION_TIMEOUT_SECONDS):
-                            await cls._end_maintenance()
-                    except TimeoutError:
-                        Logger.warning(f"Timed out ending JobQueue maintenance for {cls.name}.")
-                if not cls._shutting_down:
-                    cls.pause_event.set()
+                        if exclusive:
+                            poll_lock_acquired = await cls._acquire_poll_lock(
+                                cls.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS,
+                                "maintenance",
+                            )
+                            if not poll_lock_acquired:
+                                raise TimeoutError("Timed out waiting for JobQueue poll lock during maintenance.")
+                            try:
+                                cls._maintenance_exclusive_owner = current
+                                try:
+                                    yield
+                                finally:
+                                    cls._maintenance_exclusive_owner = None
+                            finally:
+                                if poll_lock_acquired:
+                                    cls._poll_lock.release()
+                        else:
+                            yield
+                    finally:
+                        cls._maintenance_owner = None
+                finally:
+                    if maintenance_started or cls._maintenance_active:
+                        try:
+                            async with asyncio.timeout(cls.MAINTENANCE_OPERATION_TIMEOUT_SECONDS):
+                                await cls._end_maintenance()
+                        except TimeoutError:
+                            Logger.warning(f"Timed out ending JobQueue maintenance for {cls.name}.")
+                    if not cls._shutting_down:
+                        cls.pause_event.set()
+        finally:
+            cls._maintenance_waiters.discard(current)
 
     @classmethod
     async def _acquire_poll_lock(cls, timeout: float, operation: str) -> bool:

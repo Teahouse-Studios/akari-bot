@@ -473,9 +473,14 @@ Bot = exports["Bot"]              # 或 exports.get("Bot") 拿可选值
 ok, count = await ModulesManager.reload_module("module_name")
 # 1. search_related_module() 找出同一 .py 里定义的全部模块
 # 2. remove_modules() + 删除它们的 ModuleStatus 记录
-# 3. reload_py_module()：先递归 reload 所有子模块，再 importlib.reload() 自身
+# 3. reload_py_module()：从 sys.modules 摘除整个包后重新导入，得到全新命名空间
 # 4. bulk_create 重建 ModuleStatus，refresh() 重建别名表，reload_db() 重挂模块数据库
 ```
 
 `reload_py_module()` 失败时返回 `-999`（不是抛异常），所以调用方要判 `ok`。
+
+reload 与 unload 都在 JobQueue 的非独占维护窗口内执行：窗口先停止领取新的队列任务并排空在途
+handler，再进入 Scheduler 维护窗口。排空受限时抛 `QueueDrainTimeout`（`TimeoutError` 子类），
+`reload_module()` / `unload_module()` 捕获后按失败返回，模块注册表与数据库状态保持原样。
+正在等待维护锁的 handler 不计入排空范围：它们持有模块调用栈但处于暂停，只在本窗口结束后继续。
 

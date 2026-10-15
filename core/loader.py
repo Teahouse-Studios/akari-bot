@@ -643,31 +643,36 @@ class ModulesManager:
     async def unload_module(cls, module_name: str):
         """全域卸载该机器人模块。"""
         if module_name in cls.modules:
+            from core.queue.base import QueueDrainTimeout
             from core.queue.server import JobQueueServer
 
             module = cls.modules[module_name]
             old_load = module._db_load
             # 与 reload 保持相同顺序：先排空 Queue handler，再进入 Scheduler 维护。
             # 非独占 Queue 窗口仍允许轮询器回收模块清理产生的响应。
-            async with JobQueueServer.maintenance_window(exclusive=False):
-                async with SchedulerLifecycle.maintenance_window({module_name}):
-                    try:
-                        await ModuleStatus.set_module_loaded(module_name, False)
-                        module._db_load = False
-                        SchedulerLifecycle.reconcile_modules({module_name}, cls.modules)
-                        await ModuleRuntimeManager.suspend(module_name)
-                    except BaseException:
+            try:
+                async with JobQueueServer.maintenance_window(exclusive=False):
+                    async with SchedulerLifecycle.maintenance_window({module_name}):
                         try:
-                            await asyncio.shield(ModuleStatus.set_module_loaded(module_name, old_load))
-                            module._db_load = old_load
+                            await ModuleStatus.set_module_loaded(module_name, False)
+                            module._db_load = False
                             SchedulerLifecycle.reconcile_modules({module_name}, cls.modules)
-                            if old_load:
-                                ModuleRuntimeManager.activate(module_name)
-                            else:
-                                await ModuleRuntimeManager.suspend(module_name)
-                        except Exception:
-                            Logger.exception(f"Failed to restore module unload state for {module_name}:")
-                        raise
+                            await ModuleRuntimeManager.suspend(module_name)
+                        except BaseException:
+                            try:
+                                await asyncio.shield(ModuleStatus.set_module_loaded(module_name, old_load))
+                                module._db_load = old_load
+                                SchedulerLifecycle.reconcile_modules({module_name}, cls.modules)
+                                if old_load:
+                                    ModuleRuntimeManager.activate(module_name)
+                                else:
+                                    await ModuleRuntimeManager.suspend(module_name)
+                            except Exception:
+                                Logger.exception(f"Failed to restore module unload state for {module_name}:")
+                            raise
+            except QueueDrainTimeout:
+                Logger.warning(f"Skipped unloading {module_name}: JobQueue handlers are still running.")
+                return False
             return True
         return False
 
@@ -686,13 +691,18 @@ class ModulesManager:
             # load/unload 的 handler 卡在 Scheduler 锁上，而 reload 又在等该
             # handler 收尾，形成永久互锁。Scheduler 窗口仍须覆盖 importlib.reload()：
             # 旧函数的 __globals__ 指向会被原地更新的模块字典。
+            from core.queue.base import QueueDrainTimeout
             from core.queue.server import JobQueueServer
 
             # 长时间保持非独占窗口：停止领取新 action，但让轮询器继续回收
             # 响应、续租与执行模块清理 RPC。数据库替换会在内部再嵌套独占窗口。
-            async with JobQueueServer.maintenance_window(exclusive=False):
-                async with SchedulerLifecycle.maintenance_window():
-                    return await cls._reload_module(module_name)
+            try:
+                async with JobQueueServer.maintenance_window(exclusive=False):
+                    async with SchedulerLifecycle.maintenance_window():
+                        return await cls._reload_module(module_name)
+            except QueueDrainTimeout:
+                Logger.warning(f"Skipped reloading {module_name}: JobQueue handlers are still running.")
+                return False, 0
 
     @classmethod
     async def _reload_module(cls, module_name: str):
