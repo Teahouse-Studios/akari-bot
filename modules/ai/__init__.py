@@ -168,6 +168,11 @@ async def _(
         if not current_prompt and not _get_message_images(reply):
             await msg.finish()
 
+
+def _scale_price(price) -> str:
+    return str((Decimal(str(price)) * cost_to_petal).quantize(Decimal("0.00001"), rounding=ROUND_HALF_UP))
+
+
 def _build_llm_billing_items(llm_info: dict) -> list:
     items = []
     billing_config = llm_info.get("billing") if isinstance(llm_info.get("billing"), dict) else {}
@@ -177,8 +182,8 @@ def _build_llm_billing_items(llm_info: dict) -> list:
         items.append(
             I18NContext(
                 "ai.message.llm.list.billing.token",
-                input_price=billing["input_price"] * cost_to_petal,
-                output_price=billing["output_price"] * cost_to_petal,
+                input_price=_scale_price(billing["input_price"]),
+                output_price=_scale_price(billing["output_price"]),
             )
         )
     if billing_type != "per_call" and any(
@@ -187,8 +192,8 @@ def _build_llm_billing_items(llm_info: dict) -> list:
         items.append(
             I18NContext(
                 "ai.message.llm.list.billing.token.cache",
-                cache_write_price=billing["cache_write_price"] * cost_to_petal,
-                cache_read_price=billing["cache_read_price"] * cost_to_petal,
+                cache_write_price=_scale_price(billing["cache_write_price"]),
+                cache_read_price=_scale_price(billing["cache_read_price"]),
             )
         )
 
@@ -196,7 +201,7 @@ def _build_llm_billing_items(llm_info: dict) -> list:
         items.append(
             I18NContext(
                 "ai.message.llm.list.billing.call",
-                call_price=billing["call_price"] * cost_to_petal,
+                call_price=_scale_price(billing["call_price"]),
             )
         )
 
@@ -232,13 +237,13 @@ def _build_llm_billing_items(llm_info: dict) -> list:
                     ),
                     I18NContext(
                         "ai.message.llm.list.billing.token",
-                        input_price=tier_billing["input_price"] * cost_to_petal,
-                        output_price=tier_billing["output_price"] * cost_to_petal,
+                        input_price=_scale_price(tier_billing["input_price"]),
+                        output_price=_scale_price(tier_billing["output_price"]),
                     ),
                     I18NContext(
                         "ai.message.llm.list.billing.token.cache",
-                        cache_write_price=tier_billing["cache_write_price"] * cost_to_petal,
-                        cache_read_price=tier_billing["cache_read_price"] * cost_to_petal,
+                        cache_write_price=_scale_price(tier_billing["cache_write_price"]),
+                        cache_read_price=_scale_price(tier_billing["cache_read_price"]),
                     ),
                 ]
             )
