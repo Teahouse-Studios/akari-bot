@@ -6,7 +6,7 @@ from core.utils.cooldown import CoolDown
 from core.utils.dirty_check import check_bool, rickroll
 from core.logger import Logger
 from core.constants import WaitCancelException
-from .petal import precount_petal, count_token_petal
+from .petal import precount_petal, count_token_petal, cost_to_petal
 from .setting import default_llm, get_llm_billing, get_llm_generation, llm_api_list, llm_list, llm_su_list, persona_path
 from .context import CONTEXT_EXPIRY, create_context, get_context
 from .hook import ask_ai
@@ -168,7 +168,6 @@ async def _(
         if not current_prompt and not _get_message_images(reply):
             await msg.finish()
 
-
 def _build_llm_billing_items(llm_info: dict) -> list:
     items = []
     billing_config = llm_info.get("billing") if isinstance(llm_info.get("billing"), dict) else {}
@@ -178,8 +177,8 @@ def _build_llm_billing_items(llm_info: dict) -> list:
         items.append(
             I18NContext(
                 "ai.message.llm.list.billing.token",
-                input_price=billing["input_price"],
-                output_price=billing["output_price"],
+                input_price=billing["input_price"] * cost_to_petal,
+                output_price=billing["output_price"] * cost_to_petal,
             )
         )
     if billing_type != "per_call" and any(
@@ -188,13 +187,18 @@ def _build_llm_billing_items(llm_info: dict) -> list:
         items.append(
             I18NContext(
                 "ai.message.llm.list.billing.token.cache",
-                cache_write_price=billing["cache_write_price"],
-                cache_read_price=billing["cache_read_price"],
+                cache_write_price=billing["cache_write_price"] * cost_to_petal,
+                cache_read_price=billing["cache_read_price"] * cost_to_petal,
             )
         )
 
     if billing["call_price"] > 0:
-        items.append(I18NContext("ai.message.llm.list.billing.call", call_price=billing["call_price"]))
+        items.append(
+            I18NContext(
+                "ai.message.llm.list.billing.call",
+                call_price=billing["call_price"] * cost_to_petal,
+            )
+        )
 
     tiers = billing_config.get("tiers")
     time_rules = billing_config.get("time_rules")
@@ -228,13 +232,13 @@ def _build_llm_billing_items(llm_info: dict) -> list:
                     ),
                     I18NContext(
                         "ai.message.llm.list.billing.token",
-                        input_price=tier_billing["input_price"],
-                        output_price=tier_billing["output_price"],
+                        input_price=tier_billing["input_price"] * cost_to_petal,
+                        output_price=tier_billing["output_price"] * cost_to_petal,
                     ),
                     I18NContext(
                         "ai.message.llm.list.billing.token.cache",
-                        cache_write_price=tier_billing["cache_write_price"],
-                        cache_read_price=tier_billing["cache_read_price"],
+                        cache_write_price=tier_billing["cache_write_price"] * cost_to_petal,
+                        cache_read_price=tier_billing["cache_read_price"] * cost_to_petal,
                     ),
                 ]
             )
