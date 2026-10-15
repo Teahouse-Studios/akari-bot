@@ -76,7 +76,7 @@ async def _(
     while True:
         images = _get_message_images(current_msg)
         if not current_prompt and not images:
-            current_msg = await current_msg.wait_reply(message_chain=I18NContext("ai.message.no_prompt"))
+            current_msg = await current_msg.wait_reply(message_chain=I18NContext("ai.message.no_prompt"), timeout=CONTEXT_EXPIRY)
             current_prompt = current_msg.as_display(text_only=True).strip()
             continue
 
