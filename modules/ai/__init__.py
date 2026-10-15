@@ -1,3 +1,5 @@
+from decimal import Decimal, ROUND_UP
+
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext, ImageElement, Plain
 from core.builtins.message.chain import MessageChain
@@ -170,7 +172,7 @@ async def _(
 
 
 def _scale_price(price) -> str:
-    return str((Decimal(str(price)) * cost_to_petal).quantize(Decimal("0.00001"), rounding=ROUND_HALF_UP))
+    return str((Decimal(str(price)) * cost_to_petal).quantize(Decimal("0.00001"), rounding=ROUND_UP))
 
 
 def _build_llm_billing_items(llm_info: dict) -> list:
