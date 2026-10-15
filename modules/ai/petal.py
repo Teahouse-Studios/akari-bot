@@ -31,12 +31,13 @@ def precount_petal(
         unit_cache_read_price = Decimal(str(cache_read_price)) / ONE_M
         unit_cache_write_price = Decimal(str(cache_write_price)) / ONE_M
 
-        input_petal = int(ceil(input_tokens * unit_input_price))
-        output_petal = int(ceil(output_tokens * unit_output_price))
-        cache_read_petal = int(ceil(cache_read_tokens * unit_cache_read_price))
-        cache_write_petal = int(ceil(cache_write_tokens * unit_cache_write_price))
-        petal = input_petal + output_petal + cache_read_petal + cache_write_petal + int(ceil(Decimal(str(call_price))))
-        petal = petal * cost_to_petal if petal > 0 else 0
+        input_cost = input_tokens * unit_input_price
+        output_cost = output_tokens * unit_output_price
+        cache_read_cost = cache_read_tokens * unit_cache_read_price
+        cache_write_cost = cache_write_tokens * unit_cache_write_price
+        cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
+        petal = int(cell(cost * cost_to_petal))
+        petal = 0 if petal < 0 else petal
         if petal == 0:
             return True
         sender_union_info = session_info.sender_union_info
@@ -62,12 +63,13 @@ async def count_token_petal(
         unit_cache_read_price = Decimal(str(cache_read_price)) / ONE_M
         unit_cache_write_price = Decimal(str(cache_write_price)) / ONE_M
 
-        input_petal = int(ceil(input_tokens * unit_input_price))
-        output_petal = int(ceil(output_tokens * unit_output_price))
-        cache_read_petal = int(ceil(cache_read_tokens * unit_cache_read_price))
-        cache_write_petal = int(ceil(cache_write_tokens * unit_cache_write_price))
-        petal = input_petal + output_petal + cache_read_petal + cache_write_petal + int(ceil(Decimal(str(call_price))))
-        petal = petal * cost_to_petal if petal > 0 else 0
+        input_cost = input_tokens * unit_input_price
+        output_cost = output_tokens * unit_output_price
+        cache_read_cost = cache_read_tokens * unit_cache_read_price
+        cache_write_cost = cache_write_tokens * unit_cache_write_price
+        cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
+        petal = int(cell(cost * cost_to_petal))
+        petal = 0 if petal < 0 else petal
         if petal != 0:
             sender_union_info = session_info.sender_union_info
             if not sender_union_info:
