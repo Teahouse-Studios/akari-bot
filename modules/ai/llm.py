@@ -63,12 +63,8 @@ async def ask_llm(
     system_messages = [
         {
             "role": "system",
-            "content": INSTRUCTIONS.safe_substitute(
-                prefix=command_prefix[0],
-                language=f"{session_locale.t('language')} ({session_locale.locale})",
-            ),
+            "content": INSTRUCTIONS.safe_substitute(prefix=command_prefix[0]),
         },
-        {"role": "system", "content": f"Current datetime: {fmt_now}"},
     ]
     ai_persona = session.session_info.sender_union_info.sender_data.get("ai_enable_persona")
     if ai_persona:
@@ -86,7 +82,12 @@ async def ask_llm(
         )
     if extra_instructions:
         system_messages.append({"role": "system", "content": extra_instructions})
-
+    # 动态上下文放最后，省 Token 费用
+    system_messages.append({
+            "role": "system",
+            "content": f"Session language: {session_locale.t('language')} ({session_locale.locale})\n"
+            f"Current datetime: {fmt_now}"
+        })
     # 延续上下文时，历史对话（不含 system 消息）会被拼接到本次请求之前。
     conversation = list(history) if history else []
     conversation.append(
