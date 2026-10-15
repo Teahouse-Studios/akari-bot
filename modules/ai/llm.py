@@ -82,12 +82,7 @@ async def ask_llm(
         )
     if extra_instructions:
         system_messages.append({"role": "system", "content": extra_instructions})
-    # 动态上下文放最后，省 Token 费用
-    system_messages.append({
-            "role": "system",
-            "content": f"Session language: {session_locale.t('language')} ({session_locale.locale})\n"
-            f"Current datetime: {fmt_now}"
-        })
+
     # 延续上下文时，历史对话（不含 system 消息）会被拼接到本次请求之前。
     conversation = list(history) if history else []
     conversation.append(
@@ -96,7 +91,13 @@ async def ask_llm(
             "content": await _build_user_content(prompt),
         }
     )
-    messages = [*system_messages, *conversation]
+    # 动态上下文放最后，省 Token 费用
+    dynamic_ctx = {
+            "role": "system",
+            "content": f"Session language: {session_locale.t('language')} ({session_locale.locale})\n"
+            f"Current datetime: {fmt_now}"
+        }
+    messages = [*system_messages, *conversation, dynamic_ctx]
 
     total_input_tokens = 0
     total_cache_read_tokens = 0
