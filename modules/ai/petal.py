@@ -1,5 +1,4 @@
-from decimal import Decimal
-from math import ceil
+from decimal import Decimal, ROUND_UP
 
 from core.builtins.session.info import SessionInfo
 from core.config.base import CoreConfig
@@ -36,7 +35,7 @@ def precount_petal(
         cache_read_cost = cache_read_tokens * unit_cache_read_price
         cache_write_cost = cache_write_tokens * unit_cache_write_price
         cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
-        petal = int(ceil(cost * cost_to_petal))
+        petal = int((cost * cost_to_petal).quantize(Decimal("1"), rounding=ROUND_UP))
         petal = 0 if petal < 0 else petal
         if petal == 0:
             return True
@@ -68,7 +67,7 @@ async def count_token_petal(
         cache_read_cost = cache_read_tokens * unit_cache_read_price
         cache_write_cost = cache_write_tokens * unit_cache_write_price
         cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
-        petal = int(ceil(cost * cost_to_petal))
+        petal = int((cost * cost_to_petal).quantize(Decimal("1"), rounding=ROUND_UP))
         petal = 0 if petal < 0 else petal
         if petal != 0:
             sender_union_info = session_info.sender_union_info
