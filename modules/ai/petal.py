@@ -1,8 +1,9 @@
 from decimal import Decimal
 from math import ceil
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.base import CoreConfig, AiConfig
 
+cost_to_petal = AiConfig.ai_cost_to_petal
 PREDICT_INPUT_TOKEN = 100
 PREDICT_CACHE_READ_TOKEN = 200
 PREDICT_CACHE_WRITE_TOKEN = 0
@@ -33,7 +34,7 @@ def precount_petal(
         cache_read_petal = int(ceil(cache_read_tokens * unit_cache_read_price))
         cache_write_petal = int(ceil(cache_write_tokens * unit_cache_write_price))
         petal = input_petal + output_petal + cache_read_petal + cache_write_petal + int(ceil(Decimal(str(call_price))))
-        petal = petal if petal > 0 else 0
+        petal = petal * cost_to_petal if petal > 0 else 0
         if petal == 0:
             return True
         sender_union_info = session_info.sender_union_info
@@ -64,7 +65,7 @@ async def count_token_petal(
         cache_read_petal = int(ceil(cache_read_tokens * unit_cache_read_price))
         cache_write_petal = int(ceil(cache_write_tokens * unit_cache_write_price))
         petal = input_petal + output_petal + cache_read_petal + cache_write_petal + int(ceil(Decimal(str(call_price))))
-        petal = petal if petal > 0 else 0
+        petal = petal * cost_to_petal if petal > 0 else 0
         if petal != 0:
             sender_union_info = session_info.sender_union_info
             if not sender_union_info:
