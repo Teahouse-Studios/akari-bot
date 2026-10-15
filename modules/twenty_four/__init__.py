@@ -183,7 +183,7 @@ async def _(msg: Bot.MessageSession):
                 if solution:
                     solution = solution[0]
                     if msg.session_info.support_markdown:
-                        solution.replace("*", "\\*")
+                        solution = solution.replace("*", "\\*")
                     send = [I18NContext("twenty_four.message.incorrect.have_solution", solution=solution)]
                     if g_msg := (g_msg := await lost_petal(msg, 1)):
                         send.append(g_msg)
@@ -230,7 +230,7 @@ async def _(msg: Bot.MessageSession, num1: int, num2: int, num3: int, num4: int)
         msg_chain = [I18NContext("twenty_four.message.solve.prompt", numbers=numbers)]
         for solution in solutions:
             if msg.session_info.support_markdown:
-                solution.replace("*", "\\*")
+                solution = solution.replace("*", "\\*")
             msg_chain.append(Plain(solution))
     else:
         msg_chain = [I18NContext("twenty_four.message.solve.no_solution", numbers=numbers)]
