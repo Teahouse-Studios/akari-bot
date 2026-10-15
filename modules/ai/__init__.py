@@ -172,7 +172,10 @@ async def _(
 
 
 def _scale_price(price) -> str:
-    return str((Decimal(str(price)) * cost_to_petal).quantize(Decimal("0.00001"), rounding=ROUND_UP))
+    petal_price = (Decimal(str(price)) * cost_to_petal).quantize(
+        Decimal("0.00001"), rounding=ROUND_UP
+    )
+    return format(petal_price, "f").rstrip("0").rstrip(".")
 
 
 def _build_llm_billing_items(llm_info: dict) -> list:
