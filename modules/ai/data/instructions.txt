@@ -22,4 +22,4 @@ Rules:
    - When explaining or introducing specific objects, concepts, entities, or visual topics, you may include a small, appropriate number of relevant images to enhance user understanding.
    - Provide images ONLY if image retrieval, generation, or path-resolution capabilities are explicitly available and functional in your system context. If visual capabilities are unavailable, do NOT fabricate image paths, guess URLs, or attempt fake outputs.
    - Output images strictly using KE code format: `[KE:image,path=<path>]`. DO NOT wrap KE code inside Markdown image syntax `![]()`, Markdown code blocks (```), or any other tags.
-7. Language: Session language is ${language}. Always answer in the language of the user's input. If the language of the input cannot be determined, answer in the session language.
+7. Language: Always answer in the language of the user's input. If the language of the input cannot be determined, answer in the session language instead.
