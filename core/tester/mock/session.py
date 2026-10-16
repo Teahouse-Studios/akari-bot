@@ -6,7 +6,7 @@ from core.builtins.message.elements import ButtonFrameElement, PlainElement, Ima
 from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.bot_state import BotState
-from core.builtins.session.internal import MessageSession, I18NContext
+from core.builtins.session.internal import MessageSession, I18NContext, resolve_strict_confirm_token
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
 from core.constants.exceptions import SessionFinished
@@ -223,17 +223,24 @@ class MockMessageSession(MessageSession):
         no_confirm_action=True,
         release_execution_lock=True,
         consume_any_message=False,
+        strict=False,
     ):
-        if CoreConfig.no_confirm:
+        strict_mode = strict is not False and strict is not None
+        if CoreConfig.no_confirm and not strict_mode:
             return no_confirm_action
+        token = resolve_strict_confirm_token(self.session_info, strict) if strict_mode else None
 
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)
         else:
             message_chain = MessageChain.assign(I18NContext("core.message.confirm"))
-        if append_instruction:
+
+        if strict_mode:
+            message_chain.append(I18NContext("message.wait.confirm.prompt.strict", token=token))
+        elif append_instruction:
             message_chain.append(I18NContext("message.wait.confirm.prompt"))
-        if self.session_info.support_button:
+
+        if not strict_mode and self.session_info.support_button:
             message_chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
             message_chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
         await self.send_message(message_chain)
@@ -245,6 +252,8 @@ class MockMessageSession(MessageSession):
                 result = self._script.pop(0)
                 if delete:
                     await self.delete()
+                if strict_mode:
+                    return str(result).strip() == token
                 if result in confirm_command:
                     return True
                 return False
@@ -253,6 +262,8 @@ class MockMessageSession(MessageSession):
                 result = input(f"{confirm_prompt}\nConfirm: ")
                 if delete:
                     await self.delete()
+                if strict_mode:
+                    return str(result).strip() == token
                 if result in confirm_command:
                     return True
                 return False

@@ -3244,44 +3244,148 @@ async def _test_one_message_completes_only_one_wait_task():
         SessionTaskManager._task_list.clear()
 
 
-async def _make_verification_session(response: str, support_button: bool) -> MockMessageSession:
+STRICT_CONFIRM_TOKEN = "A1B2C3"
+
+
+def _test_resolve_strict_confirm_token():
+    from core.builtins.message.internal import I18NContext
+    from core.builtins.session.internal import (
+        STRICT_CONFIRM_ALPHABET,
+        STRICT_CONFIRM_LENGTH,
+        resolve_strict_confirm_token,
+    )
+
+    class FakeLocale:
+        def t(self, key, **kwargs):
+            return f"{key}|{kwargs['name']}"
+
+    session_info = SimpleNamespace(locale=FakeLocale())
+    templated = resolve_strict_confirm_token(session_info, I18NContext("my_module.message.token", name="口令"))
+    literal = resolve_strict_confirm_token(session_info, " 原文口令 ")
+    generated = resolve_strict_confirm_token(session_info, True)
+    return (
+        templated == "my_module.message.token|口令"
+        and literal == "原文口令"
+        and len(generated) == STRICT_CONFIRM_LENGTH
+        and set(generated) <= set(STRICT_CONFIRM_ALPHABET)
+    )
+
+
+async def _make_strict_confirm_waiter(target_id: str, sender_id: str, reply: str):
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.session.internal import MessageSession
+
+    class StrictConfirmSession(MessageSession):
+        captured = None
+
+        async def send_message(self, message_chain, *args, **kwargs):
+            self.captured = message_chain
+            await SessionTaskManager.check(self)
+            return type("Sent", (), {"message_id": ["strict-confirm-prompt"]})()
+
+        async def end_typing(self):
+            return None
+
+    session_info = await SessionInfo.assign(
+        target_id=target_id,
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id=sender_id,
+        sender_from="TEST",
+        messages=MessageChain.assign(reply),
+        features=Features(support_button=True, support_reaction=True),
+    )
+    return StrictConfirmSession(session_info)
+
+
+async def _test_wait_confirm_strict_accepts_exact_reply():
+    from core.builtins.message.elements import ButtonFrameElement
+    from core.constants import WaitCancelException
+
+    SessionTaskManager._task_list.clear()
+    msg = await _make_strict_confirm_waiter("TEST|Group|strict-accept", "TEST|strict-accept", STRICT_CONFIRM_TOKEN)
+    try:
+        with (
+            patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN),
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+        ):
+            result = await msg.wait_confirm("prompt", strict=True, delete=False, timeout=0.05 * TIME_SCALE)
+    except WaitCancelException:
+        return False
+    finally:
+        SessionTaskManager._task_list.clear()
+    values = msg.captured.values
+    return (
+        result is True
+        and getattr(values[-1], "key", None) == "message.wait.confirm.prompt.strict"
+        and values[-1].kwargs["token"] == STRICT_CONFIRM_TOKEN
+        and not any(isinstance(element, ButtonFrameElement) for element in values)
+    )
+
+
+async def _test_wait_confirm_strict_rejects_confirm_word():
+    from core.constants import WaitCancelException
+
+    SessionTaskManager._task_list.clear()
+    msg = await _make_strict_confirm_waiter("TEST|Group|strict-reject", "TEST|strict-reject", "是")
+    try:
+        with (
+            patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN),
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+        ):
+            await msg.wait_confirm("prompt", strict=True, delete=False, timeout=0.05 * TIME_SCALE)
+    except WaitCancelException:
+        return msg.captured is not None
+    finally:
+        SessionTaskManager._task_list.clear()
+    return False
+
+
+async def _test_wait_confirm_strict_ignores_no_confirm_config():
+    from core.config.base import CoreConfig
+    from core.constants import WaitCancelException
+
+    SessionTaskManager._task_list.clear()
+    msg = await _make_strict_confirm_waiter("TEST|Group|strict-no-confirm", "TEST|strict-no-confirm", "是")
+    try:
+        with (
+            patch.object(CoreConfig, "no_confirm", True),
+            patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN),
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+        ):
+            await msg.wait_confirm("prompt", strict=True, delete=False, timeout=0.05 * TIME_SCALE)
+    except WaitCancelException:
+        return msg.captured is not None
+    finally:
+        SessionTaskManager._task_list.clear()
+    return False
+
+
+async def _make_confirm_session(response: str, *, support_button: bool = True) -> MockMessageSession:
     msg = MockMessageSession(["~test", response], is_ci=True)
     await msg.async_init("~test")
     msg.session_info.support_button = support_button
     return msg
 
 
-async def _test_verify_user_with_button():
-    msg = await _make_verification_session("22", support_button=True)
-    with (
-        patch("core.builtins.session.internal.Random.sample", return_value=[11, 22, 33]),
-        patch("core.builtins.session.internal.Random.choice", return_value=22),
-    ):
-        result = await msg.verify_user(timeout=30, delete=False)
-    return (
-        result is True
-        and msg.buttons == [{"11": "11", "22": "22", "33": "33"}]
-        and any("点击数字“22”" in action for action in msg.action)
-    )
+async def _test_mock_strict_confirm_accepts_token():
+    msg = await _make_confirm_session(STRICT_CONFIRM_TOKEN)
+    with patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN):
+        result = await msg.wait_confirm(strict=True, delete=False)
+    return result is True and not msg.buttons and any(STRICT_CONFIRM_TOKEN in action for action in msg.action)
 
 
-async def _test_verify_user_text_fallback():
-    msg = await _make_verification_session("22", support_button=False)
-    with (
-        patch("core.builtins.session.internal.Random.sample", return_value=[11, 22, 33]),
-        patch("core.builtins.session.internal.Random.choice", return_value=22),
-    ):
-        result = await msg.verify_user(timeout=30, delete=False)
-    return result is True and not msg.buttons and any("发送数字“22”" in action for action in msg.action)
+async def _test_mock_strict_confirm_rejects_other_reply():
+    msg = await _make_confirm_session("是")
+    with patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN):
+        result = await msg.wait_confirm(strict=True, delete=False)
+    return result is False
 
 
-async def _test_verify_user_rejects_wrong_number():
-    msg = await _make_verification_session("33", support_button=True)
-    with (
-        patch("core.builtins.session.internal.Random.sample", return_value=[11, 22, 33]),
-        patch("core.builtins.session.internal.Random.choice", return_value=22),
-    ):
-        return await msg.verify_user(timeout=30, delete=False) is False
+async def _test_mock_strict_confirm_uses_custom_string():
+    msg = await _make_confirm_session("确认删除")
+    result = await msg.wait_confirm("请确认是否删除", strict="确认删除", delete=False)
+    return result is True and any("确认删除" in action for action in msg.action)
 
 
 @func_case
@@ -3430,10 +3534,14 @@ async def test_message_session_lifecycle(tester: Tester):
 
 
 @func_case
-async def test_user_verification(tester: Tester):
-    """core.builtins.session.internal: 用户操作验证测试"""
-    await tester.test(_test_verify_user_with_button, "按钮平台展示三个数字并通过正确答案")
-    await tester.test(_test_verify_user_text_fallback, "不支持按钮的平台回退到发送数字")
-    await tester.test(_test_verify_user_rejects_wrong_number, "错误数字不能通过验证")
+async def test_strict_confirmation(tester: Tester):
+    """core.builtins.session.internal: 严格确认测试"""
+    await tester.test(_test_resolve_strict_confirm_token, "严格确认口令归一与 I18N 占位符解析")
+    await tester.test(_test_wait_confirm_strict_accepts_exact_reply, "完全回复口令通过严格确认")
+    await tester.test(_test_wait_confirm_strict_rejects_confirm_word, "确认词不能通过严格确认")
+    await tester.test(_test_wait_confirm_strict_ignores_no_confirm_config, "no_confirm 配置不跳过严格确认")
+    await tester.test(_test_mock_strict_confirm_accepts_token, "测试会话严格确认接受口令")
+    await tester.test(_test_mock_strict_confirm_rejects_other_reply, "测试会话严格确认拒绝其他文本")
+    await tester.test(_test_mock_strict_confirm_uses_custom_string, "严格确认接受自定义口令")
 
     return tester

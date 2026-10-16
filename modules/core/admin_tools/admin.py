@@ -65,7 +65,10 @@ async def _(msg: Bot.MessageSession):
     if "remove" in msg.parsed_msg:
         union_id = await _resolve_union_id(user, create=False)
         if union_id == msg.session_info.sender_union_id:
-            if not await msg.wait_confirm(I18NContext("core.message.admin.remove.confirm")):
+            if not await msg.wait_confirm(
+                I18NContext("core.message.admin.remove.confirm"),
+                strict=I18NContext("core.message.admin.remove.confirm.token"),
+            ):
                 await msg.finish()
         if await msg.session_info.target_union_info.config_custom_admin(union_id, enable=False):
             await msg.finish(I18NContext("core.message.admin.remove.success", sender=user))

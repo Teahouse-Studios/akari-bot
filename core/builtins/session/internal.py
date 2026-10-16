@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Any, Coroutine, Match, NoReturn, cast
+from typing import Any, Callable, Coroutine, Match, NoReturn, cast
 
 from akari_bot_i18n.i18n import Locale, safe_strftime
 from attrs import define, field
@@ -13,7 +13,7 @@ from deprecated import deprecated
 
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
-from core.builtins.message.internal import Button, ButtonFrame, I18NContext, PlainElement
+from core.builtins.message.internal import Button, I18NContext, I18NContextElement, PlainElement
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.bot_state import BotState
 from core.builtins.session.lock import ExecutionLockList, ExecutionState
@@ -24,10 +24,10 @@ from core.config.base import BaseConfig, CoreConfig
 from core.constants import SessionContextUnavailable, SessionFinished, WaitCancelException
 from core.exports import add_export
 from core.logger import Logger
-from core.utils.button import bind_callback_reply_ids, build_button_rows, public_button_reply_ids
+from core.utils.button import bind_callback_reply_ids, public_button_reply_ids
 from core.utils.func import is_int
 from core.utils.media import compress_media_chain
-from core.utils.random import Random
+from core.utils.random import SecureRandom
 
 from core.queue.contracts import PlatformAPI
 from core.queue.errors import RpcRemoteError
@@ -37,9 +37,34 @@ default_locale = BaseConfig.default_locale
 quick_confirm = CoreConfig.quick_confirm
 
 
+STRICT_CONFIRM_LENGTH = 6
+STRICT_CONFIRM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ1234567890"
+
+
 def _is_confirmation_message(msg: MessageSession) -> bool:
     value = msg.as_display(text_only=True).strip()
     return value in confirm_command
+
+
+def generate_strict_confirm_token() -> str:
+    """生成严格确认所需的一次性口令。"""
+    return SecureRandom.randstr(STRICT_CONFIRM_LENGTH, STRICT_CONFIRM_ALPHABET)
+
+
+def resolve_strict_confirm_token(session_info: SessionInfo, strict: bool | str | I18NContextElement) -> str:
+    """把严格确认的口令归一为待比对文本，I18N 模板按会话语言解析其占位符。"""
+    if strict is True:
+        return generate_strict_confirm_token()
+    if isinstance(strict, I18NContextElement):
+        return session_info.locale.t(strict.key, **strict.kwargs).strip()
+    return str(strict).strip()
+
+
+def _is_strict_confirmation(token: str) -> Callable[[MessageSession], bool]:
+    def matcher(msg: MessageSession) -> bool:
+        return msg.as_display(text_only=True).strip() == token
+
+    return matcher
 
 
 def confirm_prompt_key(session_info: SessionInfo) -> str:
@@ -636,6 +661,7 @@ class MessageSession:
         no_confirm_action: bool = True,
         release_execution_lock: bool = True,
         consume_any_message: bool = False,
+        strict: bool | str | I18NContextElement = False,
     ) -> bool:
         """一次性模板，用于等待触发对象确认。
 
@@ -648,11 +674,15 @@ class MessageSession:
         :param release_execution_lock: 等待期间是否释放执行锁。Union 合并在建立
                                        双方 barrier 后须保持锁，避免冲突选择期间重新并发。
         :param consume_any_message: 是否将下一条任意消息作为否定结果消费，而不是仅消费确认词。
+        :param strict: 严格确认的口令。`True` 生成一次性随机口令，字符串按原文比对，
+                       `I18NContext` 按会话语言解析占位符后再比对。给出后仅完全回复该口令
+                       才通过，快捷确认途径与 `no_confirm` 配置均不适用（默认为 False）
         :return: 若对象发送确认指令返回 True，反之返回 False
 
         :raises WaitCancelException: 如果超时或用户未确认
         """
-        if CoreConfig.no_confirm:
+        strict_mode = strict is not False and strict is not None
+        if CoreConfig.no_confirm and not strict_mode:
             return no_confirm_action
         released_lease = ExecutionLockList.remove(self) if release_execution_lock else False
         await self.end_typing()
@@ -660,12 +690,22 @@ class MessageSession:
             chain = get_message_chain(self.session_info, message_chain)
         else:
             chain = MessageChain.assign(I18NContext("core.message.confirm"))
+        token = resolve_strict_confirm_token(self.session_info, strict) if strict_mode else None
         # 合并转发消息无从追加提示行，此时略过
-        if append_instruction and isinstance(chain, MessageChain):
-            chain.append(I18NContext(confirm_prompt_key(self.session_info)))
-        if self.session_info.support_button and isinstance(chain, MessageChain) and quick_confirm:
+        if isinstance(chain, MessageChain):
+            if strict_mode:
+                chain.append(I18NContext("message.wait.confirm.prompt.strict", token=token))
+            elif append_instruction:
+                chain.append(I18NContext(confirm_prompt_key(self.session_info)))
+
+        if not strict_mode and self.session_info.support_button and isinstance(chain, MessageChain) and quick_confirm:
             chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
             chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
+
+        if strict_mode:
+            matcher = _is_strict_confirmation(token)
+        else:
+            matcher = None if consume_any_message else _is_confirmation_message
         send = None
         flag = asyncio.Event()
         SessionTaskManager.add_task(
@@ -673,13 +713,13 @@ class MessageSession:
             flag,
             timeout=timeout,
             task_type="wait",
-            matcher=None if consume_any_message else _is_confirmation_message,
+            matcher=matcher,
         )
         try:
             # 等待任务须在跨进程发送提示前登记；平台可能已展示消息并收到用户操作，
             # 而发送 action 的结果尚未回到 Server。
             send = await self.send_message(chain, quote)
-            if quick_confirm and not self.session_info.support_button:
+            if quick_confirm and not strict_mode and not self.session_info.support_button:
                 await self._add_confirm_reaction(send.message_id)
             await asyncio.wait_for(flag.wait(), timeout=timeout)
         except asyncio.TimeoutError:
@@ -692,7 +732,8 @@ class MessageSession:
         if result:
             if send and delete:
                 await send.delete()
-            confirmed = result.as_display(text_only=True) in confirm_command
+            # 严格确认的匹配器已限定为完全等于口令，命中即通过
+            confirmed = True if strict_mode else result.as_display(text_only=True) in confirm_command
             if released_lease and not await ExecutionLockList.acquire(self, wait=True):
                 raise WaitCancelException
             return confirmed
@@ -745,42 +786,6 @@ class MessageSession:
                 raise WaitCancelException
             return result
         raise WaitCancelException
-
-    async def verify_user(
-        self,
-        message_chain: Chainable | None = None,
-        timeout: float | None = 120,
-        delete: bool = True,
-    ) -> bool:
-        """验证当前操作是否由用户完成。
-
-        :param message_chain: 需要发送的提示消息，可不填
-        :param timeout: 等待用户操作的超时时间（秒），默认为 120 秒。
-        :param delete: 验证完成或超时后是否删除提示消息，默认为 True。
-        :return: 用户选择或发送的数字与目标数字一致时返回 True，否则返回 False。
-        :raises WaitCancelException: 如果等待超时或未取得用户输入。
-        """
-        choices = Random.sample(range(1, 101), 3)
-        answer = Random.choice(choices)
-        prompt_key = (
-            "message.user_verification.prompt.button"
-            if self.session_info.support_button
-            else "message.user_verification.prompt.text"
-        )
-        s = message_chain
-        if message_chain is None:
-            s = MessageChain.assign(I18NContext(prompt_key, number=answer))
-        else:
-            s += I18NContext(prompt_key, number=answer)
-        if self.session_info.support_button and isinstance(s, MessageChain):
-            s.append(ButtonFrame(build_button_rows([{str(choice): str(choice) for choice in choices}])))
-        result = await self.wait_next_message(
-            s,
-            delete=delete,
-            timeout=timeout,
-            append_instruction=False,
-        )
-        return result.as_display(text_only=True).strip() == str(answer)
 
     async def wait_anyone(
         self,
@@ -938,7 +943,6 @@ class MessageSession:
 
     waitConfirm = wait_confirm
     waitNextMessage = wait_next_message
-    verifyUser = verify_user
     waitReply = wait_reply
     waitAnyone = wait_anyone
     checkPermission = check_permission

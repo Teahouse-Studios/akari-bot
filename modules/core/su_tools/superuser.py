@@ -25,7 +25,10 @@ async def _(msg: Bot.MessageSession, user: str):
     if not Alive.determine_sender_from(user):
         await msg.finish(I18NContext("message.id.invalid.sender", sender=msg.session_info.sender_from))
     if user == msg.session_info.sender_id:
-        if not await msg.wait_confirm(I18NContext("core.message.superuser.remove.confirm"), append_instruction=False):
+        if not await msg.wait_confirm(
+            I18NContext("core.message.superuser.remove.confirm"),
+            strict=I18NContext("core.message.superuser.remove.confirm.token"),
+        ):
             await msg.finish()
     sender_union_info = await SenderUnionInfo.get_by_sender_id(user, create=False)
     if not sender_union_info:
