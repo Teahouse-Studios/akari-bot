@@ -65,7 +65,7 @@ async def ask_llm(
             "role": "system",
             "content": INSTRUCTIONS.safe_substitute(
                 prefix=command_prefix[0],
-                language=f"{session_locale.t('language')} ({session_locale.locale})",
+                language=session_locale.t('language')",
             ),
         },
     ]
