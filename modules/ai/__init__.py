@@ -78,7 +78,9 @@ async def _(
     while True:
         images = _get_message_images(current_msg)
         if not current_prompt and not images:
-            current_msg = await current_msg.wait_reply(message_chain=I18NContext("ai.message.no_prompt"), timeout=CONTEXT_EXPIRY)
+            current_msg = await current_msg.wait_reply(
+                message_chain=I18NContext("ai.message.no_prompt"), timeout=CONTEXT_EXPIRY
+            )
             current_prompt = current_msg.as_display(text_only=True).strip()
             continue
 
@@ -172,9 +174,7 @@ async def _(
 
 
 def _scale_price(price) -> str:
-    petal_price = (Decimal(str(price)) * cost_to_petal).quantize(
-        Decimal("0.00001"), rounding=ROUND_UP
-    )
+    petal_price = (Decimal(str(price)) * cost_to_petal).quantize(Decimal("0.00001"), rounding=ROUND_UP)
     return format(petal_price, "f").rstrip("0").rstrip(".")
 
 

@@ -2,7 +2,7 @@
     "ai.help": "LLM과 채팅합니다. (페탈이 필요합니다)",
     "ai.help.desc": "아카리봇에게 물어보자!",
     "ai.help.llm.instruct": "LLM에 대한 맞춤형 지침을 설정합니다.",
-    "ai.help.llm.list": "지원되는 LLM 목록을 확인해 보겠습니다.",
+    "ai.help.llm.list": "지원되는 LLM 목록을 확인합니다.",
     "ai.help.llm.list.option.price": "상세 가격 정보를 표시할지 여부.",
     "ai.help.llm.price": "LLM의 페탈 가격을 확인합니다.",
     "ai.help.llm.set": "{TERM:target} 내에서 기본 LLM을 설정합니다.",
@@ -36,9 +36,9 @@
     "config.comments.module_ai.llm_timeout": "LLM 시간 초과.",
     "config.comments.module_ai.llm_top_p": "LLM의 핵 샘플링. 범위는 0에서 1 사이입니다. temperature와 동시에 수정하는 것은 권장하지 않습니다.",
     "ai.help.llm.persona": "인격화를 활성화할지 여부를 토글합니다. 효과는 LLM에 따라 다릅니다.",
-    "ai.message.llm.persona.enable": "인격화가 유효합니다.",
-    "ai.message.llm.persona.disable": "인격화가 잘못되었습니다.",
+    "ai.message.llm.persona.enable": "인격화가 활성화되었습니다.",
+    "ai.message.llm.persona.disable": "인격화가 비활성화되었습니다.",
     "config.comments.module_ai.ai_cost_to_petal": "페탈 수와 통화 요금의 비율.",
-    "config.comments.module_ai.llm_reasoning_effort": "LLM의 추론 노력도. 'none'이 있으면 CoT는 유효하지 않습니다.",
+    "config.comments.module_ai.llm_reasoning_effort": "LLM의 추론 노력도. 'none'인 경우 CoT를 사용하지 않습니다.",
     "config.comments.module_ai.llm_top_logprobs": "LLM에 의해 리턴되는 후보 토큰의 로그 확률 카운트. 범위는 0에서 20 사이입니다. 음수인 경우에는 사용되지 않습니다."
 }

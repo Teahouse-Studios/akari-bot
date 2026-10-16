@@ -6,7 +6,7 @@
     "ai.help.llm.list.option.price": "Whether to show the detailed pricing.",
     "ai.help.llm.price": "Check the petal price of an LLM.",
     "ai.help.llm.set": "Set default LLM in the {TERM:target}.",
-    "ai.help.option.ctx": "Specify the ID of the next dialogue turn.",
+    "ai.help.option.ctx": "Specify the ID of the dialogue turn to continue.",
     "ai.help.option.llm": "Specify the LLM to use.",
     "ai.help.option.no_tools": "Whether to disable the tool calling for the LLMs.",
     "ai.message.context.hint": "Hint: Use \"${cmd}\" within 10 minutes to continue the dialogue.",
@@ -36,9 +36,9 @@
     "config.comments.module_ai.llm_timeout": "Timeout for the LLMs.",
     "config.comments.module_ai.llm_top_p": "The nucleus sampling of the LLMs, ranging from 0 to 1. It is not recommended to modify it at the same time as temperature.",
     "ai.help.llm.persona": "Toggle whether to enable personification. The effect varies depending on the LLM.",
-    "ai.message.llm.persona.enable": "Personalization enabled.",
-    "ai.message.llm.persona.disable": "Personalization disabled.",
+    "ai.message.llm.persona.enable": "Personification enabled.",
+    "ai.message.llm.persona.disable": "Personification disabled.",
     "config.comments.module_ai.ai_cost_to_petal": "The ratio of petals to call costs.",
-    "config.comments.module_ai.llm_reasoning_effort": "The thinking effort of the LLM. If none, it will not enable CoT.",
+    "config.comments.module_ai.llm_reasoning_effort": "The thinking effort of the LLM. If set to none, chain-of-thought is not enabled.",
     "config.comments.module_ai.llm_top_logprobs": "The logarithmic probability count of candidate tokens returned by the LLM, ranging from 0 to 20. If negative numbers, it will not be used."
 }

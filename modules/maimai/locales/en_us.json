@@ -18,7 +18,7 @@
     "maimai.help.random": "Generate a random song",
     "maimai.help.score": "Query play record of charts, if by ID add prefix 'id'.",
     "maimai.help.search": "Search for songs by (part of the) name.",
-    "maimai.help.unbind": "Unbind user.",
+    "maimai.help.unbind": "Unlink user.",
     "maimai.message.alias": "Alias of ${title}:",
     "maimai.message.alias.alias_not_found": "No matching aliases were found.",
     "maimai.message.alias.file_not_found": "Alias file not found. Please initialize by \"${cmd}\".",

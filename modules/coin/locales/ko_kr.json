@@ -17,8 +17,8 @@
     "coin.message.single.prompt": "동전을 던져서…",
     "coin.message.single.stand": "모서리로 섰다!",
     "coin.message.single.tail": "뒷면입니다!",
-    "config.comments.module_coin.coin_facedown_weight": "coin 모듈에 동전을 던졌을 때 뒷면이 나올 가중치.",
-    "config.comments.module_coin.coin_faceup_weight": "coin 모듈에 동전을 던졌을 때 앞면이 나올 가중치.",
-    "config.comments.module_coin.coin_limit": "coin 모듈에 동전 던지기의 최대 개수 제한.",
-    "config.comments.module_coin.coin_stand_weight": "coin 모듈에 동전을 던졌을 때 모서리로 설 가중치."
+    "config.comments.module_coin.coin_facedown_weight": "coin 모듈에서 동전을 던졌을 때 뒷면이 나올 가중치.",
+    "config.comments.module_coin.coin_faceup_weight": "coin 모듈에서 동전을 던졌을 때 앞면이 나올 가중치.",
+    "config.comments.module_coin.coin_limit": "coin 모듈에서 동전 던지기의 최대 개수 제한.",
+    "config.comments.module_coin.coin_stand_weight": "coin 모듈에서 동전을 던졌을 때 모서리로 설 가중치."
 }
