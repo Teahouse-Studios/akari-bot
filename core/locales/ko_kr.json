@@ -192,8 +192,6 @@
     "message.unknown": "알 수 없음",
     "message.url.blocked": "[이 링크는 차단됨]",
     "message.url.untrusted": "이 링크는 인증되지 않았으므로 열 때 주의하십시오.",
-    "message.user_verification.prompt.button": "이 작업은 위험도가 높습니다. 숫자 '${number}'을(를) 클릭하여 작업을 확인해 주세요.",
-    "message.user_verification.prompt.text": "이 작업은 위험도가 높습니다. 숫자 '${number}'을(를) 전송하여 작업을 확인해 주세요.",
     "message.wait.confirm.prompt": "('Yes'등 확인 키워드를 입력해 주세요)",
     "message.wait.confirm.prompt.button": "('Yes'등 확인 단어를 전송하거나 버튼을 눌러 주세요)",
     "message.wait.confirm.prompt.qq": "('Yes'등 확인 키워드 입력, 이모티콘 클릭 또는 프로필 사진을 두 번 탭하여 확인해 주세요)",
