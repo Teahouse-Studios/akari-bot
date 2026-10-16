@@ -241,7 +241,7 @@
     "core.message.bind.merge.channel.unified": "两侧{TERM:target}已并入消息通道 ${channel}，此后命令与推送只由其中一方承担。",
     "core.message.bind.merge.code": "迁移码：${code}",
     "core.message.bind.merge.code.invalid": "迁移码无效或已过期，请重新执行“${cmd}”获取。",
-    "core.message.bind.merge.context.mismatch": "迁移码的使用{TERM:target}不符。",
+    "core.message.bind.merge.context.mismatch": "迁移码的使用场景不符。",
     "core.message.bind.merge.private.confirm": "即将把你在原机器人上的用户数据与私聊数据迁移至此处，请确认以下内容：",
     "core.message.bind.merge.private.failed": "迁移失败，请稍后重试。若问题持续，请联系机器人所有者。",
     "core.message.bind.merge.route.mismatch": "该迁移码不匹配平台。请确认你是在指定的平台上迁移的数据。",

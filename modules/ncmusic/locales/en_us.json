@@ -3,7 +3,7 @@
     "ncmusic.help.desc": "Netease Music tools.",
     "ncmusic.help.info": "Get detailed info of the music.",
     "ncmusic.help.search": "Search in Netease Music.",
-    "ncmusic.message.info": "歌名：${name}（${id}）\n专辑名：${album}（${album_id}）\n歌手：${artists}\n歌曲详情页：${detail}",
+    "ncmusic.message.info": "",
     "ncmusic.message.info.not_found": "找不到对应的音乐。",
     "ncmusic.message.search.confirm": "View music details?",
     "ncmusic.message.search.invalid.non_digital": "Invalid number, must be numeric.",
