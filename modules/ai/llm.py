@@ -94,7 +94,7 @@ async def ask_llm(
     # 动态上下文放最后，省 Token 费用
     dynamic_ctx = {
             "role": "system",
-            "content": f"Session language: {session_locale.t('language')} ({session_locale.locale})\n"
+            "content": f"Session language (Not language used by user): {session_locale.t('language')} ({session_locale.locale})\n"
             f"Current datetime: {fmt_now}"
         }
     messages = [*system_messages, *conversation, dynamic_ctx]
