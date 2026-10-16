@@ -128,8 +128,9 @@ class MyPlatformContextManager(ContextManager):
     features = platform_features
 
     # 17 个抽象方法一个都不能少，不支持的能力写 pass 并在 Features 实例里置 False
+    # check_native_permission 传 user_id 时查询该成员；平台查不到（私聊、非成员、无此接口）返回 False
     @classmethod
-    async def check_native_permission(cls, session_info) -> bool: ...
+    async def check_native_permission(cls, session_info, user_id=None) -> bool: ...
 
     @classmethod
     async def check_bot_state(cls, session_info) -> BotState: ...

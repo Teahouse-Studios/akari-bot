@@ -57,12 +57,16 @@ async def _(msg: Bot.MessageSession):
             )
         )
     if "add" in msg.parsed_msg:
+        if await msg.check_native_permission(user):
+            await msg.finish(I18NContext("core.message.admin.add.native"))
         union_id = await _resolve_union_id(user)
         if union_id in msg.session_info.custom_admins:
             await msg.finish(I18NContext("core.message.admin.add.already"))
-        if await msg.session_info.target_union_info.config_custom_admin(union_id):
-            await msg.finish(I18NContext("core.message.admin.add.success", sender=user))
+        await msg.session_info.target_union_info.config_custom_admin(union_id)
+        await msg.finish(I18NContext("core.message.admin.add.success", sender=user))
     if "remove" in msg.parsed_msg:
+        if await msg.check_native_permission(user):
+            await msg.finish(I18NContext("core.message.admin.remove.native"))
         union_id = await _resolve_union_id(user, create=False)
         if union_id == msg.session_info.sender_union_id:
             if not await msg.wait_confirm(
@@ -70,8 +74,8 @@ async def _(msg: Bot.MessageSession):
                 strict=I18NContext("core.message.admin.remove.confirm.token"),
             ):
                 await msg.finish()
-        if await msg.session_info.target_union_info.config_custom_admin(union_id, enable=False):
-            await msg.finish(I18NContext("core.message.admin.remove.success", sender=user))
+        await msg.session_info.target_union_info.config_custom_admin(union_id, enable=False)
+        await msg.finish(I18NContext("core.message.admin.remove.success", sender=user))
 
 
 @admin.command(
@@ -107,8 +111,8 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.admin.ban.success", sender=user))
     if "unban" in msg.parsed_msg:
         union_id = await _resolve_union_id(user, create=False)
-        if await msg.session_info.target_union_info.config_banned_user(union_id, enable=False):
-            await msg.finish(I18NContext("core.message.admin.unban.success", sender=user))
+        await msg.session_info.target_union_info.config_banned_user(union_id, enable=False)
+        await msg.finish(I18NContext("core.message.admin.unban.success", sender=user))
 
 
 @admin.command("leave {{I18N:core.help.admin.leave}}", available_for="QQ|Group")

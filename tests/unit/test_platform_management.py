@@ -284,6 +284,54 @@ async def _test_discord_reaction_user_permission_fetches_member():
     )
 
 
+async def _test_onebot_native_permission_queries_requested_member():
+    session = SessionInfo(
+        target_id="QQ|Group|123",
+        target_from="QQ|Group",
+        sender_id="QQ|111",
+        sender_from="QQ",
+        client_name="QQ",
+        session_id="onebot-native-permission",
+    )
+    call_action = AsyncMock(return_value={"role": "admin"})
+    with patch.object(onebot_context.aiocqhttp_bot, "call_action", new=call_action):
+        target_is_admin = await onebot_context.OneBotContextManager.check_native_permission(session, "QQ|222")
+        call_action.reset_mock()
+        call_action.return_value = {"role": "member"}
+        target_is_member = await onebot_context.OneBotContextManager.check_native_permission(session, "QQ|222")
+    return (
+        target_is_admin is True
+        and target_is_member is False
+        and call_action.await_args.kwargs == {"group_id": 123, "user_id": 222}
+    )
+
+
+async def _test_discord_native_permission_queries_requested_member():
+    member = SimpleNamespace(id=222)
+    permissions = SimpleNamespace(administrator=True)
+    guild = SimpleNamespace(get_member=Mock(return_value=None), fetch_member=AsyncMock(return_value=member))
+    channel = SimpleNamespace(guild=guild, permissions_for=Mock(return_value=permissions))
+    session = SessionInfo(
+        target_id=f"{target_channel_prefix}|123",
+        target_from=target_channel_prefix,
+        sender_id=f"{sender_prefix}|111",
+        sender_from=sender_prefix,
+        client_name="Discord",
+        session_id="discord-native-permission",
+    )
+    requested_user = f"{sender_prefix}|222"
+    with patch.object(discord_context.discord_bot, "fetch_channel", new=AsyncMock(return_value=channel)):
+        target_is_admin = await discord_context.DiscordContextManager.check_native_permission(session, requested_user)
+        permissions.administrator = False
+        target_is_member = await discord_context.DiscordContextManager.check_native_permission(session, requested_user)
+    return (
+        target_is_admin is True
+        and target_is_member is False
+        and guild.fetch_member.await_args.args == (222,)
+        and channel.permissions_for.call_args.args == (member,)
+    )
+
+
 async def _test_onebot_missing_optional_ids_keep_none():
     assigned = SimpleNamespace()
     assign = AsyncMock(return_value=assigned)
@@ -769,6 +817,14 @@ async def test_platform_management(tester: Tester):
     await tester.test(
         _test_discord_reaction_user_permission_fetches_member,
         "Discord Reaction 权限检查补取成员",
+    )
+    await tester.test(
+        _test_onebot_native_permission_queries_requested_member,
+        "OneBot 原生权限查询指定成员",
+    )
+    await tester.test(
+        _test_discord_native_permission_queries_requested_member,
+        "Discord 原生权限查询指定成员",
     )
     await tester.test(_test_onebot_missing_optional_ids_keep_none, "OneBot 缺失引用和机器人 ID 时保留空值")
     await tester.test(_test_onebot_private_list_failure_returns_empty, "OneBot 好友列表查询失败返回空消息 ID")

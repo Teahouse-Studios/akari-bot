@@ -81,12 +81,13 @@ class ContextManager(ABC):
 
     @classmethod
     @abstractmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
         """
-        检查会话权限。
+        检查权限。
 
         :param session_info: 会话信息
-        :return: 是否有权限
+        :param user_id: 指定成员的平台 ID，留空则检查发话者本人
+        :return: 是否具备权限；指定成员时，不含场景成员的上下文一律返回 False
         """
         if session_info.session_id not in cls.context:
             raise ValueError("Session not found in context")

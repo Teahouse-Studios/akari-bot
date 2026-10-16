@@ -604,12 +604,13 @@ class MessageSession:
         """
         return await PlatformAPI.remove_reaction(self.session_info, self.session_info.message_id, emoji)
 
-    async def check_native_permission(self) -> bool:
+    async def check_native_permission(self, user_id: str | None = None) -> bool:
         """用于检查消息用户原本在聊天平台中是否具有管理员权限。
 
+        :param user_id: 指定成员的平台 ID，留空则检查发话者本人
         :return: 如果用户是平台管理员返回 True，否则返回 False
         """
-        return await PlatformAPI.check_native_permission(self.session_info)
+        return await PlatformAPI.check_native_permission(self.session_info, user_id=user_id)
 
     async def check_bot_state(self) -> BotState:
         """Return the bot's context membership and native permission state."""

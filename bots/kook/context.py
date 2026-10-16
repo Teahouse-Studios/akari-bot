@@ -77,26 +77,36 @@ class KOOKContextManager(ContextManager):
     features: Features = kook_features
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        if session_info.target_from == target_person_prefix:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
+        if user_id is None and session_info.target_from == target_person_prefix:
             return True
         ctx = cls.context.get(session_info.session_id)
-        if not isinstance(ctx, Message):
-            channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
-            author = session_info.get_common_sender_id()
-        else:
+        if isinstance(ctx, Message):
             Logger.info("Identifying for channel: " + str(ctx.ctx.channel.id))
             channel = await bot.client.fetch_public_channel(ctx.ctx.channel.id)
-            author = ctx.author.id
-        guild = await bot.client.fetch_guild(channel.guild_id)
-        user_roles = (await guild.fetch_user(author)).roles
-        guild_roles = await guild.fetch_roles()
-        for i in guild_roles:
-            if i.id in user_roles and i.has_permission(0):
+        else:
+            channel = await bot.client.fetch_public_channel(session_info.get_common_target_id())
+        author = (
+            str(user_id).split("|")[-1]
+            if user_id
+            else (ctx.author.id if isinstance(ctx, Message) else session_info.get_common_sender_id())
+        )
+        try:
+            guild = await bot.client.fetch_guild(channel.guild_id)
+            user_roles = (await guild.fetch_user(author)).roles
+            guild_roles = await guild.fetch_roles()
+            for i in guild_roles:
+                if i.id in user_roles and i.has_permission(0):
+                    return True
+            if str(author) == str(guild.master_id):
                 return True
-        if author == guild.master_id:
-            return True
-        return False
+            return False
+        except Exception:
+            # 被查询的成员可能已不在服务器中，平台查不到成员记录时会直接报错，按无权限处理。
+            if user_id is None:
+                raise
+            Logger.exception(f"Failed to check native permission for {user_id} in {session_info.target_id}: ")
+            return False
 
     @classmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:

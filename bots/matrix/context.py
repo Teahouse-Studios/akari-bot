@@ -32,7 +32,7 @@ class MatrixContextManager(ContextManager):
         return True
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
         ctx: tuple[nio.MatrixRoom, nio.RoomMessageFormatted] | None = cls.context.get(session_info.session_id)
         if ctx:
             room, event = ctx
@@ -41,12 +41,17 @@ class MatrixContextManager(ContextManager):
         else:
             room_id = session_info.get_common_target_id()
             sender = session_info.get_common_sender_id()
-        if room_id.startswith("@") or sender.startswith("!"):
-            return True
-        if sender.startswith("@"):
-            sender_mxid = sender
+        if user_id is None:
+            if room_id.startswith("@") or sender.startswith("!"):
+                return True
+            member = sender
         else:
-            sender_mxid = f"@{sender}"
+            member = user_id
+        return await cls._has_room_admin(room_id, member)
+
+    @classmethod
+    async def _has_room_admin(cls, room_id: str, member: str) -> bool:
+        member_mxid = member if member.startswith("@") else f"@{member}"
 
         # check room creator for room v12
         create_event_id = "$" + str(room_id)[1:]
@@ -60,7 +65,7 @@ class MatrixContextManager(ContextManager):
                 if "additional_creators" in event_content:
                     creators = creators + event_content["additional_creators"]
                 Logger.debug(f"Matrix room v12 creators: {creators}")
-                if sender_mxid in creators:
+                if member_mxid in creators:
                     return True
         else:
             # When the room does not follow MSC4291, ignore it silently
@@ -75,7 +80,7 @@ class MatrixContextManager(ContextManager):
             return False
         power_levels = power_levels_response.content
         users = power_levels.get("users", {})
-        level = users.get(sender_mxid) if sender_mxid in users else power_levels.get("users_default", 0)
+        level = users.get(member_mxid) if member_mxid in users else power_levels.get("users_default", 0)
         if level and int(level) >= 50:
             return True
         return False
@@ -719,13 +724,13 @@ class MatrixFetchedContextManager(MatrixContextManager):
             cls.del_context(session_info)
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
         try:
             room = await cls._resolve_matrix_room_(session_info)
             if not room:
                 return False
             cls.add_context(session_info, (room, None))
-            return await super().check_native_permission(session_info)
+            return await super().check_native_permission(session_info, user_id)
         except Exception as e:
             Logger.exception(f"Failed to check permission for {session_info.get_common_target_id()}: {e}")
             return False

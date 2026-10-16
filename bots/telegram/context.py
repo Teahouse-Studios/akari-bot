@@ -27,21 +27,30 @@ class TelegramContextManager(ContextManager):
     features: Features = telegram_features
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
         ctx = cls.context.get(session_info.session_id)
         if not ctx:
             chat = await aiogram_bot.get_chat(session_info.get_common_target_id())
-            user_id = int(session_info.sender_id.split("|")[-1])
             chat_id = chat.id
             chat_type = str(getattr(chat.type, "value", chat.type))
+            sender_id = int(session_info.sender_id.split("|")[-1])
         else:
             chat_id = ctx.chat_id
             chat_type = ctx.chat_type
-            user_id = ctx.user_id
+            sender_id = ctx.user_id
+        # 私聊没有场景成员，指定成员时一律按无权限处理。
         if chat_type == "private":
-            return True
-        admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat_id)]
-        return user_id in admins
+            return user_id is None
+        member_id = int(str(user_id).split("|")[-1]) if user_id else sender_id
+        try:
+            admins = [member.user.id for member in await aiogram_bot.get_chat_administrators(chat_id)]
+            return member_id in admins
+        except Exception:
+            # 被查询的成员可能已退群，平台查不到成员记录时会直接报错，按无权限处理。
+            if user_id is None:
+                raise
+            Logger.exception(f"Failed to check native permission for {user_id} in {session_info.target_id}: ")
+            return False
 
     @classmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:

@@ -522,7 +522,10 @@ class QQBotContextManager(ContextManager):
         cls.message_send_queues.clear()
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
+        if user_id is not None:
+            # 平台只在消息事件中给出成员身份，其他成员的管理身份只能取消息处理时写入的缓存。
+            return get_cached_permission(f"{session_info.target_id}|{user_id}")
         ctx: BaseMessage | None = cls.context.get(session_info.session_id)
 
         if ctx:

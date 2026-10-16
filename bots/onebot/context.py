@@ -154,23 +154,31 @@ class OneBotContextManager(ContextManager):
         last_send_typing_time.clear()
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
         async def _check():
-            if session_info.target_from == target_private_prefix:
+            if user_id is None and session_info.target_from == target_private_prefix:
                 return True
             if session_info.target_from == target_group_prefix:
+                member_id = str(user_id).split("|")[-1] if user_id else session_info.get_common_sender_id()
                 get_member_info = await aiocqhttp_bot.call_action(
                     "get_group_member_info",
                     group_id=int(session_info.get_common_target_id()),
-                    user_id=int(session_info.get_common_sender_id()),
+                    user_id=int(member_id),
                 )
                 if get_member_info.get("role") in ["owner", "admin"]:
                     return True
             return False
 
-        return await _check()
+        try:
+            return await _check()
+        except Exception:
+            # 被查询的成员可能已退群，平台查不到成员记录时会直接报错，按无权限处理。
+            if user_id is None:
+                raise
+            Logger.exception(f"Failed to check native permission for {user_id} in {session_info.target_id}: ")
+            return False
 
     @classmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:

@@ -62,23 +62,31 @@ class MilkyContextManager(ContextManager):
         cls.typing_tasks.clear()
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        """检查发送者是否具备群管理权限。"""
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
+        """检查指定成员（默认发话者）是否具备群管理权限。"""
 
         @retry(stop=stop_after_attempt(3), wait=wait_fixed(3), reraise=True)
         async def _check() -> bool:
-            if session_info.target_from == target_private_prefix:
+            if user_id is None and session_info.target_from == target_private_prefix:
                 return True
             if session_info.target_from == target_group_prefix:
+                member_id = _split_common_id(user_id) if user_id else session_info.get_common_sender_id()
                 member = await milky_bot.get_group_member_info(
                     group_id=int(session_info.get_common_target_id()),
-                    user_id=int(session_info.get_common_sender_id()),
+                    user_id=int(member_id),
                 )
                 if member.role in (Role.OWNER, Role.ADMIN):
                     return True
             return False
 
-        return await _check()
+        try:
+            return await _check()
+        except Exception:
+            # 被查询的成员可能已退群，平台查不到成员记录时会直接报错，按无权限处理。
+            if user_id is None:
+                raise
+            Logger.exception(f"Failed to check native permission for {user_id} in {session_info.target_id}: ")
+            return False
 
     @classmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:

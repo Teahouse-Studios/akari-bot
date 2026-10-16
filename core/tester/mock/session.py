@@ -173,8 +173,9 @@ class MockMessageSession(MessageSession):
     async def remove_reaction(self, emoji):
         self.action.append(f"(remove reaction {emoji})")
 
-    async def check_native_permission(self):
-        return True
+    async def check_native_permission(self, user_id=None):
+        """测试环境不提供平台成员数据，指定成员一律按无权限处理。"""
+        return user_id is None
 
     async def check_bot_state(self) -> BotState:
         """Provide deterministic platform-state data to modules under the test parser."""

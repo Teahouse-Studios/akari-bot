@@ -340,7 +340,7 @@ class MessageSession:
     # 权限检查
     def check_super_user(self) -> bool          # 同步
     async def check_permission(self) -> bool    # ⚠️ 是 async，必须 await
-    async def check_native_permission(self) -> bool
+    async def check_native_permission(self, user_id=None) -> bool  # 留空检查发话者，传平台 ID 检查指定成员
 
     # 消息转换 / 格式化
     def as_display(self, text_only=False) -> str
@@ -393,7 +393,7 @@ class ContextManager(ABC):
     def derive_private_session(cls, session_info, target_id, target_from) -> SessionInfo
 
     # 平台必须实现的 17 个抽象方法（全部是 @classmethod + @abstractmethod）
-    async def check_native_permission(cls, session_info) -> bool
+    async def check_native_permission(cls, session_info, user_id=None) -> bool
     async def check_bot_state(cls, session_info) -> BotState
     async def send_message(cls, session_info, message, ...) -> list[str]
     async def send_private_msg(cls, session_info, user_id, message, ...) -> list[str]

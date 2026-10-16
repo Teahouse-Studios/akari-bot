@@ -243,7 +243,7 @@ async def _(msg):
         await msg.finish(I18NContext("my_module.error.permission"))
 ```
 
-`check_permission()` 覆盖群组管理员 / 自定义管理员 / 超级用户三类；`check_native_permission()` 才是问平台要原生权限。`msg.finish()` 会抛 `SessionFinished`，所以后面不需要 `return`。
+`check_permission()` 覆盖群组管理员 / 自定义管理员 / 超级用户三类；`check_native_permission()` 才是问平台要原生权限，传入平台 ID 可查询指定成员（默认发话者）。`msg.finish()` 会抛 `SessionFinished`，所以后面不需要 `return`。
 
 ### 7.6 模块配置
 

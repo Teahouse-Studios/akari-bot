@@ -16,8 +16,8 @@ async def _(msg: Bot.MessageSession, user: str):
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
         sender_union_info = await SenderUnionInfo.resolve_union(user)
-    if await sender_union_info.edit_attr("superuser", True):
-        await msg.finish(I18NContext("core.message.superuser.add.success", sender=user))
+    await sender_union_info.edit_attr("superuser", True)
+    await msg.finish(I18NContext("core.message.superuser.add.success", sender=user))
 
 
 @su.command("remove <user> {{I18N:core.help.superuser.remove}}")
@@ -35,5 +35,5 @@ async def _(msg: Bot.MessageSession, user: str):
         if not await msg.wait_confirm(I18NContext("message.id.init.sender.confirm"), append_instruction=False):
             await msg.finish()
         sender_union_info = await SenderUnionInfo.resolve_union(user)
-    if await sender_union_info.edit_attr("superuser", False):
-        await msg.finish(I18NContext("core.message.superuser.remove.success", sender=user))
+    await sender_union_info.edit_attr("superuser", False)
+    await msg.finish(I18NContext("core.message.superuser.remove.success", sender=user))

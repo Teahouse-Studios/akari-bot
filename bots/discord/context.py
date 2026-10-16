@@ -56,30 +56,35 @@ class DiscordContextManager(ContextManager):
     TYPING_SHUTDOWN_TIMEOUT = 1.0
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
 
         ctx: Message | discord.Interaction | DiscordReactionContext | None = cls.context.get(session_info.session_id)
 
         Logger.debug(f"Checking permissions for session: {session_info.session_id}")
 
         # 私聊不存在服务器成员与频道权限对象，不能先访问 channel.guild 或 permissions_for。
-        if session_info.target_from == target_dm_channel_prefix:
+        if user_id is None and session_info.target_from == target_dm_channel_prefix:
             return True
 
-        if not ctx:
-            channel = await discord_bot.fetch_channel(int(get_channel_id(session_info)))
-            author = await channel.guild.fetch_member(int(get_sender_id(session_info)))
-        else:
-            channel = ctx.channel
-            author = ctx.user if hasattr(ctx, "user") else ctx.author
         try:
-            if (
-                isinstance(ctx, DiscordReactionContext)
-                and not isinstance(author, discord.Member)
-                and getattr(channel, "guild", None) is not None
-            ):
-                # Raw Reaction 在成员缓存缺失时只能先取得 User；频道权限计算需要完整 Member。
-                author = await channel.guild.fetch_member(author.id)
+            channel = ctx.channel if ctx else await discord_bot.fetch_channel(int(get_channel_id(session_info)))
+            if user_id is not None:
+                guild = getattr(channel, "guild", None)
+                if guild is None:
+                    return False
+                member_id = int(str(user_id).split("|")[-1])
+                author = guild.get_member(member_id) or await guild.fetch_member(member_id)
+            elif not ctx:
+                author = await channel.guild.fetch_member(int(get_sender_id(session_info)))
+            else:
+                author = ctx.user if hasattr(ctx, "user") else ctx.author
+                if (
+                    isinstance(ctx, DiscordReactionContext)
+                    and not isinstance(author, discord.Member)
+                    and getattr(channel, "guild", None) is not None
+                ):
+                    # Raw Reaction 在成员缓存缺失时只能先取得 User；频道权限计算需要完整 Member。
+                    author = await channel.guild.fetch_member(author.id)
             if isinstance(channel, discord.DMChannel) or channel.permissions_for(author).administrator:
                 return True
         except Exception:

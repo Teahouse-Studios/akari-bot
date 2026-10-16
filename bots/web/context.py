@@ -165,8 +165,9 @@ class WebContextManager(ContextManager):
     TYPING_MAX_LIFETIME = 60
 
     @classmethod
-    async def check_native_permission(cls, session_info: SessionInfo) -> bool:
-        return True
+    async def check_native_permission(cls, session_info: SessionInfo, user_id: str | None = None) -> bool:
+        """控制台操作者本身具备管理权限，其他成员无从判定。"""
+        return user_id is None
 
     @classmethod
     async def check_bot_state(cls, session_info: SessionInfo) -> BotState:
