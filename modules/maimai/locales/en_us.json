@@ -23,13 +23,13 @@
     "maimai.message.alias.alias_not_found": "No matching aliases were found.",
     "maimai.message.alias.file_not_found": "Alias file not found. Please initialize by \"${cmd}\".",
     "maimai.message.b50.text_prompt": "Here is the Best 50 list of ${user} (Rating ${rating}):",
-    "maimai.message.bind.success": "Binding successful: ",
+    "maimai.message.bind.success": "Linking successfully: ${username}",
     "maimai.message.chart_not_found": "No matching charts were found.",
     "maimai.message.chart.charter": "Chart design: ",
     "maimai.message.chart.dx": "${diff} ${level} (${ds})\nTAP: ${tap} / HOLD: ${hold} / SLIDE: ${slide} / TOUCH: ${touch} / BREAK: ${brk}",
     "maimai.message.chart.sd": "${diff} ${level} (${ds})\nTAP: ${tap} / HOLD: ${hold} / SLIDE: ${slide} / BREAK: ${brk}",
     "maimai.message.chart.utage": "U·TA·GE ${level}\nDesigned for: ${player} player(s)\nTAP: ${tap} / HOLD: ${hold} / SLIDE: ${slide} / TOUCH: ${touch} / BREAK: ${brk}",
-    "maimai.message.chart.utage.buddy": "U·TA·GE ${level} [BUDDY]\nDesigned for: ${playerL} player(s)  | ${playerR} player(s)\nTAP: ${tapL} + ${tapR} / HOLD: ${holdL} + ${holdR} / SLIDE: ${slideL} + ${slideR} / TOUCH: ${touchL} + ${touchR} / BREAK: ${brkL} + ${brkR}",
+    "maimai.message.chart.utage.buddy": "U·TA·GE ${level} [BUDDY]\nDesigned for: ${playerL} player(s) | ${playerR} player(s)\nTAP: ${tapL} + ${tapR} / HOLD: ${holdL} + ${holdR} / SLIDE: ${slideL} + ${slideR} / TOUCH: ${touchL} + ${touchR} / BREAK: ${brkL} + ${brkR}",
     "maimai.message.disambiguation": "Here are the possible results:",
     "maimai.message.disambiguation.chart.prompt": "Use \"${cmd}<ID>\" to query the exact result.",
     "maimai.message.disambiguation.score.prompt": "Use \"${cmd}<ID>\" to query the exact result.",
@@ -62,6 +62,6 @@
     "maimai.message.too_much": "Too many results (${length}), please narrow down your query.",
     "maimai.message.unbind.success": "Unbound successfully.",
     "maimai.message.use_cache": "Failed to get player scores, cached data has been used.",
-    "maimai.message.user_not_found.lx": "No user found, please check if the friend code exists.",
+    "maimai.message.user_not_found.lx": "",
     "maimai.message.user_unbound.qq": "User not bound. Please visit the Prober site and bind your QQ number.\nProber URL: https://www.diving-fish.com/maimaidx/prober"
 }
