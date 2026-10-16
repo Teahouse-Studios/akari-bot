@@ -1,7 +1,7 @@
 """modules.ai.llm 系统提示中的会话语言标记与指令模板渲染单元测试。"""
 
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from core.builtins.utils import command_prefix
 from core.i18n import Locale
@@ -11,19 +11,20 @@ from modules.ai.endpoints import ParsedResult
 
 
 class _FakeClient:
-    def __init__(self, captured: dict):
+    def __init__(self, captured: dict, text: str = "ok"):
         self._captured = captured
+        self._text = text
 
     async def create(self, messages, tool_choice=None):
         self._captured["messages"] = messages
         return ParsedResult(
-            text="ok",
+            text=self._text,
             tool_calls=[],
             input_tokens=1,
             output_tokens=1,
             cache_read_tokens=0,
             cache_write_tokens=0,
-            assistant_message={"role": "assistant", "content": "ok"},
+            assistant_message={"role": "assistant", "content": self._text},
         )
 
 
@@ -75,6 +76,26 @@ async def _test_latex_dollars_preserved():
     return True
 
 
+async def _test_severe_refusal_uses_rickroll():
+    captured = {}
+    dirty_check = AsyncMock()
+    with (
+        patch.object(
+            llm,
+            "build_endpoint",
+            lambda *args, **kwargs: _FakeClient(captured, " \nSEVERE_REFUSAL_RICKROLL\n "),
+        ),
+        patch.object(llm, "check", dirty_check),
+        patch.object(llm, "rickroll", return_value="rickroll output"),
+    ):
+        chain, *_ = await llm.ask_llm(_session("zh_cn"), "hi", "m", "http://127.0.0.1", "k")
+
+    assert len(chain) == 1
+    assert chain[0].text == "rickroll output"
+    dirty_check.assert_not_awaited()
+    return True
+
+
 @func_case
 async def test_ai_language_prompt(tester: Tester):
     """modules.ai.llm: 指令模板渲染、会话语言标记与命令前缀替换测试"""
@@ -82,4 +103,5 @@ async def test_ai_language_prompt(tester: Tester):
     await tester.test(_test_language_marker_switches_with_locale, "系统提示语言标记跟随会话语言")
     await tester.test(_test_command_prefix_is_substituted, "系统提示替换命令前缀占位符")
     await tester.test(_test_latex_dollars_preserved, "指令模板保留 LaTeX 美元符号")
+    await tester.test(_test_severe_refusal_uses_rickroll, "严重拒绝标记直接输出 Rickroll")
     return tester

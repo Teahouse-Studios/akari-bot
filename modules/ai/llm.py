@@ -8,7 +8,7 @@ from core.builtins.message.internal import ImageElement, Image, Markdown, Plain,
 from core.builtins.message.chain import MessageChain
 from core.builtins.utils import command_prefix
 from core.constants.exceptions import ExternalException
-from core.utils.dirty_check import check
+from core.utils.dirty_check import check, rickroll
 from core.logger import Logger
 from core.utils.func import parse_time_string
 from .config import AiConfig
@@ -139,43 +139,47 @@ async def ask_llm(
         else:
             break
 
-    res = await check("\n\n".join(content_pieces), session=session)
-    resm = "".join(m["content"] for m in res)
-    resm = format_refs(session, resm)
-
-    if session.session_info.support_markdown and session.session_info.support_markdown_extension:
-        chain = [Markdown(resm)]
-    elif session.session_info.support_image:
-        blocks = parse_markdown(resm)
-        chain = []
-        for block in blocks:
-            if block["type"] == "text":
-                chain.append(Plain(block["content"]))
-            elif block["type"] == "latex":
-                content = block["content"]
-                try:
-                    path = generate_latex(content)
-                    chain.append(Image(path))
-                except Exception:
-                    chain.append(Plain(content))
-            elif block["type"] == "code":
-                content = block["content"]["code"]
-                try:
-                    content = await generate_code_snippet(content, block["content"]["language"])
-                    img = PILImage.open(io.BytesIO(content))
-                    chain.append(Image(img))
-                except Exception:
-                    chain.append(Plain(content))
-            elif block["type"] == "table":
-                content = block["content"]
-                try:
-                    path_lst = await generate_md_table(content)
-                    for path in path_lst:
-                        chain.append(Image(path))
-                except Exception:
-                    chain.append(Plain(content))
+    response = "\n\n".join(content_pieces)
+    if response.strip() == "SEVERE_REFUSAL_RICKROLL":
+        chain = [Plain(rickroll())]
     else:
-        chain = [Plain(resm)]
+        res = await check(response, session=session)
+        resm = "".join(m["content"] for m in res)
+        resm = format_refs(session, resm)
+
+        if session.session_info.support_markdown and session.session_info.support_markdown_extension:
+            chain = [Markdown(resm)]
+        elif session.session_info.support_image:
+            blocks = parse_markdown(resm)
+            chain = []
+            for block in blocks:
+                if block["type"] == "text":
+                    chain.append(Plain(block["content"]))
+                elif block["type"] == "latex":
+                    content = block["content"]
+                    try:
+                        path = generate_latex(content)
+                        chain.append(Image(path))
+                    except Exception:
+                        chain.append(Plain(content))
+                elif block["type"] == "code":
+                    content = block["content"]["code"]
+                    try:
+                        content = await generate_code_snippet(content, block["content"]["language"])
+                        img = PILImage.open(io.BytesIO(content))
+                        chain.append(Image(img))
+                    except Exception:
+                        chain.append(Plain(content))
+                elif block["type"] == "table":
+                    content = block["content"]
+                    try:
+                        path_lst = await generate_md_table(content)
+                        for path in path_lst:
+                            chain.append(Image(path))
+                    except Exception:
+                        chain.append(Plain(content))
+        else:
+            chain = [Plain(resm)]
 
     # 仅保留对话部分（去掉每次动态重建的 system 消息与工具迭代警告）作为新的上下文历史。
     # 所有消息现均为 dict（OpenAI Chat Completions 格式）。

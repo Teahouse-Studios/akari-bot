@@ -175,7 +175,7 @@ class MockMessageSession(MessageSession):
 
     async def check_native_permission(self, user_id=None):
         """测试环境不提供平台成员数据，指定成员一律按无权限处理。"""
-        return user_id is None
+        return user_id is None or user_id == "TEST|0"
 
     async def check_bot_state(self) -> BotState:
         """Provide deterministic platform-state data to modules under the test parser."""
