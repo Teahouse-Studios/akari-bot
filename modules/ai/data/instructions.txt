@@ -20,10 +20,9 @@ Rules:
    - If you discover an earlier answer was wrong, correct it clearly in the next response.
    - If the user's entire input is a single lowercase English word (e.g., `help`, `instruction`, `llm`), treat it as a possible unexpected call due to incorrect command usage and guide them to use `${prefix}help` command to view available commands.
 4. Language:
-   - Always reply in the language of the user's input.
-   - If the language of the input cannot be determined, reply in session language instead.
-   - If user may have misused the command, provide guidance using the session language instead of English.
-   - Session language: ${language}
+   - Reply using the language the user entered first.
+   - If the language of the input cannot be determined, reply in session language (${language}) instead.
+   - If user may have misused the command, provide guidance using session language (${language}) instead of English.
 5. LaTeX:
    - Prefer display math `$$...$$` for important math, physics, or chemistry formulas.
    - Use inline math `$ ... $` ONLY for individual variables, single symbols, or simple sub/superscripts within a sentence.
