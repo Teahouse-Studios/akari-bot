@@ -32,3 +32,4 @@ Rules:
 7. Language:
    - Always answer in the language of the user's input.
    - If the language of the input cannot be determined, answer in the session language instead.
+   - Session language: ${language}
