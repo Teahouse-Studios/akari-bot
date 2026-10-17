@@ -56,11 +56,13 @@ if image_api:
                         "type": "string",
                         "description": "A precise description of the changes to make to the image.",
                     },
-                    "image_index": {
-                        "type": "integer",
-                        "description": "1-based index of the target image in chronological order. "
-                        "Defaults to the most recent image.",
-                        "minimum": 1,
+                    "image_indexes": {
+                        "type": "array",
+                        "description": "1-based indexes of the target images in chronological order. "
+                        "Defaults to the most recent image. Provide several indexes when the edit "
+                        "combines multiple images.",
+                        "items": {"type": "integer", "minimum": 1},
+                        "minItems": 1,
                     },
                     "size": {
                         "type": "string",
@@ -123,6 +125,37 @@ def _decode_image_data_url(data_url: str) -> tuple[bytes, str, str]:
     return base64.b64decode(encoded), mime, extension
 
 
+def _resolve_image_indexes(image_indexes: list[int] | int | None, available: int) -> list[int]:
+    if image_indexes is None:
+        return [available]
+    if isinstance(image_indexes, int):
+        image_indexes = [image_indexes]
+    if not isinstance(image_indexes, (list, tuple)):
+        raise ValueError("Invalid image_indexes.")
+    indexes: list[int] = []
+    for value in image_indexes:
+        try:
+            index = int(value)
+        except (TypeError, ValueError):
+            raise ValueError("Invalid image_indexes.") from None
+        if index < 1 or index > available:
+            raise ValueError(f"Invalid image_indexes: {available} image(s) available.")
+        if index not in indexes:
+            indexes.append(index)
+    if not indexes:
+        raise ValueError("Invalid image_indexes: no image specified.")
+    return indexes
+
+
+def _build_image_files(indexes: list[int], images: list[str]) -> list[tuple[str, bytes, str]]:
+    files = []
+    for position, index in enumerate(indexes, start=1):
+        raw, mime, extension = _decode_image_data_url(images[index - 1])
+        filename = f"image{position}{extension}" if len(indexes) > 1 else f"image{extension}"
+        files.append((filename, raw, mime))
+    return files
+
+
 async def _image_response_to_tool_result(response) -> str:
     data = getattr(response, "data", None) or []
     if not data:
@@ -182,7 +215,7 @@ async def generate_image(
 
 async def edit_image(
     prompt: str,
-    image_index: int | None = None,
+    image_indexes: list[int] | int | None = None,
     size: str | None = None,
     quality: str | None = None,
     context: ToolContext | None = None,
@@ -193,16 +226,14 @@ async def edit_image(
     if context is None or not context.images:
         return "No image is available in the conversation."
     try:
-        index = int(image_index) if image_index is not None else len(context.images)
-    except (TypeError, ValueError):
-        return "Invalid image_index."
-    if index < 1 or index > len(context.images):
-        return f"Invalid image_index: {len(context.images)} image(s) available."
+        indexes = _resolve_image_indexes(image_indexes, len(context.images))
+    except ValueError as e:
+        return str(e)
     client = _build_client(context)
     if client is None:
         return "Image editing is not configured."
     try:
-        raw, mime, extension = _decode_image_data_url(context.images[index - 1])
+        files = _build_image_files(indexes, context.images)
     except Exception as e:
         return f"Unable to read the image: {e}"
     size = _normalize_parameter(size)
@@ -210,7 +241,7 @@ async def edit_image(
     enhanced = await _enhance_prompt(context, prompt, "edit")
     kwargs = {
         "prompt": enhanced,
-        "image": (f"image{extension}", raw, mime),
+        "image": files[0] if len(files) == 1 else files,
         **_build_request(size, quality),
     }
     try:

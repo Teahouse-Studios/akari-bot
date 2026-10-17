@@ -105,7 +105,7 @@ async def tool_function_calls(
             elif fn_name == "edit_image":
                 result = await edit_image(
                     args.get("prompt", ""),
-                    args.get("image_index"),
+                    args.get("image_indexes"),
                     args.get("size"),
                     args.get("quality"),
                     context=context,

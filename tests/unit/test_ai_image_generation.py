@@ -149,15 +149,54 @@ async def _test_edit_image_uses_latest_image_and_charges():
     return True
 
 
+async def _test_edit_image_combines_multiple_images():
+    factory = _FakeClientFactory()
+    first = _data_url(b"first")
+    second = _data_url(b"second")
+    context = ToolContext(images=[first, second])
+    with _patched_image_environment(factory):
+        result = await image_generation.edit_image("combine them", image_indexes=[1, 2], context=context)
+
+    payload = orjson.loads(result)
+    assert payload["returns"] == ["[KE:image,path=/cache/generated.png]"]
+    assert factory.images.edit.await_args.kwargs == {
+        "model": "gpt-image-1",
+        "prompt": "combine them",
+        "image": [
+            ("image1.png", b"first", "image/png"),
+            ("image2.png", b"second", "image/png"),
+        ],
+    }
+    assert context.cost == Decimal("7")
+    return True
+
+
+async def _test_edit_image_deduplicates_indexes():
+    factory = _FakeClientFactory()
+    context = ToolContext(images=[_data_url(b"first"), _data_url(b"second")])
+    with _patched_image_environment(factory):
+        await image_generation.edit_image("combine them", image_indexes=[2, 1, 2], context=context)
+
+    assert factory.images.edit.await_args.kwargs["image"] == [
+        ("image1.png", b"second", "image/png"),
+        ("image2.png", b"first", "image/png"),
+    ]
+    return True
+
+
 async def _test_edit_image_rejects_missing_or_invalid_image():
     factory = _FakeClientFactory()
     with _patched_image_environment(factory):
         no_image = await image_generation.edit_image("make it blue", context=ToolContext())
         out_of_range = await image_generation.edit_image(
-            "make it blue", image_index=2, context=ToolContext(images=[_data_url(b"only")])
+            "make it blue", image_indexes=[2], context=ToolContext(images=[_data_url(b"only")])
+        )
+        empty = await image_generation.edit_image(
+            "make it blue", image_indexes=[], context=ToolContext(images=[_data_url(b"only")])
         )
     assert "No image" in no_image
-    assert "Invalid image_index" in out_of_range
+    assert "Invalid image_indexes" in out_of_range
+    assert "Invalid image_indexes" in empty
     factory.images.edit.assert_not_awaited()
     return True
 
@@ -314,6 +353,8 @@ async def test_ai_image_generation(tester: Tester):
     await tester.test(_test_image_cost_lookup, "按尺寸与品质查找图片成本")
     await tester.test(_test_generate_image_uses_enhanced_prompt_and_charges, "生图使用增强提示并记录成本")
     await tester.test(_test_edit_image_uses_latest_image_and_charges, "编辑默认使用最近一张图片")
+    await tester.test(_test_edit_image_combines_multiple_images, "编辑支持传入多张图片")
+    await tester.test(_test_edit_image_deduplicates_indexes, "编辑忽略重复的图片索引")
     await tester.test(_test_edit_image_rejects_missing_or_invalid_image, "编辑拒绝缺失或越界图片")
     await tester.test(
         _test_generate_image_falls_back_to_raw_prompt_and_does_not_charge_on_failure,

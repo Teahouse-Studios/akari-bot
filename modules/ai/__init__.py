@@ -26,55 +26,15 @@ def _get_message_images(msg: Bot.MessageSession) -> list[ImageElement]:
     return [element for element in messages.values if isinstance(element, ImageElement)] if messages else []
 
 
-@ai.command(
-    options_desc={
-        "--ctx": "{I18N:ai.help.option.ctx}",
-        "--llm": "{I18N:ai.help.option.llm}",
-        "--no-tools": "{I18N:ai.help.option.no_tools}",
-    }
-)
-@ai.command(
-    "[<prompt>] [--ctx <turn_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
-    options_desc={
-        "--ctx": "{I18N:ai.help.option.ctx}",
-        "--llm": "{I18N:ai.help.option.llm}",
-        "--no-tools": "{I18N:ai.help.option.no_tools}",
-    },
-)
-async def _(
+async def _chat_loop(
     msg: Bot.MessageSession,
-    prompt: str = "",
-    turn_id: str | None = None,
-    llm: str | None = None,
-    no_tools: bool = False,
-):
-    turn_id = turn_id.strip() if turn_id else None
-    selected_llm = llm.lower() if llm else None
-    target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
-    use_tools = not no_tools
-
-    is_superuser = msg.check_super_user()
-
-    context_key = msg.session_info.channel_key
-    history = get_context(turn_id, context_key) if turn_id else None
-    if turn_id and history is None:
-        await msg.finish(I18NContext("ai.message.context.invalid"))
-
-    available_llms = llm_list + (llm_su_list if is_superuser else [])
-
-    if not selected_llm:
-        selected_llm = target_default_llm if target_default_llm else default_llm
-
-    llm_info = None
-    if selected_llm in available_llms:
-        llm_info = next((llm for llm in llm_api_list if llm["name"].lower() == selected_llm), None)
-
-    if not llm_info:
-        await msg.finish(I18NContext("ai.message.llm.invalid"))
-
-    current_msg = msg
-    current_prompt = prompt or ""
-
+    current_msg: Bot.MessageSession,
+    current_prompt: str,
+    llm_info: dict,
+    use_tools: bool,
+    history: list[dict] | None,
+    context_key: str,
+) -> None:
     while True:
         images = _get_message_images(current_msg)
         if not current_prompt and not images:
@@ -173,6 +133,68 @@ async def _(
         current_msg = reply
         if not current_prompt and not _get_message_images(reply):
             await msg.finish()
+
+
+@ai.command(
+    options_desc={
+        "--ctx": "{I18N:ai.help.option.ctx}",
+        "--llm": "{I18N:ai.help.option.llm}",
+        "--no-tools": "{I18N:ai.help.option.no_tools}",
+    }
+)
+@ai.command(
+    "[<prompt>] [--ctx <turn_id>] [--llm <llm>] [--no-tools] {{I18N:ai.help}}",
+    options_desc={
+        "--ctx": "{I18N:ai.help.option.ctx}",
+        "--llm": "{I18N:ai.help.option.llm}",
+        "--no-tools": "{I18N:ai.help.option.no_tools}",
+    },
+)
+async def _(
+    msg: Bot.MessageSession,
+    prompt: str = "",
+    turn_id: str | None = None,
+    llm: str | None = None,
+    no_tools: bool = False,
+):
+    turn_id = turn_id.strip() if turn_id else None
+    selected_llm = llm.lower() if llm else None
+    target_default_llm = msg.session_info.target_union_info.target_data.get("ai_default_llm")
+    use_tools = not no_tools
+
+    is_superuser = msg.check_super_user()
+
+    context_key = msg.session_info.channel_key
+    history = get_context(turn_id, context_key) if turn_id else None
+    if turn_id and history is None:
+        await msg.finish(I18NContext("ai.message.context.invalid"))
+
+    available_llms = llm_list + (llm_su_list if is_superuser else [])
+
+    if not selected_llm:
+        selected_llm = target_default_llm if target_default_llm else default_llm
+
+    llm_info = None
+    if selected_llm in available_llms:
+        llm_info = next((llm for llm in llm_api_list if llm["name"].lower() == selected_llm), None)
+
+    if not llm_info:
+        await msg.finish(I18NContext("ai.message.llm.invalid"))
+
+    # 多轮对话会跨越多次平台消息处理，保持根会话上下文直到整段对话结束。
+    await msg.hold()
+    try:
+        await _chat_loop(
+            msg=msg,
+            current_msg=msg,
+            current_prompt=prompt or "",
+            llm_info=llm_info,
+            use_tools=use_tools,
+            history=history,
+            context_key=context_key,
+        )
+    finally:
+        await msg.release()
 
 
 def _scale_price(price) -> str:

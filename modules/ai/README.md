@@ -390,7 +390,7 @@ billing:
 
 ## 图片生成与编辑
 
-`image_api.yaml` 与 `llm_api_list.yaml` 一样放在 `modules/ai/data/`，且不纳入版本控制。配置存在且 `model_name` 非空时，模型会获得 `generate_image` 与 `edit_image` 工具。
+`image_api.yaml` 与 `llm_api_list.yaml` 一样放在 `modules/ai/data/`中。当配置存在且 `model_name` 非空时，模型会获得 `generate_image` 与 `edit_image` 工具。
 
 ```yaml
 image_api:
@@ -803,7 +803,7 @@ Please set the `price` values reasonably according to your own requirements and 
 
 ## Image Generation and Editing
 
-`image_api.yaml` lives in `modules/ai/data/` and is not tracked by version control, like `llm_api_list.yaml`. When it exists and `model_name` is non-empty, the model receives the `generate_image` and `edit_image` tools.
+`image_api.yaml` lives in `modules/ai/data/`, like `llm_api_list.yaml`. When it exists and `model_name` is non-empty, the model receives the `generate_image` and `edit_image` tools.
 
 ```yaml
 image_api:
