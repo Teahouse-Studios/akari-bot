@@ -55,6 +55,7 @@ async def count_token_petal(
     cache_read_tokens: int,
     cache_write_tokens: int,
     call_price: float = 0,
+    extra_cost: float | int | Decimal = 0,
 ) -> int:
     if CoreConfig.enable_petal and not session_info.superuser:
         unit_input_price = Decimal(str(input_price)) / ONE_M
@@ -67,6 +68,7 @@ async def count_token_petal(
         cache_read_cost = cache_read_tokens * unit_cache_read_price
         cache_write_cost = cache_write_tokens * unit_cache_write_price
         cost = input_cost + output_cost + cache_read_cost + cache_write_cost + Decimal(str(call_price))
+        cost += max(Decimal("0"), Decimal(str(extra_cost)))
         petal = int((cost * cost_to_petal).quantize(Decimal("1"), rounding=ROUND_UP))
         petal = 0 if petal < 0 else petal
         if petal != 0:

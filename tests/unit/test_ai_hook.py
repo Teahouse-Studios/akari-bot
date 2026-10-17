@@ -1,6 +1,7 @@
 """modules.ai.hook ai.ask 具名 hook 单元测试。"""
 
 from contextlib import ExitStack
+from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -75,11 +76,12 @@ async def _test_ask_ai_success():
         {"prompt": "hi", "instructions": "只输出一个元素", "use_tools": False},
         session_info=_session_info(),
     )
-    ask_llm = AsyncMock(return_value=([Plain("banana")], 10, 20, 0, 0, []))
+    ask_llm = AsyncMock(return_value=([Plain("banana")], 10, 20, 0, 0, [], Decimal("5")))
+    count_token_petal = AsyncMock(return_value=3)
     with (
         _patch_llm(models, "alpha"),
         patch("modules.ai.llm.ask_llm", ask_llm),
-        patch.object(hook, "count_token_petal", AsyncMock(return_value=3)),
+        patch.object(hook, "count_token_petal", count_token_petal),
     ):
         result = await hook.ask_ai(ctx)
     assert result.status == hook.STATUS_OK
@@ -88,6 +90,7 @@ async def _test_ask_ai_success():
     assert result.llm == "alpha"
     assert ask_llm.await_args.kwargs["extra_instructions"] == "只输出一个元素"
     assert ask_llm.await_args.kwargs["use_tools"] is False
+    assert count_token_petal.await_args.kwargs["extra_cost"] == Decimal("5")
     return True
 
 

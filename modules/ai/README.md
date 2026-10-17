@@ -1,4 +1,4 @@
-在使用本模块前，请确保在 `modules/ai/data/` 目录下创建 `llm_api_list.yaml` 配置文件，否则模块将无法正常运行。
+在使用本模块前，请确保在 `modules/ai/data/` 目录下创建 `llm_api_list.yaml` 配置文件，否则模块将无法正常运行。如需启用图片生成与编辑，再创建 `image_api.yaml`。
 
 ---
 
@@ -388,7 +388,30 @@ billing:
 
 ---
 
-Before using this module, please make sure to create the `llm_api_list.yaml` configuration file in the `modules/ai/data/` directory. Otherwise, the module will not function properly.
+## 图片生成与编辑
+
+`image_api.yaml` 与 `llm_api_list.yaml` 一样放在 `modules/ai/data/`，且不纳入版本控制。配置存在且 `model_name` 非空时，模型会获得 `generate_image` 与 `edit_image` 工具。
+
+```yaml
+image_api:
+  model_name: gpt-image-1
+  base_url: https://api.openai.com/v1
+  api_key: sk-xxxxxxxx
+  costs:
+    low: 4
+    medium: 8
+    high: 16
+    auto: 8
+    default: 8
+```
+
+* `base_url`、`api_key` 留空时沿用当前对话模型的地址与密钥。
+* `costs` 以调用费用为单位，可以是固定数值，也可以是按参数查找的对照表；查找顺序为 `尺寸:品质` → 品质 → 尺寸 → `default` → `auto` → 第一个数值。
+* 修改配置后需重启机器人或重载 `ai` 模块。
+
+---
+
+Before using this module, please make sure to create the `llm_api_list.yaml` configuration file in the `modules/ai/data/` directory. Otherwise, the module will not function properly. To enable image generation and editing, also create `image_api.yaml`.
 
 ---
 
@@ -775,3 +798,26 @@ billing:
 ```
 
 Please set the `price` values reasonably according to your own requirements and the service provider's pricing to control costs.
+
+---
+
+## Image Generation and Editing
+
+`image_api.yaml` lives in `modules/ai/data/` and is not tracked by version control, like `llm_api_list.yaml`. When it exists and `model_name` is non-empty, the model receives the `generate_image` and `edit_image` tools.
+
+```yaml
+image_api:
+  model_name: gpt-image-1
+  base_url: https://api.openai.com/v1
+  api_key: sk-xxxxxxxx
+  costs:
+    low: 4
+    medium: 8
+    high: 16
+    auto: 8
+    default: 8
+```
+
+* If `base_url` or `api_key` is empty, the current chat model's URL or key is used.
+* `costs` are measured in call-cost units and may be a fixed number or a lookup table keyed by parameters. Lookup order: `size:quality`, `quality`, `size`, `default`, `auto`, then the first numeric value.
+* Restart the bot or reload the `ai` module after changing the file.

@@ -110,7 +110,7 @@ async def _(
 
         prompt_elements = [Plain(current_prompt)] if current_prompt else []
         prompt_chain = MessageChain.assign([*prompt_elements, *images])
-        chain, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, history = await ask_llm(
+        chain, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, history, image_cost = await ask_llm(
             current_msg,
             prompt_chain,
             llm_info["model_name"],
@@ -144,6 +144,7 @@ async def _(
             cache_read_tokens,
             cache_write_tokens,
             billing["call_price"],
+            extra_cost=image_cost,
         )
 
         chain.append(Plain("\n---\n"))

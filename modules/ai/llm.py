@@ -1,5 +1,6 @@
 import io
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from PIL import Image as PILImage
 
@@ -14,7 +15,7 @@ from core.utils.func import parse_time_string
 from .config import AiConfig
 from .formatting import parse_markdown, generate_code_snippet, generate_latex, generate_md_table, format_refs
 from .setting import INSTRUCTIONS, PERSONA
-from .tools import tool_function_calls
+from .tools import create_tool_context, tool_function_calls
 from .endpoints import build_endpoint, RETRYABLE_EXCEPTIONS
 
 max_iterations = AiConfig.llm_max_calling_iteration
@@ -52,7 +53,7 @@ async def ask_llm(
     history: list[dict] | None = None,
     extra_instructions: str | None = None,
     generation: dict | None = None,
-) -> tuple[list, int, int, int, int, list]:
+) -> tuple[list, int, int, int, int, list, Decimal]:
     client = build_endpoint(endpoint, api_url, api_key, model_name, generation)
 
     tz_ = session.session_info._tz_offset
@@ -104,6 +105,12 @@ async def ask_llm(
     total_output_tokens = 0
     content_pieces = []
     tool_choice = "auto" if use_tools else "none"
+    tool_context = create_tool_context(
+        client,
+        api_url,
+        api_key,
+        getattr(session.session_info, "superuser", False),
+    )
 
     iterations = 0
     while iterations <= max_iterations:
@@ -125,7 +132,7 @@ async def ask_llm(
 
         if result.tool_calls:
             iterations += 1
-            messages = await tool_function_calls(result.tool_calls, messages)
+            messages = await tool_function_calls(result.tool_calls, messages, context=tool_context)
             if iterations == max_iterations:
                 Logger.warning("LLM tool calling reached maximum iterations.")
                 messages.append(
@@ -138,6 +145,12 @@ async def ask_llm(
             continue
         else:
             break
+
+    extra_input, extra_output, extra_cache_read, extra_cache_write = tool_context.prompt_usage()
+    total_input_tokens += extra_input
+    total_output_tokens += extra_output
+    total_cache_read_tokens += extra_cache_read
+    total_cache_write_tokens += extra_cache_write
 
     response = "\n\n".join(content_pieces)
     if "SEVERE_REFUSAL_RICKROLL" in response:
@@ -191,4 +204,5 @@ async def ask_llm(
         total_cache_read_tokens,
         total_cache_write_tokens,
         new_history,
+        tool_context.cost,
     )

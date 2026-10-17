@@ -180,3 +180,66 @@ llm_su_list = [llm["name"].lower() for llm in llm_api_list if llm.get("superuser
 
 # 配置的默认模型可能已从 llm_api_list 中移除，只有仍可用时才作为默认值。
 default_llm = AiConfig.ai_default_llm if AiConfig.ai_default_llm in llm_list else None
+
+
+image_api_path = next(
+    (
+        ai_data_path / f"image_api{dot_yaml}"
+        for dot_yaml in (".yaml", ".yml")
+        if (ai_data_path / f"image_api{dot_yaml}").exists()
+    ),
+    None,
+)
+if image_api_path:
+    with open(image_api_path, "r", encoding="utf-8") as f:
+        loaded_image_api = yaml.safe_load(f) or {}
+    image_api = loaded_image_api.get("image_api", {}) if isinstance(loaded_image_api, dict) else {}
+else:
+    image_api = {}
+
+if isinstance(image_api, dict):
+    image_api = {
+        "model_name": str(image_api.get("model_name") or "").strip(),
+        "base_url": str(image_api.get("base_url") or "").strip(),
+        "api_key": str(image_api.get("api_key") or "").strip(),
+        "costs": image_api.get("costs", 0),
+    }
+    if not image_api["model_name"]:
+        image_api = {}
+else:
+    image_api = {}
+
+
+def _parse_image_cost(value) -> Decimal | None:
+    if isinstance(value, bool) or value is None:
+        return None
+    try:
+        cost = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
+    return cost if cost.is_finite() and cost >= 0 else None
+
+
+def get_image_cost(size: str | None = None, quality: str | None = None) -> Decimal:
+    costs = image_api.get("costs", 0)
+    if not isinstance(costs, dict):
+        return _parse_image_cost(costs) or Decimal("0")
+
+    keys = []
+    if size and quality:
+        keys.append(f"{size}:{quality}")
+    if quality:
+        keys.append(quality)
+    if size:
+        keys.append(size)
+    keys.extend(("default", "auto"))
+
+    for key in keys:
+        cost = _parse_image_cost(costs.get(key))
+        if cost is not None:
+            return cost
+    for value in costs.values():
+        cost = _parse_image_cost(value)
+        if cost is not None:
+            return cost
+    return Decimal("0")

@@ -4,17 +4,26 @@ from typing import Any
 import orjson
 
 from core.logger import Logger
+from .context import ToolContext, create_tool_context as create_tool_context
 from .execute_python_code import *
 from .fetch_webpage import *
+from .image_generation import *
 from .search_images import *
 from .search_web import *
 
-_tools = [execute_python_code_desc, fetch_webpage_desc, search_web_desc, search_images_desc]
+_tools = [
+    execute_python_code_desc,
+    fetch_webpage_desc,
+    search_web_desc,
+    search_images_desc,
+    generate_image_desc,
+    edit_image_desc,
+]
 TOOLS = [fnd for fnd in _tools if fnd]
 
 
-def _split_images(fn_name: str, result: str) -> tuple[str, list[dict]]:
-    if fn_name != "execute_python_code" or not result:
+def _split_images(result: str) -> tuple[str, list[dict]]:
+    if not result:
         return result, []
     try:
         payload = orjson.loads(result)
@@ -33,7 +42,7 @@ def _build_image_message(images: list[dict]) -> dict:
     content = [
         {
             "type": "text",
-            "text": "The following images were produced by execute_python_code. "
+            "text": "The following images were produced by a tool. "
             "Include the matching [KE:image,path=...] code in your reply if the user should see an image:",
         }
     ]
@@ -43,7 +52,34 @@ def _build_image_message(images: list[dict]) -> dict:
     return {"role": "user", "content": content}
 
 
-async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
+def _collect_images(messages: list[dict[str, Any]]) -> list[str]:
+    images = []
+    for message in messages:
+        if message.get("role") != "user":
+            continue
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if not isinstance(part, dict) or part.get("type") != "image_url":
+                continue
+            image_url = part.get("image_url")
+            if not isinstance(image_url, dict):
+                continue
+            url = image_url.get("url")
+            if isinstance(url, str) and url:
+                images.append(url)
+    return images
+
+
+async def tool_function_calls(
+    tool_calls,
+    messages: list[dict[str, Any]],
+    context: ToolContext | None = None,
+):
+    if context is not None:
+        context.images = _collect_images(messages)
+
     async def execute_single_tool(tool_call):
         fn_name = tool_call.name
         args = tool_call.arguments
@@ -59,6 +95,21 @@ async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
                 result = await search_images(args["query"], args.get("search_results", 5))
             elif fn_name == "search_web":
                 result = await search_web(args["query"], args.get("search_results", 10))
+            elif fn_name == "generate_image":
+                result = await generate_image(
+                    args.get("prompt", ""),
+                    args.get("size"),
+                    args.get("quality"),
+                    context=context,
+                )
+            elif fn_name == "edit_image":
+                result = await edit_image(
+                    args.get("prompt", ""),
+                    args.get("image_index"),
+                    args.get("size"),
+                    args.get("quality"),
+                    context=context,
+                )
             else:
                 result = f"Unknown tool: {fn_name}"
         except Exception as e:
@@ -70,7 +121,7 @@ async def tool_function_calls(tool_calls, messages: list[dict[str, Any]]):
 
     images = []
     for tool_call_id, fn_name, result in tool_results:
-        content, tool_images = _split_images(fn_name, result)
+        content, tool_images = _split_images(result)
         messages.append(
             {
                 "role": "tool",

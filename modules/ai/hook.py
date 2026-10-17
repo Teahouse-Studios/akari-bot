@@ -94,7 +94,7 @@ async def ask_ai(ctx: Bot.ModuleHookContext) -> AiHookResult:
 
     # hook 上下文只带 SessionInfo，而模型调用与出站格式化都需要消息会话。
     session = Bot.MessageSession(session_info)
-    chain, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, _history = await ask_llm(
+    chain, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens, _history, image_cost = await ask_llm(
         session,
         prompt,
         llm_info["model_name"],
@@ -122,6 +122,7 @@ async def ask_ai(ctx: Bot.ModuleHookContext) -> AiHookResult:
         cache_read_tokens,
         cache_write_tokens,
         billing["call_price"],
+        extra_cost=image_cost,
     )
 
     return AiHookResult(
