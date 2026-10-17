@@ -29,12 +29,40 @@ use_textscan_v1 = CoreConfig.check_use_textscan_v1
 
 ALIYUN_BACKEND = "aliyun"
 ALIYUN_SPLIT_CACHE_KEY = "_akari_split_results"
+ALIYUN_SPLIT_LENGTHS_KEY = "_akari_split_lengths"
 TEXT_CHUNK_SIZE = 600
+TEXTSCAN_V1_CHUNK_SIZE = 10000
 
 
 def hash_hmac(key, code):
     hmac_code = hmac.new(key.encode(), code.encode(), hashlib.sha1)
     return base64.b64encode(hmac_code.digest()).decode("utf-8")
+
+
+def split_text(text: str, size: int = TEXT_CHUNK_SIZE) -> list[str]:
+    """把文本按 size 切块，尽量在标点/换行处断开，避免切断关键词。"""
+    if not text:
+        return [""]
+    if len(text) <= size:
+        return [text]
+
+    chunks = []
+    start = 0
+    n = len(text)
+    while start < n:
+        end = min(start + size, n)
+        if end < n:
+            # 向后最多回退 50 字符找一个自然断点
+            for back in range(0, 50):
+                cand = end - back
+                if cand <= start:
+                    break
+                if text[cand - 1] in "\n。！？.!?;；，, ":
+                    end = cand
+                    break
+        chunks.append(text[start:end])
+        start = end
+    return chunks
 
 
 def parse_data(original_content: str, result: dict, confidence: float = 60, additional_text=None) -> dict:
@@ -125,7 +153,19 @@ def parse_aliyun_split_data(
     if not isinstance(split_results, list):
         raise ValueError("Invalid Aliyun split cache data")
 
-    chunks = [original_content[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(original_content), TEXT_CHUNK_SIZE)]
+    chunks = None
+    chunk_lengths = result.get(ALIYUN_SPLIT_LENGTHS_KEY)
+    if isinstance(chunk_lengths, list) and all(isinstance(length, int) for length in chunk_lengths):
+        chunks = []
+        offset = 0
+        for length in chunk_lengths:
+            chunks.append(original_content[offset : offset + length])
+            offset += length
+        if offset != len(original_content):
+            raise ValueError("Aliyun split cache data does not match content chunks")
+    if chunks is None:
+        # 未记录分片长度的历史缓存按定长切片还原。
+        chunks = [original_content[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(original_content), TEXT_CHUNK_SIZE)]
     if len(chunks) != len(split_results):
         raise ValueError("Aliyun split cache data does not match content chunks")
 
@@ -159,7 +199,11 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
                     cache = await DirtyWordCache.check(pq, namespace=cache_namespace)
                     if cache:
                         if use_textscan_v1:
-                            query_list[q][pq] = parse_data(pq, cache.result, confidence)
+                            if isinstance(cache.result, dict) and ALIYUN_SPLIT_CACHE_KEY in cache.result:
+                                query_list[q][pq] = parse_aliyun_split_data(pq, cache.result, confidence)
+                            else:
+                                # 未分片的历史缓存保存的是整条文本的检测结果。
+                                query_list[q][pq] = parse_data(pq, cache.result, confidence)
                         else:
                             query_list[q][pq] = parse_aliyun_split_data(pq, cache.result, confidence)
                 except Exception:
@@ -179,9 +223,16 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
         if use_textscan_v1:
             url = "/green/text/scan"
             root = "https://green.cn-shanghai.aliyuncs.com"
+            # 单条 task 最多检测 10000 字符，超出会被接口拒绝。
+            split_results: dict[str, list[tuple[int, dict]]] = {x: [] for x in call_api_list_}
+            chunks_by_text = {x: split_text(x, TEXTSCAN_V1_CHUNK_SIZE) for x in call_api_list_}
+            chunk_map: dict[str, list[tuple[str, int]]] = {}
+            for x, chunks in chunks_by_text.items():
+                for idx, chunk in enumerate(chunks):
+                    chunk_map.setdefault(chunk, []).append((x, idx))
             body = {
                 "scenes": ["antispam"],
-                "tasks": [{"dataId": str(uuid.uuid4()), "content": x} for x in call_api_list_],
+                "tasks": [{"dataId": str(uuid.uuid4()), "content": x} for x in chunk_map],
             }
             date = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
             content_md5 = base64.b64encode(hashlib.md5(orjson.dumps(body), usedforsecurity=False).digest()).decode(
@@ -212,23 +263,40 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
 
                     if result["code"] == 200:
                         for item in result["data"]:
-                            content = item["content"]
-                            for n in call_api_list[content]:
-                                query_list[n][content] = parse_data(content, item, confidence)
-                            hash_id = DirtyWordCache.make_hash(content, cache_namespace)
-                            await DirtyWordCache.update_or_create(
-                                hash_id=hash_id,
-                                defaults={"desc": content, "result": item},
-                            )
+                            for original, idx in chunk_map.get(item["content"], ()):
+                                split_results[original].append((idx, item))
                     else:
                         raise ValueError(result["msg"])
                 else:
                     raise ValueError(resp.text)
+
+            for original, res_list in split_results.items():
+                res_list.sort(key=lambda item: item[0])
+                cache_result = {
+                    ALIYUN_SPLIT_CACHE_KEY: [item[1] for item in res_list],
+                    ALIYUN_SPLIT_LENGTHS_KEY: [len(chunk) for chunk in chunks_by_text[original]],
+                }
+                final_parse_result = parse_aliyun_split_data(original, cache_result, confidence)
+
+                for n in call_api_list[original]:
+                    query_list[n][original] = final_parse_result
+
+                if res_list:
+                    try:
+                        hash_id = DirtyWordCache.make_hash(original, cache_namespace)
+                        await DirtyWordCache.update_or_create(
+                            hash_id=hash_id,
+                            defaults={"desc": original, "result": cache_result},
+                        )
+                    except Exception:
+                        Logger.warning("Failed to create dirty word cache, skip.")
+                        Logger.exception()
         else:
             root = "https://green-cip.cn-shanghai.aliyuncs.com"
             sem = asyncio.Semaphore(10)
 
             split_results = {x: [] for x in call_api_list_}
+            chunks_by_text = {x: split_text(x, TEXT_CHUNK_SIZE) for x in call_api_list_}
 
             async def call_api(original_text: str, sub_text: str, index: int):
                 async with sem:
@@ -276,8 +344,7 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
 
             async with httpx.AsyncClient(proxy=proxy, verify=ssl_verify) as client:
                 tasks = []
-                for x in call_api_list_:
-                    chunks = [x[i : i + TEXT_CHUNK_SIZE] for i in range(0, len(x), TEXT_CHUNK_SIZE)]
+                for x, chunks in chunks_by_text.items():
                     for idx, chunk in enumerate(chunks):
                         tasks.append(call_api(x, chunk, idx))
 
@@ -286,7 +353,10 @@ async def _check_aliyun(texts: list[str], confidence: float = 60) -> list[dict]:
             for x, res_list in split_results.items():
                 res_list.sort(key=lambda item: item[0])
 
-                cache_result = {ALIYUN_SPLIT_CACHE_KEY: [result[2] for result in res_list]}
+                cache_result = {
+                    ALIYUN_SPLIT_CACHE_KEY: [result[2] for result in res_list],
+                    ALIYUN_SPLIT_LENGTHS_KEY: [len(chunk) for chunk in chunks_by_text[x]],
+                }
                 final_parse_result = parse_aliyun_split_data(x, cache_result, confidence)
 
                 for n in call_api_list[x]:
