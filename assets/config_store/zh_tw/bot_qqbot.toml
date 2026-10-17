@@ -4,7 +4,7 @@
 
 [bot_qqbot]
 # 用戶端的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
-enable = false # 是否啟用此用户端。
+enable = false # 是否啟用此用戶端。
 qq_bot_appid = "<Replace me with (str, int) value>" # QQ 機器人（官方）的 AppID。
 qq_bot_openid = "<Replace me with str value>" # QQ 機器人（官方）的 OpenID。
 qq_bot_enable_send_url = false # 使用 QQ 機器人（官方）時，是否啟用傳送 URL。
@@ -14,7 +14,7 @@ qq_limited_emoji = 10060 # 使用 QQ 機器人（官方）時，訊息處理失�
 qq_use_markdown = false # 使用 QQ 機器人（官方）時，是否使用 Markdown 格式訊息。
 qq_bot_certified = true # QQ 機器人（官方）是否已通過企業或個人認證，未認證時主動訊息配額較低。
 qq_navigation_sync_strict = false # 同步 QQ 機器人（官方）的全域選單與指令面板失敗時，是否阻止用戶端啟動。
-qq_use_webhook = false # 使用 QQ 機器人（官方）時，是否使用 Webhook 接收事件，關閉則連接 Gateway。
+qq_use_webhook = false # 使用 QQ 機器人（官方）時，是否使用 Webhook 接收事件，停用則連接 Gateway。
 qq_webhook_host = "0.0.0.0" # Webhook 監聽位址。
 qq_webhook_port = 8080 # Webhook 監聽連接埠。
 qq_webhook_path = "/" # Webhook 回呼路徑，需與開放平台配置的回呼位址一致。

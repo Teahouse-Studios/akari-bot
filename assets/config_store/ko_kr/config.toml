@@ -2,8 +2,8 @@
 # 주의: TOML은 Python이 아닙니다. Python 문법을 사용하지 마십시오.
 # 예: TOML의 불리언 값은 반드시 소문자로 작성해야 합니다.
 
-default_locale = "ko_kr" # 사전 설정된 언어 환경.
-config_version = 6 # 버전 번호를 설정합니다. 기능 업데이트 시 자동으로 증가하므로, 일반적으로 수정하지 마십시오.
+default_locale = "ko_kr" # 기본 언어 환경.
+config_version = 6 # 설정 버전 번호입니다. 기능 업데이트에 따라 자동으로 증가하므로, 일반적으로 직접 수정하지 마십시오.
 
 [config]
 # 이 섹션에는 몇 가지 기본 구성 정보가 포함되어 있습니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
@@ -19,16 +19,16 @@ media_compression_threshold = 10 # 미디어 파일 크기 임계값. 이 값을
 proxy_disable_ssl = false # 프록시 서비스를 사용할 때 HTTPS 인증서 확인을 건너뛸지 여부. 프록시 서비스가 대상 사이트의 인증서를 교체하는 경우에만 적용됩니다.
 base_superuser = ["QQ|2596322644"] # 봇의 기본 슈퍼유저 목록입니다. 여기에 입력된 값은 봇이 시작될 때 데이터베이스에 로드됩니다.
 ignored_sender = ["QQ|2854196310"] # 무시할 사용자 목록. 이 목록에 포함된 사용자는 무시됩니다.
-report_targets = [] # 보고 대상 컨텍스트 목록입니다. 입력한 컨텍스트 ID이 보고 대상 장면으로 사용됩니다. (예: 봇이 명령을 실행하는 과정에서 오류가 발생하면, 봇은 해당 컨텍스트으로 오류 메시지를 전송합니다)
-retired_clients = [] # 폐지된 클라이언트와 해당 데이터 이전 대상을 '<이전 원본 클라이언트> -> <이전 대상 클라이언트>'(예: 'QQ -> QQBot') 형식으로 지정해야 합니다. 이전 원본 클라이언트만 지정한 경우 이전을 진행하지 않음을 의미합니다.
+report_targets = [] # 보고 대상 컨텍스트 목록입니다. 여기에 입력한 컨텍스트 ID가 보고 대상 컨텍스트로 인식됩니다. (예: 봇이 명령어을 실행하는 과정에서 오류가 발생하면, 봇은 해당 컨텍스트로 오류 메시지를 전송합니다)
+retired_clients = [] # 폐지된 클라이언트와 해당 데이터 마이그레이션 대상을 '<원본 클라이언트> -> <대상 클라이언트>'(예: 'QQ -> QQBot') 형식으로 지정해야 합니다. 원본 클라이언트만 지정한 경우 마이그레이션을 제공하지 않음을 의미합니다.
 command_prefix = ["~", "～"] # 명령어 접두사입니다. 입력한 값이 명령어 접두사로 사용됩니다.
 regex_disable_prefix = [".", "。"] # 정규식 구문 분석을 일시적으로 비활성화하기 위한 메시지 접두사입니다.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # 확인 명령어 키워드입니다. 입력한 값이 확인 명령어로 인식됩니다.
 mention_required = false # 메시지 시작 부분에 봇이 언급된 메시지만 처리하도록 강제할지 여부.
-no_confirm = false # 사용자의 확인 없이 명령을 직접 실행할지 여부.
+no_confirm = false # 사용자의 확인 없이 명령어을 직접 실행할지 여부.
 quick_confirm = true # 메시지에 대한 빠른 확인 기능을 활성화할지 여부.
 enable_analytics = true # 내장된 통계 기능을 활성화할지 여부.
-enable_bind_auto = false # 동일한 컨텍스트 내의 다른 인스턴스를 자동으로 페어링하기 위해 'bind auto' 명령을 활성화할지 여부.
+enable_bind_auto = false # 동일한 컨텍스트 내의 다른 인스턴스를 자동으로 페어링하기 위해 'bind auto' 명령어을 활성화할지 여부.
 enable_commit_url = true # 버전 정보 표시 시 커밋 URL 표시 여부.
 enable_dirty_check = false # 텍스트 필터링 활성화 여부. Alibaba Cloud 콘텐츠 보안 서비스의 AccessKey ID 및 AccessKey Secret이 필요합니다.
 check_use_textscan_v1 = false # 이전 버전의 Alibaba Cloud 콘텐츠 보안 Text Scan 1.0 API 사용 여부.
@@ -47,11 +47,11 @@ enable_petal = false # 페탈(petal) 기능 활성화 여부.
 enable_get_petal = false # 페탈(petal) 획득 허용 여부.
 petal_gained_limit = 0 # 하루에 획득할 수 있는 페탈(petal)의 최대 수.
 petal_lost_limit = 0 # 하루에 잃을 수 있는 페탈(petal)의 최대 수.
-petal_sign_min = 2 # 하루에 로그인하여 획득할 수 있는 페탈(petal)의 최대 수.
+petal_sign_min = 2 # 하루에 출석하여 획득할 수 있는 페탈(petal)의 최소 수.
 petal_sign_max = 12 # 하루에 출석하여 획득할 수 있는 페탈(petal)의 최대 수.
 petal_sign_rate = 0.5 # 출석 시 페탈(petal)을 획득할 확률. 범위는 0에서 1 사이의 값이며, 획득량은 기하 분포로 감소합니다.
 petal_reset_crontab = "0 0 1 * *" # 페탈(petal) 주기에 대한 Cron 표현식.
-petal_rebate_rate = 0.2 # 페탈(petal) 사이클의 끝에 유지되는 비율. 범위는 0에서 1 사이입니다.
+petal_rebate_rate = 0.2 # 페탈(petal) 주기의 끝에 유지되는 비율. 범위는 0에서 1 사이입니다.
 enable_joke = true # 농담 모드 활성화 여부. 활성화 시 서버 시간 기준 4월 1일에 적용됩니다.
 shuffle_rate = 0.1 # 농담이 발생할 확률. 범위는 0에서 1 사이입니다.
 enable_rickroll = true # 텍스트 필터링 실패 시 Rickroll 메시지 전송 여부.

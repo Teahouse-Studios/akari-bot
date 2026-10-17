@@ -3,7 +3,7 @@
 # 例：TOML のブール値は小文字である必要があります。
 
 default_locale = "ja_jp" # プリセット言語環境。
-config_version = 6 # バージョン番号。機能アップデートに伴い自動的に更新されるので、通常は変更しないでください。
+config_version = 6 # 設定のバージョン番号。機能アップデートに伴い自動的に更新されるので、通常は変更しないでください。
 
 [config]
 # 基本的な設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
@@ -11,7 +11,7 @@ debug = false # デバッグモードを有効にするかどうか。有効に�
 timezone_offset = "+8" # ボットのデフォルトのタイムゾーン オフセット。
 allow_request_private_ip = false # ボットがローカルのプライベート IP アドレスにリクエストを送信することを許可するかどうか。（情報漏洩を防ぐため）
 schedule_interval_multiplier = 1.0 # スケジュール タスク トリガーの間隔時間の倍率。
-use_emote = false # 感情表現リソースを使用するかどうか。
+use_emote = false # エモート リソースを使用するかどうか。
 use_font_mirror = false # ウェブページをレンダリングするときにフォントのミラーリングを使用するかどうか。
 use_secrets_random = false # secrets ライブラリに基づく乱数ジェネレータを使用するかどうか。
 ffmpeg_path = "<Replace me with str value>" # FFmpeg 実行ファイルのパス。
@@ -34,15 +34,15 @@ enable_dirty_check = false # テキスト フィルタリング検出を有効�
 check_use_textscan_v1 = false # Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。
 enable_urlmanager = false # URL スプリングボードの URLManager を有効にするかどうか。（URL が公式リンクではないことを宣言するなど）
 auto_purge_crontab = "0 0 * * *" # 自動キャッシュ パージ用の Cron 式。
-typo_check_module_score = 0.6 # モジュールのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
-typo_check_command_score = 0.3 # コマンドのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
-typo_check_args_score = 0.5 # 引数のスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
-typo_check_options_score = 0.3 # オプションのスペルチェックにおける類似度を許容スコア。範囲は 0 ～ 1 です。
+typo_check_module_score = 0.6 # モジュールのスペルチェックにおける類似度の許容スコア。範囲は 0 ～ 1 です。
+typo_check_command_score = 0.3 # コマンドのスペルチェックにおける類似度の許容スコア。範囲は 0 ～ 1 です。
+typo_check_args_score = 0.5 # 引数のスペルチェックにおける類似度の許容スコア。範囲は 0 ～ 1 です。
+typo_check_options_score = 0.3 # オプションのスペルチェックにおける類似度の許容スコア。範囲は 0 ～ 1 です。
 typo_check_module_diff_ratio = 0.5 # モジュール名の長さの差に関する閾値です。一致したモジュール名の長さとユーザーが入力した長さとの差の比率がこの値を超えた場合、その一致はスキップされます。範囲は 0 ～ 1 です。
 typo_check_args_diff_ratio = 0.5 # コマンドのパラメータ数に関する閾値です。ユーザーが入力したパラメータ数とテンプレート内のパラメータ数との差の比率がこの値を超えると、コマンドの照合はスキップされます。範囲は 0 ～ 1 です。
 enable_tos = true # 組み込みの ToS（利用規約）チェック ルールを有効にするかどうか。
 tos_warning_counts = 5 # 利用規約違反に対する警告の最大数。
-tos_temp_ban_time = 300 # 利用規約違反時の一時的な禁止時間。
+tos_temp_ban_time = 300 # 利用規約違反時の一時的なブロック時間。
 enable_petal = false # ペタル機能を有効にするかどうか。
 enable_get_petal = false # ペタルの取得を許可するかどうか。
 petal_gained_limit = 0 # 1 日に獲得できるペタルの最大数。

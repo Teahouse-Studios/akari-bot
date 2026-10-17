@@ -18,5 +18,5 @@ jobqueue_websocket_max_message_bytes = 1048576 # 单个 WebSocket 协议帧允�
 jobqueue_websocket_command_timeout = 10 # WebSocket 控制命令的超时时间，单位为秒。
 
 [jobqueue_secret]
-# The secret config section of the JobQueue. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section of the JobQueue. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 jobqueue_websocket_token = "<Replace me with str value>" # WebSocket JobQueue Hub 的共享访问令牌。留空时，启动阶段会生成安全随机密钥并写回配置；使用外部 Hub 的所有节点必须配置相同值。

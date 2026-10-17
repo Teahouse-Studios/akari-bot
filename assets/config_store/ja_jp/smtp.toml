@@ -4,7 +4,7 @@
 
 [smtp]
 # SMTP の設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-enable_email_report = false # SMTPメールのレポート機能を有効にします。有効にすると、メッセージはコンテキストにレポートされなくなります。
+enable_email_report = false # SMTP メールのレポート機能を有効にするかどうか。有効にすると、メッセージはコンテキストにレポートされなくなります。
 smtp_host = "<Replace me with str value>" # SMTP サーバーのアドレス。
 smtp_port = 587 # SMTP サーバーのポート番号。
 smtp_username = "<Replace me with str value>" # SMTP ログイン用メール アドレス。

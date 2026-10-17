@@ -4,7 +4,7 @@
 
 [module_coin]
 # モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
-coin_limit = 10000 # coin モジュールは、コイン投げの上限数。
-coin_faceup_weight = 4997 # coin モジュールは、コインを投げたときの表の重さ。
-coin_facedown_weight = 4997 # coin モジュールは、コインを投げたときの裏の重さ。
-coin_stand_weight = 6 # coin モジュールは、コインを投げたときに立ち上がるの重さ。
+coin_limit = 10000 # coin モジュールで投げられるコインの上限数。
+coin_faceup_weight = 4997 # coin モジュールでコインを投げたときの表の重み。
+coin_facedown_weight = 4997 # coin モジュールでコインを投げたときの裏の重み。
+coin_stand_weight = 6 # coin モジュールでコインを投げたときに立つ重み。

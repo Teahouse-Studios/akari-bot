@@ -4,8 +4,8 @@
 
 [module_ncmusic]
 # The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
-ncmusic_enable_card = false # Whether enables card messages of ncmusic module. (Only valid on QQ client)
+ncmusic_enable_card = false # Whether to enable card messages of the ncmusic module. (Only valid on QQ client)
 
 [module_ncmusic_secret]
-# The secret config section of the module. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section of the module. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 ncmusic_api = "<Replace me with str value>" # API address of NetEase Cloud Music API.

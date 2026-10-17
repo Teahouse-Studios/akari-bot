@@ -17,6 +17,6 @@ s3_max_attempts = 2 # Maximum number of attempts per request for the S3-compatib
 s3_max_workers = 4 # Maximum number of threads in the dedicated thread pool for the S3-compatible API.
 
 [s3_secret]
-# The secret config section of the S3-compatible API. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section of the S3-compatible API. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 s3_access_key = "<Replace me with str value>" # S3-compatible API AccessKey.
 s3_secret_key = "<Replace me with str value>" # S3-compatible API SecretKey.

@@ -5,10 +5,12 @@
 [module_ai]
 # モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
 ai_default_llm = "<Replace me with str value>" # デフォルトで使用される LLM。
+ai_cost_to_petal = 1 # ペタルの数とコール料金の比率。
 llm_timeout = 60 # LLM のタイムアウト。
 llm_max_tokens = 2048 # LLM のトークン数の上限を設定します。
 llm_temperature = 1.0 # LLM の温度サンプリング。範囲は 0 ～ 2 です。top_p と同時に変更することは推奨されません。
-llm_top_p = 1.0 # LLM のカーネルサンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。
+llm_top_p = 1.0 # LLM の核サンプリング。範囲は 0 ～ 1 です。temperature と同時に変更することは推奨されません。
+llm_top_logprobs = -1 # LLM によって返される候補トークンの対数確率カウント。範囲は 0 〜 20 です。負の値の場合は使用されません。
 llm_frequency_penalty = 0.0 # LLM の周波数ペナルティ。範囲は -2 ～ 2 です。
 llm_presence_penalty = 0.0 # LLM の存在ペナルティ。範囲は -2 ～ 2 です。
 llm_max_calling_iteration = 5 # LLM におけるツール呼び出しの最大反復回数の上限を設定します。

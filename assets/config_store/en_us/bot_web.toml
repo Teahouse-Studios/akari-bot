@@ -14,7 +14,7 @@ heartbeat_interval = 30 # The interval for sending heartbeat messages.
 heartbeat_timeout = 5 # Heartbeat message response timeout.
 
 [bot_web_secret]
-# The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section of the client. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 allow_origins = [] # The list of allowed CORS origins for the API service. Setting it to "*" indicates that all origins are trusted.
 forwarded_allow_ips = ["127.0.0.1"] # List of trusted reverse proxy sources. Setting it to "*" indicates that all origins are trusted.
 jwt_secret = "<Replace me with str value>" # The authentication key for the built-in API, for signing and verifying validity.

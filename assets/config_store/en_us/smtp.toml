@@ -14,5 +14,5 @@ smtp_ssl = false # Whether to use SMTPS (SSL) connection.
 smtp_starttls = true # Whether to enable STARTTLS.
 
 [smtp_secret]
-# The secret config section of the SMTP. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section of the SMTP. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 smtp_password = "<Replace me with str value>" # SMTP login password.

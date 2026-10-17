@@ -23,5 +23,5 @@ qq_bot_qqnum = "<Replace me with str value>" # The QQ official robot number.
 qq_api_url = "<Replace me with str value>" # Customize QQ official robot API address.
 
 [bot_qqbot_secret]
-# The secret config section of the client. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section of the client. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 qq_bot_secret = "<Replace me with str value>" # The QQ official robot AppSecret.

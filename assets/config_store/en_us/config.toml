@@ -15,7 +15,7 @@ use_emote = false # Whether to use emote resources.
 use_font_mirror = false # Whether to use font mirrors when rendering web pages.
 use_secrets_random = false # Whether to use the random number generator based on the secrets library.
 ffmpeg_path = "<Replace me with str value>" # Path to the FFmpeg executable file.
-media_compression_threshold = 10 # Media file size threshold. Files exceeding this value will compressed using FFmpeg. Unit: MB.
+media_compression_threshold = 10 # Media file size threshold. Files exceeding this value will be compressed using FFmpeg. Unit: MB.
 proxy_disable_ssl = false # Whether to skip HTTPS certificate verification when using a proxy service. This takes effect only if the proxy service replaces the target site's certificate.
 base_superuser = ["QQ|2596322644"] # The bot's base superuser list. The values entered here will be loaded into the database when the bot starts.
 ignored_sender = ["QQ|2854196310"] # Ignored user list. Users matching this list will be ignored.
@@ -24,7 +24,7 @@ retired_clients = [] # Retired clients and their data migration targets, formatt
 command_prefix = ["~", "～"] # Command prefixes. The value entered here will be recognized as the command prefix.
 regex_disable_prefix = [".", "。"] # Temporarily disable regex parsing of message prefixes.
 confirm_command = ["是", "对", "對", "yes", "Yes", "YES", "y", "Y"] # The keyword for the confirmation command. The value entered here will be recognized as the confirmation command.
-mention_required = false # Whether to force processing of only of messages that mention the bot at the beginning of the message.
+mention_required = false # Whether to force processing of only messages that mention the bot at the beginning of the message.
 no_confirm = false # Whether to execute the command without the sender confirming the message.
 quick_confirm = true # Whether to enable quick confirmation of message.
 enable_analytics = true # Whether to enable built-in analytics.
@@ -51,7 +51,7 @@ petal_sign_min = 2 # The minimum number of petals users can get from signing in 
 petal_sign_max = 12 # The maximum number of petals users can get from signing in per day.
 petal_sign_rate = 0.5 # The probability of getting petals by signing in. Ranges from 0 to 1, with a geometric distribution in the number of petals to be obtained.
 petal_reset_crontab = "0 0 1 * *" # Cron expression for the petal cycle.
-petal_rebate_rate = 0.2 # The percentage of petals retained at the end of the petal cycle. Ranges from 0 to 1.
+petal_rebate_rate = 0.2 # The ratio of petals retained at the end of the petal cycle. Ranges from 0 to 1.
 enable_joke = true # Whether to enable the joke. It will occur on April 1st server time when enabled.
 shuffle_rate = 0.1 # The random occurrence rate of jokes. Ranges from 0 to 1.
 enable_rickroll = true # Whether to rickroll the user when text filter detection fails.
@@ -66,7 +66,7 @@ qq_test_group_url = "<Replace me with str value>" # The inviting URL for the QQ 
 repo_url = "https://github.com/Teahouse-Studios/akari-bot" # Open-source repository URL.
 
 [secret]
-# The secret config section. The bot will try to intercept if the values here accidentally appears in the message sent, but be careful to prevent leakage.
+# The secret config section. The bot will try to intercept if the values here accidentally appear in the messages sent, but be careful to prevent leakage.
 db_path = "sqlite://database/save.db" # Database connection string, use the connection string format supported by Tortoise ORM.
 proxy = "<Replace me with str value>" # Proxy service address.
 check_access_key_id = "<Replace me with str value>" # The AccessKey ID of Alibaba Cloud Content Security Service.
