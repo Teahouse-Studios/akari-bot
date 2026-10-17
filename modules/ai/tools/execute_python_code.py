@@ -15,7 +15,8 @@ if api_key:
         "type": "function",
         "function": {
             "name": "execute_python_code",
-            "description": "Executes Python code and returns the results. Supports outputting text and PNG/JPEG images. Internet access is not supported.",
+            "description": "Executes Python code and returns the results. Supports outputting text and PNG/JPEG images. "
+            "Internet access is not supported.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -41,21 +42,24 @@ async def execute_python_code(code: str):
                 return execution.error.traceback
 
             returns = []
+            images = []
             for res in execution.results:
                 if res.png:
                     path = f"{random_cache_path()}.png"
                     with open(path, "wb") as f:
                         f.write(base64.b64decode(res.png))
                     returns.append(f"[KE:image,path={path}]")
+                    images.append({"path": path, "data_url": f"data:image/png;base64,{res.png}"})
                 if res.jpeg:
                     path = f"{random_cache_path()}.jpg"
                     with open(path, "wb") as f:
                         f.write(base64.b64decode(res.jpeg))
                     returns.append(f"[KE:image,path={path}]")
+                    images.append({"path": path, "data_url": f"data:image/jpeg;base64,{res.jpeg}"})
                 if res.text:
                     returns.append(res.text)
 
-            result = {"returns": returns, "stdout": execution.logs.stdout + execution.logs.stderr}
+            result = {"returns": returns, "stdout": execution.logs.stdout + execution.logs.stderr, "images": images}
             return orjson.dumps(result).decode("utf-8")
         except TimeoutException:
             return "Request timeout"

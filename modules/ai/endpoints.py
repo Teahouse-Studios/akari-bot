@@ -188,7 +188,12 @@ def _messages_to_anthropic(messages: list[dict]) -> tuple[str, list[dict]]:
         if role == "system":
             system.append(_content_to_text(content))
         elif role == "user":
-            anthropic_messages.append({"role": "user", "content": _content_to_anthropic_blocks(content)})
+            blocks = _content_to_anthropic_blocks(content)
+            # Anthropic 要求 user/assistant 交替；工具结果之后的图片等补充消息需并入同一轮。
+            if anthropic_messages and anthropic_messages[-1]["role"] == "user":
+                anthropic_messages[-1]["content"].extend(blocks)
+            else:
+                anthropic_messages.append({"role": "user", "content": blocks})
             last_is_tool_result = False
         elif role == "assistant":
             blocks = []

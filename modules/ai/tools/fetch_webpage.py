@@ -6,7 +6,7 @@ from core.utils.html2text import HTML2Text
 from core.utils.http import get_url, private_ip_check
 from core.utils.web_render import web_render, SourceOptions
 
-MAX_LENGTH = 8192
+MAX_LENGTH = 16384
 
 REFERENCE_HINT = (
     "\n\n"
@@ -65,7 +65,9 @@ async def _fetch_rendered(url: str) -> str | None:
         Logger.debug(f"WebRender fetch rejected for {url}: {e}")
         return None
     try:
-        html = await web_render.source(SourceOptions(url=url, stealth=True))
+        html = await web_render.source(
+            SourceOptions(url=url, raw_text=True, stealth=True, wait_until="domcontentloaded")
+        )
     except Exception as e:
         Logger.debug(f"WebRender fetch failed for {url}: {e}")
         return None

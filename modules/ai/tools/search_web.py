@@ -38,7 +38,7 @@ search_web_desc = {
 }
 
 
-async def search_web(query: str, search_results: int = 5):
+async def search_web(query: str, search_results: int = 10):
     try:
         results = []
 

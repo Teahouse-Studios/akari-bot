@@ -245,7 +245,6 @@ async def get_analytics(request: Request, days: int = Query(1)):
 async def get_analytics_modules(
     request: Request,
     days: int = Query(1, ge=1),
-    limit: int = Query(50, ge=1, le=200),
 ):
     """按模块汇总调用次数，供统计页的「模块调用数量」图表使用。"""
     verify_jwt(request)
@@ -277,7 +276,7 @@ async def get_analytics_modules(
             "count": count,
             "change_rate": change_rate,
             "total_modules": len(modules),
-            "modules": modules[:limit],
+            "modules": modules,
         }
 
     except Exception:
