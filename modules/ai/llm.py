@@ -140,7 +140,7 @@ async def ask_llm(
             break
 
     response = "\n\n".join(content_pieces)
-    if response.strip() == "SEVERE_REFUSAL_RICKROLL":
+    if "SEVERE_REFUSAL_RICKROLL" in response:
         chain = [Plain(rickroll())]
     else:
         res = await check(response, session=session)
