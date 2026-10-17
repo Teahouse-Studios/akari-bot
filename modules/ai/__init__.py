@@ -148,7 +148,7 @@ async def _(
 
         chain.append(Plain("\n---\n"))
         cmd = ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {turn_id}")
-        ctx_expiry = int(CONTEXT_EXPIRY / 60 + 0.5)
+        ctx_expiry = CONTEXT_EXPIRY // 60
         if msg.session_info.support_quote:
             chain.append(I18NContext("ai.message.context.hint.reply", expiry=ctx_expiry, cmd=cmd))
         else:
