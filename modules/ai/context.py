@@ -2,7 +2,7 @@ import uuid
 
 from core.utils.container import ExpiringTempDict
 
-CONTEXT_EXPIRY = 600  # 上下文窗口有效期（秒）
+CONTEXT_EXPIRY = 1000  # 上下文窗口有效期（秒）
 
 _context_windows = ExpiringTempDict(exp=CONTEXT_EXPIRY)
 

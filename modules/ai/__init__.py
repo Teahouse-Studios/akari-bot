@@ -148,10 +148,11 @@ async def _(
 
         chain.append(Plain("\n---\n"))
         cmd = ActionText(f"{msg.session_info.prefixes[0]}ai --ctx {turn_id}")
+        ctx_expiry = int(CONTEXT_EXPIRY / 60 + 0.5)
         if msg.session_info.support_quote:
-            chain.append(I18NContext("ai.message.context.hint.quote", cmd=cmd))
+            chain.append(I18NContext("ai.message.context.hint.reply", expiry=ctx_expiry, cmd=cmd))
         else:
-            chain.append(I18NContext("ai.message.context.hint", cmd=cmd))
+            chain.append(I18NContext("ai.message.context.hint", expiry=ctx_expiry, cmd=cmd))
         chain.append(I18NContext("ai.message.context.id", turn_id=turn_id))
         if petal != 0:
             chain.append(I18NContext("petal.message.cost", amount=petal))
