@@ -19,7 +19,7 @@ if image_api:
         "function": {
             "name": "generate_image",
             "description": "Generate a new image from a description. "
-            "Use when the user asks to create, draw, or design an image.",
+            "Only use when the user asks to create, draw, or design an image.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -48,7 +48,7 @@ if image_api:
         "function": {
             "name": "edit_image",
             "description": "Edit an existing image from the conversation. "
-            "Use when the user asks to modify, restyle, or change an image.",
+            "Only use when the user asks to modify, restyle, or change an image.",
             "parameters": {
                 "type": "object",
                 "properties": {
