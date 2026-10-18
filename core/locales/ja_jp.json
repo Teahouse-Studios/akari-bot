@@ -10,7 +10,7 @@
     "config.comments.config.check_use_textscan_v1": "Alibaba Cloud コンテンツ セキュリティ サービスの Text Scan 1.0 レガシー API を使用するかどうか。",
     "config.comments.config.command_prefix": "コマンドのプレフィックス。ここに入力された値はコマンドのプレフィックスとして認識されます。",
     "config.comments.config.confirm_command": "コマンド確認用のキーワード。ここに入力された値はコマンド確認用の単語として認識されます。",
-    "config.comments.config.debug": "デバッグモードを有効にするかどうか。有効にすると、より多くのログ情報が出力されます。",
+    "config.comments.config.debug": "デバッグ モードを有効にするかどうか。有効にすると、より多くのログ情報が出力されます。",
     "config.comments.config.donate_url": "寄付の URL。",
     "config.comments.config.enable_analytics": "組み込みの統計機能を有効にするかどうか。",
     "config.comments.config.enable_bind_auto": "同じコンテキスト内の他のインスタンスを自動的にペアリングするために、「bind auto」コマンドを有効にするかどうか。",

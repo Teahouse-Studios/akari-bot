@@ -62,12 +62,13 @@ async def websocket_chat(websocket: WebSocket):
                     elif action == "send":
                         msg_list = message.get("message", [])
                         reply_id = message.get("reply_id")
+                        is_button_click = "reply_id" in message
                         elements = []
                         for block in msg_list:
                             block_type = block.get("type")
                             if block_type == "text":
                                 content = block.get("content", "")
-                                if reply_id:
+                                if is_button_click:
                                     content = normalize_button_payload(content)
                                 if content:
                                     elements.append(Plain(content))

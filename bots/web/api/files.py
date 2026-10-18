@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, Response
 from starlette.background import BackgroundTask
 
 from bots.web.client import app, get_client_ip, limiter
-from core.constants.path import assets_path, data_path, modules_path
+from core.constants.path import assets_path, cache_path, data_path, modules_path
 from core.logger import Logger
 from .auth import verify_jwt
 
@@ -44,7 +44,7 @@ def _module_names() -> list[str]:
 
 def _root_paths() -> dict[str, Path]:
     roots: dict[str, Path] = {}
-    for target, path in (("assets", assets_path), ("data", data_path)):
+    for target, path in (("assets", assets_path), ("data", data_path), ("cache", cache_path)):
         if path.is_dir():
             roots[f"core:{target}"] = path
     for name in _module_names():

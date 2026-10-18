@@ -43,7 +43,7 @@ STRICT_CONFIRM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ1234567890"
 
 def _is_confirmation_message(msg: MessageSession) -> bool:
     value = msg.as_display(text_only=True).strip()
-    return value in confirm_command
+    return value in confirm_command or value == "no"
 
 
 def generate_strict_confirm_token() -> str:
