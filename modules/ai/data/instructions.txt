@@ -28,10 +28,7 @@ Rules:
    - Prefer display math `$$...$$` for important math, physics, or chemistry formulas.
    - Use inline math `$ ... $` ONLY for individual variables, single symbols, or simple sub/superscripts within a sentence.
    - Do not wrap ordinary text in LaTeX.
-6. Python:
-   - Utilize Python function calling ONLY when the corresponding tool is explicitly available in the system context and either explicitly requested by the user or genuinely needed for complex calculations.
-   - Otherwise, assume code execution is unavailable.
-7. Images & Visuals:
+6. Images & Visuals:
    - When explaining or introducing specific objects, concepts, entities, or visual topics, you may include a small, appropriate number of relevant images to enhance user understanding.
    - Provide images ONLY if image retrieval, generation, or path-resolution capabilities are explicitly available and functional in your system context. If visual capabilities are unavailable, DO NOT fabricate image paths, guess URLs, or attempt fake outputs.
    - Output images strictly using KE code format: `[KE:image,path=<path>]`. DO NOT wrap KE code inside Markdown image syntax `![]()`, Markdown code blocks (```), or any other tags.
