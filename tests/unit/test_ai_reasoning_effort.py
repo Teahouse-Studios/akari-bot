@@ -67,10 +67,10 @@ async def _test_completions_uses_module_defaults_when_absent():
 
     endpoint.client = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
     with (
-        patch.object(endpoints, "temperature", 0.5),
-        patch.object(endpoints, "top_p", 0.6),
-        patch.object(endpoints, "top_logprobs", -1),
-        patch.object(endpoints, "reasoning_effort", "low"),
+        patch.object(endpoints.base, "temperature", 0.5),
+        patch.object(endpoints.base, "top_p", 0.6),
+        patch.object(endpoints.base, "top_logprobs", -1),
+        patch.object(endpoints.base, "reasoning_effort", "low"),
     ):
         try:
             await endpoint.create([], "auto")
@@ -118,8 +118,8 @@ async def _test_completions_forwards_negative_module_defaults():
 
     endpoint.client = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
     with (
-        patch.object(endpoints, "temperature", -1.0),
-        patch.object(endpoints, "top_p", -0.5),
+        patch.object(endpoints.base, "temperature", -1.0),
+        patch.object(endpoints.base, "top_p", -0.5),
     ):
         try:
             await endpoint.create([], "auto")
@@ -161,8 +161,8 @@ async def _test_completions_omits_default_module_sampling():
 
     endpoint.client = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
     with (
-        patch.object(endpoints, "temperature", 1.0),
-        patch.object(endpoints, "top_p", 1.0),
+        patch.object(endpoints.base, "temperature", 1.0),
+        patch.object(endpoints.base, "top_p", 1.0),
     ):
         try:
             await endpoint.create([], "auto")
@@ -241,7 +241,7 @@ async def _test_completions_omits_reasoning_effort_when_none():
             raise _Stop
 
     endpoint.client = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
-    with patch.object(endpoints, "reasoning_effort", "none"):
+    with patch.object(endpoints.base, "reasoning_effort", "none"):
         try:
             await endpoint.create([], "auto")
         except _Stop:
@@ -260,7 +260,7 @@ async def _test_completions_keeps_reasoning_effort_when_set():
             raise _Stop
 
     endpoint.client = SimpleNamespace(chat=SimpleNamespace(completions=_Completions()))
-    with patch.object(endpoints, "reasoning_effort", "high"):
+    with patch.object(endpoints.base, "reasoning_effort", "high"):
         try:
             await endpoint.create([], "auto")
         except _Stop:
@@ -291,7 +291,7 @@ async def _test_anthropic_uses_adaptive_thinking():
             raise _Stop
 
     endpoint.client = SimpleNamespace(messages=_Messages())
-    with patch.object(endpoints, "reasoning_effort", "high"):
+    with patch.object(endpoints.base, "reasoning_effort", "high"):
         try:
             await endpoint.create([{"role": "user", "content": "hi"}], "auto")
         except _Stop:
@@ -311,7 +311,7 @@ async def _test_anthropic_omits_thinking_when_none():
             raise _Stop
 
     endpoint.client = SimpleNamespace(messages=_Messages())
-    with patch.object(endpoints, "reasoning_effort", "none"):
+    with patch.object(endpoints.base, "reasoning_effort", "none"):
         try:
             await endpoint.create([{"role": "user", "content": "hi"}], "auto")
         except _Stop:

@@ -19,8 +19,21 @@ def _test_context_isolated_by_context_key_and_can_branch():
     return True
 
 
+def _test_context_records_llm():
+    with patch.object(context, "_context_windows", context.ExpiringTempDict(exp=context.CONTEXT_EXPIRY)):
+        turn_id = context.create_context([{"role": "user", "content": "start"}], "context-a", "gpt-5")
+        no_llm_id = context.create_context([{"role": "user", "content": "start"}], "context-a")
+
+        assert context.get_context_llm(turn_id, "context-a") == "gpt-5"
+        assert context.get_context_llm(turn_id, "context-b") is None
+        assert context.get_context_llm(no_llm_id, "context-a") is None
+        assert context.get_context_llm("missing", "context-a") is None
+    return True
+
+
 @func_case
 async def test_ai_context(tester: Tester):
     """modules.ai.context: 上下文窗口隔离与快照分叉测试"""
     await tester.test(_test_context_isolated_by_context_key_and_can_branch, "上下文按场景隔离与快照分叉测试")
+    await tester.test(_test_context_records_llm, "上下文记录模型名称测试")
     return tester

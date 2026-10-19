@@ -10,7 +10,7 @@ from core.logger import Logger
 from core.constants import WaitCancelException
 from .petal import precount_petal, count_token_petal, cost_to_petal
 from .setting import default_llm, get_llm_billing, get_llm_generation, llm_api_list, llm_list, llm_su_list, persona_path
-from .context import CONTEXT_EXPIRY, create_context, get_context
+from .context import CONTEXT_EXPIRY, create_context, get_context, get_context_llm
 from .hook import ask_ai
 
 ai = module("ai", developers=["DoroWolf", "Dianliang233"], desc="{I18N:ai.help.desc}", doc=True)
@@ -83,7 +83,7 @@ async def _chat_loop(
         )
 
         # 每轮建立新的快照，保留旧 ID 以支持从任意一轮分叉。
-        turn_id = create_context(history, context_key)
+        turn_id = create_context(history, context_key, llm_info["name"].lower())
 
         Logger.info(
             f"{input_tokens + cache_read_tokens + cache_write_tokens + output_tokens} token used while calling LLM."
@@ -172,7 +172,13 @@ async def _(
     available_llms = llm_list + (llm_su_list if is_superuser else [])
 
     if not selected_llm:
-        selected_llm = target_default_llm if target_default_llm else default_llm
+        # 续接上下文时沿用其原本使用的模型；该模型当前不可用时回落到默认模型。
+        context_llm = get_context_llm(turn_id, context_key) if turn_id else None
+        context_llm = context_llm.lower() if context_llm else None
+        if context_llm in available_llms:
+            selected_llm = context_llm
+        else:
+            selected_llm = target_default_llm if target_default_llm else default_llm
 
     llm_info = None
     if selected_llm in available_llms:
