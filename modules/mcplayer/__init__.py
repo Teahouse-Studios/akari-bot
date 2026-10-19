@@ -21,7 +21,7 @@ async def _(msg: Bot.MessageSession, username_or_uuid: str):
             uuid = arg
         elif len(arg) == 36 and arg.count("-") == 4:
             uuid = arg.replace("-", "")
-            name = await uuid_to_name(arg)
+            name = await uuid_to_name(uuid)
         else:
             name = arg
             uuid = await name_to_uuid(arg)
