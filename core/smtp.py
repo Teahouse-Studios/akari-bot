@@ -49,7 +49,7 @@ def _build_email_html(body: str, footer: str) -> str:
     """
 
 
-def send_email(subject: str, body: str) -> None:
+def send_email(subject: str, body: str, timeout: float | None = None) -> None:
     emailmsg = EmailMessage()
 
     emailmsg["Date"] = format_datetime(datetime.now(UTC), usegmt=True)
@@ -75,14 +75,15 @@ def send_email(subject: str, body: str) -> None:
         html_part = emailmsg.get_payload()[-1]
         html_part.add_related(logo_data, maintype="image", subtype="png", cid="<akaribot_logo>")
 
+    smtp_kwargs = {} if timeout is None else {"timeout": timeout}
     if SMTPConfig.smtp_ssl:
-        with smtplib.SMTP_SSL(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
+        with smtplib.SMTP_SSL(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port), **smtp_kwargs) as server:
             if SMTPConfig.smtp_username:
                 server.login(SMTPConfig.smtp_username, SMTPSecretConfig.smtp_password)
             server.send_message(emailmsg)
         return
 
-    with smtplib.SMTP(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port)) as server:
+    with smtplib.SMTP(SMTPConfig.smtp_host, int(SMTPConfig.smtp_port), **smtp_kwargs) as server:
         server.ehlo()
         if SMTPConfig.smtp_starttls:
             server.starttls()

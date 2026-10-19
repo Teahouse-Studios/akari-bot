@@ -1,4 +1,5 @@
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 import socket
 
@@ -10,6 +11,7 @@ from slowapi import Limiter
 
 from bots.web.config import WebConfig, WebSecretConfig
 from bots.web.info import *
+from bots.web.password_state import watch_password_state
 from core.client.init import client_cleanup, client_init
 from core.config import CFGManager
 from core.constants.path import assets_path, data_path
@@ -114,14 +116,20 @@ def _webui_message():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    password_watch_task = None
     try:
         await client_init(target_prefix_list, sender_prefix_list)
         sender_union_info = await SenderUnionInfo.resolve_union(f"{sender_prefix}|0")
         await sender_union_info.edit_attr("superuser", True)
+        password_watch_task = asyncio.create_task(watch_password_state())
         if dist_path.exists():
             Logger.info(_webui_message())
         yield
     finally:
+        if password_watch_task is not None:
+            password_watch_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await password_watch_task
         await client_cleanup()
 
 
