@@ -40,7 +40,7 @@ def _build_endpoint(generation=None, response=None):
 
 def _test_build_endpoint():
     endpoint = endpoints.build_endpoint(
-        "gemini",
+        "gemini-interaction",
         "https://generativelanguage.googleapis.com/v1beta",
         "key",
         "gemini-3.5-flash",

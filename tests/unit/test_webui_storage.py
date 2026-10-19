@@ -1,4 +1,4 @@
-"""bots.web.api.file 单元测试 - assets 与 data 文件管理接口。"""
+"""bots.web.api.files 单元测试 - assets 与 data 文件管理接口。"""
 
 import inspect
 import zipfile
@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from fastapi import HTTPException, UploadFile
 
-import bots.web.api.file as storage
+import bots.web.api.files as storage
 from core.tester import Tester, func_case
 
 
@@ -33,6 +33,7 @@ def _patched(base: Path):
     with (
         patch.object(storage, "assets_path", base / "assets"),
         patch.object(storage, "data_path", base / "data"),
+        patch.object(storage, "cache_path", base / "cache"),
         patch.object(storage, "modules_path", base / "modules"),
         patch.object(storage, "_module_names", lambda: ["alpha", "beta"]),
         patch.object(storage, "verify_jwt", lambda request: None),
@@ -353,7 +354,7 @@ async def _upload_case():
 
 @func_case
 async def test_webui_storage(tester: Tester):
-    """bots.web.api.file: assets 与 data 文件管理接口测试"""
+    """bots.web.api.files: assets 与 data 文件管理接口测试"""
     await tester.test(_roots_case, "资源根目录枚举与存在状态")
     await tester.test(_list_case, "目录列举、排序与路径穿越拦截")
     await tester.test(_content_case, "文本读取、写入、版本冲突与大小限制")

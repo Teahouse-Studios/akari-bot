@@ -58,6 +58,14 @@ class GeminiInteractionRateLimitError(GeminiInteractionError):
     pass
 
 
+class GeminiGenerateContentError(RuntimeError):
+    pass
+
+
+class GeminiGenerateContentRateLimitError(GeminiGenerateContentError):
+    pass
+
+
 # 超时 / 限流等可重试异常，统一在 llm.py 中转为 ExternalException。
 RETRYABLE_EXCEPTIONS = (
     APITimeoutError,
@@ -66,6 +74,7 @@ RETRYABLE_EXCEPTIONS = (
     AnthropicRateLimitError,
     httpx.TimeoutException,
     GeminiInteractionRateLimitError,
+    GeminiGenerateContentRateLimitError,
 )
 
 

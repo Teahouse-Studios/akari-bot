@@ -38,7 +38,7 @@ async def test_admin_native_admin(tester: Tester):
     with patch.object(MockMessageSession, "check_native_permission", new=native):
         await tester.integrate(
             "~admin add TEST|999",
-            Contains("无须通过机器人设置"),
+            Contains("无须设置机器人管理员权限"),
             "目标为平台原生管理员时应提示无须设置",
         )
         await tester.integrate(

@@ -76,7 +76,8 @@ llm_api_list:
   * `openai`（默认）：OpenAI Chat Completions API。
   * `openai-response`：OpenAI Responses API。
   * `anthropic`：Anthropic Messages API。
-  * `gemini`：Gemini Interactions API。
+  * `gemini`：Gemini GenerateContent API。
+  * `gemini-interaction`：Gemini Interactions API。
 
 ### 可选参数
 
@@ -491,7 +492,8 @@ llm_api_list:
   * `openai` (default): OpenAI Chat Completions API.
   * `openai-response`: OpenAI Responses API.
   * `anthropic`: Anthropic Messages API.
-  * `gemini`: Gemini Interactions API.
+  * `gemini`: Gemini GenerateContent API.
+  * `gemini-interaction`: Gemini Interactions API.
 
 ### Optional Parameters
 
