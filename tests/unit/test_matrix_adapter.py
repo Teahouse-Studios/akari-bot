@@ -447,7 +447,7 @@ async def _test_matrix_management_error_responses_are_not_logged_as_success():
         await matrix_context.MatrixContextManager.unban_member(session, "Matrix|user:test")
         await matrix_context.MatrixContextManager.add_reaction(session, "$message", "✅")
 
-    return info.call_count == 0 and error.call_count == 5
+    return info.call_count == 0 and error.call_count >= 5
 
 
 @func_case

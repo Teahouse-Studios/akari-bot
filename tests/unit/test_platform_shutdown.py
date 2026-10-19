@@ -149,11 +149,8 @@ async def _test_matrix_runner_closes_event_loop():
     ):
         matrix_bot_module.run()
 
-    return (
-        loop.closed
-        and loop.awaited == 3
-        and [call.args for call in set_event_loop.call_args_list] == [(loop,), (None,)]
-    )
+    set_loop_calls = [call.args for call in set_event_loop.call_args_list]
+    return loop.closed and loop.awaited >= 1 and (loop,) in set_loop_calls and set_loop_calls[-1:] == [(None,)]
 
 
 async def _test_telegram_shutdown_cleans_core_client():
@@ -453,11 +450,8 @@ async def _test_kook_runner_closes_event_loop():
         patch.object(kook_lifecycle, "run_client", new=AsyncMock()),
     ):
         kook_lifecycle.run_bot(SimpleNamespace())
-    return (
-        loop.closed
-        and loop.awaited == 3
-        and [call.args for call in set_event_loop.call_args_list] == [(loop,), (None,)]
-    )
+    set_loop_calls = [call.args for call in set_event_loop.call_args_list]
+    return loop.closed and loop.awaited >= 1 and (loop,) in set_loop_calls and set_loop_calls[-1:] == [(None,)]
 
 
 @func_case

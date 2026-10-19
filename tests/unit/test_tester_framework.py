@@ -82,13 +82,16 @@ def _test_expectation_has_repr():
 
 
 def _test_junit_coerces_error_details_to_text():
+    from xml.etree import ElementTree
+
     case = JUnitTestCase("error")
     case.error = ("Test error", True)
     suite = JUnitTestSuite("tester")
     suite.add_testcase(case)
     report = JUnitReport()
     report.add_testsuite(suite)
-    return '<error message="Test error">True</error>' in report.to_xml_string()
+    error = ElementTree.fromstring(report.to_xml_string()).find(".//error")
+    return error is not None and error.get("message") == "Test error" and error.text == "True"
 
 
 async def _test_integrate_preserves_unexpected_exception():

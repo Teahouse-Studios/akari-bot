@@ -4,14 +4,6 @@ from core.i18n import Locale, get_available_locales, build_locale_snapshot, conn
 from core.tester import func_case, Tester
 
 
-def _test_locale_create():
-    try:
-        locale = Locale("zh_cn")
-        return locale is not None
-    except Exception:
-        return False
-
-
 def _test_locale_t_existing_key():
     try:
         locale = Locale("zh_cn")
@@ -81,7 +73,6 @@ def _test_get_available_locales():
 @func_case
 async def test_i18n(tester: Tester):
     """core.i18n: 国际化系统测试"""
-    await tester.test(_test_locale_create, "Locale 创建测试")
     await tester.test(_test_locale_t_existing_key, "Locale.t 已存在键测试")
     await tester.test(_test_locale_t_missing_key, "Locale.t 不存在键测试")
     await tester.test(_test_locale_t_kwargs_substitution, "Locale.t 参数替换测试")

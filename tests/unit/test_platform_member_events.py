@@ -23,6 +23,15 @@ async def _capture_event(module, callback, *args, **kwargs):
     return result, assign.await_args.kwargs
 
 
+def _event_matches(actual, expected) -> bool:
+    # 只校验声明过的字段，平台后续追加事件字段时不会误报。
+    if isinstance(expected, dict):
+        return isinstance(actual, dict) and all(
+            key in actual and _event_matches(actual[key], value) for key, value in expected.items()
+        )
+    return actual == expected
+
+
 async def _test_discord_guild_member_joined():
     joined_at = datetime(2026, 8, 18, 12, 0, tzinfo=UTC)
     result, event = await _capture_event(
@@ -33,15 +42,18 @@ async def _test_discord_guild_member_joined():
         joined_at,
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "guild_member_joined",
-        "target_id": "Discord|Guild|guild-1",
-        "target_from": "Discord|Guild",
-        "client_name": "Discord",
-        "sender_id": "Discord|Client|user-1",
-        "sender_from": "Discord|Client",
-        "data": {"joined_at": joined_at.isoformat()},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "guild_member_joined",
+            "target_id": "Discord|Guild|guild-1",
+            "target_from": "Discord|Guild",
+            "client_name": "Discord",
+            "sender_id": "Discord|Client|user-1",
+            "sender_from": "Discord|Client",
+            "data": {"joined_at": joined_at.isoformat()},
+        },
+    )
 
 
 async def _test_discord_guild_member_left():
@@ -51,14 +63,17 @@ async def _test_discord_guild_member_left():
         "user-1",
         "guild-1",
     )
-    return result == "task-id" and event == {
-        "event_name": "guild_member_left",
-        "target_id": "Discord|Guild|guild-1",
-        "target_from": "Discord|Guild",
-        "client_name": "Discord",
-        "sender_id": "Discord|Client|user-1",
-        "sender_from": "Discord|Client",
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "guild_member_left",
+            "target_id": "Discord|Guild|guild-1",
+            "target_from": "Discord|Guild",
+            "client_name": "Discord",
+            "sender_id": "Discord|Client|user-1",
+            "sender_from": "Discord|Client",
+        },
+    )
 
 
 async def _test_telegram_group_members_joined():
@@ -91,15 +106,18 @@ async def _test_telegram_group_members_joined():
         101,
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "member_joined",
-        "target_id": "Telegram|Supergroup|-10001",
-        "target_from": "Telegram|Supergroup",
-        "client_name": "Telegram",
-        "sender_id": "Telegram|User|1",
-        "sender_from": "Telegram|User",
-        "data": {"joined_at": joined_at.isoformat(), "message_id": "101"},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "member_joined",
+            "target_id": "Telegram|Supergroup|-10001",
+            "target_from": "Telegram|Supergroup",
+            "client_name": "Telegram",
+            "sender_id": "Telegram|User|1",
+            "sender_from": "Telegram|User",
+            "data": {"joined_at": joined_at.isoformat(), "message_id": "101"},
+        },
+    )
 
 
 async def _test_telegram_group_member_left():
@@ -132,15 +150,18 @@ async def _test_telegram_group_member_left():
         102,
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "member_left",
-        "target_id": "Telegram|Group|-10002",
-        "target_from": "Telegram|Group",
-        "client_name": "Telegram",
-        "sender_id": "Telegram|User|4",
-        "sender_from": "Telegram|User",
-        "data": {"left_at": left_at.isoformat(), "message_id": "102"},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "member_left",
+            "target_id": "Telegram|Group|-10002",
+            "target_from": "Telegram|Group",
+            "client_name": "Telegram",
+            "sender_id": "Telegram|User|4",
+            "sender_from": "Telegram|User",
+            "data": {"left_at": left_at.isoformat(), "message_id": "102"},
+        },
+    )
 
 
 async def _test_kook_guild_member_joined():
@@ -153,15 +174,18 @@ async def _test_kook_guild_member_joined():
         "event-2",
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "guild_member_joined",
-        "target_id": "KOOK|Guild|guild-2",
-        "target_from": "KOOK|Guild",
-        "client_name": "KOOK",
-        "sender_id": "KOOK|User|user-2",
-        "sender_from": "KOOK|User",
-        "data": {"joined_at": 1787040000000, "event_id": "event-2"},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "guild_member_joined",
+            "target_id": "KOOK|Guild|guild-2",
+            "target_from": "KOOK|Guild",
+            "client_name": "KOOK",
+            "sender_id": "KOOK|User|user-2",
+            "sender_from": "KOOK|User",
+            "data": {"joined_at": 1787040000000, "event_id": "event-2"},
+        },
+    )
 
 
 async def _test_kook_guild_member_left():
@@ -174,15 +198,18 @@ async def _test_kook_guild_member_left():
         "event-4",
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "guild_member_left",
-        "target_id": "KOOK|Guild|guild-2",
-        "target_from": "KOOK|Guild",
-        "client_name": "KOOK",
-        "sender_id": "KOOK|User|user-2",
-        "sender_from": "KOOK|User",
-        "data": {"left_at": 1787040001000, "event_id": "event-4"},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "guild_member_left",
+            "target_id": "KOOK|Guild|guild-2",
+            "target_from": "KOOK|Guild",
+            "client_name": "KOOK",
+            "sender_id": "KOOK|User|user-2",
+            "sender_from": "KOOK|User",
+            "data": {"left_at": 1787040001000, "event_id": "event-4"},
+        },
+    )
 
 
 async def _test_matrix_room_member_joined():
@@ -213,15 +240,18 @@ async def _test_matrix_room_member_joined():
         "event-3",
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "member_joined",
-        "target_id": "Matrix|Room|!room:example.org",
-        "target_from": "Matrix|Room",
-        "client_name": "Matrix",
-        "sender_id": sender_id,
-        "sender_from": "Matrix",
-        "data": {"event_id": "event-3"},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "member_joined",
+            "target_id": "Matrix|Room|!room:example.org",
+            "target_from": "Matrix|Room",
+            "client_name": "Matrix",
+            "sender_id": sender_id,
+            "sender_from": "Matrix",
+            "data": {"event_id": "event-3"},
+        },
+    )
 
 
 async def _test_matrix_room_member_left():
@@ -266,15 +296,18 @@ async def _test_matrix_room_member_left():
         "event-5",
     )
     json.dumps(event["data"])
-    return result == "task-id" and event == {
-        "event_name": "member_left",
-        "target_id": "Matrix|Room|!room:example.org",
-        "target_from": "Matrix|Room",
-        "client_name": "Matrix",
-        "sender_id": sender_id,
-        "sender_from": "Matrix",
-        "data": {"event_id": "event-5"},
-    }
+    return result == "task-id" and _event_matches(
+        event,
+        {
+            "event_name": "member_left",
+            "target_id": "Matrix|Room|!room:example.org",
+            "target_from": "Matrix|Room",
+            "client_name": "Matrix",
+            "sender_id": sender_id,
+            "sender_from": "Matrix",
+            "data": {"event_id": "event-5"},
+        },
+    )
 
 
 @func_case

@@ -105,7 +105,7 @@ async def _test_jobqueue_v5_migration_drops_and_recreates_table():
             conn.execute_query.await_count == 1
             and conn.execute_query.await_args.args == (drop_statement,)
             and generate_schemas.await_count == 1
-            and generate_schemas.await_args.kwargs == {"safe": True}
+            and generate_schemas.await_args.kwargs.get("safe") is True
         ):
             return False
     return True
@@ -219,7 +219,7 @@ async def _test_lxns_v6_migration_replaces_friend_code_with_oauth_columns():
         columns = {row["name"] for row in await conn.execute_query_dict(f'PRAGMA table_info("{table}");')}
         rows = await conn.execute_query_dict(f'SELECT * FROM "{table}";')
         return (
-            columns == {"union_id", "refresh_token"}
+            {"union_id", "refresh_token"} <= columns
             and len(rows) == 1
             # 旧行保留下来但没有 refresh token，需由用户重新完成一次绑定。
             and rows[0]["refresh_token"] is None

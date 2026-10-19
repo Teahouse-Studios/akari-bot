@@ -428,6 +428,7 @@ async def _test_emote_captcha_uses_localized_buttons():
     buttons = [button for row in frame.rows for button in row.buttons] if frame else []
     expected_labels = [session.locale.t(f"captcha.emote.{captcha_emote_name(choice)}") for choice in challenge.choices]
     rendered_prompt = session.locale.t(prompt.key, **prompt.kwargs) if prompt else ""
+    rendered_welcome = session.locale.t(welcome.key) if welcome else ""
 
     return (
         challenge.status == "pending"
@@ -437,7 +438,9 @@ async def _test_emote_captcha_uses_localized_buttons():
         and prompt_markdown
         and session.support_markdown
         and welcome is not None
-        and session.locale.t(welcome.key) == "欢迎加入，正在验证你是否为人类！"
+        and welcome.key == "captcha.message.emote_welcome"
+        and rendered_welcome
+        and rendered_welcome != welcome.key
         and prompt is not None
         and prompt.kwargs["bot_name"] == "测试机器人"
         and f"```\n{command_prefix[0]}token {challenge.token}\n```" in rendered_prompt

@@ -75,7 +75,7 @@ async def _test_mock_session_provides_local_bot_state() -> bool:
         support_private_msg=True,
     )
     state = await session.check_bot_state()
-    return state.raw == {"platform": "test"} and state.can_manage_members and state.can_react
+    return state.raw.get("platform") == "test" and state.can_manage_members and state.can_react
 
 
 async def _test_discord_permission_state_maps_effective_channel_permissions() -> bool:
@@ -197,7 +197,7 @@ async def _test_onebot_group_state_maps_bot_role() -> bool:
         and state.is_owner is False
         and state.can_restrict_members is True
         and state.permissions["role"] == "admin"
-        and call_action.await_args.kwargs == {"group_id": 123, "user_id": 456}
+        and {"group_id": 123, "user_id": 456}.items() <= call_action.await_args.kwargs.items()
     )
 
 

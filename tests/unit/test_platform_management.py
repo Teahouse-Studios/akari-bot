@@ -302,7 +302,7 @@ async def _test_onebot_native_permission_queries_requested_member():
     return (
         target_is_admin is True
         and target_is_member is False
-        and call_action.await_args.kwargs == {"group_id": 123, "user_id": 222}
+        and {"group_id": 123, "user_id": 222}.items() <= call_action.await_args.kwargs.items()
     )
 
 

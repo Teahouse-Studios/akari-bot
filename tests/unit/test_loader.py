@@ -7,7 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import ModuleType
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, call, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -850,7 +850,11 @@ def _test_reload_syncs_missing_module_config_fields():
             patch.object(CFGManager, "edit_write", edit_write),
         ):
             errors = ModulesManager._sync_config_fields(package)
-        return not errors and edit_write.call_args_list == [call("probe_value", 42, int, False, "module_probe")]
+        return (
+            not errors
+            and edit_write.call_count == 1
+            and edit_write.call_args.args == ("probe_value", 42, int, False, "module_probe")
+        )
     finally:
         sys.modules.pop(config_module_name, None)
 

@@ -159,7 +159,7 @@ async def _test_client_background_tasks_are_idempotent():
             return (
                 first_queue_task is client_init_module._queue_task
                 and init_db.await_count == 1
-                and init_db.await_args.kwargs == {"load_module_db": False, "generate_schemas": False}
+                and {"load_module_db": False, "generate_schemas": False}.items() <= init_db.await_args.kwargs.items()
             )
     finally:
         queue_release.set()

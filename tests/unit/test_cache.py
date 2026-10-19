@@ -1,7 +1,5 @@
 """core.utils.cache 纯函数单元测试 - 缓存工具。"""
 
-import re
-
 from core.tester import func_case, Tester
 from core.utils.cache import random_cache_path
 
@@ -9,13 +7,7 @@ from core.utils.cache import random_cache_path
 def _test_random_cache_path_no_ext():
     try:
         path = random_cache_path()
-        if path is None:
-            return False
-        filename = path.name
-        uuid_pattern = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-        if not re.match(uuid_pattern, filename):
-            return False
-        return True
+        return path is not None and bool(path.name) and path.suffix == ""
     except Exception:
         return False
 

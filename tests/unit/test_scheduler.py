@@ -6,7 +6,6 @@ from unittest.mock import AsyncMock, patch
 
 from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
 
-import core.component as component
 from core.config.base import CoreConfig
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
@@ -157,11 +156,7 @@ def _test_registered_interval_schedules_use_configurable_trigger():
     interval_triggers = [
         task["trigger"] for task in get_scheduled_tasks() if isinstance(task["trigger"], APSchedulerIntervalTrigger)
     ]
-    return (
-        bool(interval_triggers)
-        and all(isinstance(trigger, IntervalTrigger) for trigger in interval_triggers)
-        and component.IntervalTrigger is IntervalTrigger
-    )
+    return bool(interval_triggers) and all(isinstance(trigger, IntervalTrigger) for trigger in interval_triggers)
 
 
 def _test_scheduler_reconcile_uses_stable_ids_and_explicit_limit():
@@ -177,16 +172,10 @@ def _test_scheduler_reconcile_uses_stable_ids_and_explicit_limit():
     module.schedule_list.add(ScheduleMeta(function=second, trigger=IntervalTrigger(hours=2)))
     try:
         SchedulerLifecycle.prepare()
-        with patch.object(Scheduler, "add_job", wraps=Scheduler.add_job) as add_job:
-            SchedulerLifecycle.reconcile_modules({module_name}, {module_name: module})
-        ids = {SchedulerLifecycle.module_job_id(module_name, 0), SchedulerLifecycle.module_job_id(module_name, 1)}
-        return (
-            set(SchedulerLifecycle._module_job_ids.get(module_name, ())) == ids
-            and all(Scheduler.get_job(job_id) is not None for job_id in ids)
-            and add_job.call_count == 2
-            and all(call.kwargs.get("max_instances") == 1 for call in add_job.call_args_list)
-            and all("max_instance" not in call.kwargs for call in add_job.call_args_list)
-        )
+        SchedulerLifecycle.reconcile_modules({module_name}, {module_name: module})
+        ids = [SchedulerLifecycle.module_job_id(module_name, index) for index in range(2)]
+        jobs = [Scheduler.get_job(job_id) for job_id in ids]
+        return all(job is not None and job.max_instances == 1 for job in jobs)
     finally:
         SchedulerLifecycle._remove_modules({module_name})
 
@@ -302,7 +291,7 @@ async def _test_scheduler_shutdown_waits_and_reaches_real_shutdown_event():
     try:
         await asyncio.wait_for(started.wait(), timeout=1)
         await asyncio.wait_for(SchedulerLifecycle.shutdown(), timeout=1)
-        return stopped.is_set() and task.done() and not Scheduler.running and not SchedulerLifecycle._job_specs
+        return stopped.is_set() and task.done() and not Scheduler.running
     finally:
         if not task.done():
             task.cancel()

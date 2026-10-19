@@ -132,7 +132,7 @@ def _test_button_rows_and_qq_only_entry():
             config["qq_test_group_url"],
             config["donate_url"],
         ]
-        and normal_frame.rows[-1].buttons[0].show == "💵 支持我们"
+        and normal_frame.rows[-1].buttons[0].show == Locale("zh_cn").t("core.message.about.button.donate")
     )
 
 
