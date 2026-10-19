@@ -180,6 +180,13 @@ async def message_handler(event: dict) -> None:
         segments = segments[1:]
         if not _has_content(segments):
             segments = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
+    segments = [
+        segment
+        for segment in segments
+        if not (segment.get("type") == "mention" and _is_self((segment.get("data") or {}).get("user_id")))
+    ]
+    if at_message and not _has_content(segments):
+        segments = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
     if mention_required and not at_message and context == "group":
         return
 

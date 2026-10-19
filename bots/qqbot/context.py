@@ -360,6 +360,20 @@ def _get_client():
     return QQBotContextManager.client
 
 
+def _bot_ids(session_info: SessionInfo) -> set[str]:
+    values = (
+        session_info.bot_id,
+        (session_info.tmp or {}).get("qq_bot_uid"),
+        QQBotConfig.qq_bot_uid,
+        QQBotConfig.qq_bot_openid,
+    )
+    ids = {str(value) for value in values if value}
+    robot = getattr(QQBotContextManager.client, "_robot", None)
+    if robot is not None:
+        ids.add(str(robot.id))
+    return ids
+
+
 def _reply_target(session_info: SessionInfo, context: BaseMessage | Interaction | None = None) -> ReplyTarget:
     scope = {
         target_c2c_prefix: "c2c",
@@ -712,11 +726,16 @@ class QQBotContextManager(ContextManager):
             plains: list[PlainElement] = []
             images: list[tuple[ImageElement, str]] = []
             media: list[AudioElement | VideoElement] = []
+            bot_ids = _bot_ids(session_info)
 
             for x in message.as_sendable(session_info, enable_markdown=False):
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
-                        x.text = render_at_code(x.text, client_name, lambda at: f"<@{at.id}>")
+                        x.text = render_at_code(
+                            x.text,
+                            client_name,
+                            lambda at: "" if str(at.id) in bot_ids else f"<@{at.id}>",
+                        )
                     plains.append(x)
                 elif isinstance(x, ImageElement):
                     # 图片不可读（本地文件缺失或下载失败）时跳过该元素
@@ -726,11 +745,13 @@ class QQBotContextManager(ContextManager):
                 elif isinstance(x, (AudioElement, VideoElement)):
                     media.append(x)
                 elif isinstance(x, MentionElement):
-                    if x.client == client_name and session_info.target_from in (
-                        target_guild_prefix,
-                        target_group_prefix,
+                    if (
+                        x.client == client_name
+                        and session_info.target_from in (target_guild_prefix, target_group_prefix)
+                        and str(x.id) not in bot_ids
                     ):
                         plains.append(PlainElement(text=f"<@{x.id}>"))
+            plains = [x for x in plains if x.text]
             if not plains and not images and not media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
@@ -744,7 +765,9 @@ class QQBotContextManager(ContextManager):
                     message_reference = Reference(message_id=ctx.id, ignore_get_message_error=False)
 
             if quote and images and isinstance(ctx, Message):
-                msg = f"<@{ctx.author.id}> \n{msg}"
+                author_id = str(ctx.author.id)
+                if author_id not in bot_ids:
+                    msg = f"<@{author_id}> \n{msg}"
 
             prepared_images: list[tuple[ImageElement, str | Mapping]] = []
             for image, image_path in images:
@@ -817,9 +840,12 @@ class QQBotContextManager(ContextManager):
         async def prepare_markdown_message() -> _PreparedMessage:
             texts = []
             media: list[AudioElement | VideoElement] = []
+            bot_ids = _bot_ids(session_info)
 
             if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
-                texts.append(f'<qqbot-at-user id="{session_info.get_common_sender_id()}" />')
+                sender_id = str(session_info.get_common_sender_id())
+                if sender_id not in bot_ids:
+                    texts.append(f'<qqbot-at-user id="{sender_id}" />')
             converted_message = message.as_sendable(session_info)
             possibly_choices = [row for x in converted_message if isinstance(x, ButtonFrameElement) for row in x.rows]
             keyboard = _build_qqbot_keyboard(possibly_choices, session_info, target)
@@ -852,7 +878,11 @@ class QQBotContextManager(ContextManager):
             for x in converted_message:
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
-                        x.text = render_at_code(x.text, client_name, lambda at: f"<@{at.id}>")
+                        x.text = render_at_code(
+                            x.text,
+                            client_name,
+                            lambda at: "" if str(at.id) in bot_ids else f"<@{at.id}>",
+                        )
                     if inline_pending and texts:
                         texts[-1] += x.text
                     else:
@@ -898,9 +928,10 @@ class QQBotContextManager(ContextManager):
                     media.append(x)
                     inline_pending = False
                 elif isinstance(x, MentionElement):
-                    if x.client == client_name and session_info.target_from in (
-                        target_guild_prefix,
-                        target_group_prefix,
+                    if (
+                        x.client == client_name
+                        and session_info.target_from in (target_guild_prefix, target_group_prefix)
+                        and str(x.id) not in bot_ids
                     ):
                         texts.append(f'<qqbot-at-user id="{x.id}" />')
                     inline_pending = False
@@ -938,7 +969,7 @@ class QQBotContextManager(ContextManager):
             if keyboard and not texts:
                 texts.append("\u200b")
             prepared_media = await prepare_separate_media(media)
-            if not texts and not prepared_media:
+            if not any(text.strip() for text in texts) and not prepared_media:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
             msg = "\n".join(texts)

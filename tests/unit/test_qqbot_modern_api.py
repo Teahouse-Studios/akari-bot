@@ -561,6 +561,66 @@ async def _test_c2c_delete_uses_unified_api() -> bool:
     return True
 
 
+async def _test_self_mention_is_not_rendered_plain() -> bool:
+    session = _make_session(target_group_prefix)
+    session.bot_id = "self"
+    client = _CaptureSendClient()
+    message = MessageChain.assign([MentionElement.assign("QQBot|self"), PlainElement.assign("hello")])
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    return result == ["plain"] and client.calls == [("plain", {"content": "hello", "message_reference": None})]
+
+
+async def _test_self_mention_is_not_rendered_markdown() -> bool:
+    session = _make_session(target_group_prefix)
+    session.bot_id = "self"
+    session.support_markdown = True
+    client = _CaptureSendClient()
+    message = MessageChain.assign([MentionElement.assign("QQBot|self"), PlainElement.assign("hello")])
+    with patch.object(qqbot_context, "qq_use_markdown", True):
+        result = await _send_with_client(session, client, message)
+    return result == ["markdown"] and client.calls == [("markdown", {"content": "hello", "keyboard": None})]
+
+
+async def _test_self_atcode_is_not_rendered() -> bool:
+    session = _make_session(target_group_prefix)
+    session.bot_id = "self"
+    client = _CaptureSendClient()
+    message = MessageChain.assign(
+        [PlainElement.assign("hi <AT:QQBot|self> bye"), MentionElement.assign("QQBot|member")]
+    )
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    return result == ["plain"] and client.calls == [
+        ("plain", {"content": "hi  bye\n<@member>", "message_reference": None})
+    ]
+
+
+async def _test_self_mention_only_message_is_not_sent() -> bool:
+    session = _make_session(target_group_prefix)
+    session.bot_id = "self"
+    client = _CaptureSendClient()
+    message = MessageChain.assign([MentionElement.assign("QQBot|self")])
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, message)
+    return result == [] and client.calls == []
+
+
+async def _test_quote_self_does_not_mention_self_markdown() -> bool:
+    session = _make_session(target_group_prefix)
+    session.bot_id = "self"
+    session.sender_id = "QQBot|self"
+    session.support_markdown = True
+    client = _CaptureSendClient()
+    QQBotContextManager.context[session.session_id] = object()
+    try:
+        with patch.object(qqbot_context, "qq_use_markdown", True):
+            result = await _send_with_client(session, client, MessageChain.assign(MarkdownElement.assign("hello")))
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+    return result == ["markdown"] and client.calls == [("markdown", {"content": "hello", "keyboard": None})]
+
+
 @func_case
 async def test_qqbot_modern_api(tester: Tester):
     """bots.qqbot.context: botpy 接口接入测试"""
@@ -587,4 +647,9 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_private_message_client_failure_returns_empty, "私信客户端解析失败返回空消息 ID 测试")
     await tester.test(_test_group_message_reply_uses_message_reference, "普通群消息回复 ID 来源测试")
     await tester.test(_test_group_quote_uses_api_message_id, "群消息平台引用使用接口消息 ID 测试")
+    await tester.test(_test_self_mention_is_not_rendered_plain, "普通消息不 @ 机器人自己测试")
+    await tester.test(_test_self_mention_is_not_rendered_markdown, "Markdown 消息不 @ 机器人自己测试")
+    await tester.test(_test_self_atcode_is_not_rendered, "AT 码指向机器人自己时不渲染测试")
+    await tester.test(_test_self_mention_only_message_is_not_sent, "仅提及自己时不发送空消息测试")
+    await tester.test(_test_quote_self_does_not_mention_self_markdown, "引用自身消息不 @ 自己测试")
     return tester

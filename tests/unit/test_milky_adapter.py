@@ -31,7 +31,7 @@ def _png_file() -> str:
         return image_file.name
 
 
-def _session(session_id: str, message_id: str | None = None) -> SessionInfo:
+def _session(session_id: str, message_id: str | None = None, bot_id: str | None = None) -> SessionInfo:
     session = SessionInfo(
         target_id=f"{target_group_prefix}|123456",
         target_from=target_group_prefix,
@@ -41,6 +41,7 @@ def _session(session_id: str, message_id: str | None = None) -> SessionInfo:
         session_id=session_id,
         message_id=message_id,
         locale=Locale("zh_cn"),
+        bot_id=bot_id,
     )
     inject_features(session, milky_features)
     return session
@@ -284,6 +285,75 @@ async def _test_sdk_message_model_is_supported() -> bool:
     return [getattr(element, "text", None) for element in chain.values] == ["hi ", "QQ|12345"]
 
 
+async def _test_self_mention_is_not_rendered() -> bool:
+    session = _session("milky-self-mention", bot_id="10001")
+    mention_segments = await convert_chain_to_segments(
+        session, MessageChain.assign("hi <AT:QQ|10001> bye"), quote=False
+    )
+    element_segments = await convert_chain_to_segments(
+        session, MessageChain.assign([MentionElement.assign("QQ|10001")]), quote=False
+    )
+    return (
+        _segment_types(mention_segments) == ["text"]
+        and mention_segments[0].data.text == "hi  bye"
+        and element_segments == []
+    )
+
+
+async def _test_self_mention_is_filtered_from_inbound_message() -> bool:
+    import bots.milky.bot as bot_module
+
+    captured = {}
+
+    async def fake_assign(**kwargs):
+        captured.clear()
+        captured.update(kwargs)
+        return object()
+
+    process = AsyncMock()
+    event = _group_message_event(
+        [
+            {"type": "text", "data": {"text": "~echo hi "}},
+            {"type": "mention", "data": {"user_id": 12345}},
+            {"type": "text", "data": {"text": " there"}},
+        ]
+    )
+    with (
+        patch.object(bot_module, "milky_account", 12345),
+        patch.object(bot_module, "mention_required", False),
+        patch.object(bot_module, "enable_tos", False),
+        patch.object(bot_module.SessionInfo, "assign", new=fake_assign),
+        patch.object(bot_module.Bot, "process_message", new=process),
+    ):
+        await bot_module.dispatch_event(event)
+    text = captured.get("messages").to_str()
+    return "QQ|12345" not in text and "~echo hi" in text and process.await_count == 1
+
+
+async def _test_only_self_mention_falls_back_to_help() -> bool:
+    import bots.milky.bot as bot_module
+
+    captured = {}
+
+    async def fake_assign(**kwargs):
+        captured.clear()
+        captured.update(kwargs)
+        return object()
+
+    process = AsyncMock()
+    event = _group_message_event([{"type": "mention", "data": {"user_id": 12345}}])
+    with (
+        patch.object(bot_module, "milky_account", 12345),
+        patch.object(bot_module, "mention_required", False),
+        patch.object(bot_module, "enable_tos", False),
+        patch.object(bot_module.SessionInfo, "assign", new=fake_assign),
+        patch.object(bot_module.Bot, "process_message", new=process),
+    ):
+        await bot_module.dispatch_event(event)
+    text = captured.get("messages").to_str()
+    return "QQ|12345" not in text and text.strip().endswith("help") and process.await_count == 1
+
+
 @func_case
 async def test_milky_adapter(tester: Tester):
     """Milky 适配器的出站消息转换与会话组装。"""
@@ -293,6 +363,9 @@ async def test_milky_adapter(tester: Tester):
     await tester.test(_test_block_elements_are_separated_by_newline, "Milky 块级元素以换行分隔")
     await tester.test(_test_image_segment_uses_normal_subtype_and_newline, "Milky 图片段携带 sub_type 与换行")
     await tester.test(_test_quote_uses_message_seq, "Milky 引用使用消息序列号")
+    await tester.test(_test_self_mention_is_not_rendered, "Milky 出站不 @ 机器人自己")
+    await tester.test(_test_self_mention_is_filtered_from_inbound_message, "Milky 入站自身提及被过滤")
+    await tester.test(_test_only_self_mention_falls_back_to_help, "Milky 仅 @ 自己时回退到帮助")
     await tester.test(_test_group_reaction_targets_message_seq, "Milky 表情回应使用消息序列号")
     await tester.test(_test_message_dispatch_builds_session, "Milky 消息事件组装会话")
     await tester.test(_test_group_message_ignored_when_not_addressed, "Milky 群聊未 @ 机器人时忽略")

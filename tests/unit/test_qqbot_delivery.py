@@ -190,6 +190,44 @@ async def _test_mention_prefix_survives_overlapping_callbacks():
     return True
 
 
+async def _test_group_self_mention_is_filtered():
+    with patch.object(qqbot_bot, "qqbot_openid", "bot"):
+        assign, process = await _dispatch(
+            [(qqbot_bot.MyClient.on_message_group_create, _message(content="<@bot> ~echo <@bot> hi"))]
+        )
+    assert assign.await_count == process.await_count == 1
+    text = assign.await_args.kwargs["messages"].to_str()
+    assert "QQBot|bot" not in text and "~echo" in text
+    return True
+
+
+async def _test_guild_self_mention_is_filtered():
+    with (
+        patch.object(qqbot_bot, "qqbot_openid", "bot"),
+        patch.object(qqbot_bot.QQBotConfig, "qq_bot_uid", "guildbot"),
+    ):
+        assign, process = await _dispatch(
+            [
+                (
+                    qqbot_bot.MyClient.on_message_create,
+                    _message(scope="channel", content="<@guildbot> ~echo <@guildbot> hi"),
+                )
+            ]
+        )
+    assert assign.await_count == process.await_count == 1
+    text = assign.await_args.kwargs["messages"].to_str()
+    assert "QQBot|Tiny|guildbot" not in text and "~echo" in text
+    return True
+
+
+async def _test_only_self_mention_falls_back_to_help():
+    with patch.object(qqbot_bot, "qqbot_openid", "bot"):
+        assign, process = await _dispatch([(qqbot_bot.MyClient.on_group_at_message_create, _message(content="<@bot>"))])
+    assert assign.await_count == process.await_count == 1
+    assert assign.await_args.kwargs["messages"].to_str().strip().endswith("help")
+    return True
+
+
 @func_case
 async def test_qqbot_delivery(tester: Tester):
     await tester.test(_test_group_message_redelivery_is_processed_once, "同一群消息重投只派发一次")
@@ -201,4 +239,7 @@ async def test_qqbot_delivery(tester: Tester):
     await tester.test(_test_cache_expires_and_stays_bounded, "入站去重缓存过期与容量限制")
     await tester.test(_test_unidentified_messages_are_not_suppressed, "缺少消息 ID 的事件不合并")
     await tester.test(_test_mention_prefix_survives_overlapping_callbacks, "普通与提及回调顺序不影响群提及命令前缀")
+    await tester.test(_test_group_self_mention_is_filtered, "群聊入站自身提及被过滤")
+    await tester.test(_test_guild_self_mention_is_filtered, "频道入站自身提及被过滤")
+    await tester.test(_test_only_self_mention_falls_back_to_help, "仅 @ 自己时回退到帮助")
     return tester

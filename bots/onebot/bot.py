@@ -132,19 +132,25 @@ async def message_handler(event: Event):
         if event.message and event.message[0]["type"] == "reply":
             reply_id = int(event.message[0]["data"]["id"])
 
+    self_id = str(event.self_id)
     at_message = False
     if string_post:
         if match_at := re.match(r"^\[CQ:at,qq=(\d+).*\](.*)", event.message):
-            if match_at.group(1) == str(event.self_id):
+            if match_at.group(1) == self_id:
                 at_message = True
                 event.message = match_at.group(2).strip()
                 if not event.message:
                     event.message = f"{command_prefix[0]}help"
             else:
                 return
+        stripped_message = re.sub(rf"\[CQ:at,qq={re.escape(self_id)}(?:,[^\]]*)?\]", "", event.message)
+        if stripped_message != event.message:
+            event.message = stripped_message.strip()
+        if at_message and not event.message:
+            event.message = f"{command_prefix[0]}help"
     else:
         if event.message and event.message[0]["type"] == "at":
-            if event.message[0]["data"]["qq"] == str(event.self_id):
+            if event.message[0]["data"]["qq"] == self_id:
                 at_message = True
                 event.message = event.message[1:]
                 if (
@@ -155,6 +161,15 @@ async def message_handler(event: Event):
                     event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
             else:
                 return
+        event.message = [
+            segment
+            for segment in event.message
+            if not (segment.get("type") == "at" and str(segment.get("data", {}).get("qq")) == self_id)
+        ]
+        if at_message and (
+            not event.message or event.message[0]["type"] == "text" and not event.message[0]["data"]["text"].strip()
+        ):
+            event.message = [{"type": "text", "data": {"text": f"{command_prefix[0]}help"}}]
     if mention_required and not at_message and event.detail_type == "group":
         return
 

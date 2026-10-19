@@ -42,6 +42,11 @@ from core.utils.media import resolve_media_base64, resolve_media_path
 MILKY_IMPL_TEMP_KEY = "milky_impl"
 
 
+def _bot_ids(session_info: SessionInfo) -> set[str]:
+    bot_id = session_info.bot_id or Temp.data.get("qq_account")
+    return {str(bot_id)} if bot_id else set()
+
+
 async def get_milky_implementation() -> str | None:
     """获取 Milky 协议端实现名。
 
@@ -184,6 +189,7 @@ async def convert_chain_to_segments(
 
     # 标记是否已写入过元素内容：首个元素直接落段，其后元素均先补齐换行
     has_content = False
+    bot_ids = _bot_ids(session_info)
 
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
@@ -192,6 +198,8 @@ async def convert_chain_to_segments(
             started = False
             for part in parts:
                 if isinstance(part, InlineMention) and part.client == client_name:
+                    if str(part.id) in bot_ids:
+                        continue
                     if not started and has_content:
                         _ensure_line_break(segments)
                     started = True
@@ -236,6 +244,8 @@ async def convert_chain_to_segments(
                 Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {str(element)}")
             has_content = True
         elif isinstance(element, MentionElement):
+            if element.client == client_name and str(element.id) in bot_ids:
+                continue
             if has_content:
                 _ensure_line_break(segments)
             if element.client == client_name and session_info.target_from == target_group_prefix:

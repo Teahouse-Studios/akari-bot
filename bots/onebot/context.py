@@ -37,6 +37,11 @@ HIGH_PRIORITY_QUEUE_RESERVE = 16
 last_send_typing_time: OrderedDict[str, float] = OrderedDict()
 
 
+def _bot_ids(session_info: SessionInfo) -> set[str]:
+    bot_id = session_info.bot_id or Temp.data.get("qq_account")
+    return {str(bot_id)} if bot_id else set()
+
+
 def _typing_prompt_on_cooldown(sender_id: str, now: float | None = None) -> bool:
     now = time.monotonic() if now is None else now
     last_sent = last_send_typing_time.get(sender_id)
@@ -268,10 +273,16 @@ class OneBotContextManager(ContextManager):
                 convert_msg_segments = MessageSegment.reply(int(session_info.message_id))
 
             count = 0
+            bot_ids = _bot_ids(session_info)
             for x in message.as_sendable(session_info):
                 if isinstance(x, PlainElement):
                     if x.allow_parse:
-                        x.text = render_at_code(x.text, client_name, lambda at: f"[CQ:at,qq={at.id}]")
+                        x.text = render_at_code(
+                            x.text,
+                            client_name,
+                            lambda at: "" if str(at.id) in bot_ids else f"[CQ:at,qq={at.id}]",
+                        )
+                    rendered = False
                     if x.allow_parse:
                         parts = re.split(r"(\[CQ:[^\]]+\])", x.text)
                         parts = [part for part in parts if part]
@@ -308,12 +319,15 @@ class OneBotContextManager(ContextManager):
                                     ("\n" if count != 0 else "") + part
                                 )
                                 previous_was_cq = False
-                    else:
+                        rendered = bool(parts)
+                    elif x.text:
                         convert_msg_segments = convert_msg_segments + MessageSegment.text(
                             ("\n" if count != 0 else "") + x.text
                         )
-                    Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
-                    count += 1
+                        rendered = True
+                    if rendered:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: {x.text}")
+                        count += 1
                 elif isinstance(x, ImageElement):
                     image_b64 = await resolve_media_base64(x)
                     if image_b64 is None:
@@ -337,6 +351,8 @@ class OneBotContextManager(ContextManager):
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Video: {str(x)}")
                     count += 1
                 elif isinstance(x, MentionElement):
+                    if x.client == client_name and str(x.id) in bot_ids:
+                        continue
                     if x.client == client_name and session_info.target_from == target_group_prefix:
                         convert_msg_segments = convert_msg_segments + MessageSegment.at(x.id)
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: Mention: {x.client}|{str(x.id)}")
