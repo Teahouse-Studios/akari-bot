@@ -71,7 +71,7 @@ async def _(msg: Bot.MessageSession):
         if union_id == msg.session_info.sender_union_id:
             if not await msg.wait_confirm(
                 I18NContext("core.message.admin.remove.confirm"),
-                strict=I18NContext("core.message.admin.remove.confirm.token"),
+                confirm_token=I18NContext("core.message.admin.remove.confirm.token"),
             ):
                 await msg.finish()
         await msg.session_info.target_union_info.config_custom_admin(union_id, enable=False)

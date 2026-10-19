@@ -27,7 +27,6 @@ from core.logger import Logger
 from core.utils.button import bind_callback_reply_ids, public_button_reply_ids
 from core.utils.func import is_int
 from core.utils.media import compress_media_chain
-from core.utils.random import SecureRandom
 
 from core.queue.contracts import PlatformAPI
 from core.queue.errors import RpcRemoteError
@@ -37,30 +36,19 @@ default_locale = BaseConfig.default_locale
 quick_confirm = CoreConfig.quick_confirm
 
 
-STRICT_CONFIRM_LENGTH = 6
-STRICT_CONFIRM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ1234567890"
-
-
 def _is_confirmation_message(msg: MessageSession) -> bool:
     value = msg.as_display(text_only=True).strip()
     return value in confirm_command or value == "no"
 
 
-def generate_strict_confirm_token() -> str:
-    """生成严格确认所需的一次性口令。"""
-    return SecureRandom.randstr(STRICT_CONFIRM_LENGTH, STRICT_CONFIRM_ALPHABET)
-
-
-def resolve_strict_confirm_token(session_info: SessionInfo, strict: bool | str | I18NContextElement) -> str:
+def normalize_confirm_token(session_info: SessionInfo, confirm_token: str | I18NContextElement) -> str:
     """把严格确认的口令归一为待比对文本，I18N 模板按会话语言解析其占位符。"""
-    if strict is True:
-        return generate_strict_confirm_token()
-    if isinstance(strict, I18NContextElement):
-        return session_info.locale.t(strict.key, **strict.kwargs).strip()
-    return str(strict).strip()
+    if isinstance(confirm_token, I18NContextElement):
+        return session_info.locale.t(confirm_token.key, **confirm_token.kwargs).strip()
+    return confirm_token.strip()
 
 
-def _is_strict_confirmation(token: str) -> Callable[[MessageSession], bool]:
+def _is_confirm_token(token: str) -> Callable[[MessageSession], bool]:
     def matcher(msg: MessageSession) -> bool:
         return msg.as_display(text_only=True).strip() == token
 
@@ -662,7 +650,7 @@ class MessageSession:
         no_confirm_action: bool = True,
         release_execution_lock: bool = True,
         consume_any_message: bool = False,
-        strict: bool | str | I18NContextElement = False,
+        confirm_token: str | I18NContextElement | None = None,
     ) -> bool:
         """一次性模板，用于等待触发对象确认。
 
@@ -675,14 +663,12 @@ class MessageSession:
         :param release_execution_lock: 等待期间是否释放执行锁。Union 合并在建立
                                        双方 barrier 后须保持锁，避免冲突选择期间重新并发。
         :param consume_any_message: 是否将下一条任意消息作为否定结果消费，而不是仅消费确认词。
-        :param strict: 严格确认的口令。`True` 生成一次性随机口令，字符串按原文比对，
-                       `I18NContext` 按会话语言解析占位符后再比对。给出后仅完全回复该口令
-                       才通过，快捷确认途径与 `no_confirm` 配置均不适用（默认为 False）
+        :param confirm_token: 要求完整回复的口令，不为 None 时启用严格确认模式。
         :return: 若对象发送确认指令返回 True，反之返回 False
 
         :raises WaitCancelException: 如果超时或用户未确认
         """
-        strict_mode = strict is not False and strict is not None
+        strict_mode = confirm_token is not None
         if CoreConfig.no_confirm and not strict_mode:
             return no_confirm_action
         released_lease = ExecutionLockList.remove(self) if release_execution_lock else False
@@ -691,7 +677,7 @@ class MessageSession:
             chain = get_message_chain(self.session_info, message_chain)
         else:
             chain = MessageChain.assign(I18NContext("core.message.confirm"))
-        token = resolve_strict_confirm_token(self.session_info, strict) if strict_mode else None
+        token = normalize_confirm_token(self.session_info, confirm_token) if strict_mode else None
         # 合并转发消息无从追加提示行，此时略过
         if isinstance(chain, MessageChain):
             if strict_mode:
@@ -704,7 +690,7 @@ class MessageSession:
             chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
 
         if strict_mode:
-            matcher = _is_strict_confirmation(token)
+            matcher = _is_confirm_token(token)
         else:
             matcher = None if consume_any_message else _is_confirmation_message
         send = None

@@ -3247,28 +3247,18 @@ async def _test_one_message_completes_only_one_wait_task():
 STRICT_CONFIRM_TOKEN = "A1B2C3"
 
 
-def _test_resolve_strict_confirm_token():
+def _test_normalize_confirm_token():
     from core.builtins.message.internal import I18NContext
-    from core.builtins.session.internal import (
-        STRICT_CONFIRM_ALPHABET,
-        STRICT_CONFIRM_LENGTH,
-        resolve_strict_confirm_token,
-    )
+    from core.builtins.session.internal import normalize_confirm_token
 
     class FakeLocale:
         def t(self, key, **kwargs):
             return f"{key}|{kwargs['name']}"
 
     session_info = SimpleNamespace(locale=FakeLocale())
-    templated = resolve_strict_confirm_token(session_info, I18NContext("my_module.message.token", name="口令"))
-    literal = resolve_strict_confirm_token(session_info, " 原文口令 ")
-    generated = resolve_strict_confirm_token(session_info, True)
-    return (
-        templated == "my_module.message.token|口令"
-        and literal == "原文口令"
-        and len(generated) == STRICT_CONFIRM_LENGTH
-        and set(generated) <= set(STRICT_CONFIRM_ALPHABET)
-    )
+    templated = normalize_confirm_token(session_info, I18NContext("my_module.message.token", name="口令"))
+    literal = normalize_confirm_token(session_info, " 原文口令 ")
+    return templated == "my_module.message.token|口令" and literal == "原文口令"
 
 
 async def _make_strict_confirm_waiter(target_id: str, sender_id: str, reply: str):
@@ -3305,11 +3295,10 @@ async def _test_wait_confirm_strict_accepts_exact_reply():
     SessionTaskManager._task_list.clear()
     msg = await _make_strict_confirm_waiter("TEST|Group|strict-accept", "TEST|strict-accept", STRICT_CONFIRM_TOKEN)
     try:
-        with (
-            patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN),
-            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
-        ):
-            result = await msg.wait_confirm("prompt", strict=True, delete=False, timeout=0.05 * TIME_SCALE)
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            result = await msg.wait_confirm(
+                "prompt", confirm_token=STRICT_CONFIRM_TOKEN, delete=False, timeout=0.05 * TIME_SCALE
+            )
     except WaitCancelException:
         return False
     finally:
@@ -3329,11 +3318,10 @@ async def _test_wait_confirm_strict_rejects_confirm_word():
     SessionTaskManager._task_list.clear()
     msg = await _make_strict_confirm_waiter("TEST|Group|strict-reject", "TEST|strict-reject", "是")
     try:
-        with (
-            patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN),
-            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
-        ):
-            await msg.wait_confirm("prompt", strict=True, delete=False, timeout=0.05 * TIME_SCALE)
+        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
+            await msg.wait_confirm(
+                "prompt", confirm_token=STRICT_CONFIRM_TOKEN, delete=False, timeout=0.05 * TIME_SCALE
+            )
     except WaitCancelException:
         return msg.captured is not None
     finally:
@@ -3350,10 +3338,11 @@ async def _test_wait_confirm_strict_ignores_no_confirm_config():
     try:
         with (
             patch.object(CoreConfig, "no_confirm", True),
-            patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN),
             patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
         ):
-            await msg.wait_confirm("prompt", strict=True, delete=False, timeout=0.05 * TIME_SCALE)
+            await msg.wait_confirm(
+                "prompt", confirm_token=STRICT_CONFIRM_TOKEN, delete=False, timeout=0.05 * TIME_SCALE
+            )
     except WaitCancelException:
         return msg.captured is not None
     finally:
@@ -3370,21 +3359,19 @@ async def _make_confirm_session(response: str, *, support_button: bool = True) -
 
 async def _test_mock_strict_confirm_accepts_token():
     msg = await _make_confirm_session(STRICT_CONFIRM_TOKEN)
-    with patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN):
-        result = await msg.wait_confirm(strict=True, delete=False)
+    result = await msg.wait_confirm(confirm_token=STRICT_CONFIRM_TOKEN, delete=False)
     return result is True and not msg.buttons and any(STRICT_CONFIRM_TOKEN in action for action in msg.action)
 
 
 async def _test_mock_strict_confirm_rejects_other_reply():
     msg = await _make_confirm_session("是")
-    with patch("core.builtins.session.internal.generate_strict_confirm_token", return_value=STRICT_CONFIRM_TOKEN):
-        result = await msg.wait_confirm(strict=True, delete=False)
+    result = await msg.wait_confirm(confirm_token=STRICT_CONFIRM_TOKEN, delete=False)
     return result is False
 
 
 async def _test_mock_strict_confirm_uses_custom_string():
     msg = await _make_confirm_session("确认删除")
-    result = await msg.wait_confirm("请确认是否删除", strict="确认删除", delete=False)
+    result = await msg.wait_confirm("请确认是否删除", confirm_token="确认删除", delete=False)
     return result is True and any("确认删除" in action for action in msg.action)
 
 
@@ -3536,7 +3523,7 @@ async def test_message_session_lifecycle(tester: Tester):
 @func_case
 async def test_strict_confirmation(tester: Tester):
     """core.builtins.session.internal: 严格确认测试"""
-    await tester.test(_test_resolve_strict_confirm_token, "严格确认口令归一与 I18N 占位符解析")
+    await tester.test(_test_normalize_confirm_token, "严格确认口令归一与 I18N 占位符解析")
     await tester.test(_test_wait_confirm_strict_accepts_exact_reply, "完全回复口令通过严格确认")
     await tester.test(_test_wait_confirm_strict_rejects_confirm_word, "确认词不能通过严格确认")
     await tester.test(_test_wait_confirm_strict_ignores_no_confirm_config, "no_confirm 配置不跳过严格确认")

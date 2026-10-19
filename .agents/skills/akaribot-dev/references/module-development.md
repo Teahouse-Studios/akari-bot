@@ -565,7 +565,7 @@ play_state.disable()  # 结束
 
 | 方法 | 签名要点 | 返回 |
 |------|----------|------|
-| `wait_confirm` | `(message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True, no_confirm_action=True, consume_any_message=False, strict=False)` | `bool` |
+| `wait_confirm` | `(message_chain=None, quote=True, delete=True, timeout=120, append_instruction=True, no_confirm_action=True, consume_any_message=False, confirm_token=None)` | `bool` |
 | `wait_next_message` | `(message_chain=None, quote=True, delete=False, timeout=120, append_instruction=True, possibly_choices=None)` | `MessageSession` |
 | `wait_reply` | `(message_chain, quote=True, delete=False, timeout=120, all_=False, append_instruction=True)` | `MessageSession` |
 | `wait_anyone` | `(message_chain=None, quote=False, delete=False, timeout=120)` | `MessageSession` |
@@ -577,8 +577,11 @@ if await msg.wait_confirm(I18NContext("my_module.message.confirm")):
 else:
     await msg.finish(I18NContext("my_module.message.cancelled"))
 
-# 严格确认（高风险操作用：用户必须完全回复口令，口令由框架生成）
-if await msg.wait_confirm(I18NContext("my_module.message.danger"), strict=True):
+# 严格确认（高风险操作用：用户必须完全回复口令）
+if await msg.wait_confirm(
+    I18NContext("my_module.message.danger"),
+    confirm_token=I18NContext("my_module.message.danger.token"),
+):
     await msg.finish(I18NContext("my_module.message.done"))
 
 # 等待下一条消息
@@ -598,7 +601,7 @@ answer = await msg.wait_anyone(timeout=30)
 > 其他共同行为：
 > - 进入等待前会 `ExecutionLockList.remove(self)` + `end_typing()`，所以等待期间用户可以触发别的命令
 > - `wait_confirm` 在配置 `no_confirm` 为真时**直接返回 `no_confirm_action`**（默认 `True`），不发消息也不等待——写破坏性操作时要意识到确认可能被全局跳过
-> - `strict` 要求用户**完全回复口令**才通过：`True` 表示口令由框架生成，字符串按原文比对，`I18NContext` 按会话语言解析占位符后比对。严格确认不发按钮、不挂反应提示，也不受 `no_confirm` 影响
+> - `confirm_token` 要求用户**完全回复口令**才通过：字符串按原文比对，`I18NContext` 按会话语言解析占位符后比对，首尾空白均忽略。严格确认不发按钮、不挂反应提示，也不受 `no_confirm` 影响
 > - `append_instruction=True` 会自动追加平台相关的操作提示（反应 / 回复 / 文本），一般别关
 > - `message_chain` 不填就只等不发；`wait_reply` 例外，它是必填的
 

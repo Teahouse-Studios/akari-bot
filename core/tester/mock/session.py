@@ -6,7 +6,7 @@ from core.builtins.message.elements import ButtonFrameElement, PlainElement, Ima
 from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.bot_state import BotState
-from core.builtins.session.internal import MessageSession, I18NContext, resolve_strict_confirm_token
+from core.builtins.session.internal import MessageSession, I18NContext, normalize_confirm_token
 from core.builtins.utils import confirm_command
 from core.config.base import CoreConfig
 from core.constants.exceptions import SessionFinished
@@ -224,12 +224,12 @@ class MockMessageSession(MessageSession):
         no_confirm_action=True,
         release_execution_lock=True,
         consume_any_message=False,
-        strict=False,
+        confirm_token=None,
     ):
-        strict_mode = strict is not False and strict is not None
+        strict_mode = confirm_token is not None
         if CoreConfig.no_confirm and not strict_mode:
             return no_confirm_action
-        token = resolve_strict_confirm_token(self.session_info, strict) if strict_mode else None
+        token = normalize_confirm_token(self.session_info, confirm_token) if strict_mode else None
 
         if message_chain:
             message_chain = get_message_chain(self.session_info, message_chain)

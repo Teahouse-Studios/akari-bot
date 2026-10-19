@@ -40,7 +40,9 @@ async def _(msg: Bot.MessageSession, user: str, module: str):
         sender_union_info = await SenderUnionInfo.resolve_union(user)
     auth_list = _get_authorizations(sender_union_info)
     if "add" in msg.parsed_msg:
-        if await msg.wait_confirm(strict=I18NContext("core.message.auth.add.confirm.token", user=user, module=module)):
+        if await msg.wait_confirm(
+            confirm_token=I18NContext("core.message.auth.add.confirm.token", user=user, module=module)
+        ):
             for entry in auth_list:
                 if entry["module"] == module and entry["authorized_by"] == msg.session_info.sender_id:
                     await msg.finish(I18NContext("core.message.auth.add.already", user=user, module=module))

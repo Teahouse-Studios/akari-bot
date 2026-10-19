@@ -27,7 +27,7 @@ async def _(msg: Bot.MessageSession, user: str):
     if user == msg.session_info.sender_id:
         if not await msg.wait_confirm(
             I18NContext("core.message.superuser.remove.confirm"),
-            strict=I18NContext("core.message.superuser.remove.confirm.token"),
+            confirm_token=I18NContext("core.message.superuser.remove.confirm.token"),
         ):
             await msg.finish()
     sender_union_info = await SenderUnionInfo.get_by_sender_id(user, create=False)
