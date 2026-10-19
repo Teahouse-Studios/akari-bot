@@ -105,6 +105,7 @@ async def send_report(
         subject = f"[AkariBot] {locale.t_str(subject)}"
         if body is None:
             body = MessageChain.assign(message).as_sendable(enable_markdown=False).to_str()
+        body = locale.t_str(body)
         try:
             await asyncio.to_thread(send_email, subject, body)
         except Exception:

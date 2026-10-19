@@ -22,6 +22,27 @@ async def _test_email_takes_priority_over_targets():
     return send_email.call_args.args == ("[AkariBot] subject", "body") and not direct_sender.called
 
 
+async def _test_email_subject_and_body_are_localized():
+    direct_sender = AsyncMock()
+    body = "{I18N:error.message.report,command=test}\ntrace"
+    with (
+        patch.object(SMTPConfig, "enable_email_report", True),
+        patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
+        patch.object(SMTPConfig, "smtp_recipients", ["ops@example.com"]),
+        patch("core.smtp.send_email") as send_email,
+    ):
+        await send_report(
+            [],
+            "{I18N:smtp.report.subject.error.rpc,method=test}",
+            body,
+            direct_sender=direct_sender,
+            targets=[],
+        )
+
+    subject, localized_body = send_email.call_args.args
+    return "{I18N:" not in subject and "{I18N:" not in localized_body and "test" in subject and "test" in localized_body
+
+
 async def _test_targets_are_used_without_email():
     direct_sender = AsyncMock()
     bot = MagicMock()
@@ -105,6 +126,7 @@ async def _test_external_smtp_client_receives_timeout():
 async def test_report(tester: Tester):
     """core.smtp: SMTP 与场景上报路由测试"""
     await tester.test(_test_email_takes_priority_over_targets, "SMTP 优先于场景上报测试")
+    await tester.test(_test_email_subject_and_body_are_localized, "邮件标题与正文本地化测试")
     await tester.test(_test_targets_are_used_without_email, "未启用 SMTP 时场景上报测试")
     await tester.test(_test_no_targets_does_not_send, "无上报场景时跳过测试")
     await tester.test(_test_external_smtp_client_uses_starttls_and_login, "外部 SMTP 服务商连接测试")
