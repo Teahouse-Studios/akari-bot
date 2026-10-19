@@ -16,6 +16,7 @@ if api_key:
         "function": {
             "name": "execute_python_code",
             "description": "Executes Python code and returns the results. Supports outputting text and PNG/JPEG images. "
+            "Use only for complex calculations or user required. "
             "Internet access is not supported.",
             "parameters": {
                 "type": "object",
