@@ -20,7 +20,7 @@ _SECURITY_EVENT_KEYS = {
     "password_set": "web.security.email.event.password_set",
     "password_changed": "web.security.email.event.password_changed",
     "password_removed": "web.security.email.event.password_removed",
-    "password_removed_manual": "web.security.email.event.password_removed_manual",
+    "password_reset": "web.security.email.event.password_reset",
     "totp_enabled": "web.security.email.event.totp_enabled",
     "totp_disabled": "web.security.email.event.totp_disabled",
     "backup_codes_reset": "web.security.email.event.backup_codes_reset",
@@ -111,8 +111,8 @@ async def notify_security_event(event: str, *, ip: str, user_agent: str) -> None
 
         if event == "new_device_login":
             body_key = "web.security.email.body.new_device_login"
-        elif event == "password_removed_manual":
-            body_key = "web.security.email.body.password_removed_manual"
+        elif event == "password_reset":
+            body_key = "web.security.email.body.password_reset"
         else:
             body_key = "web.security.email.body"
 

@@ -68,6 +68,6 @@ async def watch_password_state() -> None:
 
         if removed:
             Logger.warning("[WebUI] Detected external password removal.")
-            await notify_security_event("password_removed_manual", ip="", user_agent="")
+            await notify_security_event("password_reset", ip="", user_agent="")
 
         await asyncio.sleep(PASSWORD_STATE_INTERVAL)
