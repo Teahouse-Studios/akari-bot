@@ -8,5 +8,17 @@
     "config.comments.bot_web.heartbeat_timeout": "心跳訊息回應逾時時間。",
     "config.comments.bot_web.login_max_attempt": "登入請求最大次數限制。",
     "config.comments.bot_web.web_host": "Web 服務的主機位址，設為 0.0.0.0 則監聽所有位址。",
-    "config.comments.bot_web.web_port": "Web 服務的連接埠號，設為 0 則停用服務。"
+    "config.comments.bot_web.web_port": "Web 服務的連接埠號，設為 0 則停用服務。",
+    "web.security.email.body": "事件：${event}\n來源 IP：${ip}\n裝置資訊：${user_agent}\n\n若此操作並非由你發起，請立即檢查 WebUI 的安全設定。",
+    "web.security.email.body.new_device_login": "事件：${event}\n來源 IP：${ip}\n裝置資訊：${user_agent}\n\n此裝置首次登入 WebUI。若此操作並非由你發起，請立即修改密碼並檢查兩步驟驗證設定。",
+    "web.security.email.body.password_removed_manual": "事件：${event}\n\n有人似乎刪除了密碼檔案以重設密碼。若此操作並非由你發起，請立即檢查 WebUI 的安全設定。",
+    "web.security.email.event.backup_codes_reset": "WebUI 復原碼已重設",
+    "web.security.email.event.new_device_login": "WebUI 新裝置登入",
+    "web.security.email.event.password_changed": "WebUI 密碼已修改",
+    "web.security.email.event.password_removed": "WebUI 密碼已移除",
+    "web.security.email.event.password_removed_manual": "WebUI 密碼已移除",
+    "web.security.email.event.password_set": "WebUI 密碼已設定",
+    "web.security.email.event.totp_disabled": "WebUI 兩步驟驗證已停用",
+    "web.security.email.event.totp_enabled": "WebUI 兩步驟驗證已啟用",
+    "web.security.email.subject": "安全提醒：${event}"
 }

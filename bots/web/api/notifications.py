@@ -6,7 +6,7 @@ import orjson
 
 from core.config.base import BaseConfig
 from core.constants.path import data_path
-from core.i18n import Locale, safe_strftime
+from core.i18n import Locale
 from core.logger import Logger
 from core.smtp import email_report_enabled, send_email
 
@@ -20,6 +20,7 @@ _SECURITY_EVENT_KEYS = {
     "password_set": "web.security.email.event.password_set",
     "password_changed": "web.security.email.event.password_changed",
     "password_removed": "web.security.email.event.password_removed",
+    "password_removed_manual": "web.security.email.event.password_removed_manual",
     "totp_enabled": "web.security.email.event.totp_enabled",
     "totp_disabled": "web.security.email.event.totp_disabled",
     "backup_codes_reset": "web.security.email.event.backup_codes_reset",
@@ -106,15 +107,16 @@ async def notify_security_event(event: str, *, ip: str, user_agent: str) -> None
         user_agent = _sanitize_text(user_agent)
         ip = _sanitize_text(ip, 64)
         event_name = locale.t(event_key)
-        moment = safe_strftime(
-            datetime.now(),
-            locale.t_str("{I18N:time.date.format} {I18N:time.time.format}"),
-        )
         subject = f"[AkariBot] {locale.t('web.security.email.subject', event=event_name)}"
-        body_key = (
-            "web.security.email.body.new_device_login" if event == "new_device_login" else "web.security.email.body"
-        )
-        body = locale.t(body_key, event=event_name, time=moment, ip=ip, user_agent=user_agent)
+
+        if event == "new_device_login":
+            body_key = "web.security.email.body.new_device_login"
+        elif event == "password_removed_manual":
+            body_key = "web.security.email.body.password_removed_manual"
+        else:
+            body_key = "web.security.email.body"
+
+        body = locale.t(body_key, event=event_name, ip=ip, user_agent=user_agent)
 
         await asyncio.to_thread(send_email, subject, body, timeout=SMTP_TIMEOUT)
     except Exception:

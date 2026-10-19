@@ -8,5 +8,17 @@
     "config.comments.bot_web.heartbeat_timeout": "Heartbeat message response timeout.",
     "config.comments.bot_web.login_max_attempt": "Maximum number of login requests limit.",
     "config.comments.bot_web.web_host": "The host address of the Web service. Setting to 0.0.0.0 will listen to all addresses.",
-    "config.comments.bot_web.web_port": "The port number of the Web service. Setting to 0 will disable the service."
+    "config.comments.bot_web.web_port": "The port number of the Web service. Setting to 0 will disable the service.",
+    "web.security.email.body": "Event: ${event}\nSource IP: ${ip}\nDevice info: ${user_agent}\n\nIf you did not initiate this action, please check the WebUI security settings immediately.",
+    "web.security.email.body.new_device_login": "Event: ${event}\nSource IP: ${ip}\nDevice info: ${user_agent}\n\nThis device has logged in to the WebUI for the first time. If you did not initiate this action, please change your password and review your two-factor authentication settings immediately.",
+    "web.security.email.body.password_removed_manual": "Event: ${event}\n\nSomeone appears to have deleted the password file to reset the password. If you did not initiate this action, please check the WebUI security settings immediately.",
+    "web.security.email.event.backup_codes_reset": "WebUI recovery codes reset",
+    "web.security.email.event.new_device_login": "WebUI new device login",
+    "web.security.email.event.password_changed": "WebUI password changed",
+    "web.security.email.event.password_removed": "WebUI password removed",
+    "web.security.email.event.password_removed_manual": "WebUI password removed",
+    "web.security.email.event.password_set": "WebUI password set",
+    "web.security.email.event.totp_disabled": "WebUI two-factor authentication disabled",
+    "web.security.email.event.totp_enabled": "WebUI two-factor authentication enabled",
+    "web.security.email.subject": "Security alert: ${event}"
 }
