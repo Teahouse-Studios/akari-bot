@@ -7,7 +7,7 @@ class AiConfig:
     ai_cost_to_petal: float = 1
     llm_timeout: float = 60
     llm_max_tokens: int = 2048
-    llm_reasoning_effort = "none"
+    llm_reasoning_effort = "low"
     llm_temperature: float = 1.0
     llm_top_p: float = 1.0
     llm_top_logprobs: int = -1
