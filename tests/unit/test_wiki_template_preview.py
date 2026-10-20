@@ -223,29 +223,34 @@ def _test_watermark_is_safe_inline_css():
     invocation = TemplateInvocation(SOURCE, API, title, 42, _info(), {})
     parsed = {"headhtml": "", "text": "<p>正文</p>"}
     for partial in [False, True]:
-        document, warning = preview.preview_document(
-            {**parsed, "parsewarnings": ["warning"] if partial else []}, invocation, Locale("zh_cn")
-        )
-        soup = BeautifulSoup(document, "html.parser")
-        assert warning is partial
-        overlay = soup.select_one("body > #akari-preview-watermark")
-        assert overlay["data-preview-partial"] == str(partial).lower()
-        assert overlay["aria-hidden"] == "true" and overlay.select_one("svg.akari-watermark-pattern")
-        assert len(overlay.select(".akari-watermark-row")) == 4
-        assert overlay.select_one("pattern")["height"] == "384"
-        css = soup.style.get_text()
-        for index, variant in enumerate(("normal", "partial")):
-            text = overlay.select_one(".akari-watermark-" + variant)
-            assert not text.find("script")
-            assert text.text == Locale("zh_cn").t(
-                "wiki.message.template_preview.watermark",
-                title=title,
-                status=" · 部分资源未加载" if index else "",
+        for fallback in [False, True]:
+            document, warning = preview.preview_document(
+                {**parsed, "parsewarnings": ["warning"] if partial else []},
+                invocation,
+                Locale("zh_cn"),
+                fallback=fallback,
             )
-        assert all("injected()" not in script.get_text() for script in soup.find_all("script"))
-        assert overlay.select_one("pattern")["patternunits"] == "userSpaceOnUse"
-        assert "getComputedTextLength()" in document
-        assert "rotate(-30deg)" in css
+            soup = BeautifulSoup(document, "html.parser")
+            assert warning is partial
+            overlay = soup.select_one("body > #akari-preview-watermark")
+            assert overlay["data-preview-partial"] == str(partial).lower()
+            assert overlay["aria-hidden"] == "true" and overlay.select_one("svg.akari-watermark-pattern")
+            assert len(overlay.select(".akari-watermark-row")) == 4
+            assert overlay.select_one("pattern")["height"] == "384"
+            css = soup.style.get_text()
+            fallback_status = " · (Fallback mode)" if fallback else ""
+            for index, variant in enumerate(("normal", "partial")):
+                text = overlay.select_one(".akari-watermark-" + variant)
+                assert not text.find("script")
+                assert text.text == Locale("zh_cn").t(
+                    "wiki.message.template_preview.watermark",
+                    title=title,
+                    status=(" · 部分资源未加载" if index else "") + fallback_status,
+                )
+            assert all("injected()" not in script.get_text() for script in soup.find_all("script"))
+            assert overlay.select_one("pattern")["patternunits"] == "userSpaceOnUse"
+            assert "getComputedTextLength()" in document
+            assert "rotate(-30deg)" in css
     return True
 
 
@@ -298,6 +303,43 @@ async def _test_whole_message_preview_keeps_multiple_templates():
     assert isinstance(image, PILImage.Image)
     args = requests.api_json.await_args_list[1].kwargs
     assert args["text"] == "前缀 {{Template:Infobox|title=一}} 中间 {{Template:Color|red|二}} 后缀"
+    return True
+
+
+async def _test_api_fallback_document_marks_fallback_watermark():
+    invocation, session = _invocation(), _session()
+    requests = SimpleNamespace(
+        api_json=AsyncMock(
+            side_effect=[
+                {"query": {"pages": [{"ns": 10, "title": "Template:Infobox", "pageid": 42}]}},
+                {"parse": {"text": '<div class="mw-parser-output">结果</div>', "headhtml": ""}},
+            ]
+        )
+    )
+    manager = AsyncMock()
+    manager.__aenter__.return_value = requests
+    calls = []
+    original = preview.preview_document
+
+    def build(*args, **kwargs):
+        calls.append(kwargs)
+        return original(*args, **kwargs)
+
+    with (
+        patch.object(preview, "evaluate_url_policy", return_value=_policy(True)),
+        patch.object(preview, "check_template_parameters", new=AsyncMock()),
+        patch.object(preview, "PreviewRequests", return_value=manager),
+        patch.object(preview, "preview_document", new=build),
+        patch.object(preview, "_render_template_shell", new=AsyncMock(side_effect=RuntimeError("shell unavailable"))),
+        patch.object(
+            preview, "render_preview_document", new=AsyncMock(return_value=(PILImage.new("RGB", (12, 8)), False))
+        ),
+    ):
+        image = await preview.generate_template_preview(invocation, session)
+    assert isinstance(image, PILImage.Image)
+    api_calls = [call for call in calls if not call.get("shell")]
+    assert len(api_calls) == 1 and api_calls[0].get("fallback") is True
+    assert any(call.get("shell") for call in calls)
     return True
 
 
@@ -718,9 +760,10 @@ async def test_wiki_template_preview(tester: Tester):
         (_test_expression_routing_keeps_complete_parameters, "表达式入口将完整参数传入页面查询，同名调用绑定第一条"),
         (_test_only_parameters_are_audited, "仅审核用户参数，审核缺配置、失败与无效结果拒绝预览"),
         (_test_document_preserves_effects_and_removes_input_scripts, "保留站点样式、图片及渲染模块，参数不能注入脚本"),
-        (_test_watermark_is_safe_inline_css, "CSS 水印浮层旋转 −30°，警告状态与模板标题安全转义"),
+        (_test_watermark_is_safe_inline_css, "CSS 水印浮层旋转 −30°，回退标注、警告状态与模板标题安全转义"),
         (_test_single_template_document_adds_css_panel, "单模板预览在内容旁展示 CSS 属性面板"),
         (_test_whole_message_preview_keeps_multiple_templates, "多模板预览保留整条消息文本和全部模板"),
+        (_test_api_fallback_document_marks_fallback_watermark, "API 兜底文档标注回退模式，真实外壳文档不标注"),
         (_test_generation_uses_actual_template_and_only_read_api, "核验真实模板，完整参数只读解析，撤出白名单拒绝执行"),
         (_test_callback_identity_once_and_delete, "回调仅原发送者触发一次，预览消息纳入删除追踪"),
         (_test_request_whitelist_redirects_and_resources, "API 查询参数不影响白名单，重定向与资源遵守请求范围"),

@@ -120,7 +120,9 @@ def _preview_sources(source: str, invocations: list[TemplateInvocation]) -> list
     ]
 
 
-def preview_document(parsed, invocation, locale, *, single_template: bool = False, shell: bool = False):
+def preview_document(
+    parsed, invocation, locale, *, single_template: bool = False, shell: bool = False, fallback: bool = False
+):
     def value(key):
         result = parsed.get(key, "")
         return result.get("*", "") if isinstance(result, dict) else result
@@ -210,6 +212,7 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
             f"[Wiki preview] API content marked as partial: title={invocation.title!r}; reason={', '.join(reasons)}"
         )
     template_name = "template_preview_shell.html" if shell else "template_preview.html"
+    fallback_status = " · " + text("fallback") if fallback else ""
     document = _TEMPLATE_ENV.get_template(template_name).render(
         html_attrs=attributes(soup.html),
         body_attrs=attributes(soup.body),
@@ -221,8 +224,8 @@ def preview_document(parsed, invocation, locale, *, single_template: bool = Fals
         single_template=single_template,
         css_labels=labels,
         css_title=text("css.title"),
-        watermark=text("watermark", title=invocation.title, status=""),
-        watermark_partial=text("watermark", title=invocation.title, status=" · " + text("partial")),
+        watermark=text("watermark", title=invocation.title, status=fallback_status),
+        watermark_partial=text("watermark", title=invocation.title, status=" · " + text("partial") + fallback_status),
         partial=warning,
     )
     return document, warning
@@ -305,6 +308,7 @@ async def generate_template_preview(invocation, session, *, source=None, invocat
                     invocation,
                     session.session_info.locale,
                     single_template=len(sources) == 1,
+                    fallback=True,
                 )
                 shell_document, _ = preview_document(
                     parsed,

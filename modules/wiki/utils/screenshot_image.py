@@ -230,6 +230,8 @@ async def generate_screenshot_v2(
     elements_ = infobox_elements.copy()
     if element and isinstance(element, list):
         elements_ += element
+    # content 仅用于本地装配的 API HTML，属于渲染回退，需在图片上标注。
+    custom_watermark_info = " " + Locale(locale).t("wiki.message.render.fallback") if content else ""
     if not section:
         if allow_special_page and content_mode:
             elements_.insert(0, ".mw-body-content")
@@ -243,6 +245,7 @@ async def generate_screenshot_v2(
                 element=elements_,
                 locale=locale,
                 stealth=False,
+                custom_watermark_info=custom_watermark_info,
             )
         )
         if not imgs:
@@ -257,6 +260,7 @@ async def generate_screenshot_v2(
                 section=section,
                 locale=locale,
                 stealth=False,
+                custom_watermark_info=custom_watermark_info,
             )
         )
         if not imgs:

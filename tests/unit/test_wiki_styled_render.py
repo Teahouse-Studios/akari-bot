@@ -129,12 +129,15 @@ async def _test_styled_screenshot_options():
         assert result and result[0].size == (2, 2)
         options = element.await_args_list[0].args[0]
         assert options.url is None and "site.styles" in options.content
+        assert options.custom_watermark_info == " (Fallback mode)"
         assert ".infobox" in options.element and ".diff" not in options.element
         await generate_screenshot(LINK, info, title="Test", headers=headers, content_mode=True, allow_special_page=True)
         assert element.await_args_list[1].args[0].element[0] == ".mw-body-content"
+        assert element.await_args_list[1].args[0].custom_watermark_info == " (Fallback mode)"
         await generate_screenshot(LINK, info, title="Test", headers=headers, section="Section", locale="zh_cn")
         options = section.await_args.args[0]
         assert options.url is None and options.section == "Section" and options.content
+        assert options.custom_watermark_info == " (Fallback mode)"
     assert calls[0] == {
         "action": "parse",
         "prop": "text|headhtml",
@@ -144,6 +147,24 @@ async def _test_styled_screenshot_options():
         "page": "Test",
     }
     assert all(call["useskin"] == "timeless" for call in calls)
+    return True
+
+
+async def _test_page_render_has_no_fallback_watermark():
+    with (
+        patch(
+            "modules.wiki.utils.screenshot_image.web_render.element_screenshot",
+            new=AsyncMock(return_value=_image_data()),
+        ) as element,
+        patch(
+            "modules.wiki.utils.screenshot_image.web_render.section_screenshot",
+            new=AsyncMock(return_value=_image_data()),
+        ) as section,
+    ):
+        assert await screenshot_image.generate_screenshot_v2(LINK, locale="zh_cn")
+        assert await screenshot_image.generate_screenshot_v2(LINK, section="Section", locale="zh_cn")
+    assert element.await_args.args[0].url == LINK and not element.await_args.args[0].custom_watermark_info
+    assert section.await_args.args[0].url == LINK and not section.await_args.args[0].custom_watermark_info
     return True
 
 
@@ -312,6 +333,7 @@ async def test_wiki_styled_render(tester: Tester):
     await tester.test(_test_invalid_documents, "正文或样式入口缺失时拒绝 API 文档")
     await tester.test(_test_parse_targets, "正确定位标题与 pageid，绕过特殊页面和行为参数")
     await tester.test(_test_styled_screenshot_options, "信息框、正文和章节通过 content 渲染")
+    await tester.test(_test_page_render_has_no_fallback_watermark, "页面渲染不添加回退水印，本地装配渲染标注回退")
     await tester.test(_test_api_failure_after_original_failure, "原有渲染失败后 API 错误返回失败")
     await tester.test(_test_render_failure_fallback, "原有渲染失败后使用 API HTML 渲染")
     await tester.test(_test_revision_and_warning_fallback, "历史版本回退固定 oldid，警告保留有效样式文档")
