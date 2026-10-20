@@ -5,7 +5,7 @@
 [module_ai]
 # The basic config section of the module. The values entered here can be displayed in the message. Please do not enter sensitive information in this section.
 ai_default_llm = "<Replace me with str value>" # The LLM used by default.
-ai_cost_to_petal = 1 # The ratio of petals to call costs.
+ai_cost_to_petal = 1.0 # The ratio of petals to call costs.
 llm_timeout = 60 # Timeout for the LLMs.
 llm_max_tokens = 2048 # Limit the maximum number of tokens for the LLMs.
 llm_temperature = 1.0 # The temperature sampling of the LLMs, ranging from 0 to 2. It is not recommended to modify it at the same time as top_p.

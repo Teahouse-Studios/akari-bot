@@ -5,7 +5,7 @@
 [module_ai]
 # 模块的配置部分，此处填写的值可在消息中以明文形式展示。请不要在此部分填写敏感信息。
 ai_default_llm = "<Replace me with str value>" # 默认使用的大语言模型。
-ai_cost_to_petal = 1 # 花瓣与调用费用的比率。
+ai_cost_to_petal = 1.0 # 花瓣与调用费用的比率。
 llm_timeout = 60 # 大语言模型的超时时间。
 llm_max_tokens = 2048 # 限制大语言模型的最大 Token 数。
 llm_temperature = 1.0 # 大语言模型的温度采样，范围 0 到 2 之间。不建议与 top_p 同时修改。

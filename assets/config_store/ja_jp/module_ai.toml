@@ -5,7 +5,7 @@
 [module_ai]
 # モジュールの設定項目です。ここに入力された値は、メッセージ内にプレーンテキストで表示されます。この部分には機密情報を入力しないでください。
 ai_default_llm = "<Replace me with str value>" # デフォルトで使用される LLM。
-ai_cost_to_petal = 1 # ペタルの数とコール料金の比率。
+ai_cost_to_petal = 1.0 # ペタルの数とコール料金の比率。
 llm_timeout = 60 # LLM のタイムアウト。
 llm_max_tokens = 2048 # LLM のトークン数の上限を設定します。
 llm_temperature = 1.0 # LLM の温度サンプリング。範囲は 0 ～ 2 です。top_p と同時に変更することは推奨されません。
