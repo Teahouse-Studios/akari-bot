@@ -397,7 +397,8 @@ async def _(msg: Bot.MessageSession, apilink: str, note_words: Param("...", list
         await msg.finish(I18NContext("wikilog.message.config.wiki.failed", message=status.message))
 
 
-@wikilog.hook("keepalive")
+# 保活需逐个查询订阅的 wiki，耗时远超 hook 默认执行预算；单个 wiki 的失败在循环内就地转为会话消息。
+@wikilog.hook("keepalive", timeout=0)
 async def _(ctx: Bot.ModuleHookContext):
     data_ = await WikiLogTargetSetInfo.return_all_data()
     for union_id in data_:
@@ -415,7 +416,10 @@ async def _(ctx: Bot.ModuleHookContext):
             except Exception as e:
                 Logger.error(f"Keep alive failed: {e}")
                 message = I18NContext("wikilog.message.keepalive.failed", link=wiki)
-            await Bot.send_direct_message_to_union_target(union_id, message)
+            try:
+                await Bot.send_direct_message_to_union_target(union_id, message)
+            except Exception as e:
+                Logger.error(f"Failed to send keep alive result to {union_id}: {e}")
 
 
 fetch_cache = wikilog.cache("fetch_cache", version=1)

@@ -132,6 +132,39 @@ async def _test_wikilog_keepalive_hook_runs():
     return result["success"]
 
 
+async def _keepalive_failure_message_count(api: str) -> int:
+    count = 0
+    rows = await JobQueuesTable.filter(action=PlatformAPI.send_message.name).values("args")
+    for row in rows:
+        payload = (row.get("args") or {}).get("payload") or {}
+        for value in (payload.get("message") or {}).get("values") or []:
+            if (
+                value.get("key") == "wikilog.message.keepalive.failed"
+                and (value.get("kwargs") or {}).get("link") == api
+            ):
+                count += 1
+    return count
+
+
+async def _test_wikilog_keepalive_reports_failure_to_target():
+    from modules.wikilog.database.models import WikiLogTargetSetInfo
+
+    await _subscribe("wiki")
+    records = await WikiLogTargetSetInfo.get_by_target_id(SUBSCRIBER_TARGET)
+    api = "https://keepalive-unreachable.example/api.php"
+    if not await records.conf_wiki(api, add=True):
+        return False
+    if not await records.set_keep_alive(api, True):
+        return False
+    try:
+        await _reset_queue()
+        with strict_http():
+            result = await run_hook("wikilog.keepalive")
+        return result["success"] and await _keepalive_failure_message_count(api) >= 1
+    finally:
+        await records.conf_wiki(api)
+
+
 async def _test_wiki_autosearch_hook_returns_titles():
     from core.builtins.session.info import SessionInfo
 
@@ -211,6 +244,7 @@ async def test_module_hooks(tester: Tester):
     """模块钩子手动触发测试"""
     await tester.test(_test_all_named_hooks_are_reachable, "具名钩子可达测试")
     await tester.test(_test_wikilog_keepalive_hook_runs, "wikilog.keepalive 触发测试")
+    await tester.test(_test_wikilog_keepalive_reports_failure_to_target, "wikilog.keepalive 失败转会话消息测试")
     await tester.test(_test_wiki_autosearch_hook_returns_titles, "wiki.autosearch 返回候选测试")
     await tester.test(_test_wiki_custom_iw_hook_returns_list, "wiki.auto_get_custom_iw_list 返回列表测试")
     await tester.test(_test_wiki_bot_login_hook_accepts_cookies, "wiki_bot.login_wiki_bots 触发测试")
