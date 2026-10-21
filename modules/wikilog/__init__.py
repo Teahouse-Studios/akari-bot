@@ -557,4 +557,8 @@ async def _():
             return None
 
         # 拉取按 union 去重，推送再按消息通道去重，同一个现实场景只收一份
-        await Bot.send_direct_message_to_union_target(id_, _send_logs)
+        try:
+            await Bot.send_direct_message_to_union_target(id_, _send_logs)
+        except Exception as e:
+            # 单个场景组发送失败（如平台超时）不应中断其余场景组的推送
+            Logger.error(f"Failed to push wiki logs to {id_}: {e}")
