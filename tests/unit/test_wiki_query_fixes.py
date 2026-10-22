@@ -1,7 +1,7 @@
 import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, quote, urlsplit
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -13,10 +13,10 @@ from core.builtins.message.elements import (
     URLElement,
     VideoElement,
 )
-from core.builtins.message.internal import Image
+from core.builtins.message.internal import I18NContext, Image
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
-from core.constants.exceptions import SessionFinished
+from core.constants.exceptions import AbuseWarning, SessionFinished
 from core.i18n import Locale
 from core.tester import Tester, func_case
 from modules.wiki.inline import _parse_wiki_urls, _read_url_page, _send_url_preview
@@ -530,6 +530,73 @@ async def _test_query_cancellation_propagates():
     return False
 
 
+async def _test_redirect_limit_only_counts_explicit_chains():
+    def wiki_info(url):
+        host = urlsplit(url).netloc
+        return WikiInfo(
+            api=f"https://{host}/api.php",
+            articlepath=f"https://{host}/wiki/$1",
+            script=f"https://{host}/",
+            is_allowed=True,
+        )
+
+    async def check_wiki_available(wiki):
+        return WikiStatus(True, wiki_info(wiki.url), "")
+
+    async def explicit_chain(wiki, **kwargs):
+        title = kwargs["titles"]
+        prefix, _, rest = title.partition(":")
+        if rest and prefix in {"en", "zh"}:
+            return {
+                "query": {
+                    "interwiki": [
+                        {
+                            "iw": prefix,
+                            "title": title,
+                            "url": f"https://{prefix}.example.org/wiki/{quote(rest)}",
+                        }
+                    ]
+                }
+            }
+        return _page_response()
+
+    with (
+        patch.object(WikiLib, "get_json", new=explicit_chain),
+        patch.object(WikiLib, "check_wiki_available", new=check_wiki_available),
+        patch("modules.wiki.utils.wikilib.enable_tos", True),
+    ):
+        try:
+            await _wiki().parse_page_info("en:zh:en:zh:en:zh:苦力怕")
+        except AbuseWarning:
+            pass
+        else:
+            return False
+
+    async def redirected_chain(wiki, **kwargs):
+        index = int(kwargs["titles"].removeprefix("Page"))
+        target = f"en:Page{index + 1}"
+        return {
+            "query": {
+                "redirects": [{"from": f"Page{index}", "to": target}],
+                "interwiki": [
+                    {
+                        "iw": "en",
+                        "title": target,
+                        "url": f"https://en.example.org/wiki/Page{index + 1}",
+                    }
+                ],
+            }
+        }
+
+    with (
+        patch.object(WikiLib, "get_json", new=redirected_chain),
+        patch.object(WikiLib, "check_wiki_available", new=check_wiki_available),
+        patch("modules.wiki.utils.wikilib.enable_tos", True),
+    ):
+        result = await _wiki().parse_page_info("Page1")
+    return result.desc == str(I18NContext("wiki.message.too_many_redirects"))
+
+
 @func_case
 async def test_wiki_query_fixes(tester: Tester):
     for function, note in [
@@ -548,6 +615,7 @@ async def test_wiki_query_fixes(tester: Tester):
         (_test_partial_query_failure_keeps_success, "多页查询失败不丢失成功结果"),
         (_test_search_error_is_not_empty_result, "搜索错误不会显示为未找到结果"),
         (_test_interwiki_search_link_and_mode, "跨站搜索保留搜索类型并提供目标站网页入口"),
+        (_test_redirect_limit_only_counts_explicit_chains, "重定向上限仅统计显式请求，跨站重定向不告警"),
         (_test_query_cancellation_propagates, "查询取消正确传播并释放会话"),
     ]:
         await tester.test(function, note)

@@ -892,6 +892,7 @@ async def _query_pages_impl(
                             title=rd,
                             inline=inline_mode,
                             lang=lang,
+                            _explicit=1 if iw_prefix else 0,
                             session=session if isinstance(session, Bot.MessageSession) else None,
                             check_render=render_mode == WIKI_RENDER_MODE_BUTTON,
                         )
@@ -904,6 +905,7 @@ async def _query_pages_impl(
                             pageid=int(rdp),
                             inline=inline_mode,
                             lang=lang,
+                            _explicit=1 if iw_prefix else 0,
                             session=session if isinstance(session, Bot.MessageSession) else None,
                             check_render=render_mode == WIKI_RENDER_MODE_BUTTON,
                         )
