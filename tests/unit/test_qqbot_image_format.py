@@ -172,13 +172,12 @@ async def _test_markdown_and_s3_use_converted_image():
         for fallback in (False, True):
             uploaded_paths = []
 
-            async def upload(target, file_type, *, local_path):
-                assert file_type == MediaFileType.IMAGE
+            async def upload(*, local_path):
                 _assert_jpeg(local_path)
                 uploaded_paths.append(local_path)
                 if fallback:
-                    raise RuntimeError("raw URL unavailable")
-                return SimpleNamespace(raw_url="https://example.com/image?token=test")
+                    raise RuntimeError("media image upload failed")
+                return SimpleNamespace(url="qqbot-media://image/v1/test")
 
             async def upload_s3(local_path):
                 assert uploaded_paths == [local_path]
@@ -186,7 +185,7 @@ async def _test_markdown_and_s3_use_converted_image():
                 return {"public_url": "https://example.com/fallback.jpg"}
 
             client = SimpleNamespace(
-                upload_media_url=AsyncMock(side_effect=upload),
+                upload_media_image=AsyncMock(side_effect=upload),
                 upload_media=AsyncMock(),
                 send=AsyncMock(return_value={"id": "sent"}),
             )
@@ -194,16 +193,12 @@ async def _test_markdown_and_s3_use_converted_image():
             message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(path)])
             with patch.object(qqbot_context, "_load_s3_storage", return_value=storage):
                 assert await _send(client, message, markdown=True) == ["sent"]
-            client.upload_media_url.assert_awaited_once()
+            client.upload_media_image.assert_awaited_once()
             client.upload_media.assert_not_awaited()
             assert storage.upload_temp.await_count == (1 if fallback else 0)
             kwargs = client.send.await_args.kwargs
             assert kwargs["msg_type"] == MessageType.MARKDOWN
-            expected_url = (
-                "https://example.com/fallback.jpg"
-                if fallback
-                else "https://example.com/image?token=test&response-content-type=image%2Fjpeg"
-            )
+            expected_url = "https://example.com/fallback.jpg" if fallback else "qqbot-media://image/v1/test"
             assert kwargs["markdown"]["content"] == f"hello\n![text #32px #24px]({expected_url})"
     return True
 
@@ -213,14 +208,14 @@ async def _test_downloaded_image_is_resolved_once():
         path = root / "downloaded.webp"
         _save_image(path, "WEBP")
         client = SimpleNamespace(
-            upload_media_url=AsyncMock(return_value=SimpleNamespace(raw_url="https://example.com/image")),
+            upload_media_image=AsyncMock(return_value=SimpleNamespace(url="qqbot-media://image/v1/test")),
             send=AsyncMock(return_value={"id": "sent"}),
         )
         message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign("https://example.com/image")])
         with patch.object(ImageElement, "get_image", new=AsyncMock(return_value=path)) as download:
             assert await _send(client, message, markdown=True) == ["sent"]
             download.assert_awaited_once()
-        _assert_jpeg(client.upload_media_url.await_args.kwargs["local_path"])
+        _assert_jpeg(client.upload_media_image.await_args.kwargs["local_path"])
     return True
 
 
@@ -233,13 +228,13 @@ async def _test_bad_image_and_conversion_failure_are_skipped():
         for markdown in (False, True):
             client = SimpleNamespace(
                 upload_media=AsyncMock(),
-                upload_media_url=AsyncMock(),
+                upload_media_image=AsyncMock(),
                 send=AsyncMock(return_value={"id": "sent"}),
             )
             message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(bad_image)])
             assert await _send(client, message, markdown=markdown) == ["sent"]
             client.upload_media.assert_not_awaited()
-            client.upload_media_url.assert_not_awaited()
+            client.upload_media_image.assert_not_awaited()
             kwargs = client.send.await_args.kwargs
             assert (kwargs["markdown"]["content"] if markdown else kwargs["content"]) == "hello"
 

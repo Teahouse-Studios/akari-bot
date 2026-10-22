@@ -1,5 +1,4 @@
 import asyncio
-import mimetypes
 import shutil
 import time
 from collections import OrderedDict, deque
@@ -74,6 +73,8 @@ SILENT_SEND_ABORT_ERROR_CODES = frozenset({"304046", "40034101", "40034102", "40
 PERMISSION_CACHE_TTL = 3600
 PERMISSION_CACHE_MAX_SIZE = 4096
 MESSAGE_ID_CACHE_MAX_SIZE = 4096
+# 群成员批量移除接口单次最多接受 20 个成员。
+GROUP_MEMBER_REMOVE_LIMIT = 20
 HIGH_PRIORITY_BURST = 5
 ADAPTER_SHUTDOWN_TIMEOUT = 10
 TYPING_EMOTE_DIR = assets_path / "emotes" / "typing"
@@ -109,12 +110,8 @@ async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, l
     if target.scope not in ("group", "c2c"):
         return None
 
-    raw_url = (await client.upload_media_url(target, MediaFileType.IMAGE, local_path=local_path)).raw_url
-    mime_type = mimetypes.guess_type(local_path)[0] or "image/jpeg"
-    if not mime_type.startswith("image/"):
-        mime_type = "image/jpeg"
-    separator = "&" if "?" in raw_url else "?"
-    return f"{raw_url}{separator}response-content-type={quote(mime_type, safe='')}"
+    # 素材管理接口返回 qqbot-media:// 引用，由平台在消息发送时解析，无需附带响应头。
+    return (await client.upload_media_image(local_path=local_path)).url
 
 
 _QQBOT_IMAGE_EXTENSIONS = {"PNG": (".png",), "JPEG": (".jpg", ".jpeg"), "GIF": (".gif",)}
@@ -1496,6 +1493,23 @@ class QQBotContextManager(ContextManager):
                     for u in user_id
                 ],
             )
+
+    @classmethod
+    async def kick_member(cls, session_info: SessionInfo, user_id: str | list[str], reason: str | None = None) -> None:
+        if isinstance(user_id, str):
+            user_id = [user_id]
+        if not isinstance(user_id, list):
+            raise TypeError("User ID must be a list or str")
+
+        if session_info.target_from == target_group_prefix:
+            client = _get_client()
+            member_openids = [str(u).removeprefix(session_info.sender_from + "|") for u in user_id]
+            for start in range(0, len(member_openids), GROUP_MEMBER_REMOVE_LIMIT):
+                await client.api.batch_remove_group_members(
+                    session_info.get_common_target_id(),
+                    member_openids[start : start + GROUP_MEMBER_REMOVE_LIMIT],
+                )
+            Logger.info(f"Kicked members {user_id} in group {session_info.target_id}")
 
     @classmethod
     async def grant_permission_group(

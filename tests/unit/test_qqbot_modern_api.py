@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, patch
 
 from botpy.errors import ServerError
 from botpy.message import GroupMessage
-from botpy.protocol import MediaUrlResult
 
 import bots.qqbot.context as qqbot_context
 from bots.qqbot.config import QQBotConfig
@@ -106,10 +105,10 @@ class _FailingSendClient:
 
 
 class _CaptureSendClient:
-    def __init__(self, raw_url: str | None = None):
-        self.raw_url = raw_url
+    def __init__(self, media_image_url: str | None = "qqbot-media://image/v1/test"):
+        self.media_image_url = media_image_url
         self.calls = []
-        self.raw_url_calls = []
+        self.media_image_calls = []
 
     async def send(self, target, **kwargs):
         markdown = kwargs.get("markdown")
@@ -123,11 +122,11 @@ class _CaptureSendClient:
         self.calls.append(("upload", {"file_type": file_type, **kwargs}))
         return {"file_info": "uploaded-image"}
 
-    async def upload_media_url(self, target, file_type, **kwargs):
-        self.raw_url_calls.append((target.scope, target.target_id, file_type, kwargs))
-        if self.raw_url is None:
-            raise RuntimeError("media upload response does not contain raw_url")
-        return MediaUrlResult(upload={"file_info": "uploaded-image"}, raw_url=self.raw_url, ttl=100)
+    async def upload_media_image(self, **kwargs):
+        self.media_image_calls.append(kwargs)
+        if self.media_image_url is None:
+            raise RuntimeError("media image upload failed")
+        return SimpleNamespace(url=self.media_image_url)
 
 
 class _PartialFailClient(_CaptureSendClient):
@@ -325,27 +324,23 @@ async def _test_plain_allow_parse_controls_qq_atcode() -> bool:
     ]
 
 
-async def _test_markdown_image_uses_sdk_raw_url() -> bool:
+async def _test_markdown_image_uses_media_management_api() -> bool:
     session = _make_session(target_group_prefix)
     session.support_markdown = True
-    client = _CaptureSendClient(raw_url="https://example.com/image.png")
+    client = _CaptureSendClient(media_image_url="qqbot-media://image/v1/example")
     message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
     with (
         patch.object(qqbot_context, "qq_use_markdown", True),
         patch.object(ImageElement, "get_wh", new=AsyncMock(return_value=(32, 32))),
     ):
         result = await _send_with_client(session, client, message)
-    if result != ["markdown"] or len(client.raw_url_calls) != 1:
-        Logger.error(f"Expected one raw URL upload, got result={result}, calls={client.raw_url_calls}")
+    if result != ["markdown"] or len(client.media_image_calls) != 1:
+        Logger.error(f"Expected one media image upload, got result={result}, calls={client.media_image_calls}")
         return False
-    scope, target_id, file_type, kwargs = client.raw_url_calls[0]
     content = client.calls[0][1]["content"]
-    return (scope, target_id, file_type, kwargs) == (
-        "group",
-        "target",
-        qqbot_context.MediaFileType.IMAGE,
-        {"local_path": __file__},
-    ) and "https://example.com/image.png?response-content-type=image%2Fjpeg" in content
+    return client.media_image_calls[0] == {"local_path": __file__} and (
+        "![text #32px #32px](qqbot-media://image/v1/example)" in content
+    )
 
 
 async def _test_s3_failure_keeps_markdown_message_sendable() -> bool:
@@ -377,7 +372,7 @@ async def _test_markdown_images_over_total_height_use_table_layout() -> bool:
     session = _make_session(target_group_prefix)
     session.locale = Locale("zh_cn")
     session.support_markdown = True
-    client = _CaptureSendClient()
+    client = _CaptureSendClient(media_image_url=None)
     images = [ImageElement.assign(__file__) for _ in range(5)]
     message = MessageChain.assign([PlainElement.assign("before"), *images, PlainElement.assign("after")])
     dimensions = [(1000, 2000), (800, 1600), (600, 1200), (400, 800), (200, 400)]
@@ -606,6 +601,27 @@ async def _test_self_mention_only_message_is_not_sent() -> bool:
     return result == [] and client.calls == []
 
 
+async def _test_kick_member_removes_group_members_in_batches() -> bool:
+    session = _make_session(target_group_prefix)
+    session.sender_from = "QQBot"
+    client = _CaptureSendClient()
+    remove = AsyncMock(return_value={"removed": []})
+    client.api = SimpleNamespace(batch_remove_group_members=remove)
+    previous_client = QQBotContextManager.client
+    QQBotContextManager.client = client
+    try:
+        await QQBotContextManager.kick_member(session, [f"QQBot|member-{index}" for index in range(25)])
+        await QQBotContextManager.kick_member(_make_session(target_c2c_prefix), "QQBot|member")
+    finally:
+        QQBotContextManager.client = previous_client
+    calls = remove.await_args_list
+    return (
+        [call.args[0] for call in calls] == ["target", "target"]
+        and calls[0].args[1] == [f"member-{index}" for index in range(20)]
+        and calls[1].args[1] == [f"member-{index}" for index in range(20, 25)]
+    )
+
+
 async def _test_quote_self_does_not_mention_self_markdown() -> bool:
     session = _make_session(target_group_prefix)
     session.bot_id = "self"
@@ -638,7 +654,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
     await tester.test(_test_markdown_keeps_content_line_breaks, "Markdown 正文换行原样保留测试")
     await tester.test(_test_plain_allow_parse_controls_qq_atcode, "Plain.allow_parse 逐段控制 QQ 提及解析测试")
-    await tester.test(_test_markdown_image_uses_sdk_raw_url, "Markdown 图片使用 SDK 临时直链测试")
+    await tester.test(_test_markdown_image_uses_media_management_api, "Markdown 图片使用素材管理接口测试")
     await tester.test(_test_s3_failure_keeps_markdown_message_sendable, "S3 失败后继续发送 Markdown 测试")
     await tester.test(_test_markdown_images_over_total_height_use_table_layout, "Markdown 图片总高度超限表格排版测试")
     await tester.test(_test_plain_message_preserves_ids_before_later_send_failure, "Plain 后续失败保留已发送 ID 测试")
@@ -652,4 +668,5 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_self_atcode_is_not_rendered, "AT 码指向机器人自己时不渲染测试")
     await tester.test(_test_self_mention_only_message_is_not_sent, "仅提及自己时不发送空消息测试")
     await tester.test(_test_quote_self_does_not_mention_self_markdown, "引用自身消息不 @ 自己测试")
+    await tester.test(_test_kick_member_removes_group_members_in_batches, "群成员批量移除分段调用测试")
     return tester
