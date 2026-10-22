@@ -12,7 +12,7 @@ import core.utils.html2text as html2text
 from core.builtins.message.internal import I18NContext, Url
 from core.builtins.session.internal import MessageSession
 from core.config.base import BaseConfig, CoreConfig
-from core.constants.exceptions import AbuseWarning, NoReportException
+from core.constants.exceptions import NoReportException
 from core.utils.dirty_check import check
 from core.i18n import Locale
 from core.logger import Logger
@@ -834,7 +834,11 @@ class WikiLib:
 
         # if redirected too many times, raise AbuseWarning
         if _tried > 5 and enable_tos:
-            raise AbuseWarning("{I18N:tos.message.reason.too_many_redirects}")
+            return PageInfo(
+                title=title,
+                desc=str(I18NContext("wiki.message.too_many_redirects")),
+                info=self.wiki_info,
+            )
         selected_section = None
         query_props = ["info", "imageinfo", "langlinks", "templates"]
 

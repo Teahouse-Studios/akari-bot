@@ -260,5 +260,6 @@
     "wiki.message.template_preview.unavailable": "暂时无法渲染模板效果，请稍后重新查询。",
     "wiki.message.template_preview.timeout": "模板预览超时，请稍后重新查询。",
     "wiki.message.template_preview.expired": "此预览按钮已过期，请重新查询。",
-    "wiki.message.template_preview.busy": "你已有一个模板预览正在生成，请等待完成。"
+    "wiki.message.template_preview.busy": "你已有一个模板预览正在生成，请等待完成。",
+    "wiki.message.too_many_redirects": "重定向的次数过多，无法解析。"
 }
