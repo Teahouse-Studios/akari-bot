@@ -1190,7 +1190,8 @@ class QQBotContextManager(ContextManager):
             raise TypeError("Message ID must be a list or str")
 
         if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+            Logger.warning(f"Session {session_info.session_id} not found in context, skipped adding reaction.")
+            return
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
@@ -1224,7 +1225,8 @@ class QQBotContextManager(ContextManager):
             raise TypeError("Message ID must be a list or str")
 
         if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+            Logger.warning(f"Session {session_info.session_id} not found in context, skipped removing reaction.")
+            return
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_typing_emoji) < 9000 else 2
@@ -1437,19 +1439,24 @@ class QQBotContextManager(ContextManager):
 
     @classmethod
     async def error_signal(cls, session_info: SessionInfo) -> None:
+        # 错误信号异步投递，到达时上下文可能已回收，属正常时序，不能中断 RPC。
         if session_info.session_id not in cls.context:
-            raise ValueError("Session not found in context")
+            Logger.warning(f"Session {session_info.session_id} not found in context, skipped error signal.")
+            return
 
         if session_info.target_from == target_guild_prefix:
             emoji_type = 1 if int(qq_limited_emoji) < 9000 else 2
             client = _get_client()
 
-            await client.api.put_reaction(
-                channel_id=session_info.get_common_target_id(),
-                message_id=session_info.message_id,
-                emoji_type=emoji_type,
-                emoji_id=qq_limited_emoji,
-            )
+            try:
+                await client.api.put_reaction(
+                    channel_id=session_info.get_common_target_id(),
+                    message_id=session_info.message_id,
+                    emoji_type=emoji_type,
+                    emoji_id=qq_limited_emoji,
+                )
+            except Exception:
+                Logger.exception(f"Failed to send error signal in session {session_info.session_id}: ")
 
     @classmethod
     async def restrict_member(
