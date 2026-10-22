@@ -3,12 +3,13 @@ from pathlib import Path
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import ButtonRows
-from core.builtins.message.internal import Button, ButtonFrame, I18NContext, Image, Markdown, Plain, Url
+from core.builtins.message.internal import ActionText, Button, ButtonFrame, I18NContext, Image, Markdown, Plain, Url
 from core.builtins.utils import command_prefix
 from core.component import module
 from core.config.base import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
+from core.utils.func import is_int
 
 about = module(
     "about",
@@ -24,6 +25,11 @@ about = module(
 CHARACTER_IMAGE_PATH = assets_path / "character_marked.png"
 CREDITS_PATH = assets_path / "credits.txt"
 CHARACTER_IMAGE_MAX_WIDTH = 512
+QQBOT_PERMISSIONS_URL_TEMPLATE = (
+    "https://club.vip.qq.com/transfer?open_kuikly_info=%7B%22page_name%22%3A%20%22"
+    "ai_group_service_agreement_pop_page%22%2C%22groupCode%22%3A{qq_group_id}%2C%22"
+    "botUin%22%3A{bot_qq}%2C%22botUid%22%3A%22{bot_uid}%22%2C%22screen%22%3A1%7D"
+)
 
 
 def read_credits(path: Path = CREDITS_PATH) -> str | None:
@@ -98,6 +104,15 @@ def build_about_message(msg: Bot.MessageSession) -> MessageChain:
     return result
 
 
+def build_qqbot_permissions_url(msg: Bot.MessageSession, qq_group_id: str) -> str:
+    tmp = msg.session_info.tmp or {}
+    return QQBOT_PERMISSIONS_URL_TEMPLATE.format(
+        qq_group_id=qq_group_id,
+        bot_qq=tmp.get("qq_bot_qqnum", ""),
+        bot_uid=tmp.get("qq_bot_uid", ""),
+    )
+
+
 @about.command("{{I18N:core.help.about}}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(build_about_message(msg))
@@ -106,3 +121,26 @@ async def _(msg: Bot.MessageSession):
 @about.command("credits {{I18N:core.help.about.credits}}")
 async def _(msg: Bot.MessageSession):
     await msg.finish(build_credits_message(msg))
+
+
+@about.command("permissions [<qq_group_id>] {{I18N:core.help.about.permissions}}", available_for="QQBot")
+async def qqbot_permissions(msg: Bot.MessageSession, qq_group_id: str | None = None):
+    if qq_group_id:
+        if not is_int(qq_group_id):
+            await msg.finish(I18NContext("core.message.about.permissions.invalid"))
+        url = build_qqbot_permissions_url(msg, qq_group_id)
+        await msg.finish(
+            [
+                I18NContext("core.message.about.permissions.quick_config"),
+                Button(msg.session_info.locale.t("core.message.about.permissions.quick_config.button"), url),
+            ]
+        )
+    await msg.finish(
+        I18NContext(
+            "core.message.about.permissions",
+            cmd=ActionText(
+                f"{msg.session_info.prefixes[0]}about permissions ",
+                show_on_fallback=False,
+            ),
+        )
+    )
