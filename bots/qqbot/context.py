@@ -482,11 +482,15 @@ class QQBotContextManager(ContextManager):
 
         :param session_info: 会话信息对象
         """
-        if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
-            del cls.context[session_info.session_id]
-            Logger.trace(f"Context for session {session_info.session_id} deleted.")
-        if session_info.session_id in cls.context_marks_hold:
-            Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
+        session_id = session_info.session_id
+        if session_id in cls.context_marks_active:
+            Logger.trace(f"Context for session {session_id} is active, skipping deletion.")
+            return
+        if session_id in cls.context:
+            del cls.context[session_id]
+            Logger.trace(f"Context for session {session_id} deleted.")
+        if session_id in cls.context_marks_hold:
+            Logger.trace(f"Context for session {session_id} is held, skipping deletion.")
 
     @classmethod
     def prepare_start(cls) -> None:

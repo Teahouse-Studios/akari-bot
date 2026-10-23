@@ -270,6 +270,14 @@ async def _test_message_background_failure_is_observed_and_cleaned() -> bool:
             return None
 
         @staticmethod
+        def activate_context(session_info):
+            return None
+
+        @staticmethod
+        def deactivate_context(session_info):
+            return None
+
+        @staticmethod
         def del_context(session_info):
             deleted.set()
 

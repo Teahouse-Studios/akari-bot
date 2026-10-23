@@ -41,6 +41,13 @@ def _is_confirmation_message(msg: MessageSession) -> bool:
     return value in confirm_command or value == "no"
 
 
+def _is_remote_context_unavailable(exc: RpcRemoteError) -> bool:
+    """平台进程报告会话上下文已不可用。"""
+    if exc.remote_type == SessionContextUnavailable.__name__:
+        return True
+    return exc.remote_type == ValueError.__name__ and str(exc) == "Session not found in context"
+
+
 def normalize_confirm_token(session_info: SessionInfo, confirm_token: str | I18NContextElement) -> str:
     """把严格确认的口令归一为待比对文本，I18N 模板按会话语言解析其占位符。"""
     if isinstance(confirm_token, I18NContextElement):
@@ -278,6 +285,14 @@ class MessageSession:
             )
         except (asyncio.CancelledError, SystemExit, KeyboardInterrupt):
             SessionTaskManager.remove_callback(callback_handle)
+            raise
+        except RpcRemoteError as exc:
+            SessionTaskManager.remove_callback(callback_handle)
+            await dispatch_outgoing_result(self, outgoing_payload, ok=False)
+            if _is_remote_context_unavailable(exc):
+                # 会话上下文已不可用：让调用方按可恢复的会话失效处理，而不是把
+                # 跨进程错误原样漏到模块层。
+                raise SessionContextUnavailable(str(exc)) from exc
             raise
         except BaseException:
             SessionTaskManager.remove_callback(callback_handle)
@@ -613,9 +628,7 @@ class MessageSession:
         try:
             await PlatformAPI.hold_context(self.session_info)
         except RpcRemoteError as exc:
-            if exc.remote_type == SessionContextUnavailable.__name__ or (
-                exc.remote_type == ValueError.__name__ and str(exc) == "Session not found in context"
-            ):
+            if _is_remote_context_unavailable(exc):
                 raise SessionContextUnavailable(str(exc)) from exc
             raise
 

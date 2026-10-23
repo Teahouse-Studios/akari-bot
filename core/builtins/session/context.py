@@ -26,6 +26,11 @@ class ContextManager(ABC):
 
     context_marks_hold: dict[str, int] = {}
 
+    # 入站消息处理期间不得删除上下文。平台侧在消息处理结束后才撤销登记，而
+    # Server 侧的 hold／send 是跨进程调用，抵达顺序无法由固定等待秒数保证；
+    # 这里以内联计数登记「仍在处理中的入站消息」的存活区间，避免删除早于调用。
+    context_marks_active: dict[str, int] = {}
+
     @classmethod
     def add_context(cls, session_info: SessionInfo, context: Any):
         """
@@ -37,16 +42,44 @@ class ContextManager(ABC):
         cls.context[session_info.session_id] = context
 
     @classmethod
+    def activate_context(cls, session_info: SessionInfo):
+        """标记会话的入站消息仍在处理中。
+
+        :param session_info: 会话信息对象
+        """
+        session_id = session_info.session_id
+        cls.context_marks_active[session_id] = cls.context_marks_active.get(session_id, 0) + 1
+
+    @classmethod
+    def deactivate_context(cls, session_info: SessionInfo):
+        """结束会话的入站处理登记；登记归零后由调用方决定是否删除上下文。
+
+        :param session_info: 会话信息对象
+        """
+        session_id = session_info.session_id
+        count = cls.context_marks_active.get(session_id)
+        if count is None:
+            return
+        if count > 1:
+            cls.context_marks_active[session_id] = count - 1
+        else:
+            del cls.context_marks_active[session_id]
+
+    @classmethod
     def del_context(cls, session_info: SessionInfo):
         """删除会话的上下文。
 
         :param session_info: 会话信息对象
         """
-        if session_info.session_id in cls.context and session_info.session_id not in cls.context_marks_hold:
-            del cls.context[session_info.session_id]
-            Logger.trace(f"Context for session {session_info.session_id} deleted.")
-        if session_info.session_id in cls.context_marks_hold:
-            Logger.trace(f"Context for session {session_info.session_id} is held, skipping deletion.")
+        session_id = session_info.session_id
+        if session_id in cls.context_marks_active:
+            Logger.trace(f"Context for session {session_id} is active, skipping deletion.")
+            return
+        if session_id in cls.context:
+            del cls.context[session_id]
+            Logger.trace(f"Context for session {session_id} deleted.")
+        if session_id in cls.context_marks_hold:
+            Logger.trace(f"Context for session {session_id} is held, skipping deletion.")
 
     @classmethod
     def hold_context(cls, session_info: SessionInfo):
@@ -70,14 +103,20 @@ class ContextManager(ABC):
 
         :param session_info: 会话信息对象
         """
-        if session_info.session_id in cls.context_marks_hold:
-            cls.context_marks_hold[session_info.session_id] -= 1
-            if cls.context_marks_hold[session_info.session_id] == 0:
-                # 平台关闭流程可能已先清空上下文字典；release 仍须移除 hold 计数，
-                # 不能因重复清理抛 KeyError 而让后台任务以未取回异常结束。
-                cls.context.pop(session_info.session_id, None)
-                del cls.context_marks_hold[session_info.session_id]
-                Logger.trace(f"Context for session {session_info.session_id} is released.")
+        session_id = session_info.session_id
+        if session_id not in cls.context_marks_hold:
+            return
+        cls.context_marks_hold[session_id] -= 1
+        if cls.context_marks_hold[session_id]:
+            return
+        # 平台关闭流程可能已先清空上下文字典；release 仍须移除 hold 计数，
+        # 不能因重复清理抛 KeyError 而让后台任务以未取回异常结束。
+        del cls.context_marks_hold[session_id]
+        # 平台侧可能已撤销本次消息的上下文；此时不能把同 session_id 重建的
+        # 入站上下文一并删掉。
+        if session_id not in cls.context_marks_active:
+            cls.context.pop(session_id, None)
+        Logger.trace(f"Context for session {session_id} is released.")
 
     @classmethod
     @abstractmethod

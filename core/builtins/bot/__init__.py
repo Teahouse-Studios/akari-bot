@@ -87,13 +87,14 @@ class Bot:
         session_info = inject_features(session_info, features)
 
         async def _process_msg():
+            # 处理期间登记存活标记，Server 侧的 hold／send 因此不会与删除竞速。
             ctx_manager.add_context(session_info, ctx)
+            ctx_manager.activate_context(session_info)
             try:
                 await ServerAPI.receive_message(session_info)
-
-                await asyncio.sleep(1)
             finally:
                 # 队列异常或任务被取消时也必须释放平台 SDK 消息对象。
+                ctx_manager.deactivate_context(session_info)
                 ctx_manager.del_context(session_info)
 
         task = asyncio.create_task(_process_msg(), name=f"process-message-{session_info.session_id or 'unknown'}")

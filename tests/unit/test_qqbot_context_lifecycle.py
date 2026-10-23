@@ -3,6 +3,7 @@
 from bots.qqbot.context import QQBotContextManager
 from bots.qqbot.info import target_guild_prefix, target_group_prefix
 from core.builtins.session.info import SessionInfo
+from core.constants import SessionContextUnavailable
 from core.tester import Tester, func_case
 
 
@@ -112,6 +113,57 @@ async def _test_error_signal_ignores_non_guild_targets() -> bool:
         QQBotContextManager.context.pop(session.session_id, None)
 
 
+async def _test_hold_survives_inbound_processing() -> bool:
+    """入站处理登记期间 hold 必须可用，即使平台已先撤销上下文。"""
+    session = _make_session("hold-during-inbound-processing")
+    QQBotContextManager.add_context(session, object())
+    QQBotContextManager.activate_context(session)
+    try:
+        # 平台侧发送路径可能先撤销上下文，处理登记尚未结束。
+        QQBotContextManager.del_context(session)
+        QQBotContextManager.hold_context(session)
+        held = QQBotContextManager.context_marks_hold.get(session.session_id) == 1
+        QQBotContextManager.release_context(session)
+        return held and session.session_id in QQBotContextManager.context
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+        QQBotContextManager.context_marks_hold.pop(session.session_id, None)
+        QQBotContextManager.context_marks_active.pop(session.session_id, None)
+
+
+async def _test_hold_rejects_dropped_context_after_processing() -> bool:
+    """处理登记结束并回收后，hold 仍须报告会话上下文不可用。"""
+    session = _make_session("hold-after-inbound-processing")
+    QQBotContextManager.add_context(session, object())
+    QQBotContextManager.activate_context(session)
+    QQBotContextManager.deactivate_context(session)
+    QQBotContextManager.del_context(session)
+    try:
+        QQBotContextManager.hold_context(session)
+        return False
+    except SessionContextUnavailable:
+        return True
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+        QQBotContextManager.context_marks_hold.pop(session.session_id, None)
+        QQBotContextManager.context_marks_active.pop(session.session_id, None)
+
+
+async def _test_release_keeps_rebuilt_context() -> bool:
+    """释放 hold 时不得删除同一 session_id 重建的入站上下文。"""
+    session = _make_session("release-keeps-rebuilt-context")
+    QQBotContextManager.context_marks_hold[session.session_id] = 1
+    QQBotContextManager.activate_context(session)
+    rebuilt = object()
+    QQBotContextManager.add_context(session, rebuilt)
+    try:
+        QQBotContextManager.release_context(session)
+        return QQBotContextManager.context.get(session.session_id) is rebuilt
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+        QQBotContextManager.context_marks_active.pop(session.session_id, None)
+
+
 @func_case
 async def test_qqbot_context_lifecycle_tolerance(tester: Tester):
     """bots.qqbot.context: 会话上下文回收后的 reaction 与错误信号容错"""
@@ -120,4 +172,7 @@ async def test_qqbot_context_lifecycle_tolerance(tester: Tester):
     await tester.test(_test_add_reaction_skips_when_context_dropped, "添加表情在上下文缺失时静默返回")
     await tester.test(_test_remove_reaction_skips_when_context_dropped, "移除表情在上下文缺失时静默返回")
     await tester.test(_test_error_signal_ignores_non_guild_targets, "非频道会话不发错误信号")
+    await tester.test(_test_hold_survives_inbound_processing, "入站处理登记期间 hold 不被删除竞速")
+    await tester.test(_test_hold_rejects_dropped_context_after_processing, "处理结束后 hold 报告上下文不可用")
+    await tester.test(_test_release_keeps_rebuilt_context, "释放 hold 不删除重建的入站上下文")
     return tester
