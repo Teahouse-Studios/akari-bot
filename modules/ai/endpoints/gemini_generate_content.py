@@ -1,38 +1,37 @@
 from __future__ import annotations
 
+import base64
 import re
 import uuid
 
-import httpx
 import orjson
+from google.genai import types
 
 from modules.ai.tools import TOOLS
 from . import base
 
 
-def _generate_content_tools() -> list[dict]:
-    declarations = []
-    for tool in TOOLS:
-        fn = tool["function"]
-        declarations.append(
-            {
-                "name": fn["name"],
-                "description": fn["description"],
-                "parameters": fn["parameters"],
-            }
+def _generate_content_tools() -> list[types.Tool]:
+    declarations = [
+        types.FunctionDeclaration(
+            name=tool["function"]["name"],
+            description=tool["function"]["description"],
+            parameters=tool["function"]["parameters"],
         )
-    return [{"functionDeclarations": declarations}] if declarations else []
+        for tool in TOOLS
+    ]
+    return [types.Tool(function_declarations=declarations)] if declarations else []
 
 
-def _data_url_to_inline_data(data_url: str) -> dict:
-    header, _, b64 = data_url.partition(",")
+def _data_url_to_part(data_url: str) -> types.Part:
+    header, _, data = data_url.partition(",")
     mime_type = header.removeprefix("data:").split(";", maxsplit=1)[0]
-    return {"inlineData": {"mimeType": mime_type, "data": b64}}
+    return types.Part.from_bytes(data=base64.b64decode(data), mime_type=mime_type)
 
 
-def _content_to_generate_content_parts(content: str | list | None) -> list[dict]:
+def _content_to_generate_content_parts(content: str | list | None) -> list[types.Part]:
     if isinstance(content, str):
-        return [{"text": content}]
+        return [types.Part(text=content)]
     if not content:
         return []
     parts = []
@@ -40,22 +39,37 @@ def _content_to_generate_content_parts(content: str | list | None) -> list[dict]
         if not isinstance(part, dict):
             continue
         if part.get("type") == "text":
-            parts.append({"text": part.get("text", "")})
+            parts.append(types.Part(text=part.get("text", "")))
         elif part.get("type") == "image_url":
             url = (part.get("image_url") or {}).get("url")
             if not url:
                 continue
             if url.startswith("data:"):
-                parts.append(_data_url_to_inline_data(url))
+                parts.append(_data_url_to_part(url))
             else:
-                parts.append({"fileData": {"fileUri": url}})
+                parts.append(types.Part(file_data=types.FileData(file_uri=url)))
     return parts
 
 
-def _messages_to_generate_content(messages: list[dict]) -> tuple[str, list[dict]]:
+def _replay_parts(message: dict, model_name: str) -> list[types.Part] | None:
+    raw_parts = message.get("_gemini_parts")
+    if not raw_parts:
+        return None
+    produced_by = message.get("_gemini_model")
+    # 签名由生成它的模型签发，跨模型回放会被判为无效签名。
+    if produced_by and produced_by != model_name:
+        return None
+    return [types.Part.model_validate(part) for part in raw_parts]
+
+
+def _messages_to_generate_content(
+    messages: list[dict], model_name: str, replay_parts: bool = True
+) -> tuple[str, list[types.Content], bool]:
     system: list[str] = []
-    contents: list[dict] = []
+    contents: list[types.Content] = []
     tool_calls_info: dict[str, dict] = {}
+    dropped_calls: set[str] = set()
+    has_signatures = False
     for msg in messages:
         role = msg.get("role")
         content = msg.get("content")
@@ -66,15 +80,16 @@ def _messages_to_generate_content(messages: list[dict]) -> tuple[str, list[dict]
             if not parts:
                 continue
             # generateContent 要求 user/model 交替，工具结果后的图片消息需并入同一轮。
-            if contents and contents[-1]["role"] == "user":
-                contents[-1]["parts"].extend(parts)
+            if contents and contents[-1].role == "user":
+                contents[-1].parts.extend(parts)
             else:
-                contents.append({"role": "user", "parts": parts})
+                contents.append(types.Content(role="user", parts=parts))
         elif role == "assistant":
-            raw_parts = msg.get("_gemini_parts")
-            if raw_parts:
+            parts = _replay_parts(msg, model_name) if replay_parts else None
+            if parts:
+                has_signatures = has_signatures or any(part.thought_signature for part in parts)
                 # 模型产生的 thoughtSignature 与函数调用步骤需原样回传。
-                contents.append({"role": "model", "parts": raw_parts})
+                contents.append(types.Content(role="model", parts=parts))
                 api_ids = msg.get("_gemini_call_api_ids") or {}
                 for tc in msg.get("tool_calls") or []:
                     tool_calls_info[tc["id"]] = {
@@ -82,39 +97,29 @@ def _messages_to_generate_content(messages: list[dict]) -> tuple[str, list[dict]
                         "api_id": api_ids.get(tc["id"]),
                     }
                 continue
-            parts = []
-            if content:
-                parts.extend(_content_to_generate_content_parts(content))
+            parts = _content_to_generate_content_parts(content) if content else []
             for tc in msg.get("tool_calls") or []:
-                fn = tc.get("function") or {}
-                arguments = fn.get("arguments") or "{}"
-                try:
-                    parsed_arguments = orjson.loads(arguments)
-                except ValueError:
-                    parsed_arguments = {}
-                parts.append({"functionCall": {"name": fn.get("name", ""), "args": parsed_arguments}})
-                tool_calls_info[tc.get("id", "")] = {"name": fn.get("name", ""), "api_id": None}
+                # 没有可回传的签名时无法续接函数调用，连同其结果一并舍弃。
+                dropped_calls.add(tc.get("id", ""))
             if parts:
-                contents.append({"role": "model", "parts": parts})
+                contents.append(types.Content(role="model", parts=parts))
         elif role == "tool":
             call_id = msg.get("tool_call_id", "")
+            if call_id in dropped_calls:
+                continue
             info = tool_calls_info.get(call_id, {})
-            function_response = {
-                "name": info.get("name") or msg.get("name") or "",
-                "response": {"result": base._content_to_text(content)},
-            }
+            function_response = types.FunctionResponse(
+                name=info.get("name") or msg.get("name") or "",
+                response={"result": base._content_to_text(content)},
+            )
             if info.get("api_id"):
-                function_response["id"] = info["api_id"]
-            part = {"functionResponse": function_response}
-            if (
-                contents
-                and contents[-1]["role"] == "user"
-                and any("functionResponse" in p for p in contents[-1]["parts"])
-            ):
-                contents[-1]["parts"].append(part)
+                function_response.id = info["api_id"]
+            part = types.Part(function_response=function_response)
+            if contents and contents[-1].role == "user" and any(p.function_response for p in contents[-1].parts):
+                contents[-1].parts.append(part)
             else:
-                contents.append({"role": "user", "parts": [part]})
-    return "\n\n".join(system), contents
+                contents.append(types.Content(role="user", parts=[part]))
+    return "\n\n".join(system), contents, has_signatures
 
 
 def _supports_thinking(model_name: str) -> bool:
@@ -135,7 +140,7 @@ def _supports_thinking_level(model_name: str) -> bool:
     return "latest" in name
 
 
-def _thinking_config(effort: str | None, model_name: str) -> dict | None:
+def _thinking_config(effort: str | None, model_name: str) -> types.ThinkingConfig | None:
     if not effort or not _supports_thinking(model_name):
         return None
     effort = effort.lower()
@@ -144,7 +149,7 @@ def _thinking_config(effort: str | None, model_name: str) -> dict | None:
         # Gemini 3 与 2.5 Pro 无法关闭思考，省略配置以使用模型默认行为。
         if supports_level or "pro" in model_name.lower():
             return None
-        return {"thinkingBudget": 0}
+        return types.ThinkingConfig(thinking_budget=0)
     levels = {
         "minimal": "MINIMAL",
         "low": "LOW",
@@ -157,84 +162,94 @@ def _thinking_config(effort: str | None, model_name: str) -> dict | None:
     if level is None:
         return None
     if supports_level:
-        return {"thinkingLevel": level}
+        return types.ThinkingConfig(thinking_level=level)
     budgets = {"MINIMAL": 1024, "LOW": 1024, "MEDIUM": 8192, "HIGH": 24576}
-    return {"thinkingBudget": budgets[level]}
+    return types.ThinkingConfig(thinking_budget=budgets[level])
 
 
-def _tool_config(tool_choice: str) -> dict:
+def _tool_config(tool_choice: str) -> types.ToolConfig:
     modes = {"auto": "AUTO", "none": "NONE", "any": "ANY", "validated": "VALIDATED"}
-    return {"functionCallingConfig": {"mode": modes.get(tool_choice.lower(), "AUTO")}}
-
-
-def _generate_content_error_message(response: httpx.Response) -> str:
-    return f"{response.status_code}: {response.text[:500]}"
+    return types.ToolConfig(
+        function_calling_config=types.FunctionCallingConfig(mode=modes.get(tool_choice.lower(), "AUTO"))
+    )
 
 
 class GeminiGenerateContentEndpoint:
     def __init__(self, api_url: str, api_key: str, model_name: str, generation: dict | None = None):
-        self.model_name = model_name
+        self.model_name = model_name.removeprefix("models/")
         self.tools = _generate_content_tools()
         self.generation = generation or {}
-        model = model_name.removeprefix("models/")
-        self.url = f"{api_url.rstrip('/')}/models/{model}:generateContent"
-        self.client = httpx.AsyncClient(
-            timeout=base.timeout,
-            headers={"x-goog-api-key": api_key},
-            follow_redirects=True,
+        self.client = base.create_gemini_client(api_url, api_key)
+
+    def _config(self, system_instruction: str, tool_choice: str) -> types.GenerateContentConfig:
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction or None,
+            max_output_tokens=base.max_tokens,
+            frequency_penalty=base.frequency_penalty,
+            presence_penalty=base.presence_penalty,
+            tools=self.tools,
+            tool_config=_tool_config(tool_choice),
+        )
+        temperature_value = base._resolve_temperature(self.generation)
+        if temperature_value is not None:
+            config.temperature = temperature_value
+        top_p_value = base._resolve_top_p(self.generation)
+        if top_p_value is not None:
+            config.top_p = top_p_value
+        top_logprobs_value = base._resolve_top_logprobs(self.generation)
+        if top_logprobs_value:
+            config.response_logprobs = True
+            config.logprobs = top_logprobs_value
+        thinking_config = _thinking_config(base._resolve_reasoning_effort(self.generation), self.model_name)
+        if thinking_config is not None:
+            config.thinking_config = thinking_config
+        return config
+
+    async def _call(
+        self, system_instruction: str, contents: list[types.Content], tool_choice: str
+    ) -> types.GenerateContentResponse:
+        return await self.client.aio.models.generate_content(
+            model=self.model_name,
+            contents=contents,
+            config=self._config(system_instruction, tool_choice),
         )
 
     async def create(self, messages: list[dict], tool_choice: str) -> base.ParsedResult:
-        system_instruction, contents = _messages_to_generate_content(messages)
-        generation_config = {
-            "maxOutputTokens": base.max_tokens,
-            "frequencyPenalty": base.frequency_penalty,
-            "presencePenalty": base.presence_penalty,
-        }
-        temperature_value = base._resolve_temperature(self.generation)
-        if temperature_value is not None:
-            generation_config["temperature"] = temperature_value
-        top_p_value = base._resolve_top_p(self.generation)
-        if top_p_value is not None:
-            generation_config["topP"] = top_p_value
-        top_logprobs_value = base._resolve_top_logprobs(self.generation)
-        if top_logprobs_value:
-            generation_config["responseLogprobs"] = True
-            generation_config["logprobs"] = top_logprobs_value
-        thinking_config = _thinking_config(base._resolve_reasoning_effort(self.generation), self.model_name)
-        if thinking_config is not None:
-            generation_config["thinkingConfig"] = thinking_config
+        system_instruction, contents, has_signatures = _messages_to_generate_content(messages, self.model_name)
+        try:
+            response = await self._call(system_instruction, contents, tool_choice)
+        except Exception as exc:
+            if not has_signatures or not base._is_signature_error(exc):
+                raise base.gemini_error(
+                    exc, base.GeminiGenerateContentError, base.GeminiGenerateContentRateLimitError
+                ) from exc
+            # 服务端判定签名失效时，改用不含签名与工具轮次的上下文重试一次。
+            system_instruction, contents, _ = _messages_to_generate_content(
+                messages, self.model_name, replay_parts=False
+            )
+            try:
+                response = await self._call(system_instruction, contents, tool_choice)
+            except Exception as retry_exc:
+                raise base.gemini_error(
+                    retry_exc, base.GeminiGenerateContentError, base.GeminiGenerateContentRateLimitError
+                ) from retry_exc
+        return self._parse(response)
 
-        payload = {
-            "contents": contents,
-            "tools": self.tools,
-            "toolConfig": _tool_config(tool_choice),
-            "generationConfig": generation_config,
-        }
-        if system_instruction:
-            payload["systemInstruction"] = {"parts": [{"text": system_instruction}]}
-
-        response = await self.client.post(self.url, json=payload)
-        if response.status_code == 429:
-            raise base.GeminiGenerateContentRateLimitError(_generate_content_error_message(response))
-        if response.status_code >= 400:
-            raise base.GeminiGenerateContentError(_generate_content_error_message(response))
-
-        data = response.json()
-        candidates = data.get("candidates") or []
+    def _parse(self, response: types.GenerateContentResponse) -> base.ParsedResult:
+        candidates = response.candidates or []
         if not candidates:
-            feedback = data.get("promptFeedback") or {}
-            reason = feedback.get("blockReason") or feedback.get("blockReasonMessage") or "No candidates returned"
-            raise base.GeminiGenerateContentError(str(reason))
+            feedback = response.prompt_feedback
+            reason = (feedback.block_reason_message or feedback.block_reason) if feedback else None
+            raise base.GeminiGenerateContentError(str(reason or "No candidates returned"))
         candidate = candidates[0]
-        parts = (candidate.get("content") or {}).get("parts") or []
+        parts = (candidate.content.parts if candidate.content else None) or []
 
-        usage = data.get("usageMetadata") or {}
-        prompt_tokens = int(usage.get("promptTokenCount") or 0)
-        cache_read_tokens = int(usage.get("cachedContentTokenCount") or 0)
+        usage = response.usage_metadata
+        prompt_tokens = int(usage.prompt_token_count or 0) if usage else 0
+        cache_read_tokens = int(usage.cached_content_token_count or 0) if usage else 0
         input_tokens = max(0, prompt_tokens - cache_read_tokens)
         # 思考 token 单独计入用量，按输出计费。
-        output_tokens = int(usage.get("candidatesTokenCount") or 0) + int(usage.get("thoughtsTokenCount") or 0)
+        output_tokens = int(usage.candidates_token_count or 0) + int(usage.thoughts_token_count or 0) if usage else 0
 
         text_parts = []
         tool_calls = []
@@ -242,20 +257,16 @@ class GeminiGenerateContentEndpoint:
         model_parts = []
         call_api_ids = {}
         for part in parts:
-            if not isinstance(part, dict):
-                continue
             model_parts.append(part)
-            if part.get("thought"):
+            if part.thought:
                 continue
-            text = part.get("text")
-            if isinstance(text, str):
-                text_parts.append(text)
-            function_call = part.get("functionCall")
-            if isinstance(function_call, dict):
-                api_id = function_call.get("id")
+            if isinstance(part.text, str):
+                text_parts.append(part.text)
+            if part.function_call:
+                api_id = part.function_call.id
                 call_id = api_id or f"call_{uuid.uuid4().hex[:8]}"
-                name = function_call.get("name", "")
-                arguments = function_call.get("args") or {}
+                name = part.function_call.name or ""
+                arguments = part.function_call.args or {}
                 call_api_ids[call_id] = api_id
                 tool_calls.append(base.ToolCall(id=call_id, name=name, arguments=arguments))
                 raw_tool_calls.append(
@@ -269,7 +280,10 @@ class GeminiGenerateContentEndpoint:
         text = "".join(text_parts)
         assistant_message = base._build_assistant_message(text, raw_tool_calls)
         if model_parts:
-            assistant_message["_gemini_parts"] = model_parts
+            assistant_message["_gemini_parts"] = [
+                part.model_dump(mode="json", exclude_none=True) for part in model_parts
+            ]
+            assistant_message["_gemini_model"] = self.model_name
         if call_api_ids:
             assistant_message["_gemini_call_api_ids"] = call_api_ids
 

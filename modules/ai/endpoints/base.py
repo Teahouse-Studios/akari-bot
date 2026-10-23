@@ -7,6 +7,8 @@ from anthropic import (
     APITimeoutError as AnthropicAPITimeoutError,
     RateLimitError as AnthropicRateLimitError,
 )
+from google.genai import Client as GenaiClient
+from google.genai import types as genai_types
 from openai import APITimeoutError, RateLimitError
 
 from modules.ai.config import AiConfig
@@ -19,6 +21,55 @@ top_p = AiConfig.llm_top_p
 top_logprobs = AiConfig.llm_top_logprobs
 frequency_penalty = AiConfig.llm_frequency_penalty
 presence_penalty = AiConfig.llm_presence_penalty
+
+_GEMINI_API_VERSIONS = ("v1beta2", "v1beta", "v1alpha", "v1")
+
+
+def _split_api_url(api_url: str) -> tuple[str, str]:
+    url = api_url.rstrip("/")
+    for version in _GEMINI_API_VERSIONS:
+        if url.endswith(f"/{version}"):
+            return url[: -len(version) - 1], version
+    return url, "v1beta"
+
+
+def create_gemini_client(api_url: str, api_key: str) -> GenaiClient:
+    base_url, api_version = _split_api_url(api_url)
+    return GenaiClient(
+        # SDK 拒绝空密钥，不校验鉴权的自建代理会忽略该请求头。
+        api_key=api_key or "-",
+        http_options=genai_types.HttpOptions(
+            base_url=base_url,
+            api_version=api_version,
+            timeout=int(timeout * 1000),
+        ),
+    )
+
+
+def _api_error_code(exc: Exception) -> int | None:
+    for attribute in ("code", "status_code"):
+        value = getattr(exc, attribute, None)
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def _is_timeout_error(exc: Exception) -> bool:
+    return isinstance(exc, (httpx.TimeoutException, TimeoutError)) or "timeout" in type(exc).__name__.lower()
+
+
+def _is_signature_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "thought signature" in message or "thought_signature" in message
+
+
+def gemini_error(exc: Exception, error_cls: type[Exception], rate_limit_cls: type[Exception]) -> Exception:
+    # 超时沿用 httpx 异常，以便落入 RETRYABLE_EXCEPTIONS。
+    if _is_timeout_error(exc):
+        return httpx.TimeoutException(str(exc))
+    if _api_error_code(exc) == 429:
+        return rate_limit_cls(str(exc))
+    return error_cls(str(exc))
 
 
 def _resolve_temperature(generation: dict) -> float | None:

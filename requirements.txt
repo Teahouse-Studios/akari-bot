@@ -41,6 +41,7 @@ anthropic==1.5.0
 anyio==4.12.1
     # via
     #   anthropic
+    #   google-genai
     #   gql
     #   httpx
     #   httpx-ws
@@ -99,6 +100,7 @@ certifi==2026.1.4
     #   aiogram
     #   httpcore
     #   httpx
+    #   requests
     #   trafilatura
 cffi==2.0.0
     # via
@@ -109,6 +111,7 @@ cfgv==3.5.0
 charset-normalizer==3.4.7
     # via
     #   htmldate
+    #   requests
     #   trafilatura
 click==8.4.2
     # via
@@ -132,6 +135,7 @@ coverage==7.13.4
 cryptography==50.0.0
     # via
     #   akari-bot
+    #   google-auth
     #   pyjwt
     #   qq-botpy-sdk
 cycler==0.12.1
@@ -148,6 +152,8 @@ deprecated==1.3.1
     #   limits
 distlib==0.4.0
     # via virtualenv
+distro==1.9.0
+    # via google-genai
 dnspython==2.8.0
     # via mcstatus
 dockerfile-parse==2.0.1
@@ -188,6 +194,10 @@ frozenlist==1.8.0
     # via
     #   aiohttp
     #   aiosignal
+google-auth==2.62.0
+    # via google-genai
+google-genai==2.33.0
+    # via akari-bot
 google-play-scraper==1.2.7
     # via akari-bot
 gql==4.0.0
@@ -229,6 +239,7 @@ httpx==0.28.1
     #   akari-bot-webrender
     #   e2b
     #   e2b-code-interpreter
+    #   google-genai
     #   httpx-ws
     #   milky-python-sdk
     #   qq-botpy-sdk
@@ -254,6 +265,7 @@ idna==3.19
     #   anyio
     #   httpx
     #   httpx2
+    #   requests
     #   yarl
 iniconfig==2.3.0
     # via pytest
@@ -394,6 +406,10 @@ py-cord==2.7.2
     # via akari-bot
 py-cpuinfo==9.0.0
     # via akari-bot
+pyasn1==0.6.4
+    # via pyasn1-modules
+pyasn1-modules==0.4.2
+    # via google-auth
 pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
 pycryptodome==3.23.0
@@ -409,6 +425,7 @@ pydantic==2.12.5
     #   akari-bot-webrender
     #   anthropic
     #   fastapi
+    #   google-genai
     #   milky-python-sdk
     #   openai
 pydantic-core==2.41.5
@@ -479,6 +496,10 @@ regex==2026.5.9
     #   akari-bot
     #   dateparser
     #   wikitextparser
+requests==2.34.2
+    # via
+    #   google-auth
+    #   google-genai
 rich==15.0.0
     # via e2b
 rpds-py==0.30.0
@@ -499,6 +520,7 @@ slowapi==0.1.9
 sniffio==1.3.1
     # via
     #   anthropic
+    #   google-genai
     #   openai
 soupsieve==2.8.3
     # via beautifulsoup4
@@ -507,7 +529,9 @@ starlette==0.52.1
 tabulate==0.9.0
     # via akari-bot
 tenacity==9.1.4
-    # via akari-bot
+    # via
+    #   akari-bot
+    #   google-genai
 tf-playwright-stealth==1.2.0
     # via akari-bot-webrender
 tld==0.13.2
@@ -535,6 +559,7 @@ typing-extensions==4.15.0
     #   fastapi
     #   flexcache
     #   flexparser
+    #   google-genai
     #   httpx2
     #   limits
     #   openai
@@ -567,6 +592,7 @@ urllib3==2.8.0
     #   botocore
     #   courlan
     #   htmldate
+    #   requests
     #   trafilatura
 uvicorn==0.40.0
     # via
@@ -585,7 +611,9 @@ wcwidth==0.8.2
 webcolors==25.10.0
     # via akari-bot
 websockets==16.0
-    # via uvicorn
+    # via
+    #   google-genai
+    #   uvicorn
 werkzeug==3.1.5
     # via
     #   flask
