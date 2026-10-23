@@ -149,6 +149,29 @@ async def _test_hold_rejects_dropped_context_after_processing() -> bool:
         QQBotContextManager.context_marks_active.pop(session.session_id, None)
 
 
+async def _test_del_context_keeps_background_hold() -> bool:
+    """入站处理结束后，仍被后台任务持有的上下文不得被回收。
+
+    后台任务与入站处理的生命周期不同步：它在处理登记结束之后仍可能发起新的
+    hold。此时删除上下文会让后续 hold 报告会话不可用。
+    """
+    session = _make_session("del-context-keeps-background-hold")
+    ctx = object()
+    QQBotContextManager.add_context(session, ctx)
+    QQBotContextManager.activate_context(session)
+    QQBotContextManager.hold_context(session)
+    QQBotContextManager.deactivate_context(session)
+    try:
+        QQBotContextManager.del_context(session)
+        kept = QQBotContextManager.context.get(session.session_id) is ctx
+        QQBotContextManager.release_context(session)
+        return kept and session.session_id not in QQBotContextManager.context
+    finally:
+        QQBotContextManager.context.pop(session.session_id, None)
+        QQBotContextManager.context_marks_hold.pop(session.session_id, None)
+        QQBotContextManager.context_marks_active.pop(session.session_id, None)
+
+
 async def _test_release_keeps_rebuilt_context() -> bool:
     """释放 hold 时不得删除同一 session_id 重建的入站上下文。"""
     session = _make_session("release-keeps-rebuilt-context")
@@ -174,5 +197,6 @@ async def test_qqbot_context_lifecycle_tolerance(tester: Tester):
     await tester.test(_test_error_signal_ignores_non_guild_targets, "非频道会话不发错误信号")
     await tester.test(_test_hold_survives_inbound_processing, "入站处理登记期间 hold 不被删除竞速")
     await tester.test(_test_hold_rejects_dropped_context_after_processing, "处理结束后 hold 报告上下文不可用")
+    await tester.test(_test_del_context_keeps_background_hold, "处理结束后仍被持有的上下文不被回收")
     await tester.test(_test_release_keeps_rebuilt_context, "释放 hold 不删除重建的入站上下文")
     return tester

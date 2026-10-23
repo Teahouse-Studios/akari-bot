@@ -75,11 +75,12 @@ class ContextManager(ABC):
         if session_id in cls.context_marks_active:
             Logger.trace(f"Context for session {session_id} is active, skipping deletion.")
             return
+        if session_id in cls.context_marks_hold:
+            Logger.trace(f"Context for session {session_id} is held, skipping deletion.")
+            return
         if session_id in cls.context:
             del cls.context[session_id]
             Logger.trace(f"Context for session {session_id} deleted.")
-        if session_id in cls.context_marks_hold:
-            Logger.trace(f"Context for session {session_id} is held, skipping deletion.")
 
     @classmethod
     def hold_context(cls, session_info: SessionInfo):
