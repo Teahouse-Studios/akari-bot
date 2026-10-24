@@ -86,7 +86,7 @@ async def _test_watcher_notifies_removal():
                     with suppress(asyncio.CancelledError):
                         await task
 
-            return notify.called and notify.await_args.args[0] == "password_removed"
+            return notify.called and notify.await_args.args[0] == "password_reset"
         finally:
             await _clear_state()
 

@@ -335,7 +335,8 @@ async def _upload_case():
                 ) == (413, "file_too_large")
 
             file_response = download(FakeRequest(), root="core:data", path="uploads/hello.txt")
-            assert Path(file_response.path) == data / "uploads" / "hello.txt"
+            # 根目录按真实路径解析，临时目录在部分平台上本身是符号链接，比较前需归一化。
+            assert Path(file_response.path).resolve() == (data / "uploads" / "hello.txt").resolve()
             inline_response = download(FakeRequest(), root="core:data", path="uploads/hello.txt", inline=True)
             assert inline_response.headers["content-disposition"].startswith("inline")
 

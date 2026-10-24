@@ -42,7 +42,11 @@ async def _write_password_data(data: dict) -> None:
     PASSWORD_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(PASSWORD_PATH, "wb") as f:
         f.write(orjson.dumps(data))
-    await sync_password_state(PASSWORD_PATH)
+    try:
+        await sync_password_state(PASSWORD_PATH)
+    except Exception:
+        # 密码文件已落盘，状态记录失败不应使写入请求失败。
+        Logger.exception("[WebUI] Failed to sync password state: ")
 
 
 def _is_2fa_enabled(password_data: dict | None) -> bool:

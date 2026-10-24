@@ -268,8 +268,8 @@ def _test_invalid_prompt_row() -> bool:
 
 def _test_emote_row_follows_setting() -> bool:
     with patch.object(CoreConfig, "use_emote", True):
-        enabled = _row_by_label(build_target_rows(_make_msg()), "表情")
-        disabled = _row_by_label(build_target_rows(_make_msg(target_data={"use_emote": False})), "表情")
+        enabled = _row_by_label(build_target_rows(_make_msg()), "使用表情")
+        disabled = _row_by_label(build_target_rows(_make_msg(target_data={"use_emote": False})), "使用表情")
     if not enabled or enabled.value != "已开启" or enabled.command != "setup emote":
         Logger.error(f"An unset emote switch should be enabled, got {enabled}")
         return False
