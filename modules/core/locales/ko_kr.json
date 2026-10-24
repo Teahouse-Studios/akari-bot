@@ -337,8 +337,6 @@
     "core.message.help.prompt": "이탤릭체로 표시된 모듈은 해당 {TERM:target} 관리자만 사용할 수 있습니다.",
     "core.message.help.qqbot.limited": "현재 그룹 채팅 봇의 기능이 제한되어 일부 기능만 이용할 수 있습니다. 푸시 알림 및 정규식 모듈을 사용하려면 그룹 소유자에게 연락하여 봇의 '获取群内全部消息(그룹 내 모든 메시지 수신)' 및 '机器人主动在群聊内发言(봇의 그룹 내 자발적 발언)' 권한을 활성화해야 합니다.\n(최신 버전의 모바일 QQ가 필요합니다. 이 권한들은 그룹 소유자만 활성화할 수 있습니다.)",
     "core.message.help.regex_count": "${count}개의 정규식",
-    "core.message.help.regex.detail": "(${msg})",
-    "core.message.help.regex.no_information": "(설명 없음)",
     "core.message.help.table.alias": "별칭",
     "core.message.help.table.base": "기본 모듈",
     "core.message.help.table.command": "명령어",

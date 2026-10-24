@@ -337,8 +337,6 @@
     "core.message.help.prompt": "斜体でマークされたモジュールは、{TERM:target}の管理者のみが使用できます。",
     "core.message.help.qqbot.limited": "現在のグループチャット ボットの機能は制限されており、一部の機能しか利用できません。プッシュ通知や正規表現モジュールを使用するには、グループ オーナーに連絡して、ボットの「获取群内全部消息（グループ内のすべてのメッセージを取得する）」および「机器人主动在群聊内发言（ボットはグループで自ら発言する）」権限を有効にしてもらう必要があります。\n（最新バージョンのモバイル版 QQ が必要です。これらの権限を有効にできるのはグループ オーナーのみです。）",
     "core.message.help.regex_count": "${count} 正規表現",
-    "core.message.help.regex.detail": "（${msg}）",
-    "core.message.help.regex.no_information": "（説明なし）",
     "core.message.help.table.alias": "エイリアス",
     "core.message.help.table.base": "基本モジュール",
     "core.message.help.table.command": "コマンド",

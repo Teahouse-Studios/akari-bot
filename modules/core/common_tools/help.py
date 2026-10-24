@@ -452,6 +452,9 @@ async def _(msg: Bot.MessageSession, module: str, img: bool = False, legacy: boo
 
             if not module_._db_load:
                 await msg.finish(I18NContext("parser.module.unloaded", module=help_name))
+            # 会话缺少推送能力时订阅扩展模块无法启用，展示其帮助会误导用户
+            if module_.unsupported_reason(msg.session_info) == "rss":
+                await msg.finish(I18NContext("core.message.help.not_found"))
             # 仅在模块确实含有管理员条目时才查询平台权限，普通模块的帮助不额外付出一次接口调用
             is_admin = is_superuser or (module_has_admin_entries(module_) and await check_context_admin(msg))
             if (
@@ -508,11 +511,9 @@ async def _(msg: Bot.MessageSession, module: str, img: bool = False, legacy: boo
                             rdesc = regex.desc
                             if rdesc:
                                 rdesc = msg.session_info.locale.t_str(rdesc)
-                                mdocs.append(
-                                    f"{pattern}{str(I18NContext('core.message.help.regex.detail', msg=rdesc))}"
-                                )
+                                mdocs.append(f"{pattern} - {rdesc}")
                             else:
-                                mdocs.append(f"{pattern}{str(I18NContext('core.message.help.regex.no_information'))}")
+                                mdocs.append(pattern)
                             regex_rows.append((raw_pattern, rdesc or ""))
                     if regex_disable_prefixes:
                         mdocs.append(I18NContext("core.help.regex.disable_tip", prefixes=regex_disable_prefixes[0]))

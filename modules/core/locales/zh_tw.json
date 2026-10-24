@@ -337,8 +337,6 @@
     "core.message.help.prompt": "標為斜體的模組只能被該{TERM:target}的管理員所使用。",
     "core.message.help.qqbot.limited": "目前群組的機器人功能受限，僅可使用部分功能。如需使用推播模組和正規類別模組，請聯絡群組創建者為機器人啟用「獲取群內全部消息」和「機器人主動在群聊內發言」權限。\n（需最新版本行動端 QQ，且僅群組創建者可啟用）",
     "core.message.help.regex_count": "${count} 條表示式",
-    "core.message.help.regex.detail": "（${msg}）",
-    "core.message.help.regex.no_information": "（無描述）",
     "core.message.help.table.alias": "別名",
     "core.message.help.table.base": "基礎模組",
     "core.message.help.table.command": "指令",

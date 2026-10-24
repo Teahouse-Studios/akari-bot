@@ -46,6 +46,16 @@ async def test_help(tester: Tester):
         ContainsAll("提示：", regex_disable_prefixes[0]),
         "带正则表达式的详细 help 应展示当前配置的临时关闭前缀",
     )
+    await tester.integrate(
+        "~help arcaea-rss",
+        Contains("此模块可能不存在"),
+        "不支持推送能力的会话查看订阅扩展模块帮助时应提示模块不存在",
+    )
+    await tester.integrate(
+        "~help arc-rss",
+        Contains("此模块可能不存在"),
+        "订阅扩展模块的别名同样应按模块不存在处理",
+    )
 
     return tester
 

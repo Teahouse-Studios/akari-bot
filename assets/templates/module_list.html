@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/mdui@2/mdui.css">
-    <script src="https://unpkg.com/mdui@2/mdui.global.js"></script>
     <title>Module Help</title>
     <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}">
     <link rel="preconnect" href="{{ 'https://fonts.font.im' if use_font_mirror else 'https://fonts.googleapis.com' }}" crossorigin>
@@ -95,6 +93,7 @@
             width: fit-content;
             overflow: hidden;
             color: var(--text-color);
+            line-height: 1.5;
             background:
                 radial-gradient(var(--brand-dot) 1.5px, transparent 1.8px) 0 0 / 14px 14px,
                 linear-gradient(135deg, var(--brand-bg-start), var(--brand-bg-end));
@@ -130,7 +129,7 @@
             mask: var(--dash) left center / 24px 6px round no-repeat;
         }
 
-        .botbox .module-group-title {
+        .module-group-title {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -142,6 +141,7 @@
 
         .module-group-title::before {
             content: "";
+            flex: none;
             width: 12px;
             height: 12px;
             border-radius: 50%;
@@ -173,7 +173,7 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(5, 120px);
+            grid-template-columns: repeat(6, 120px);
             justify-content: start;
             gap: 20px 12px;
             padding: 6px 4px 8px 0;
@@ -199,6 +199,7 @@
             word-wrap: break-word;
             word-break: break-all;
             white-space: normal;
+            line-height: 1.4;
             background-color: transparent;
             box-shadow: 0 0 0 1px rgba(0, 0, 0, .12), 3px 3px 0 1px rgba(0, 0, 0, .08);
             box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent), 3px 3px 0 1px color-mix(in srgb, currentColor 14%, transparent);
@@ -239,7 +240,7 @@
         }
 
         .footer {
-            max-width: 648px;
+            max-width: 780px;
             text-align: left;
             font-size: 15px;
             white-space: pre-line;
@@ -250,7 +251,7 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            max-width: 648px;
+            max-width: 780px;
             gap: 8px;
             margin: 8px 0 10px;
             font-size: 14px;
@@ -294,7 +295,7 @@
 </head>
 
 <body>
-    <div class="botbox mdui-prose">
+    <div class="botbox">
         <div class="content-layout">
         <h2>{{ locale.t("core.message.module.list.header") }}</h2>
         <hr>
@@ -325,29 +326,29 @@
         {% endif %}
         {% endfor %}
         <hr>
-            <div class="module-type-legend">
-                <span class="module-type-legend-item">
-                    <span class="module-type-legend-swatch module-type-legend-base" aria-hidden="true"></span>
-                    {{ locale.t('core.message.help.table.base') }}
-                </span>
-                <span class="module-type-legend-item">
-                    <span class="module-type-legend-swatch module-type-legend-external" aria-hidden="true"></span>
-                    {{ locale.t('core.message.help.table.external') }}
-                </span>
-                <span class="module-type-legend-item">
-                    <span class="module-type-legend-swatch module-type-legend-subscription" aria-hidden="true"></span>
-                    {{ locale.t('core.message.help.table.subscription') }}
-                </span>
-                {% if show_disabled_modules %}
-                <span class="module-type-legend-item">
-                    <span class="module-type-legend-swatch module-type-legend-disabled" aria-hidden="true"></span>
-                    {{ locale.t('core.message.help.table.disabled') }}
-                </span>
-                {% endif %}
-            </div>
-            <div class="footer">
-                {{- locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) -}}
-            </div>
+        <div class="module-type-legend">
+            <span class="module-type-legend-item">
+                <span class="module-type-legend-swatch module-type-legend-base" aria-hidden="true"></span>
+                {{ locale.t('core.message.help.table.base') }}
+            </span>
+            <span class="module-type-legend-item">
+                <span class="module-type-legend-swatch module-type-legend-external" aria-hidden="true"></span>
+                {{ locale.t('core.message.help.table.external') }}
+            </span>
+            <span class="module-type-legend-item">
+                <span class="module-type-legend-swatch module-type-legend-subscription" aria-hidden="true"></span>
+                {{ locale.t('core.message.help.table.subscription') }}
+            </span>
+            {% if show_disabled_modules %}
+            <span class="module-type-legend-item">
+                <span class="module-type-legend-swatch module-type-legend-disabled" aria-hidden="true"></span>
+                {{ locale.t('core.message.help.table.disabled') }}
+            </span>
+            {% endif %}
+        </div>
+        <div class="footer">
+            {{- locale.t('core.message.help.prompt', prefix=msg.session_info.prefixes[0]) -}}
+        </div>
         </div>
     </div>
 </body>

@@ -337,8 +337,6 @@
     "core.message.help.prompt": "Modules marked in italics can only be used by the admins of the {TERM:target}.",
     "core.message.help.qqbot.limited": "The bot's functionality in group chats is currently limited, and only certain features are available. If you need to use push notification modules or regular expression modules, please contact the group admin to enable the \"获取群内全部消息 (Get all messages in the group)\" and \"机器人主动在群聊内发言 (The bot took the initiative to speak in the group)\" permissions for the bot.\n(Requires the latest version of QQ for mobile. Only the group owner can enable these permissions.)",
     "core.message.help.regex_count": "${count} Regex(ps)",
-    "core.message.help.regex.detail": "(${msg})",
-    "core.message.help.regex.no_information": " (No description)",
     "core.message.help.table.alias": "Aliases",
     "core.message.help.table.base": "Basic Modules",
     "core.message.help.table.command": "Commands",
