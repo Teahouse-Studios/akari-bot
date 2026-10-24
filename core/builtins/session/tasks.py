@@ -257,6 +257,17 @@ class SessionTaskManager:
         return cls._task_list
 
     @classmethod
+    def active_count(cls) -> int:
+        """返回仍处于等待状态的任务数量。"""
+        return sum(
+            1
+            for target_tasks in cls._task_list.values()
+            for sender_tasks in target_tasks.values()
+            for task_info in sender_tasks.values()
+            if task_info.get("active")
+        )
+
+    @classmethod
     async def bg_check(cls):
         """后台检查任务超时。"""
         for target in cls._task_list:

@@ -121,6 +121,12 @@ class ServerAPI:
         ...
 
     @staticmethod
+    @remote("server.get_active_session_count", timeout=10)
+    async def get_active_session_count() -> int:
+        """返回服务端正在执行与等待中的会话数量，供重启前判断是否可以安全退出。"""
+        ...
+
+    @staticmethod
     @remote("server.get_process_usage", timeout=15)
     async def get_process_usage() -> dict:
         """汇总各进程内存占用；扇出失败时以 failures 说明，而非抛出异常。"""

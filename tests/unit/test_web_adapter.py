@@ -238,57 +238,6 @@ async def _test_latest_disconnect_restores_previous_websocket() -> bool:
             Temp.data["web_chat_websocket"] = previous
 
 
-async def _test_restart_cleans_client_before_exit() -> bool:
-    web_api = importlib.import_module("bots.web.api.api")
-    order = []
-
-    async def sleep(_delay):
-        order.append("delay")
-
-    async def cleanup():
-        order.append("cleanup")
-
-    def exit_process(code: int):
-        order.append(f"exit:{code}")
-
-    with (
-        patch.object(web_api.asyncio, "sleep", new=sleep),
-        patch.object(web_api, "client_cleanup", new=cleanup),
-        patch.object(web_api.os, "_exit", new=exit_process),
-    ):
-        await web_api.restart()
-    return order == ["delay", "cleanup", "exit:233"]
-
-
-async def _test_restart_schedule_is_singleton_and_retained() -> bool:
-    web_api = importlib.import_module("bots.web.api.api")
-    gate = asyncio.Event()
-    calls = 0
-
-    async def restart():
-        nonlocal calls
-        calls += 1
-        await gate.wait()
-
-    previous = web_api._restart_task
-    web_api._restart_task = None
-    try:
-        with patch.object(web_api, "restart", new=restart):
-            first = web_api.schedule_restart()
-            second = web_api.schedule_restart()
-            retained = web_api._restart_task is first
-            gate.set()
-            await first
-            await asyncio.sleep(0)
-        return first is second and retained and calls == 1 and web_api._restart_task is None
-    finally:
-        task = web_api._restart_task
-        if task is not None and not task.done():
-            task.cancel()
-            await asyncio.gather(task, return_exceptions=True)
-        web_api._restart_task = previous
-
-
 def _featured_session(session_id: str) -> SessionInfo:
     session = _session(session_id)
     inject_features(session, web_features)
@@ -447,8 +396,6 @@ async def test_web_adapter(tester: Tester):
     await tester.test(_test_private_message_cancellation_propagates, "Web 私信取消继续传播")
     await tester.test(_test_websocket_entry_binds_source_context, "Web 入站会话绑定来源 Socket")
     await tester.test(_test_latest_disconnect_restores_previous_websocket, "Web 最新连接断开恢复旧连接")
-    await tester.test(_test_restart_cleans_client_before_exit, "Web 重启前清理客户端")
-    await tester.test(_test_restart_schedule_is_singleton_and_retained, "Web 重启任务单例持有")
     await tester.test(_test_markdown_element_sends_text_type, "Web Markdown 元素降级为 text 类型")
     await tester.test(_test_audio_element_sends_audio_type, "Web 语音元素发出 audio 类型")
     await tester.test(_test_action_text_element_sends_action_text_type, "Web 指令操作元素发出 action_text 类型")

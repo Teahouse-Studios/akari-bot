@@ -13,6 +13,8 @@ from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
 from core.builtins.session.info import EventInfo, SessionInfo
+from core.builtins.session.lock import ExecutionLockList
+from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.utils import command_prefix
 from core.constants import Info
 from core.constants.path import assets_path
@@ -255,6 +257,11 @@ async def get_runtime_stats() -> dict:
         "command_parsed": int(Info.command_parsed or 0),
         "message_parsed": int(Info.message_parsed or 0),
     }
+
+
+@ServerAPI.get_active_session_count.bind(JobQueueServer)
+async def get_active_session_count() -> int:
+    return ExecutionLockList.count() + SessionTaskManager.active_count()
 
 
 @ServerAPI.get_process_usage.bind(JobQueueServer)

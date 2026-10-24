@@ -191,6 +191,205 @@ async def _test_update_rejects_invalid_force():
     return False
 
 
+async def _run_restart(force, active_counts=(), *, wait_interval=0.01, wait_timeout=0.1):
+    order = []
+    counts = list(active_counts)
+    active_calls = 0
+
+    async def sleep(_delay):
+        order.append("delay")
+
+    async def cleanup():
+        order.append("cleanup")
+
+    def exit_process(code: int):
+        order.append(f"exit:{code}")
+
+    async def active_count():
+        nonlocal active_calls
+        active_calls += 1
+        order.append("count")
+        return counts.pop(0) if counts else 0
+
+    previous_force = update_api._restart_force_requested
+    previous_status = dict(update_api._restart_status)
+    previous_revision = update_api._restart_status_revision
+    previous_changed = update_api._restart_status_changed
+    update_api._restart_force_requested = False
+    update_api._restart_force_event.clear()
+    update_api._restart_status.clear()
+    update_api._restart_status.update(pending=False, force=False, state="idle", active_sessions=0)
+    update_api._restart_status_revision = 0
+    update_api._restart_status_changed = asyncio.Event()
+    try:
+        with (
+            patch.object(update_api.asyncio, "sleep", new=sleep),
+            patch.object(update_api, "client_cleanup", new=cleanup),
+            patch.object(update_api.os, "_exit", new=exit_process),
+            patch.object(update_api.ServerAPI, "get_active_session_count", new=active_count),
+            patch.object(update_api, "RESTART_WAIT_INTERVAL", wait_interval),
+            patch.object(update_api, "RESTART_WAIT_TIMEOUT", wait_timeout),
+        ):
+            await update_api.restart(force)
+    finally:
+        update_api._restart_force_requested = previous_force
+        update_api._restart_force_event.clear()
+        update_api._restart_status.clear()
+        update_api._restart_status.update(previous_status)
+        update_api._restart_status_revision = previous_revision
+        update_api._restart_status_changed = previous_changed
+    return order, active_calls
+
+
+async def _test_restart_waits_for_active_sessions():
+    order, active_calls = await _run_restart(False, [2, 1, 0])
+    return active_calls == 3 and order == ["count", "count", "count", "delay", "cleanup", "exit:33"]
+
+
+async def _test_restart_force_skips_waiting():
+    order, active_calls = await _run_restart(True, [1, 1])
+    return active_calls == 0 and order == ["delay", "cleanup", "exit:33"]
+
+
+async def _test_restart_wait_times_out():
+    order, active_calls = await _run_restart(False, [1] * 100, wait_interval=0.01, wait_timeout=0.03)
+    return active_calls >= 2 and order[-2:] == ["cleanup", "exit:33"]
+
+
+async def _test_restart_stream_reports_active_sessions():
+    previous_status = dict(update_api._restart_status)
+    previous_revision = update_api._restart_status_revision
+    previous_changed = update_api._restart_status_changed
+    stream = None
+    try:
+        update_api._restart_status.clear()
+        update_api._restart_status.update(pending=True, force=False, state="waiting", active_sessions=0)
+        update_api._restart_status_revision = 0
+        update_api._restart_status_changed = asyncio.Event()
+        stream = update_api._restart_events()
+
+        first = _parse_events([await stream.__anext__()])[0]
+        update_api._set_restart_status(active_sessions=3)
+        second = _parse_events([await stream.__anext__()])[0]
+        update_api._set_restart_status(state="restarting", active_sessions=0)
+        third = _parse_events([await stream.__anext__()])[0]
+        update_api._set_restart_status(pending=False, force=False, state="idle", active_sessions=0)
+        fourth = _parse_events([await stream.__anext__()])[0]
+        try:
+            await stream.__anext__()
+        except StopAsyncIteration:
+            ended = True
+        else:
+            ended = False
+        return (
+            first == ("status", {"pending": True, "force": False, "state": "waiting", "active_sessions": 0})
+            and second[1]["active_sessions"] == 3
+            and third[1]["state"] == "restarting"
+            and fourth[1]["pending"] is False
+            and fourth[1]["state"] == "idle"
+            and ended
+        )
+    finally:
+        if stream is not None:
+            await stream.aclose()
+        update_api._restart_status.clear()
+        update_api._restart_status.update(previous_status)
+        update_api._restart_status_revision = previous_revision
+        update_api._restart_status_changed = previous_changed
+
+
+async def _test_restart_endpoint_passes_force():
+    endpoint = inspect.unwrap(update_api.restart_bot)
+    forces = []
+    with (
+        patch.object(update_api, "verify_jwt", lambda request: None),
+        patch.object(update_api, "get_client_ip", lambda request: "test"),
+        patch.object(update_api, "schedule_restart", lambda force=False: forces.append(force)),
+    ):
+        response = await endpoint(_FakeRequest({"force": True}))
+    return response.status_code == 202 and response.media_type == "text/event-stream" and forces == [True]
+
+
+async def _test_restart_rejects_invalid_force():
+    endpoint = inspect.unwrap(update_api.restart_bot)
+    with (
+        patch.object(update_api, "verify_jwt", lambda request: None),
+        patch.object(update_api, "get_client_ip", lambda request: "test"),
+        patch.object(update_api, "schedule_restart", lambda force=False: None),
+    ):
+        try:
+            await endpoint(_FakeRequest({"force": 1}))
+        except HTTPException as e:
+            return e.status_code == 400
+    return False
+
+
+async def _test_schedule_restart_force_upgrades_pending_wait():
+    order = []
+    started = asyncio.Event()
+
+    async def sleep(_delay):
+        return None
+
+    async def active_count():
+        started.set()
+        return 1
+
+    async def cleanup():
+        order.append("cleanup")
+
+    def exit_process(code: int):
+        order.append(f"exit:{code}")
+
+    previous_task = update_api._restart_task
+    previous_force = update_api._restart_force_requested
+    previous_status = dict(update_api._restart_status)
+    previous_revision = update_api._restart_status_revision
+    previous_changed = update_api._restart_status_changed
+    update_api._restart_task = None
+    update_api._restart_force_requested = False
+    update_api._restart_force_event.clear()
+    update_api._restart_status.clear()
+    update_api._restart_status.update(pending=False, force=False, state="idle", active_sessions=0)
+    update_api._restart_status_revision = 0
+    update_api._restart_status_changed = asyncio.Event()
+    try:
+        with (
+            patch.object(update_api.asyncio, "sleep", new=sleep),
+            patch.object(update_api, "client_cleanup", new=cleanup),
+            patch.object(update_api.os, "_exit", new=exit_process),
+            patch.object(update_api.ServerAPI, "get_active_session_count", new=active_count),
+            patch.object(update_api, "RESTART_WAIT_INTERVAL", 5),
+            patch.object(update_api, "RESTART_WAIT_TIMEOUT", 30),
+        ):
+            task = update_api.schedule_restart(False)
+            await asyncio.wait_for(started.wait(), timeout=1)
+            same_task = update_api.schedule_restart(True) is task
+            upgraded = update_api._restart_force_requested
+            await asyncio.wait_for(task, timeout=1)
+        await asyncio.sleep(0)
+        return (
+            same_task
+            and upgraded
+            and order == ["cleanup", "exit:33"]
+            and update_api._restart_task is None
+            and not update_api._restart_force_requested
+            and update_api._restart_status["state"] == "idle"
+        )
+    finally:
+        task = update_api._restart_task
+        if task is not None and not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+        update_api._restart_task = previous_task
+        update_api._restart_force_requested = previous_force
+        update_api._restart_force_event.clear()
+        update_api._restart_status.clear()
+        update_api._restart_status.update(previous_status)
+        update_api._restart_status_revision = previous_revision
+        update_api._restart_status_changed = previous_changed
+
+
 @func_case
 async def test_webui_update(tester: Tester):
     """bots.web.api: 更新机器人接口测试"""
@@ -203,5 +402,12 @@ async def test_webui_update(tester: Tester):
     await tester.test(_test_update_rejects_binary_mode, "二进制部署拒绝更新测试")
     await tester.test(_test_update_rejects_concurrent_request, "并发更新拦截测试")
     await tester.test(_test_update_rejects_invalid_force, "非法参数拦截测试")
+    await tester.test(_test_restart_waits_for_active_sessions, "重启等待活跃会话测试")
+    await tester.test(_test_restart_force_skips_waiting, "强制重启跳过等待测试")
+    await tester.test(_test_restart_wait_times_out, "重启等待超时测试")
+    await tester.test(_test_schedule_restart_force_upgrades_pending_wait, "强制重启升级等待任务测试")
+    await tester.test(_test_restart_endpoint_passes_force, "重启接口传递参数测试")
+    await tester.test(_test_restart_stream_reports_active_sessions, "重启流输出会话数测试")
+    await tester.test(_test_restart_rejects_invalid_force, "重启接口非法参数拦截测试")
 
     return tester
