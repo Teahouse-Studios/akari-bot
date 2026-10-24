@@ -4,7 +4,6 @@
     "wordle.help.desc": "Play Wordle.",
     "wordle.help.option.hard": "Use hard mode.",
     "wordle.help.option.trial": "Use trial mode.",
-    "wordle.help.theme": "Set whether to use dark theme.",
     "wordle.message.occupied": "A game is already running in this {TERM:target}.",
     "wordle.message.finish": "Game over. The answer is ${answer}.\nWord lookup: ",
     "wordle.message.finish.success": "Congratulations! You completed the game in ${attempt} turn(s).",
@@ -13,7 +12,5 @@
     "wordle.message.start": "The game has started. You need to guess a 5-letter word, and you have 6 attempts.\nGreen indicates the letter is in the word and is in its place; yellow indicates the letter is in the word, but it is not at its current location; gray indicates the letter is not in the word.",
     "wordle.message.start.hard": "The letters that were color-coded in the previous turn must appear in the following turn and must meet the corresponding requirements.",
     "wordle.message.start.trial": "You are playing in trial mode. Successfully completing the game will earn you petals.",
-    "wordle.message.stop": "Stopped. The answer is: ${answer}.\nWord lookup: ",
-    "wordle.message.theme.disable": "Dark theme disabled.",
-    "wordle.message.theme.enable": "Dark theme enabled."
+    "wordle.message.stop": "Stopped. The answer is: ${answer}.\nWord lookup: "
 }

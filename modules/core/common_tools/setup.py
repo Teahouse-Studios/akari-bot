@@ -110,6 +110,15 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.setup.markdown.disable"))
 
 
+@setup.command("dark {{I18N:core.help.setup.dark}}")
+async def _(msg: Bot.MessageSession):
+    if msg.session_info.dark_mode:
+        await msg.session_info.sender_union_info.edit_sender_data("dark_mode", False)
+        await msg.finish(I18NContext("core.message.setup.dark.disable"))
+    await msg.session_info.sender_union_info.edit_sender_data("dark_mode", True)
+    await msg.finish(I18NContext("core.message.setup.dark.enable"))
+
+
 @define
 class SettingRow:
     label: str
@@ -238,6 +247,14 @@ def build_sender_rows(msg: Bot.MessageSession) -> list[SettingRow]:
                 "setup markdown",
             ),
         )
+    rows.append(
+        _toggle_row(
+            locale,
+            "core.message.setup.list.item.theme",
+            msg.session_info.dark_mode,
+            "setup theme",
+        ),
+    )
     return rows
 
 

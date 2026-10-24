@@ -23,6 +23,14 @@ async def test_setup_list_target(tester: Tester):
 
 
 @func_case
+async def test_setup_theme(tester: Tester):
+    """setup theme 统一深色模式开关测试"""
+    await tester.integrate("~setup theme", Contains("已开启深色模式"), "setup theme 应开启深色模式")
+    await tester.integrate("~setup theme", Contains("已关闭深色模式"), "setup theme 应关闭深色模式")
+    return tester
+
+
+@func_case
 async def test_setup_list_sender(tester: Tester):
     """setup list sender 只列个人域测试"""
     await tester.integrate(

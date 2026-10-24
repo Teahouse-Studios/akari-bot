@@ -589,6 +589,7 @@ async def _(msg: Bot.MessageSession, module: str, img: bool = False, legacy: boo
                             repattern=re.Pattern,
                             regex_disable_prefixes=regex_disable_prefixes,
                             use_font_mirror=use_font_mirror,
+                            dark_mode=msg.session_info.dark_mode,
                         )
 
                         # fname = f"{random_cache_path()}.html"
@@ -981,6 +982,7 @@ async def help_generator(
         show_disabled_modules=show_disabled_modules,
         target_enabled_list=target_enabled_list,
         use_font_mirror=use_font_mirror,
+        dark_mode=msg.session_info.dark_mode,
     )
     fname = f"{random_cache_path()}.html"
     with open(fname, "w", encoding="utf-8") as fi:

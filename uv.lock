@@ -296,7 +296,7 @@ requires-dist = [
     { name = "aiogram", specifier = "==3.31.0" },
     { name = "akari-bot-i18n", specifier = "==0.2.2" },
     { name = "akari-bot-webrender", specifier = "==0.7.3" },
-    { name = "akari-bot-webui", specifier = "==0.5.5" },
+    { name = "akari-bot-webui", specifier = "==0.6.1" },
     { name = "anthropic", specifier = ">=1.5.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
@@ -407,11 +407,11 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webui"
-version = "0.5.5"
+version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/53/fc/1d444ed1bd2ba8b988ed3be9fa4f274a1fb1bdbb91429d4870768c6c55bc/akari_bot_webui-0.5.5.tar.gz", hash = "sha256:0ef64d8be5288ef374a502728f9f72c7c1bd7d7999d2c60503148d0f7acc66a5", size = 1157008, upload-time = "2026-10-19T05:29:24.603Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/57/f2c5fc0e9fea705297f370754adf702d6f8188282853778f18ddb1d875d6/akari_bot_webui-0.6.1.tar.gz", hash = "sha256:5f25920c4b748a31be36166e9732b6bf2a184c2ad44fd521bc389d315af567a3", size = 1161725, upload-time = "2026-10-24T15:44:56.264Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/a1/af66e5ba330bf46398a402a81eef2683f1b9ba975605c8e80ef9c6d73b71/akari_bot_webui-0.5.5-py3-none-any.whl", hash = "sha256:6f74afd744af11599245049b09d3effc1a1c93ce5020ef2e684698d17f686501", size = 1178932, upload-time = "2026-10-19T05:29:23.134Z" },
+    { url = "https://files.pythonhosted.org/packages/06/4a/91adf9063059c1e097f971e3222c2d09fb7ed5571252a5ca252971a6c798/akari_bot_webui-0.6.1-py3-none-any.whl", hash = "sha256:4aa5bbcde60dede2af07c6c5fe3a7a4a15272483515c970c51e06745aa4ccc30", size = 1184432, upload-time = "2026-10-24T15:44:54.727Z" },
 ]
 
 [[package]]

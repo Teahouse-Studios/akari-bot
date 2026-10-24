@@ -60,11 +60,11 @@ def _render(support_button: bool = False, can_edit: bool = True) -> list:
 
 def _test_sender_rows_default_to_enabled() -> bool:
     rows = build_sender_rows(_make_msg())
-    if len(rows) != 2:
-        Logger.error(f"Sender panel should list exactly two settings, got {len(rows)}")
+    if len(rows) != 3:
+        Logger.error(f"Sender panel should list exactly three settings, got {len(rows)}")
         return False
-    if any(row.value != "已开启" for row in rows):
-        Logger.error(f"Both sender settings should default to enabled, got {[r.value for r in rows]}")
+    if any(row.value != "已开启" for row in rows if row.label != "深色模式"):
+        Logger.error(f"Sender settings should default to enabled, got {[r.value for r in rows]}")
         return False
     return True
 
@@ -251,6 +251,18 @@ def _test_markdown_row_follows_setting() -> bool:
     return True
 
 
+def _test_theme_row_follows_setting() -> bool:
+    row = _row_by_label(build_sender_rows(_make_msg()), "深色模式")
+    if not row or row.value != "已关闭" or row.action != "开启" or row.command != "setup theme":
+        Logger.error(f"An unset dark mode switch should read 已关闭 and offer 开启, got {row}")
+        return False
+    row = _row_by_label(build_sender_rows(_make_msg(sender_data={"dark_mode": True})), "深色模式")
+    if not row or row.value != "已开启" or row.action != "关闭":
+        Logger.error(f"An enabled dark mode switch should offer to turn it off, got {row}")
+        return False
+    return True
+
+
 def _test_invalid_prompt_row() -> bool:
     on = _row_by_label(build_target_rows(_make_msg()), "“模块不存在”提示")
     if not on or on.command != "setup invalid-module-prompt":
@@ -374,6 +386,7 @@ async def test_setup_panel(tester: Tester):
     await tester.test(_test_sign_row_follows_petal_config, "签到项随配置测试")
     await tester.test(_test_markdown_row_follows_capability, "markdown 项随能力测试")
     await tester.test(_test_markdown_row_follows_setting, "markdown 项跟随取值测试")
+    await tester.test(_test_theme_row_follows_setting, "深色模式项跟随取值测试")
     await tester.test(_test_invalid_prompt_row, "模块不存在提示项测试")
     await tester.test(_test_emote_row_follows_setting, "表情资源设置行测试")
     await tester.test(_test_commands_carry_current_value, "命令预填当前值测试")

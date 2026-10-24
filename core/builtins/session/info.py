@@ -413,6 +413,16 @@ class SessionInfo:
         target_data = (self.target_union_info.target_data or {}) if self.target_union_info else {}
         return CoreConfig.use_emote and target_data.get("use_emote", True)
 
+    @property
+    def dark_mode(self) -> bool:
+        """本会话是否使用深色模式渲染图片。
+
+        :return: 是否使用深色模式；用户未设置过或会话无用户信息时为浅色。
+        """
+        if not self.sender_union_info:
+            return False
+        return self.sender_union_info.sender_data.get("dark_mode", False)
+
 
 @define
 class FetchedSessionInfo(SessionInfo):
