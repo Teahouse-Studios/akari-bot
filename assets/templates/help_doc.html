@@ -149,10 +149,10 @@
         }
 
         .help-module-heading {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
             align-items: center;
-            justify-content: space-between;
-            gap: 1.5em;
+            gap: 4px 1.5em;
             margin: 6px 4px 0 0;
             padding: 12px 16px;
             color: var(--type-fg);
@@ -190,9 +190,9 @@
         }
 
         .help-desc {
-            margin-top: 10px;
-            padding: 0 4px;
+            grid-column: 1 / -1;
             font-size: 15px;
+            line-height: 1.4;
         }
 
         .help-section-title {
@@ -284,10 +284,10 @@
                 <span class="module-type-swatch" aria-hidden="true"></span>
                 <span>{{ locale.t(module_type_key) }}</span>
             </div>
+            {% if module.desc %}
+            <div class="help-desc">{{ locale.t_str(module.desc) }}</div>
+            {%- endif %}
         </div>
-        {% if module.desc %}
-        <div class="help-desc wrap-to-width">{{ locale.t_str(module.desc) }}</div>
-        {%- endif %}
         {% if help.args %}
         {% set command_doc = help.return_formatted_help_doc().split('\n') %}
         <section class="help-commands">
@@ -317,7 +317,6 @@
         {% if regex_list %}
         <section class="help-regex">
             <h4 class="help-section-title">{{ locale.t("core.help.regex") }}</h4>
-            <div class="help-note wrap-to-width">{{ locale.t("core.help.regex.note") }}</div>
             <div class="help-list sticker-card">
                 {% for regex in regex_list %}
                 {% set pattern = regex.pattern if isinstance(regex.pattern, str) else

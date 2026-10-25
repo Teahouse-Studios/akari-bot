@@ -255,6 +255,31 @@ async def _test_help_doc_template_marks_module_type_with_swatch():
     return 'class="module-type-swatch"' in rendered and "基础模块" in rendered and "橙色" not in rendered
 
 
+async def _test_help_doc_template_places_desc_after_name():
+    locale = (await _session("help_doc_template_desc")).locale
+    desc = "测试模块描述。"
+    module = SimpleNamespace(base=False, rss=False, desc=desc, alias={}, developers=[])
+    help_ = SimpleNamespace(args={}, return_formatted_help_doc=lambda: "")
+    rendered = await env.get_template("help_doc.html").render_async(
+        locale=locale,
+        module=module,
+        help=help_,
+        help_name="demo",
+        regex_list=[],
+        escape=str,
+        isinstance=isinstance,
+        str=str,
+        repattern=object,
+        use_font_mirror=False,
+    )
+    heading_start = rendered.find('class="help-module-heading')
+    name_end = rendered.find("</h3>")
+    desc_pos = rendered.find(desc)
+    heading_end = rendered.find("</div>", desc_pos)
+    heading = rendered[heading_start:heading_end]
+    return "help-desc" in heading and heading.find("demo") < heading.find(desc) and heading_start < name_end < desc_pos
+
+
 async def _test_markdown_help_marks_module_type_with_emoji():
     locale = (await _session("help_markdown_type")).locale
     module_types = (
@@ -1186,6 +1211,7 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_image_flag_overrides_markdown_table, "--img 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
     await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
+    await tester.test(_test_help_doc_template_places_desc_after_name, "模块描述紧随模块名称测试")
     await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")
     await tester.test(_test_help_doc_template_includes_regex_disable_tip, "图片详细帮助展示正则关闭提示测试")
     await tester.test(_test_image_templates_follow_dark_mode, "图片帮助深色模式测试")
