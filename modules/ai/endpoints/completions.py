@@ -45,8 +45,13 @@ class OpenAICompletionsEndpoint:
             kwargs["top_logprobs"] = top_logprobs_value
 
         is_deepseek = "deepseek" in self.model_name.lower()
+        extra_body = {}
         if is_deepseek:  # 兼容 DeepSeek
-            kwargs["extra_body"] = {"thinking": {"type": reasoning_state}}
+            extra_body["thinking"] = {"type": reasoning_state}
+        if base._supports_qwen_thinking(self.model_name):
+            extra_body["enable_thinking"] = reasoning_state == "enabled"
+        if extra_body:
+            kwargs["extra_body"] = extra_body
 
         resolved_effort = base._openai_effort(effort)
         if resolved_effort is not None:

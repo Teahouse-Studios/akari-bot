@@ -101,6 +101,15 @@ def _openai_effort(effort: str) -> str | None:
     return None if effort == "none" else effort
 
 
+_QWEN_THINKING_PREFIXES = ("qwen3", "qwen-plus", "qwen-flash")
+
+
+def _supports_qwen_thinking(model_name: str) -> bool:
+    # 只有混合思考模式的千问模型接受 enable_thinking，其他千问模型传入该参数会报错。
+    name = model_name.lower().rsplit("/", 1)[-1]
+    return name.startswith(_QWEN_THINKING_PREFIXES)
+
+
 class GeminiInteractionError(RuntimeError):
     pass
 
