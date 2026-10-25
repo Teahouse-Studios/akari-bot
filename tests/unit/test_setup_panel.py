@@ -253,7 +253,7 @@ def _test_markdown_row_follows_setting() -> bool:
 
 def _test_theme_row_follows_setting() -> bool:
     row = _row_by_label(build_sender_rows(_make_msg()), "深色模式")
-    if not row or row.value != "已关闭" or row.action != "开启" or row.command != "setup theme":
+    if not row or row.value != "已关闭" or row.action != "开启" or row.command != "setup dark":
         Logger.error(f"An unset dark mode switch should read 已关闭 and offer 开启, got {row}")
         return False
     row = _row_by_label(build_sender_rows(_make_msg(sender_data={"dark_mode": True})), "深色模式")

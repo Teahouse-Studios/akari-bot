@@ -598,7 +598,9 @@ async def _(msg: Bot.MessageSession, module: str, img: bool = False, legacy: boo
                         #     fi.write(html_content)
 
                         images = await web_render.element_screenshot(
-                            ElementScreenshotOptions(content=html_content, element=[".botbox"])
+                            ElementScreenshotOptions(
+                                content=html_content, element=[".botbox"], dark_mode=msg.session_info.dark_mode
+                            )
                         )
 
                         cb: list[ImageElement] = cb64imglst(images, bot_img=True)
@@ -989,7 +991,9 @@ async def help_generator(
     with open(fname, "w", encoding="utf-8") as fi:
         fi.write(html_content)
 
-    images = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
+    images = await web_render.element_screenshot(
+        ElementScreenshotOptions(content=html_content, element=[".botbox"], dark_mode=msg.session_info.dark_mode)
+    )
     if images:
         return cb64imglst(images, bot_img=True)
     return None

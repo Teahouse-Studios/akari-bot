@@ -124,7 +124,13 @@ async def msgchain2image(
         fi.write(html_content)
 
     Logger.info("[WebRender] Converting message chain...")
-    pic_list = await web_render.element_screenshot(ElementScreenshotOptions(content=html_content, element=[".botbox"]))
+    pic_list = await web_render.element_screenshot(
+        ElementScreenshotOptions(
+            content=html_content,
+            element=[".botbox"],
+            dark_mode=getattr(session, "dark_mode", False),
+        )
+    )
     if not pic_list:
         Logger.exception("[WebRender] Generation Failed.")
         return False

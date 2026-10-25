@@ -28,9 +28,9 @@ aiosqlite==0.22.1
     # via tortoise-orm
 akari-bot-i18n==0.2.2
     # via akari-bot
-akari-bot-webrender==0.7.3
+akari-bot-webrender==0.7.4
     # via akari-bot
-akari-bot-webui==0.6.1
+akari-bot-webui==0.6.3
     # via akari-bot
 annotated-doc==0.0.4
     # via fastapi
@@ -371,7 +371,7 @@ packaging==26.0
     #   pytest
 pandas==3.0.0
     # via akari-bot
-pillow==12.3.0
+pillow==13.0.0
     # via
     #   akari-bot
     #   matplotlib

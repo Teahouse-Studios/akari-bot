@@ -133,6 +133,19 @@ async def _test_test_web_render_returns_base64_images():
     )
 
 
+async def _test_test_web_render_forwards_dark_mode():
+    with (
+        patch.object(server, "enable_web_render", True),
+        patch.object(server, "_web_render_status_detail", new=AsyncMock(return_value={"available": True})),
+        patch.object(server.web_render, "page_screenshot", new=AsyncMock(return_value=["QUJD"])) as screenshot,
+    ):
+        result = await server.test_web_render(
+            {"mode": "screenshot", "url": "https://example.test/", "dark_mode": True, "unknown": "x"}
+        )
+    options = screenshot.await_args.args[0]
+    return result["ok"] is True and options.dark_mode is True and not hasattr(options, "unknown")
+
+
 async def _test_test_web_render_truncates_source():
     long_source = "x" * (server.WEB_RENDER_TEST_MAX_SOURCE_CHARS + 1)
     with (
@@ -161,6 +174,7 @@ async def test_webrender_rpc(tester: Tester):
     await tester.test(_test_control_web_render_updates_info_status, "WebRender 控制状态回写测试")
     await tester.test(_test_test_web_render_validates_before_rendering, "渲染测试参数校验测试")
     await tester.test(_test_test_web_render_returns_base64_images, "渲染测试截图净化测试")
+    await tester.test(_test_test_web_render_forwards_dark_mode, "渲染测试透传深色模式测试")
     await tester.test(_test_test_web_render_truncates_source, "渲染测试源码截断测试")
 
     return tester

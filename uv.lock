@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12.0, <4.0.0"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -295,8 +295,8 @@ requires-dist = [
     { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "aiogram", specifier = "==3.31.0" },
     { name = "akari-bot-i18n", specifier = "==0.2.2" },
-    { name = "akari-bot-webrender", specifier = "==0.7.3" },
-    { name = "akari-bot-webui", specifier = "==0.6.1" },
+    { name = "akari-bot-webrender", specifier = "==0.7.4" },
+    { name = "akari-bot-webui", specifier = "==0.6.3" },
     { name = "anthropic", specifier = ">=1.5.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
     { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
@@ -387,7 +387,7 @@ wheels = [
 
 [[package]]
 name = "akari-bot-webrender"
-version = "0.7.3"
+version = "0.7.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -400,18 +400,18 @@ dependencies = [
     { name = "tf-playwright-stealth" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/45/36/aa70ff10f8cf473c49db53cf411147b066833f9a8252e555811cb68f1f50/akari_bot_webrender-0.7.3.tar.gz", hash = "sha256:45bb69fd49e301efa233e78d7a2e3fa4e4fb0ab348093716040d328f7a980a23", size = 19952, upload-time = "2026-10-20T00:52:40.35Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/73/aad87a1c491eeba678abd03ce15f6431ecb9e3f6affca3115bf174416f1d/akari_bot_webrender-0.7.4.tar.gz", hash = "sha256:dbb4b762f7051fca8a5f97d68905c0881bea24dca520405ceb17b96f07dd4364", size = 21099, upload-time = "2026-10-25T06:42:06.643Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/37/b39f902a20376c057b070504364a9fa5f492ac02cddd20307a5eb01c8c67/akari_bot_webrender-0.7.3-py3-none-any.whl", hash = "sha256:645bf14f55bcc98683ae88bd26d649d491c2f2a5b99e686ae38b5f6af0e88f23", size = 24051, upload-time = "2026-10-20T00:52:39.016Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/eb/241a022a40e82a2148976889ca91f7c778088a007e981d79dfe58ee765cb/akari_bot_webrender-0.7.4-py3-none-any.whl", hash = "sha256:45fef30f56b901a9ca9e7b3d44aa836347dca8055f2be779e25713147d5100c9", size = 25853, upload-time = "2026-10-25T06:42:05.099Z" },
 ]
 
 [[package]]
 name = "akari-bot-webui"
-version = "0.6.1"
+version = "0.6.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b8/57/f2c5fc0e9fea705297f370754adf702d6f8188282853778f18ddb1d875d6/akari_bot_webui-0.6.1.tar.gz", hash = "sha256:5f25920c4b748a31be36166e9732b6bf2a184c2ad44fd521bc389d315af567a3", size = 1161725, upload-time = "2026-10-24T15:44:56.264Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0e/a4/45ad639c5f5c09c64f20888169e0c7dc24c43349b0214b284ebea12026e6/akari_bot_webui-0.6.3.tar.gz", hash = "sha256:d68b5356682ac0f989da4ba10abb1b3be701f846dcc7ad672b9192b8f4d32894", size = 1162410, upload-time = "2026-10-25T07:55:08.239Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/06/4a/91adf9063059c1e097f971e3222c2d09fb7ed5571252a5ca252971a6c798/akari_bot_webui-0.6.1-py3-none-any.whl", hash = "sha256:4aa5bbcde60dede2af07c6c5fe3a7a4a15272483515c970c51e06745aa4ccc30", size = 1184432, upload-time = "2026-10-24T15:44:54.727Z" },
+    { url = "https://files.pythonhosted.org/packages/22/3d/5b77a31f9b7dc5229f3aa862ae8d0c680d46cdbe32ce8f1e14459f13b63a/akari_bot_webui-0.6.3-py3-none-any.whl", hash = "sha256:73e2c888231f33f18799aae5a8079296dc7621cea213dba0eb5eed15963eaf78", size = 1185576, upload-time = "2026-10-25T07:55:06.511Z" },
 ]
 
 [[package]]
@@ -1629,8 +1629,8 @@ name = "httpcore2"
 version = "2.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "h11" },
-    { name = "truststore" },
+    { name = "h11", marker = "sys_platform != 'emscripten'" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/be/ad/f4f0e57345f1870f3e8cb624e058d7eca6e5a27d33bcc3311d9b618734cd/httpcore2-2.12.0.tar.gz", hash = "sha256:9293522bba0aa7c4c8e9e3f040c16575bd8868e155a77fa30c7a9085a5eae648", size = 67548, upload-time = "2026-08-18T13:22:08.211Z" }
 wheels = [

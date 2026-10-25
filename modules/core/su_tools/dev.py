@@ -46,7 +46,7 @@ async def _(msg: Bot.MessageSession, model: str, legacy: bool = False):
 
     if not legacy and msg.session_info.support_image:
         table = ImageTable(data=data, headers=headers, session_info=msg.session_info, disable_joke=True)
-        imgs = await image_table_render(table)
+        imgs = await image_table_render(table, dark_mode=msg.session_info.dark_mode)
     else:
         imgs = None
 
@@ -84,7 +84,7 @@ async def _(msg: Bot.MessageSession, sql: str, page: str | None = None, legacy: 
 
             if not legacy and msg.session_info.support_image:
                 table = ImageTable(data=page_data, headers=headers, session_info=msg.session_info, disable_joke=True)
-                imgs = await image_table_render(table)
+                imgs = await image_table_render(table, dark_mode=msg.session_info.dark_mode)
             else:
                 imgs = None
 

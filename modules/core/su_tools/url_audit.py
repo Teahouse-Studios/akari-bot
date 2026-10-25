@@ -43,7 +43,7 @@ async def _finish_url_rule_list(msg: Bot.MessageSession, list_name: str, rules: 
         ],
         disable_joke=True,
     )
-    imgs = await image_table_render(table)
+    imgs = await image_table_render(table, dark_mode=msg.session_info.dark_mode)
     if not imgs:
         await msg.finish()
     await msg.finish([I18NContext(f"core.message.url-audit.{list_name}.list.title")] + [Image(img) for img in imgs])

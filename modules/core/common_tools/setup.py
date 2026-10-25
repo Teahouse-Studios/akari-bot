@@ -252,7 +252,7 @@ def build_sender_rows(msg: Bot.MessageSession) -> list[SettingRow]:
             locale,
             "core.message.setup.list.item.theme",
             msg.session_info.dark_mode,
-            "setup theme",
+            "setup dark",
         ),
     )
     return rows

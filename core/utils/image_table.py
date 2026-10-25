@@ -55,12 +55,14 @@ class ImageTable:
 async def image_table_render(
     table: ImageTable | list[ImageTable],
     save_source: bool = True,
+    dark_mode: bool = False,
 ) -> list[PILImage.Image] | None:
     """
     使用WebRender渲染图片表格。
 
     :param table: 要渲染的表格。
     :param save_source: 是否保存源文件。
+    :param dark_mode: 是否使用深色模式渲染。
     :return: 图片的PIL对象。
     """
     try:
@@ -99,7 +101,7 @@ async def image_table_render(
             with open(fname, "w", encoding="utf-8") as fi:
                 fi.write(tblst + css)
         image_list = await web_render.legacy_screenshot(
-            LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False)
+            LegacyScreenshotOptions(content=tblst + css, width=w, mw=False, counttime=False, dark_mode=dark_mode)
         )
     except Exception:
         Logger.exception()

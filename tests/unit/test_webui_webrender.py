@@ -126,6 +126,18 @@ async def _test_webrender_test_forwards_render_result():
     return ok == (200, success) and failed == (200, rendered_failure)
 
 
+async def _test_webrender_test_forwards_dark_mode():
+    endpoint = inspect.unwrap(webrender_api.test_web_render)
+    body = {"mode": "screenshot", "url": "https://example.test/", "dark_mode": True}
+    with (
+        patch.object(webrender_api, "verify_jwt", lambda request: None),
+        patch.object(webrender_api, "get_client_ip", lambda request: "test"),
+        patch.object(webrender_api.ServerAPI, "test_web_render", new=AsyncMock(return_value={"ok": True})) as rpc,
+    ):
+        result = await endpoint(FakeRequest(body))
+    return result == {"ok": True} and rpc.await_args.args[0]["dark_mode"] is True
+
+
 @func_case
 async def test_webui_webrender(tester: Tester):
     """bots.web.api.webrender: WebRender 接口测试"""
@@ -135,5 +147,6 @@ async def test_webui_webrender(tester: Tester):
     await tester.test(_test_webrender_control_reports_runtime_failure, "WebRender 控制失败回报测试")
     await tester.test(_test_webrender_test_validates_target, "WebRender 测试参数校验测试")
     await tester.test(_test_webrender_test_forwards_render_result, "WebRender 测试结果转发测试")
+    await tester.test(_test_webrender_test_forwards_dark_mode, "WebRender 测试透传深色模式")
 
     return tester

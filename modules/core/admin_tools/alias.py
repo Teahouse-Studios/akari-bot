@@ -127,7 +127,7 @@ async def _(msg: Bot.MessageSession):
                 ],
                 msg.session_info,
             )
-            imgs = await image_table_render(table)
+            imgs = await image_table_render(table, dark_mode=msg.session_info.dark_mode)
             if imgs:
                 legacy = False
                 img_lst = []

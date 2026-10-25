@@ -187,7 +187,7 @@ async def ask_llm(
                 elif block["type"] == "table":
                     content = block["content"]
                     try:
-                        path_lst = await generate_md_table(content)
+                        path_lst = await generate_md_table(content, dark_mode=session.session_info.dark_mode)
                         for path in path_lst:
                             chain.append(Image(path))
                     except Exception:

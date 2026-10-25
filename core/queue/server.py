@@ -205,6 +205,7 @@ WEB_RENDER_TEST_SCREENSHOT_KEYS = (
     "stealth",
     "wait_until",
     "wait_after_load",
+    "dark_mode",
 )
 WEB_RENDER_TEST_SOURCE_KEYS = ("url", "locale", "stealth", "wait_until", "wait_after_load", "raw_text")
 

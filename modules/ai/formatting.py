@@ -126,7 +126,7 @@ async def generate_code_snippet(code: str, language: str):
     )
 
 
-async def generate_md_table(table: str):
+async def generate_md_table(table: str, dark_mode: bool = False):
     lines = table.strip().split("\n")
     if len(lines) < 2:
         raise ValueError("Invalid Markdown table format.")
@@ -143,7 +143,7 @@ async def generate_md_table(table: str):
         raise ValueError("No data found in Markdown table.")
 
     image_table = ImageTable(data=data, headers=headers)
-    imgs = await image_table_render(image_table)
+    imgs = await image_table_render(image_table, dark_mode=dark_mode)
 
     if imgs:
         return list(imgs)
