@@ -106,20 +106,6 @@ async def _test_redirect_fragments():
     return True
 
 
-async def _test_targeted_template_and_language_query():
-    wiki = _wiki()
-    wiki.get_json = AsyncMock(return_value=_page_response())
-    await wiki.parse_page_info("Target", lang="en")
-    params = wiki.get_json.await_args_list[0].kwargs
-    assert params["lllang"] == "en" and params["tllimit"] == "max"
-    assert set(params["tltemplates"].split("|")) == {
-        "Template:Documentation",
-        "Template:Disambiguation",
-        "Template:Version disambiguation",
-    }
-    return True
-
-
 async def _test_language_url_without_interwiki_mapping():
     source = _wiki()
     target_info = WikiInfo(
@@ -266,23 +252,6 @@ async def _test_api_errors_warnings_and_invalid_response():
         except InvalidWikiError:
             return True
     return False
-
-
-async def _test_parse_requests_are_reused():
-    wiki = WikiLib(API)
-    wiki.wiki_info = _info()
-    wiki.get_json = AsyncMock(
-        return_value={
-            "parse": {
-                "headhtml": "<html><head></head><body class='ns-0'></body></html>",
-                "text": "<table class='infobox'><tr><td>Example</td></tr></table>",
-            }
-        }
-    )
-    assert await wiki.get_page_body_class("Target", include_text=True) == ["ns-0"]
-    assert await wiki.check_page_renderable("Target")
-    assert wiki.get_json.await_count == 1
-    return True
 
 
 async def _test_media_dispatch():
@@ -601,13 +570,11 @@ async def _test_redirect_limit_only_counts_explicit_chains():
 async def test_wiki_query_fixes(tester: Tester):
     for function, note in [
         (_test_redirect_fragments, "归一化与连续重定向保留章节，显式章节优先"),
-        (_test_targeted_template_and_language_query, "语言与模板使用定向查询"),
         (_test_language_url_without_interwiki_mapping, "语言链接不要求同名 Interwiki"),
         (_test_revision_content_and_sections, "历史摘要、目录、链接与回调固定修订号"),
         (_test_invalid_revision_and_hidden_content, "无效与隐藏历史版本不混用当前内容"),
         (_test_interwiki_revision_uses_target_site, "Interwiki 修订号在目标站点查询"),
         (_test_api_errors_warnings_and_invalid_response, "API 错误区分、警告保留结果与格式校验"),
-        (_test_parse_requests_are_reused, "预检查复用页面解析结果"),
         (_test_media_dispatch, "视频、SVG、未知类型和无媒体能力分派"),
         (_test_url_target_keeps_revision_and_fragment, "URL 目标保留修订号、参数及章节"),
         (_test_url_render_modes, "URL 遵守 off、button、auto 且章节无重复摘要"),

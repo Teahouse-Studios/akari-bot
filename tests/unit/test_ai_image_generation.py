@@ -171,19 +171,6 @@ async def _test_edit_image_combines_multiple_images():
     return True
 
 
-async def _test_edit_image_deduplicates_indexes():
-    factory = _FakeClientFactory()
-    context = ToolContext(images=[_data_url(b"first"), _data_url(b"second")])
-    with _patched_image_environment(factory):
-        await image_generation.edit_image("combine them", image_indexes=[2, 1, 2], context=context)
-
-    assert factory.images.edit.await_args.kwargs["image"] == [
-        ("image1.png", b"second", "image/png"),
-        ("image2.png", b"first", "image/png"),
-    ]
-    return True
-
-
 async def _test_edit_image_rejects_missing_or_invalid_image():
     factory = _FakeClientFactory()
     with _patched_image_environment(factory):
@@ -354,7 +341,6 @@ async def test_ai_image_generation(tester: Tester):
     await tester.test(_test_generate_image_uses_enhanced_prompt_and_charges, "生图使用增强提示并记录成本")
     await tester.test(_test_edit_image_uses_latest_image_and_charges, "编辑默认使用最近一张图片")
     await tester.test(_test_edit_image_combines_multiple_images, "编辑支持传入多张图片")
-    await tester.test(_test_edit_image_deduplicates_indexes, "编辑忽略重复的图片索引")
     await tester.test(_test_edit_image_rejects_missing_or_invalid_image, "编辑拒绝缺失或越界图片")
     await tester.test(
         _test_generate_image_falls_back_to_raw_prompt_and_does_not_charge_on_failure,

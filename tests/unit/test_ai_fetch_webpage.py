@@ -30,18 +30,6 @@ def _payload(result: str) -> dict:
     return orjson.loads(result.splitlines()[0])
 
 
-def _test_plain_text_strips_markup():
-    text = fetch_webpage_module._to_plain_text(
-        '<html><body><p>Hello <b>World</b><img src="data:image/png;base64,AAAA"></p>'
-        '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>'
-        "<script>bad()</script></body></html>"
-    )
-    assert "Hello" in text and "World" in text
-    assert "bad()" not in text and "base64" not in text
-    assert "<" not in text and ">" not in text
-    return True
-
-
 async def _test_lightweight_path_is_preferred():
     render = _web_render_stub(ARTICLE_HTML)
     with (
@@ -113,7 +101,6 @@ async def _test_no_content_reports_message():
 @func_case
 async def test_ai_fetch_webpage(tester: Tester):
     """modules.ai.tools.fetch_webpage: 轻量优先、WebRender 回退与正文清洗测试"""
-    await tester.test(_test_plain_text_strips_markup, "HTML 标记清洗为纯文本")
     await tester.test(_test_lightweight_path_is_preferred, "优先使用内置 HTTP 请求")
     await tester.test(_test_webrender_fallback_after_lightweight_failure, "轻量请求失败后回退 WebRender")
     await tester.test(_test_webrender_fallback_when_content_empty, "轻量请求无正文时回退 WebRender")

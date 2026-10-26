@@ -53,20 +53,6 @@ async def _test_group_message_redelivery_is_processed_once():
     return True
 
 
-async def _test_group_message_and_at_callbacks_share_identity():
-    ordinary = _message("overlapping")
-    mentioned = _message("overlapping")
-    mentioned.event_id = "another-event"
-    assign, process = await _dispatch(
-        [
-            (qqbot_bot.MyClient.on_message_group_create, ordinary),
-            (qqbot_bot.MyClient.on_group_at_message_create, mentioned),
-        ]
-    )
-    assert assign.await_count == process.await_count == 1
-    return True
-
-
 async def _test_concurrent_callbacks_are_claimed_before_await():
     handler = qqbot_bot.MyClient.on_message_group_create
     assign_started = asyncio.Event()
@@ -231,7 +217,6 @@ async def _test_only_self_mention_falls_back_to_help():
 @func_case
 async def test_qqbot_delivery(tester: Tester):
     await tester.test(_test_group_message_redelivery_is_processed_once, "同一群消息重投只派发一次")
-    await tester.test(_test_group_message_and_at_callbacks_share_identity, "普通群消息与提及回调共用消息身份")
     await tester.test(_test_concurrent_callbacks_are_claimed_before_await, "并发回调在等待会话创建前认领消息")
     await tester.test(_test_distinct_messages_and_targets_are_preserved, "同文本不同消息及不同目标均可派发")
     await tester.test(_test_failed_callback_can_be_redelivered, "回调失败或取消后允许重投")

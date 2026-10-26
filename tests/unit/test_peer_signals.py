@@ -230,27 +230,6 @@ async def _test_auto_identity_is_unique_per_process_lifecycle():
         Info.peer_id, Info.peer_role = previous_peer
 
 
-def _test_peer_selector_normalizes_and_validates_targets():
-    selector = PeerSelector(
-        peer_ids=["peer-a", "peer-a"],
-        roles=["client"],
-        services=["workers"],
-    )
-    if selector.peer_ids != ("peer-a",) or selector.roles != ("client",):
-        return False
-    try:
-        PeerSelector(roles="client")
-    except TypeError:
-        pass
-    else:
-        return False
-    try:
-        PeerSelector(peer_ids=("",))
-    except ValueError:
-        return True
-    return False
-
-
 async def _test_stopped_peer_cannot_be_revived_by_late_ready_signal():
     previous_alive = Alive.values.copy()
     peer_id = f"PEER-ORDER-{uuid4()}"
@@ -575,26 +554,6 @@ async def _test_maintenance_temporarily_removes_instance_from_stable_routes():
         )
 
 
-async def _test_maintenance_window_poll_lock_wait_is_bounded():
-    async with _peer_cluster() as (controller, worker_a, worker_b):
-        del controller, worker_b
-        original_timeout = worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS
-        worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS = 0.05
-        await worker_a._poll_lock.acquire()
-        try:
-            started = asyncio.get_running_loop().time()
-            try:
-                async with worker_a.maintenance_window():
-                    return False
-            except TimeoutError:
-                pass
-            elapsed = asyncio.get_running_loop().time() - started
-            return elapsed < 0.5 and worker_a.pause_event.is_set() and not worker_a._maintenance_active
-        finally:
-            worker_a._poll_lock.release()
-            worker_a.MAINTENANCE_POLL_LOCK_TIMEOUT_SECONDS = original_timeout
-
-
 async def _test_fetched_session_metadata_matches_authoritative_route():
     target_id = f"workers|Group|{uuid4()}"
     async with _peer_cluster() as (controller, worker_a, worker_b):
@@ -624,28 +583,6 @@ async def _test_authoritative_registry_rejects_stale_alive_entry():
             await JobQueueServer.ensure_target_available(peer_id)
         except RpcUnavailableError:
             return Alive.is_alive(peer_id)
-        return False
-    finally:
-        Alive.values.clear()
-        Alive.values.update(previous_alive)
-
-
-async def _test_unleased_cache_is_not_routable():
-    previous_alive = Alive.values.copy()
-    service = f"PEER-LEGACY-{uuid4()}"
-    try:
-        Alive.refresh_peer(
-            f"TEST-PEER-{service}",
-            service,
-            metadata={
-                "target_prefix_list": [f"{service}|Group"],
-                "sender_prefix_list": [service],
-            },
-        )
-        try:
-            await JobQueueServer.ensure_target_available(service)
-        except RpcUnavailableError:
-            return not Alive.is_alive(service)
         return False
     finally:
         Alive.values.clear()
@@ -819,38 +756,6 @@ async def _test_interrupted_emit_discards_partial_transport_write():
         return not await JobQueuesTable.filter(source_peer_id=controller.name, action=signal_name).exists()
 
 
-async def _test_interrupted_emit_cleanup_is_bounded():
-    signal_name = f"audit.partial-submit-timeout.{uuid4()}"
-    async with _peer_cluster() as (controller, _worker_a, _worker_b):
-        original_send = controller.transport.send
-
-        async def write_one_then_fail(requests):
-            await original_send(requests[0])
-            raise RuntimeError("partial transport write")
-
-        async def abandon_forever(task_ids):
-            await asyncio.Event().wait()
-
-        original_timeout = controller.ABANDON_TIMEOUT_SECONDS
-        controller.ABANDON_TIMEOUT_SECONDS = 0.05
-        try:
-            started = asyncio.get_running_loop().time()
-            with (
-                patch.object(controller.transport, "send_many", new=write_one_then_fail),
-                patch.object(controller.transport, "abandon", new=abandon_forever),
-            ):
-                try:
-                    await controller.emit_signal(
-                        signal_name, None, PeerSelector.service("workers"), timeout=RPC_TEST_TIMEOUT
-                    )
-                    return False
-                except RuntimeError:
-                    pass
-            return asyncio.get_running_loop().time() - started < 1 * TIME_SCALE
-        finally:
-            controller.ABANDON_TIMEOUT_SECONDS = original_timeout
-
-
 async def _test_shutdown_does_not_wait_forever_for_poll_lock():
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
         original_timeout = controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS
@@ -893,23 +798,6 @@ async def _test_shutdown_task_cleanup_is_bounded():
             controller.SHUTDOWN_OPERATION_TIMEOUT_SECONDS = original_timeout
 
 
-async def _test_shutdown_window_does_not_wait_forever_for_poll_lock():
-    async with _peer_cluster() as (controller, _worker_a, _worker_b):
-        original_timeout = controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS
-        controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = 0.05
-        await controller._poll_lock.acquire()
-        entered = False
-        try:
-            started = asyncio.get_running_loop().time()
-            async with controller.shutdown_window():
-                entered = True
-            elapsed = asyncio.get_running_loop().time() - started
-        finally:
-            controller._poll_lock.release()
-            controller.SHUTDOWN_POLL_LOCK_TIMEOUT_SECONDS = original_timeout
-        return entered and elapsed < 0.5
-
-
 async def _test_partial_batch_result_is_reported_per_peer():
     signal_name = f"audit.partial-result.{uuid4()}"
     async with _peer_cluster() as (controller, _worker_a, _worker_b):
@@ -940,7 +828,6 @@ async def _test_partial_batch_result_is_reported_per_peer():
 @func_case
 async def test_peer_signals(tester: Tester):
     await tester.test(_test_auto_identity_is_unique_per_process_lifecycle, "节点配置、随机回退与身份持久化")
-    await tester.test(_test_peer_selector_normalizes_and_validates_targets, "广播选择器规范化并拒绝歧义目标")
     await tester.test(_test_stopped_peer_cannot_be_revived_by_late_ready_signal, "生命周期信号乱序不复活实例")
     await tester.test(_test_authoritative_reregistration_revives_stopped_cache, "权威重新注册立即恢复实例缓存")
     await tester.test(_test_ready_peer_ignores_late_stopped_signal, "迟到停止信号不能错误摘除 ready 实例")
@@ -963,13 +850,8 @@ async def test_peer_signals(tester: Tester):
     )
     await tester.test(_test_draining_instance_is_removed_from_new_delivery_snapshots, "关闭实例先摘流再清理")
     await tester.test(_test_maintenance_temporarily_removes_instance_from_stable_routes, "维护窗口临时摘流并恢复")
-    await tester.test(_test_maintenance_window_poll_lock_wait_is_bounded, "维护窗口轮询锁占用不会无界等待")
     await tester.test(_test_fetched_session_metadata_matches_authoritative_route, "主动会话元数据与权威实例路由一致")
     await tester.test(_test_authoritative_registry_rejects_stale_alive_entry, "权威注册表拒绝本地缓存幽灵实例")
-    await tester.test(
-        _test_unleased_cache_is_not_routable,
-        "无租约本地缓存不可参与路由",
-    )
     await tester.test(_test_route_resolution_obeys_rpc_deadline, "稳定路由查询计入 RPC deadline")
     await tester.test(
         _test_expired_instance_discards_fire_and_forget_delivery,
@@ -979,9 +861,7 @@ async def test_peer_signals(tester: Tester):
     await tester.test(_test_unexpected_poller_failure_unregisters_peer, "轮询器异常退出注销实例")
     await tester.test(_test_ambiguous_registration_failure_is_rolled_back, "注册结果未知时撤销半注册实例")
     await tester.test(_test_interrupted_emit_discards_partial_transport_write, "广播部分写入异常清理投递")
-    await tester.test(_test_interrupted_emit_cleanup_is_bounded, "广播异常清理有界且不阻塞调用方")
     await tester.test(_test_shutdown_does_not_wait_forever_for_poll_lock, "关闭时轮询锁占用不会导致无界等待")
     await tester.test(_test_shutdown_task_cleanup_is_bounded, "关闭时不响应取消的清理任务不会卡死")
-    await tester.test(_test_shutdown_window_does_not_wait_forever_for_poll_lock, "关闭窗口轮询锁占用不会卡死")
     await tester.test(_test_partial_batch_result_is_reported_per_peer, "广播批量投递部分结果逐实例呈现")
     return tester

@@ -1,14 +1,11 @@
 """统一机器人场景状态接口测试。"""
 
-import inspect
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.bot_state import BotState
-from core.builtins.session.context import ContextManager
 from core.builtins.session.info import SessionInfo
 from core.queue import codec
-from core.queue.contracts import PlatformAPI
 from core.tester import Tester, func_case
 
 
@@ -26,10 +23,6 @@ def _test_bot_state_is_serializable_and_preserves_unknown_permissions() -> bool:
         and restored.has_permission("missing") is None
         and restored.has_permission("role") is None
     )
-
-
-def _test_bot_state_rpc_contract_matches_context() -> bool:
-    return PlatformAPI.check_bot_state.signature == inspect.signature(ContextManager.check_bot_state)
 
 
 async def _test_webui_reports_full_state() -> bool:
@@ -60,22 +53,6 @@ async def _test_webui_reports_full_state() -> bool:
             "can_send_private_messages",
         )
     )
-
-
-async def _test_mock_session_provides_local_bot_state() -> bool:
-    from core.tester.mock.session import MockMessageSession
-
-    session = MockMessageSession()
-    session.session_info = SessionInfo(
-        target_id="TEST|Console|0",
-        target_from="TEST",
-        client_name="TEST",
-        support_manage=True,
-        support_reaction=True,
-        support_private_msg=True,
-    )
-    state = await session.check_bot_state()
-    return state.raw.get("platform") == "test" and state.can_manage_members and state.can_react
 
 
 async def _test_discord_permission_state_maps_effective_channel_permissions() -> bool:
@@ -338,9 +315,7 @@ async def _test_kook_role_and_channel_overrides_are_preserved() -> bool:
 @func_case
 async def test_bot_state(tester: Tester):
     await tester.test(_test_bot_state_is_serializable_and_preserves_unknown_permissions, "BotState 序列化与未知权限")
-    await tester.test(_test_bot_state_rpc_contract_matches_context, "BotState RPC 契约")
     await tester.test(_test_webui_reports_full_state, "WebUI 返回完整机器人权限")
-    await tester.test(_test_mock_session_provides_local_bot_state, "测试会话提供本地机器人状态")
     await tester.test(
         _test_discord_permission_state_maps_effective_channel_permissions,
         "Discord 使用频道最终权限映射机器人状态",

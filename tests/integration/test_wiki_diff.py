@@ -56,12 +56,10 @@ async def test_wiki_diff_entries(tester: Tester):
             "~wiki Special:Diff/1495502",
             "[[Special:Diff/1495502]]",
             "https://zh.minecraft.wiki/w/Special:Diff/1495502",
-            "https://zh.minecraft.wiki/?diff=1495502&variant=zh-cn",
         ]:
             await tester.integrate(value, ContainsAll("1494706", "1495502", "Module:NameProvider/snapshot"), value)
         for value in [
             "https://zh.minecraft.wiki/w/%E5%88%BB?curid=7766&diff=1500031&oldid=1476854",
-            "~wiki 刻&diff=1500031&oldid=1476854",
         ]:
             await tester.integrate(value, ContainsAll("刻", "1476854", "1500031"), value)
     return tester

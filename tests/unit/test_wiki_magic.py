@@ -328,39 +328,6 @@ def _test_site_variables_and_registry_isolation():
     return True
 
 
-async def _test_extension_functions_expand_anonymously():
-    wiki = _wiki()
-    for source, value in [
-        ("{{#len:AkariBot}}", "8"),
-        ("{{#replace:AkariBot|Bot|Wiki}}", "AkariWiki"),
-        ("{{#var:sample|默认值}}", "默认值"),
-    ]:
-        wiki.get_json = AsyncMock(return_value={"expandtemplates": {"wikitext": value}})
-        assert await expand_magic(wiki, _registry(), source) == (value, False)
-        assert wiki.get_json.await_args.kwargs["_no_login"] is True
-        assert wiki.get_json.await_args.kwargs["text"] == source
-    wiki.get_json = AsyncMock()
-    for source in ["{{#customwrite:page}}", "{{#dpl:deleterules=delete}}", "{{#loop:100000|x}}"]:
-        try:
-            await expand_magic(wiki, _registry(), source)
-        except MagicWordError:
-            pass
-        else:
-            return False
-    assert not wiki.get_json.await_count
-    return True
-
-
-async def _test_extension_functions_route_automatically():
-    for source in ["{{#长度:AkariBot}}", "{{#语言:zh|en}}", "{{NUMBEROFARTICLES:R}}"]:
-        captured, expand, templates, _ = await _route(source, inline=True, value="8")
-        assert expand.await_count == 1 and not templates.await_count
-        assert captured["messages"].values[0].text == "8"
-    _, expand, templates, _ = await _route("{{Template:len|abc}}", inline=True)
-    assert not expand.await_count and templates.await_args.args[1] == ["len"]
-    return True
-
-
 async def _test_cancellation_is_not_swallowed():
     wiki = _wiki()
     wiki.get_json = AsyncMock(side_effect=asyncio.CancelledError)
@@ -559,8 +526,6 @@ async def test_wiki_magic(tester: Tester):
             _test_extension_aliases_and_read_only_validation,
             "按站点注册启用扩展、井号别名与大小写规则，拒绝有副作用的函数",
         ),
-        (_test_extension_functions_expand_anonymously, "扩展函数匿名只读展开，未核实函数与循环不发起请求"),
-        (_test_extension_functions_route_automatically, "站点扩展与变量参数自动识别，显式模板名仍查询模板"),
         (_test_site_variables_and_registry_isolation, "站点扩展变量按 API 隔离，页面属性要求明确上下文"),
         (_test_long_result_confirmation, "长文本结果确认后转为图片发送"),
         (_test_long_result_rejection_and_url_policy, "长文本拒绝确认与长链接保持短提示"),

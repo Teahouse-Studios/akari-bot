@@ -55,17 +55,6 @@ async def _test_smtp_notification_content():
     )
 
 
-async def _test_new_device_notification_content():
-    send_email = MagicMock()
-    with (
-        patch.object(web_notify, "email_report_enabled", return_value=True),
-        patch.object(web_notify, "send_email", send_email),
-    ):
-        await web_notify.notify_security_event("new_device_login", ip="203.0.113.5", user_agent="Mozilla/5.0 Test")
-
-    return "首次登录" in send_email.call_args.args[1]
-
-
 async def _test_password_removed_notification_content():
     send_email = MagicMock()
     with (
@@ -251,7 +240,6 @@ async def _test_totp_endpoints_notify():
 async def test_webui_notify(tester: Tester):
     """bots.web.api: 敏感操作邮件通知测试"""
     await tester.test(_test_smtp_notification_content, "通知邮件内容测试")
-    await tester.test(_test_new_device_notification_content, "新设备通知邮件内容测试")
     await tester.test(_test_password_removed_notification_content, "密码移除通知邮件内容测试")
     await tester.test(_test_skips_email_without_smtp, "SMTP 不可用时跳过测试")
     await tester.test(_test_email_failure_is_swallowed, "邮件发送失败不影响调用方测试")

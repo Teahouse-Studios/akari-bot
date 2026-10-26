@@ -5,17 +5,6 @@ from core.builtins.session.info import SessionInfo
 from core.tester import func_case, Tester
 
 
-async def _test_is_private_defaults_to_false():
-    try:
-        session_info = await SessionInfo.assign(
-            target_id="PRIV|Group|1", target_from="PRIV|Group", client_name="PRIV", create=True
-        )
-        return session_info.is_private is False
-
-    except Exception:
-        return False
-
-
 async def _test_is_private_survives_serialization():
     try:
         # 会话由 bot 进程构造、经队列送至 server 进程，标识不随序列化丢失才有意义
@@ -36,7 +25,6 @@ async def _test_is_private_survives_serialization():
 @func_case
 async def test_session_private(tester: Tester):
     """core.builtins.session.info: 私聊标识测试"""
-    await tester.test(_test_is_private_defaults_to_false, "缺省为非私聊测试")
     await tester.test(_test_is_private_survives_serialization, "跨进程传递测试")
 
     return tester

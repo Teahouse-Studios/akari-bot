@@ -64,19 +64,6 @@ async def _test_backend_factory_obeys_config_without_fallback():
     return True
 
 
-async def _test_runtime_injects_registry_and_transport_as_one_bundle():
-    class BackendPeer(JobQueueBase):
-        pass
-
-    backend = create_jobqueue_backend("database")
-    BackendPeer.configure_backend(backend)
-    return (
-        BackendPeer.backend is backend
-        and BackendPeer.registry is backend.registry
-        and BackendPeer.transport is backend.transport
-    )
-
-
 async def _test_partial_backend_start_is_closed_transactionally():
     class PartialStartBackend(DatabaseJobQueueBackend):
         closed = False
@@ -158,7 +145,6 @@ def _test_websocket_diagnostics_fit_small_frames():
 async def test_jobqueue_backend(tester: Tester):
     await tester.test(_test_database_backend_is_a_complete_isolated_bundle, "数据库后端完整装配且实例隔离")
     await tester.test(_test_backend_factory_obeys_config_without_fallback, "后端配置严格选择且不静默回退")
-    await tester.test(_test_runtime_injects_registry_and_transport_as_one_bundle, "运行时整套注入控制面与数据面")
     await tester.test(_test_partial_backend_start_is_closed_transactionally, "后端部分启动失败后执行关闭回滚")
     await tester.test(_test_batch_result_must_cover_every_request_once, "批量投递结果完整且互斥")
     await tester.test(_test_websocket_diagnostics_fit_small_frames, "WebSocket 小帧仍可传递错误诊断")

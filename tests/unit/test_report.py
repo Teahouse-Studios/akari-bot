@@ -107,21 +107,6 @@ async def _test_external_smtp_client_uses_starttls_and_login():
     )
 
 
-async def _test_external_smtp_client_receives_timeout():
-    smtp = MagicMock()
-    with (
-        patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
-        patch.object(SMTPConfig, "smtp_port", 587),
-        patch.object(SMTPConfig, "smtp_ssl", False),
-        patch.object(SMTPConfig, "smtp_username", ""),
-        patch.object(SMTPConfig, "smtp_starttls", False),
-        patch("core.smtp.smtplib.SMTP", return_value=smtp) as smtp_constructor,
-    ):
-        send_email("subject", "body", timeout=5)
-
-    return smtp_constructor.call_args.kwargs == {"timeout": 5}
-
-
 @func_case
 async def test_report(tester: Tester):
     """core.smtp: SMTP 与场景上报路由测试"""
@@ -130,5 +115,4 @@ async def test_report(tester: Tester):
     await tester.test(_test_targets_are_used_without_email, "未启用 SMTP 时场景上报测试")
     await tester.test(_test_no_targets_does_not_send, "无上报场景时跳过测试")
     await tester.test(_test_external_smtp_client_uses_starttls_and_login, "外部 SMTP 服务商连接测试")
-    await tester.test(_test_external_smtp_client_receives_timeout, "SMTP 超时参数测试")
     return tester

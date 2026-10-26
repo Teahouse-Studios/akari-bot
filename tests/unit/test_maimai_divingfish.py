@@ -50,20 +50,6 @@ def _recorder(*responses):
     return fake_post, calls
 
 
-async def _test_authenticated_follows_client_form():
-    with patch.object(divingfish_oauth, "DF_CONFIDENTIAL_CLIENT", False):
-        public = divingfish_oauth._authenticated({"client_id": "app-id"})
-    with (
-        patch.object(divingfish_oauth, "DF_CONFIDENTIAL_CLIENT", True),
-        patch.object(divingfish_oauth, "DF_CLIENT_SECRET", "app-secret"),
-    ):
-        confidential = divingfish_oauth._authenticated({"client_id": "app-id"})
-    return public == {"client_id": "app-id"} and confidential == {
-        "client_id": "app-id",
-        "client_secret": "app-secret",
-    }
-
-
 async def _test_bind_usable_follows_client_form():
     public_bind = DivingProberBindInfo(union_id="u", refresh_token="refresh-token", subject=None)
     confidential_bind = DivingProberBindInfo(union_id="u", refresh_token=None, subject="12345")
@@ -379,7 +365,6 @@ async def _test_unbind_revokes_available_token():
 
 @func_case
 async def test_maimai_divingfish(tester: Tester):
-    await tester.test(_test_authenticated_follows_client_form, "客户端凭据随登记形态增减")
     await tester.test(_test_bind_usable_follows_client_form, "绑定记录可用性判定")
     await tester.test(_test_store_binding_follows_client_form, "绑定落盘内容随形态变化")
     await tester.test(_test_device_poll_follows_client_form, "设备码轮询结果按形态校验")

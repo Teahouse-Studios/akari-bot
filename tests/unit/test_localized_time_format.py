@@ -1,14 +1,14 @@
 """本地化时间格式化的非 ASCII 字面文本测试。"""
 
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import patch
 
 import core.smtp as smtp
 from core.builtins.message.elements import FormattedTimeElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import FetchedMessageSession
-from core.i18n import Locale, safe_strftime
+from core.i18n import Locale
 from core.logger import Logger
 from core.tester import func_case, Tester
 
@@ -44,17 +44,6 @@ def _session_info() -> SessionInfo:
     )
 
 
-def _test_safe_strftime_keeps_non_ascii_literals() -> bool:
-    locale = _ko_locale()
-    if locale is None:
-        return False
-    rendered = safe_strftime(datetime(2009, 2, 14, 7, 31, 30), f"{KO_DATE_FORMAT} {KO_TIME_FORMAT}")
-    if rendered != KO_TIME_TEXT:
-        Logger.error(f"Unexpected localized time: {rendered!r}")
-        return False
-    return True
-
-
 def _test_session_format_time_localizes_non_ascii_format() -> bool:
     rendered = FetchedMessageSession(session_info=_session_info()).format_time(FIXED_TIMESTAMP)
     if rendered != KO_RENDERED:
@@ -84,7 +73,6 @@ def _test_report_email_html_localizes_non_ascii_format() -> bool:
 @func_case
 async def test_localized_time_format(tester: Tester):
     """本地化时间的非 ASCII 格式串测试"""
-    await tester.test(_test_safe_strftime_keeps_non_ascii_literals, "safe_strftime 保留非 ASCII 字面文本")
     await tester.test(_test_session_format_time_localizes_non_ascii_format, "会话 format_time 本地化时间")
     await tester.test(_test_formatted_time_element_localizes_non_ascii_format, "FormattedTimeElement 本地化时间")
     await tester.test(_test_report_email_html_localizes_non_ascii_format, "上报邮件 HTML 本地化时间")

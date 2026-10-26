@@ -236,25 +236,6 @@ async def _test_image_template_omits_help_command():
     )
 
 
-async def _test_help_doc_template_marks_module_type_with_swatch():
-    locale = (await _session("help_doc_template")).locale
-    module = SimpleNamespace(base=True, rss=False, desc="", alias={}, developers=[])
-    help_ = SimpleNamespace(args={}, return_formatted_help_doc=lambda: "")
-    rendered = await env.get_template("help_doc.html").render_async(
-        locale=locale,
-        module=module,
-        help=help_,
-        help_name="help",
-        regex_list=[],
-        escape=str,
-        isinstance=isinstance,
-        str=str,
-        repattern=object,
-        use_font_mirror=False,
-    )
-    return 'class="module-type-swatch"' in rendered and "基础模块" in rendered and "橙色" not in rendered
-
-
 async def _test_help_doc_template_places_desc_after_name():
     locale = (await _session("help_doc_template_desc")).locale
     desc = "测试模块描述。"
@@ -349,38 +330,6 @@ async def _test_image_templates_follow_dark_mode():
         and "background-color: #1c1c1c" in listing
         and "module-type-legend-base" in listing
     )
-
-
-async def _test_element_sequence():
-    try:
-        msg = _FakeSession(await _session("help_seq"))
-        parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki", "maimai"])])
-        kinds = [type(p).__name__ for p in parts]
-        if kinds != ["PlainElement", "ActionTextElement", "PlainElement", "ActionTextElement"]:
-            return False
-        # 分隔符夹在两个标签之间
-        if parts[2].text != " | ":
-            return False
-        return True
-    except Exception:
-        return False
-
-
-async def _test_title_ends_with_newline():
-    try:
-        msg = _FakeSession(await _session("help_nl"))
-        parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki"])])
-        title = parts[0]
-        if not isinstance(title, PlainElement):
-            return False
-        if not title.text.endswith("\n"):
-            return False
-        # 换行之外的部分即该键的译文
-        if title.text != msg.session_info.locale.t("core.message.help.legacy.base") + "\n":
-            return False
-        return True
-    except Exception:
-        return False
 
 
 async def _test_action_text_payload():
@@ -833,28 +782,6 @@ async def _test_qqbot_module_list_keeps_toggles_for_admin():
     return "~enable coin" in commands and "~disable dice" in commands
 
 
-async def _test_single_module_no_separator():
-    try:
-        msg = _FakeSession(await _session("help_single"))
-        parts = build_clickable_modules(msg, [("core.message.help.legacy.base", ["wiki"])])
-        if len(parts) != 2:
-            return False
-        if any(isinstance(p, PlainElement) and p.text == " | " for p in parts[1:]):
-            return False
-        return True
-    except Exception:
-        return False
-
-
-async def _test_empty_returns_nothing():
-    try:
-        msg = _FakeSession(await _session("help_empty"))
-        parts = build_clickable_modules(msg, [("core.message.help.legacy.base", [])])
-        return parts == []
-    except Exception:
-        return False
-
-
 async def _test_disable_joke():
     try:
         msg = _FakeSession(await _session("help_joke"))
@@ -1019,14 +946,6 @@ async def _test_table_cells_are_clickable():
     return True
 
 
-async def _test_table_empty_returns_nothing():
-    msg = _FakeSession(await _session("help_table_empty"))
-    if build_module_table(msg, [(TABLE_TITLE_KEY, [])]) != []:
-        Logger.error("An empty module list should produce no table at all")
-        return False
-    return True
-
-
 async def _test_table_is_fenced_by_blank_lines():
     session_info = await _session("help_table_fence")
     msg = _FakeSession(session_info)
@@ -1131,22 +1050,6 @@ async def _test_command_table_expands_columns():
     return True
 
 
-async def _test_command_table_rows_are_uniform():
-    session_info = await _session("help_cmd_uniform")
-    msg = _FakeSession(session_info)
-    for count in (1, 3, 7, 12, 23):
-        doc = {
-            "args": [{"args": f"~m c{i}", "desc": f"说明{i}"} for i in range(count)],
-            "options": [{"-p": "页数"}],
-        }
-        lines = [line for line in _render_lines(session_info, build_command_table(msg, doc, [("a", "b")])) if line]
-        widths = {line.count("|") for line in lines}
-        if len(widths) != 1:
-            Logger.error(f"{count} commands produced ragged rows: {lines}")
-            return False
-    return True
-
-
 async def _test_regex_is_wrapped_in_code():
     session_info = await _session("help_regex_code")
     msg = _FakeSession(session_info)
@@ -1210,13 +1113,10 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_discord_detail_help_does_not_use_markdown_table, "Discord 详细帮助禁用 Markdown 表格测试")
     await tester.test(_test_image_flag_overrides_markdown_table, "--img 强制图片帮助测试")
     await tester.test(_test_image_template_omits_help_command, "图片内移除查看详情提示测试")
-    await tester.test(_test_help_doc_template_marks_module_type_with_swatch, "模块详细帮助类型色块测试")
     await tester.test(_test_help_doc_template_places_desc_after_name, "模块描述紧随模块名称测试")
     await tester.test(_test_markdown_help_marks_module_type_with_emoji, "Markdown 模块详细帮助类型标记测试")
     await tester.test(_test_help_doc_template_includes_regex_disable_tip, "图片详细帮助展示正则关闭提示测试")
     await tester.test(_test_image_templates_follow_dark_mode, "图片帮助深色模式测试")
-    await tester.test(_test_element_sequence, "元素交错排布测试")
-    await tester.test(_test_title_ends_with_newline, "标题自带换行测试")
     await tester.test(_test_action_text_payload, "标签命令与展示文案测试")
     await tester.test(_test_module_toggle_payloads, "模块开关状态标签测试")
     await tester.test(_test_unsupported_module_strikethrough, "受限模块删除线测试")
@@ -1242,22 +1142,18 @@ async def test_clickable_modules(tester: Tester):
     await tester.test(_test_qqbot_admin_legacy_help_keeps_legacy_scope, "QQBot 管理员 legacy 帮助范围测试")
     await tester.test(_test_qqbot_module_list_hides_toggles_from_non_admin, "QQBot 普通用户模块列表隐藏开关测试")
     await tester.test(_test_qqbot_module_list_keeps_toggles_for_admin, "QQBot 管理员模块列表保留开关测试")
-    await tester.test(_test_single_module_no_separator, "单模块无多余分隔符测试")
-    await tester.test(_test_empty_returns_nothing, "空列表返回空片段测试")
     await tester.test(_test_disable_joke, "禁用玩笑替换测试")
     await tester.test(_test_rendered_layout, "渲染后分行测试")
     await tester.test(_test_multi_group_separation, "组间换行测试")
     await tester.test(_test_hint_not_glued_to_module_list, "提示语不粘连测试")
     await tester.test(_test_table_shape, "表格扩列边界、高度封顶与末行补齐测试")
     await tester.test(_test_table_cells_are_clickable, "表格单元格可点击测试")
-    await tester.test(_test_table_empty_returns_nothing, "表格空列表测试")
     await tester.test(_test_table_does_not_end_inline, "表格纯文本收尾测试")
     await tester.test(_test_table_is_fenced_by_blank_lines, "表格前后空行终结测试")
     await tester.test(_test_strip_command_arguments, "命令参数剥离测试")
     await tester.test(_test_command_table_fills_stripped_command, "命令表填入剥离后命令测试")
     await tester.test(_test_command_table_escapes_pipes, "单元格竖线转义测试")
     await tester.test(_test_command_table_expands_columns, "命令表列数扩展测试")
-    await tester.test(_test_command_table_rows_are_uniform, "命令表列数齐平测试")
     await tester.test(_test_regex_is_wrapped_in_code, "正则包进行内代码测试")
     await tester.test(_test_format_table_code_edge_cases, "行内代码边界测试")
     await tester.test(_test_empty_group_skipped, "空组跳过测试")

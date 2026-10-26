@@ -143,7 +143,7 @@ default_locale = BaseConfig.default_locale
 
 之所以要这道闸门：`multiprocessing` 以 spawn / forkserver 启动子进程时会把主模块以 `__mp_main__` 重新导入一遍，每个子进程都会再跑一次 `bot.py` 顶层的模板导入；`core/config/update.py` 的版本迁移又是导入期执行的。不隔离的话同一批配置项会被多个进程反复补写。
 
-因此**新增配置项后必须重启机器人**，否则子进程读到该键时会抛 `ConfigOperationError`——这是刻意的，用来把「模板漏声明」当场暴露出来，而不是静默退化成默认值。
+因此**新增配置项后必须重启机器人**，否则子进程读到该键时会抛 `ConfigOperationError`——这是刻意的，用来把“模板漏声明”当场暴露出来，而不是静默退化成默认值。
 
 需要在运行期写配置的只有交互式编辑命令与启动期的共享身份、密钥自举两类，一律走授权接口：
 
@@ -269,7 +269,7 @@ config/
 
 两个数据层模型都继承抽象基类 `UnionInfo`，两个映射层模型都继承 `UnionBind`；
 共用的解析、展开逻辑写在基类上，子类只声明自己的字段与 `union_scope` / `bind_model`。
-**映射层只回答「这个平台 ID 属于哪个 union」，不承载任何状态**——状态若下放到单个 ID，
+**映射层只回答“这个平台 ID 属于哪个 union”，不承载任何状态**——状态若下放到单个 ID，
 换用组内另一个 ID 即可绕过。
 
 - `StoredData` - 通用键值存储
@@ -284,15 +284,15 @@ config/
 **union 解析的唯一入口是 `UnionInfo.resolve_union(平台 ID, create=True)`**：它查映射表拿到 union，
 取出数据行，并把映射行挂到实例的 `.bind` 上。`get_by_target_id()` / `get_by_sender_id()`
 是它的会话友好包装（多接受 `MessageSession`），模块表继承 `DBModel` 拿到的同名方法则是
-「先解析 union，再按 union 取本表的行」。
+“先解析 union，再按 union 取本表的行”。
 
 两个必须记住的约定：
 
-- **封禁只有 `UnionInfo.blocked` 一个字段，不存在「某个 ID 单独被封」这回事。** union 下的全部平台 ID
+- **封禁只有 `UnionInfo.blocked` 一个字段，不存在“某个 ID 单独被封”这回事。** union 下的全部平台 ID
   共享同一行，所以封禁天然对组内所有 ID 生效，映射表上不需要、也不该再放一份标记。
   封了之后也洗不白：能改变 ID 所属 union 的路径只有 `merge_union`（`blocked` 取并集，只会把封禁
   传染给对方）、`unbind_id`（新组继承 `self.blocked`，且映射行是**改挂**不是删建，任何时刻都不会
-  出现「没有映射行」的中间态）和 `bind_id`（已有映射行的 ID 直接拒绝迁组）。`resolve_union()` 只为
+  出现“没有映射行”的中间态）和 `bind_id`（已有映射行的 ID 直接拒绝迁组）。`resolve_union()` 只为
   从未见过的 ID 建新组，有映射行的永远解析回原组。
 - **模块表若以 `union_id` 为键，必须声明 `union_scope`**（`UNION_SCOPE_SENDER` / `UNION_SCOPE_TARGET`）。
   未声明的表会被 `iter_union_models()` 跳过并告警，即不参与 union 合并与映射补建——

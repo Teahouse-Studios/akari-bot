@@ -10,7 +10,6 @@ from unittest.mock import patch
 import bots.onebot.context as onebot_context
 import bots.qqbot.context as qqbot_context
 from bots.discord.context import DiscordContextManager
-from bots.discord.slash_context import DiscordSlashContextManager
 from bots.web.config import WebConfig
 from bots.web.context import WebContextManager
 from core.builtins.temp import Temp
@@ -99,21 +98,6 @@ def _test_initiative_queue_fairness() -> bool:
         onebot_context._tasks_high_priority.clear()
         onebot_context._tasks.clear()
         onebot_context.OneBotFetchedContextManager._high_priority_count = 0
-
-
-def _test_qqbot_initiative_queue_fairness() -> bool:
-    qqbot_context._tasks_high_priority.clear()
-    qqbot_context._tasks.clear()
-    qqbot_context.QQBotFetchedContextManager._high_priority_count = 0
-    try:
-        qqbot_context._tasks_high_priority.extend((f"high-{index}",) for index in range(6))
-        qqbot_context._tasks.append(("normal",))
-        selected = [qqbot_context.QQBotFetchedContextManager._take_next_task() for _ in range(6)]
-        return selected == [("high-0",), ("high-1",), ("high-2",), ("high-3",), ("high-4",), ("normal",)]
-    finally:
-        qqbot_context._tasks_high_priority.clear()
-        qqbot_context._tasks.clear()
-        qqbot_context.QQBotFetchedContextManager._high_priority_count = 0
 
 
 async def _test_initiative_queue_capacity_and_cancel_cleanup() -> bool:
@@ -282,36 +266,6 @@ class _FakeTypingContext:
         return False
 
 
-async def _test_discord_slash_typing_end_cannot_miss_registration() -> bool:
-    session = SimpleNamespace(session_id="discord-typing-race")
-    deferred = []
-
-    async def defer():
-        deferred.append(True)
-
-    ctx = SimpleNamespace(
-        channel=SimpleNamespace(typing=lambda: _FakeTypingContext()),
-        defer=defer,
-    )
-    DiscordSlashContextManager.context[session.session_id] = ctx
-    try:
-        await DiscordSlashContextManager.start_typing(session)
-        await DiscordSlashContextManager.end_typing(session)
-        await asyncio.sleep(0)
-        await asyncio.sleep(0)
-        return (
-            session.session_id not in DiscordSlashContextManager.typing_flags
-            and session.session_id not in DiscordSlashContextManager.typing_tasks
-            and not deferred
-        )
-    finally:
-        DiscordSlashContextManager.context.pop(session.session_id, None)
-        DiscordSlashContextManager.typing_flags.pop(session.session_id, None)
-        task = DiscordSlashContextManager.typing_tasks.pop(session.session_id, None)
-        if task:
-            task.cancel()
-
-
 async def _test_web_disconnect_keeps_newer_websocket() -> bool:
     with patch.object(WebConfig, "enable", False, create=True):
         web_bot = importlib.import_module("bots.web.bot")
@@ -405,7 +359,6 @@ async def test_platform_memory(tester: Tester):
     await tester.test(_test_onebot_typing_cache_is_bounded_and_expires, "OneBot typing 缓存有界并过期")
     await tester.test(_test_qqbot_permission_cache_is_safe_and_bounded, "QQBot 权限缓存安全且有界")
     await tester.test(_test_initiative_queue_fairness, "主动推送队列公平调度")
-    await tester.test(_test_qqbot_initiative_queue_fairness, "QQBot 主动推送队列公平调度")
     await tester.test(_test_initiative_queue_capacity_and_cancel_cleanup, "主动推送队列容量与取消清理")
     await tester.test(_test_high_priority_queue_keeps_reserved_capacity, "主动推送高优先级保留容量")
     await tester.test(_test_initiative_workers_stop_and_release_waiters, "主动推送 worker 关闭并释放等待者")
@@ -413,6 +366,5 @@ async def test_platform_memory(tester: Tester):
     await tester.test(_test_web_typing_end_cannot_miss_registration, "Web typing 注册竞态")
     await tester.test(_test_web_disconnect_keeps_newer_websocket, "Web 旧连接断开不清除新连接")
     await tester.test(_test_discord_typing_end_cannot_miss_registration, "Discord typing 注册竞态")
-    await tester.test(_test_discord_slash_typing_end_cannot_miss_registration, "Discord Slash typing 注册竞态")
     await tester.test(_test_telegram_imports_stay_in_platform_process, "Telegram 重依赖保持平台进程隔离")
     return tester

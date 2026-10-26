@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 from core.alive import Alive
 from core.constants.path import cache_path
 from core.database.models import JobQueuePeersTable, JobQueuesTable
+from core.loader import ModulesManager
 from core.queue.contracts import PlatformAPI
 from core.tester import func_case, Tester
 from core.tester.mock.factory import TestDataFactory
@@ -16,6 +17,18 @@ from core.tester.mock.scheduler import (
 )
 
 SUBSCRIBER_TARGET = "TEST|Group|sched"
+RSS_MODULES = ("minecraft-news", "feedback-news")
+
+
+def _test_rss_modules_registered_as_schedule_only():
+    modules = ModulesManager.return_modules_list()
+    for name in RSS_MODULES:
+        module = modules.get(name)
+        if module is None or not module.rss:
+            return False
+        if len(module.schedule_list.set) == 0 or len(module.command_list.set) != 0:
+            return False
+    return True
 
 
 async def _subscribe(module_name: str):
@@ -221,6 +234,7 @@ async def test_scheduled_tasks(tester: Tester):
     """定时任务手动触发测试"""
     alive = Alive.values.copy()
     try:
+        await tester.test(_test_rss_modules_registered_as_schedule_only, "RSS 模块注册结构测试")
         await tester.test(_test_arcaea_rss_posts_new_version, "arcaea_rss 推送新版本测试")
         await tester.test(_test_arcaea_rss_deduplicates, "arcaea_rss 去重测试")
         await tester.test(_test_mcv_rss_posts_versions, "mcv_rss 推送版本测试")

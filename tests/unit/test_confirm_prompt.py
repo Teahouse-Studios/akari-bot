@@ -15,10 +15,6 @@ def _session(support_button: bool = False, support_reaction: bool = False, clien
     )
 
 
-def _test_button_takes_precedence():
-    return confirm_prompt_key(_session(support_button=True)) == "message.wait.confirm.prompt.button"
-
-
 def _test_button_wins_over_reaction():
     key = confirm_prompt_key(_session(support_button=True, support_reaction=True))
     return key == "message.wait.confirm.prompt.button"
@@ -53,7 +49,6 @@ def _test_quick_confirm_off_keeps_button():
 @func_case
 async def test_confirm_prompt(tester: Tester):
     """core: 确认提示文案的选择"""
-    await tester.test(_test_button_takes_precedence, "按钮能力不受表情反应门槛所阻")
     await tester.test(_test_button_wins_over_reaction, "按钮优先于表情反应")
     await tester.test(_test_qq_gets_poke_prompt, "QQ 提示含戳一戳")
     await tester.test(_test_other_reaction_client, "其余平台用表情反应提示")

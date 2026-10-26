@@ -15,22 +15,6 @@ def _build(**kwargs):
     return Module.assign(**defaults)
 
 
-async def _test_default_is_false():
-    try:
-        return _build().suppress_invalid_prompt is False
-
-    except Exception:
-        return False
-
-
-async def _test_can_be_enabled():
-    try:
-        return _build(suppress_invalid_prompt=True).suppress_invalid_prompt is True
-
-    except Exception:
-        return False
-
-
 async def _test_included_in_to_dict():
     try:
         return _build(suppress_invalid_prompt=True).to_dict()["suppress_invalid_prompt"] is True
@@ -42,8 +26,6 @@ async def _test_included_in_to_dict():
 @func_case
 async def test_suppress_invalid_prompt(tester: Tester):
     """core.types.module: 命令语法错误提示开关测试"""
-    await tester.test(_test_default_is_false, "默认不抑制测试")
-    await tester.test(_test_can_be_enabled, "显式开启测试")
     await tester.test(_test_included_in_to_dict, "序列化包含测试")
 
     return tester

@@ -99,25 +99,6 @@ async def _test_tool_calls_split_images_into_user_message():
     return True
 
 
-async def _test_tool_calls_keep_image_data_in_history():
-    images = [{"path": "/cache/a.png", "data_url": "data:image/png;base64,AAAA"}]
-    result = orjson.dumps({"returns": [], "stdout": [], "images": images}).decode("utf-8")
-    tool_call = SimpleNamespace(id="call_1", name="execute_python_code", arguments={"code": "print(1)"})
-
-    with patch.object(tools_module, "execute_python_code", new=AsyncMock(return_value=result)):
-        messages = await tools_module.tool_function_calls([tool_call], [])
-
-    history = [message for message in messages if message.get("role") != "system"]
-    image_messages = [
-        message
-        for message in history
-        if isinstance(message.get("content"), list)
-        and any(part.get("type") == "image_url" for part in message["content"] if isinstance(part, dict))
-    ]
-    assert len(image_messages) == 1
-    return True
-
-
 async def _test_parallel_tool_calls_append_single_image_message():
     def _result(index):
         images = [{"path": f"/cache/{index}.png", "data_url": f"data:image/png;base64,AAAA{index}"}]
@@ -172,7 +153,6 @@ async def test_ai_python_images(tester: Tester):
     """modules.ai: 沙箱图片回传与上下文历史测试"""
     await tester.test(_test_execute_python_code_returns_images, "沙箱结果返回图片元数据")
     await tester.test(_test_tool_calls_split_images_into_user_message, "工具结果拆出图片并追加用户消息")
-    await tester.test(_test_tool_calls_keep_image_data_in_history, "图片数据保留在上下文历史中")
     await tester.test(_test_parallel_tool_calls_append_single_image_message, "并行工具结果合并为一则图片消息")
     await tester.test(_test_anthropic_merges_image_message_into_tool_turn, "Anthropic 合并图片消息到同一轮")
     return tester

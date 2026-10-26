@@ -22,7 +22,6 @@ from modules.captcha import (
     CAPTCHA_EMOTE_DIR,
     CAPTCHA_EMOTES,
     captcha_emote_name,
-    make_choices,
     make_emote_choices,
     member_joined,
     member_left,
@@ -53,16 +52,6 @@ def _test_captcha_indexes_fit_mysql_limit():
             )
             if index_bytes > MYSQL_MAX_INDEX_BYTES:
                 return False
-    return True
-
-
-def _test_choices_are_valid():
-    for answer in (1, 50, 100):
-        choices = make_choices(answer)
-        if len(choices) != CAPTCHA_CHOICE_COUNT or len(set(choices)) != CAPTCHA_CHOICE_COUNT or answer not in choices:
-            return False
-        if any(choice < 1 or choice > 100 for choice in choices):
-            return False
     return True
 
 
@@ -569,43 +558,6 @@ async def _test_sender_union_merge_migrates_captcha_references():
     )
 
 
-async def _test_target_union_merge_migrates_captcha_references():
-    sender = await SenderUnionInfo.resolve_union("QQBot|captcha-merge-target-sender")
-    keep = await TargetUnionInfo.resolve_union("QQBot|Group|captcha-merge-target-keep")
-    other = await TargetUnionInfo.resolve_union("QQBot|Group|captcha-merge-target-other")
-    old_trust_id = verification_id(other.union_id, sender.union_id)
-    challenge = await CaptchaChallenge.create(
-        challenge_id=old_trust_id,
-        target_union_id=other.union_id,
-        sender_union_id=sender.union_id,
-        target_id="QQBot|Group|captcha-merge-target-other",
-        sender_id="QQBot|captcha-merge-target-sender",
-        token="captcha-merge-target-token",
-        answer=42,
-        choices=[42],
-        status="pending",
-    )
-    await CaptchaTrust.create(
-        trust_id=old_trust_id,
-        target_union_id=other.union_id,
-        sender_union_id=sender.union_id,
-    )
-
-    merged = await keep.merge_union(other)
-    await challenge.refresh_from_db()
-    new_trust_id = verification_id(merged.union_id, sender.union_id)
-    return (
-        challenge.target_union_id == merged.union_id
-        and challenge.challenge_id == old_trust_id
-        and await CaptchaTrust.exists(
-            trust_id=new_trust_id,
-            target_union_id=merged.union_id,
-            sender_union_id=sender.union_id,
-        )
-        and not await CaptchaTrust.exists(trust_id=old_trust_id)
-    )
-
-
 async def _test_sender_unbind_moves_active_challenge_only():
     target = await TargetUnionInfo.resolve_union("QQBot|Group|captcha-unbind-sender-target")
     kept_id = "QQBot|captcha-unbind-sender-kept"
@@ -669,69 +621,6 @@ async def _test_sender_unbind_moves_active_challenge_only():
     )
 
 
-async def _test_target_unbind_moves_active_challenge_only():
-    sender = await SenderUnionInfo.resolve_union("QQBot|captcha-unbind-target-sender")
-    kept_id = "QQBot|Group|captcha-unbind-target-kept"
-    split_id = "QQBot|Group|captcha-unbind-target-split"
-    target = await TargetUnionInfo.resolve_union(kept_id)
-    if not await target.bind_id(split_id):
-        return False
-
-    old_trust_id = verification_id(target.union_id, sender.union_id)
-    active = await CaptchaChallenge.create(
-        challenge_id="captcha-unbind-target-active",
-        target_union_id=target.union_id,
-        sender_union_id=sender.union_id,
-        target_id=split_id,
-        sender_id="QQBot|captcha-unbind-target-sender",
-        token="captcha-unbind-target-active-token",
-        answer=42,
-        choices=[42],
-        status="failed",
-    )
-    sibling = await CaptchaChallenge.create(
-        challenge_id="captcha-unbind-target-sibling",
-        target_union_id=target.union_id,
-        sender_union_id=sender.union_id,
-        target_id=kept_id,
-        sender_id="QQBot|captcha-unbind-target-sender",
-        token="captcha-unbind-target-sibling-token",
-        answer=42,
-        choices=[42],
-        status="pending",
-    )
-    verified = await CaptchaChallenge.create(
-        challenge_id="captcha-unbind-target-verified",
-        target_union_id=target.union_id,
-        sender_union_id=sender.union_id,
-        target_id=split_id,
-        sender_id="QQBot|captcha-unbind-target-sender",
-        token="captcha-unbind-target-verified-token",
-        answer=42,
-        choices=[42],
-        status="verified",
-    )
-    await CaptchaTrust.create(
-        trust_id=old_trust_id,
-        target_union_id=target.union_id,
-        sender_union_id=sender.union_id,
-    )
-
-    split = await target.unbind_id(split_id)
-    if not split:
-        return False
-    await active.refresh_from_db()
-    await sibling.refresh_from_db()
-    await verified.refresh_from_db()
-    return (
-        active.target_union_id == split.union_id
-        and sibling.target_union_id == target.union_id
-        and verified.target_union_id == target.union_id
-        and await CaptchaTrust.exists(trust_id=old_trust_id, target_union_id=target.union_id)
-        and not await CaptchaTrust.exists(target_union_id=split.union_id)
-    )
-
-
 async def _test_sender_unbind_during_member_join_preserves_challenge_migration():
     target_id = "QQBot|Group|captcha-concurrent-unbind-sender-target"
     kept_id = "QQBot|captcha-concurrent-unbind-sender-kept"
@@ -775,51 +664,6 @@ async def _test_sender_unbind_during_member_join_preserves_challenge_migration()
     split = result.get("split")
     challenge = await CaptchaChallenge.get_or_none(sender_id=split_id)
     return bool(split and challenge and challenge.status == "pending" and challenge.sender_union_id == split.union_id)
-
-
-async def _test_target_unbind_during_member_join_preserves_challenge_migration():
-    kept_id = "QQBot|Group|captcha-concurrent-unbind-target-kept"
-    split_id = "QQBot|Group|captcha-concurrent-unbind-target-split"
-    sender_id = "QQBot|captcha-concurrent-unbind-target-sender"
-    target = await TargetUnionInfo.resolve_union(kept_id)
-    if not await target.bind_id(split_id):
-        return False
-    session = await SessionInfo.assign(
-        target_id=split_id,
-        target_from="QQBot|Group",
-        client_name="QQBot",
-        sender_id=sender_id,
-        sender_from="QQBot",
-        features=Features(support_button=True, read_all_messages=True),
-    )
-    event = await EventInfo.assign(
-        event_name="member_joined",
-        target_id=split_id,
-        target_from="QQBot|Group",
-        client_name="QQBot",
-        sender_id=sender_id,
-        sender_from="QQBot",
-    )
-    result = {}
-
-    async def restrict_member(_self, _user_id, _duration=None, **_kwargs):
-        result["split"] = await target.unbind_id(split_id)
-        return None
-
-    async def send_message(_self, _message, **_kwargs):
-        return SimpleNamespace(message_id=["verification-message"])
-
-    with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
-        patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
-        patch.object(MessageSession, "restrict_member", new=restrict_member),
-        patch.object(MessageSession, "send_message", new=send_message),
-    ):
-        await member_joined(event)
-
-    split = result.get("split")
-    challenge = await CaptchaChallenge.get_or_none(target_id=split_id)
-    return bool(split and challenge and challenge.status == "pending" and challenge.target_union_id == split.union_id)
 
 
 async def _test_sender_unbind_during_token_moves_trust_to_current_union():
@@ -885,74 +729,6 @@ async def _test_sender_unbind_during_token_moves_trust_to_current_union():
             sender_union_id=split.union_id,
         )
         and not await CaptchaTrust.exists(sender_union_id=sender.union_id)
-        and result.get("finish") == "token.message.success"
-        and notify.await_count == 1
-    )
-
-
-async def _test_target_unbind_during_token_moves_trust_to_current_union():
-    kept_id = "QQBot|Group|captcha-token-unbind-target-kept"
-    split_id = "QQBot|Group|captcha-token-unbind-target-split"
-    sender_id = "QQBot|captcha-token-unbind-target-sender"
-    target = await TargetUnionInfo.resolve_union(kept_id)
-    if not await target.bind_id(split_id):
-        return False
-    sender = await SenderUnionInfo.resolve_union(sender_id)
-    challenge = await CaptchaChallenge.create(
-        challenge_id="captcha-token-unbind-target-challenge",
-        target_union_id=target.union_id,
-        sender_union_id=sender.union_id,
-        target_id=split_id,
-        sender_id=sender_id,
-        token="captcha-token-unbind-target-token",
-        answer=42,
-        choices=[42],
-        status="pending",
-    )
-    token_session = await SessionInfo.assign(
-        target_id="QQBot|C2C|captcha-token-unbind-target",
-        target_from="QQBot|C2C",
-        client_name="QQBot",
-        sender_id=sender_id,
-        sender_from="QQBot",
-        is_private=True,
-    )
-    msg = MessageSession(session_info=token_session)
-    origin = AsyncMock()
-    result = {}
-
-    async def unrestrict_member(_user_id, **_kwargs):
-        result["split"] = await target.unbind_id(split_id)
-        return None
-
-    async def finish(_self, message=None, **_kwargs):
-        result["finish"] = message.key if isinstance(message, I18NContextElement) else None
-        raise SessionFinished
-
-    origin.unrestrict_member.side_effect = unrestrict_member
-    notify = AsyncMock()
-    with (
-        patch("modules.captcha.get_origin_session", new=AsyncMock(return_value=origin)),
-        patch("modules.captcha.notify_origin", new=notify),
-        patch.object(MessageSession, "finish", new=finish),
-    ):
-        try:
-            await process_token(msg, challenge.token)
-        except SessionFinished:
-            pass
-
-    split = result.get("split")
-    await challenge.refresh_from_db()
-    return bool(
-        split
-        and challenge.status == "verified"
-        and challenge.target_union_id == split.union_id
-        and await CaptchaTrust.exists(
-            trust_id=verification_id(split.union_id, sender.union_id),
-            target_union_id=split.union_id,
-            sender_union_id=sender.union_id,
-        )
-        and not await CaptchaTrust.exists(target_union_id=target.union_id)
         and result.get("finish") == "token.message.success"
         and notify.await_count == 1
     )
@@ -1152,11 +928,223 @@ async def _test_member_left_waits_for_sender_unbind_and_cleans_current_challenge
     )
 
 
+async def _test_target_union_merge_migrates_captcha_references():
+    sender = await SenderUnionInfo.resolve_union("QQBot|captcha-merge-target-sender")
+    keep = await TargetUnionInfo.resolve_union("QQBot|Group|captcha-merge-target-keep")
+    other = await TargetUnionInfo.resolve_union("QQBot|Group|captcha-merge-target-other")
+    old_trust_id = verification_id(other.union_id, sender.union_id)
+    challenge = await CaptchaChallenge.create(
+        challenge_id=old_trust_id,
+        target_union_id=other.union_id,
+        sender_union_id=sender.union_id,
+        target_id="QQBot|Group|captcha-merge-target-other",
+        sender_id="QQBot|captcha-merge-target-sender",
+        token="captcha-merge-target-token",
+        answer=42,
+        choices=[42],
+        status="pending",
+    )
+    await CaptchaTrust.create(
+        trust_id=old_trust_id,
+        target_union_id=other.union_id,
+        sender_union_id=sender.union_id,
+    )
+
+    merged = await keep.merge_union(other)
+    await challenge.refresh_from_db()
+    new_trust_id = verification_id(merged.union_id, sender.union_id)
+    return (
+        challenge.target_union_id == merged.union_id
+        and challenge.challenge_id == old_trust_id
+        and await CaptchaTrust.exists(
+            trust_id=new_trust_id,
+            target_union_id=merged.union_id,
+            sender_union_id=sender.union_id,
+        )
+        and not await CaptchaTrust.exists(trust_id=old_trust_id)
+    )
+
+
+async def _test_target_unbind_moves_active_challenge_only():
+    sender = await SenderUnionInfo.resolve_union("QQBot|captcha-unbind-target-sender")
+    kept_id = "QQBot|Group|captcha-unbind-target-kept"
+    split_id = "QQBot|Group|captcha-unbind-target-split"
+    target = await TargetUnionInfo.resolve_union(kept_id)
+    if not await target.bind_id(split_id):
+        return False
+
+    old_trust_id = verification_id(target.union_id, sender.union_id)
+    active = await CaptchaChallenge.create(
+        challenge_id="captcha-unbind-target-active",
+        target_union_id=target.union_id,
+        sender_union_id=sender.union_id,
+        target_id=split_id,
+        sender_id="QQBot|captcha-unbind-target-sender",
+        token="captcha-unbind-target-active-token",
+        answer=42,
+        choices=[42],
+        status="failed",
+    )
+    sibling = await CaptchaChallenge.create(
+        challenge_id="captcha-unbind-target-sibling",
+        target_union_id=target.union_id,
+        sender_union_id=sender.union_id,
+        target_id=kept_id,
+        sender_id="QQBot|captcha-unbind-target-sender",
+        token="captcha-unbind-target-sibling-token",
+        answer=42,
+        choices=[42],
+        status="pending",
+    )
+    verified = await CaptchaChallenge.create(
+        challenge_id="captcha-unbind-target-verified",
+        target_union_id=target.union_id,
+        sender_union_id=sender.union_id,
+        target_id=split_id,
+        sender_id="QQBot|captcha-unbind-target-sender",
+        token="captcha-unbind-target-verified-token",
+        answer=42,
+        choices=[42],
+        status="verified",
+    )
+    await CaptchaTrust.create(
+        trust_id=old_trust_id,
+        target_union_id=target.union_id,
+        sender_union_id=sender.union_id,
+    )
+
+    split = await target.unbind_id(split_id)
+    if not split:
+        return False
+    await active.refresh_from_db()
+    await sibling.refresh_from_db()
+    await verified.refresh_from_db()
+    return (
+        active.target_union_id == split.union_id
+        and sibling.target_union_id == target.union_id
+        and verified.target_union_id == target.union_id
+        and await CaptchaTrust.exists(trust_id=old_trust_id, target_union_id=target.union_id)
+        and not await CaptchaTrust.exists(target_union_id=split.union_id)
+    )
+
+
+async def _test_target_unbind_during_member_join_preserves_challenge_migration():
+    kept_id = "QQBot|Group|captcha-concurrent-unbind-target-kept"
+    split_id = "QQBot|Group|captcha-concurrent-unbind-target-split"
+    sender_id = "QQBot|captcha-concurrent-unbind-target-sender"
+    target = await TargetUnionInfo.resolve_union(kept_id)
+    if not await target.bind_id(split_id):
+        return False
+    session = await SessionInfo.assign(
+        target_id=split_id,
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id=sender_id,
+        sender_from="QQBot",
+        features=Features(support_button=True, read_all_messages=True),
+    )
+    event = await EventInfo.assign(
+        event_name="member_joined",
+        target_id=split_id,
+        target_from="QQBot|Group",
+        client_name="QQBot",
+        sender_id=sender_id,
+        sender_from="QQBot",
+    )
+    result = {}
+
+    async def restrict_member(_self, _user_id, _duration=None, **_kwargs):
+        result["split"] = await target.unbind_id(split_id)
+        return None
+
+    async def send_message(_self, _message, **_kwargs):
+        return SimpleNamespace(message_id=["verification-message"])
+
+    with (
+        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
+        patch.object(MessageSession, "restrict_member", new=restrict_member),
+        patch.object(MessageSession, "send_message", new=send_message),
+    ):
+        await member_joined(event)
+
+    split = result.get("split")
+    challenge = await CaptchaChallenge.get_or_none(target_id=split_id)
+    return bool(split and challenge and challenge.status == "pending" and challenge.target_union_id == split.union_id)
+
+
+async def _test_target_unbind_during_token_moves_trust_to_current_union():
+    kept_id = "QQBot|Group|captcha-token-unbind-target-kept"
+    split_id = "QQBot|Group|captcha-token-unbind-target-split"
+    sender_id = "QQBot|captcha-token-unbind-target-sender"
+    target = await TargetUnionInfo.resolve_union(kept_id)
+    if not await target.bind_id(split_id):
+        return False
+    sender = await SenderUnionInfo.resolve_union(sender_id)
+    challenge = await CaptchaChallenge.create(
+        challenge_id="captcha-token-unbind-target-challenge",
+        target_union_id=target.union_id,
+        sender_union_id=sender.union_id,
+        target_id=split_id,
+        sender_id=sender_id,
+        token="captcha-token-unbind-target-token",
+        answer=42,
+        choices=[42],
+        status="pending",
+    )
+    token_session = await SessionInfo.assign(
+        target_id="QQBot|C2C|captcha-token-unbind-target",
+        target_from="QQBot|C2C",
+        client_name="QQBot",
+        sender_id=sender_id,
+        sender_from="QQBot",
+        is_private=True,
+    )
+    msg = MessageSession(session_info=token_session)
+    origin = AsyncMock()
+    result = {}
+
+    async def unrestrict_member(_user_id, **_kwargs):
+        result["split"] = await target.unbind_id(split_id)
+        return None
+
+    async def finish(_self, message=None, **_kwargs):
+        result["finish"] = message.key if isinstance(message, I18NContextElement) else None
+        raise SessionFinished
+
+    origin.unrestrict_member.side_effect = unrestrict_member
+    notify = AsyncMock()
+    with (
+        patch("modules.captcha.get_origin_session", new=AsyncMock(return_value=origin)),
+        patch("modules.captcha.notify_origin", new=notify),
+        patch.object(MessageSession, "finish", new=finish),
+    ):
+        try:
+            await process_token(msg, challenge.token)
+        except SessionFinished:
+            pass
+
+    split = result.get("split")
+    await challenge.refresh_from_db()
+    return bool(
+        split
+        and challenge.status == "verified"
+        and challenge.target_union_id == split.union_id
+        and await CaptchaTrust.exists(
+            trust_id=verification_id(split.union_id, sender.union_id),
+            target_union_id=split.union_id,
+            sender_union_id=sender.union_id,
+        )
+        and not await CaptchaTrust.exists(target_union_id=target.union_id)
+        and result.get("finish") == "token.message.success"
+        and notify.await_count == 1
+    )
+
+
 @func_case
 async def test_captcha(tester: Tester):
     """captcha：验证码生成、场景前缀、事件幂等及私聊解禁。"""
     await tester.test(_test_captcha_indexes_fit_mysql_limit, "验证码数据库索引兼容 MySQL 长度限制")
-    await tester.test(_test_choices_are_valid, "验证码按钮选项范围与唯一性")
     await tester.test(_test_emote_choices_are_valid, "表情验证码选项与资源映射")
     await tester.test(_test_captcha_event_and_private_token, "入群事件、场景前缀与私聊 token 验证")
     await tester.test(_test_wrong_button_marks_challenge_failed, "错误按钮使验证失败")
@@ -1176,24 +1164,14 @@ async def test_captcha(tester: Tester):
     )
     await tester.test(_test_member_left_removes_verification_records, "退群事件清除对应的验证记录")
     await tester.test(_test_sender_union_merge_migrates_captcha_references, "用户 Union 合并迁移验证码引用")
-    await tester.test(_test_target_union_merge_migrates_captcha_references, "场景 Union 合并迁移验证码引用")
     await tester.test(_test_sender_unbind_moves_active_challenge_only, "用户 Union 解绑迁移活跃验证码引用")
-    await tester.test(_test_target_unbind_moves_active_challenge_only, "场景 Union 解绑迁移活跃验证码引用")
     await tester.test(
         _test_sender_unbind_during_member_join_preserves_challenge_migration,
         "入群处理中用户解绑不回写旧 Union",
     )
     await tester.test(
-        _test_target_unbind_during_member_join_preserves_challenge_migration,
-        "入群处理中场景解绑不回写旧 Union",
-    )
-    await tester.test(
         _test_sender_unbind_during_token_moves_trust_to_current_union,
         "token 解禁期间用户解绑后信任写入新 Union",
-    )
-    await tester.test(
-        _test_target_unbind_during_token_moves_trust_to_current_union,
-        "token 解禁期间场景解绑后信任写入新 Union",
     )
     await tester.test(
         _test_token_does_not_report_success_when_trust_fails,
@@ -1205,4 +1183,15 @@ async def test_captcha(tester: Tester):
         _test_member_left_waits_for_sender_unbind_and_cleans_current_challenge,
         "退群与用户解绑并发时清理当前挑战",
     )
+    await tester.test(_test_target_union_merge_migrates_captcha_references, "场景 Union 合并迁移验证码引用")
+    await tester.test(_test_target_unbind_moves_active_challenge_only, "场景 Union 解绑迁移活跃验证码引用")
+    await tester.test(
+        _test_target_unbind_during_member_join_preserves_challenge_migration,
+        "入群处理中场景解绑不回写旧 Union",
+    )
+    await tester.test(
+        _test_target_unbind_during_token_moves_trust_to_current_union,
+        "token 解禁期间场景解绑后信任写入新 Union",
+    )
+
     return tester

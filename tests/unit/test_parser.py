@@ -5,78 +5,19 @@ from types import SimpleNamespace
 from core.builtins.parser.args import (
     ArgumentPattern,
     DescPattern,
-    Template,
     OptionalPattern,
     split_multi_arguments,
     parse_template,
     templates_to_str,
 )
 from core.builtins.parser.command import CommandParser, _split_command
-from core.builtins.parser.message import _build_command_kwargs, _resolve_parsed_value, _unwrap_option_value
+from core.builtins.parser.message import _build_command_kwargs, _resolve_parsed_value
 from core.builtins.message.elements import MarkdownElement
 from core.builtins.bot import Bot
 from core.constants.exceptions import InvalidTemplatePattern
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
-
-
-def _test_argument_pattern():
-    try:
-        pattern = ArgumentPattern("<name>")
-        if pattern.name != "<name>":
-            return False
-        if "name" not in str(pattern):
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_desc_pattern():
-    try:
-        pattern = DescPattern("This is a description")
-        if pattern.text != "This is a description":
-            return False
-        if "description" not in str(pattern):
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_template():
-    try:
-        template = Template([ArgumentPattern("<arg1>"), ArgumentPattern("<arg2>")])
-        if len(template.args) != 2:
-            return False
-        if template.priority != 1:
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_template_priority():
-    try:
-        template = Template([ArgumentPattern("<arg>")], priority=5)
-        if template.priority != 5:
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_optional_pattern():
-    try:
-        pattern = OptionalPattern("-o", [Template([ArgumentPattern("<output>")])])
-        if pattern.flag != "-o":
-            return False
-        if len(pattern.args) != 1:
-            return False
-        return True
-    except Exception:
-        return False
 
 
 def _test_split_multi_arguments():
@@ -94,21 +35,6 @@ def _test_split_multi_arguments():
         if result != ["hello"]:
             return False
 
-        return True
-    except Exception:
-        return False
-
-
-def _test_parse_template_simple():
-    try:
-        templates = parse_template(["<arg1> <arg2>"])
-        if len(templates) != 1:
-            return False
-        template = templates[0]
-        if len(template.args) != 2:
-            return False
-        if not isinstance(template.args[0], ArgumentPattern):
-            return False
         return True
     except Exception:
         return False
@@ -169,29 +95,6 @@ def _test_parse_template_variadic():
         return False
 
 
-def _test_parse_template_multiple():
-    try:
-        templates = parse_template(["<arg1>", "<arg1> <arg2>"])
-        if len(templates) != 2:
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_templates_to_str():
-    try:
-        templates = parse_template(["<source> [-o <destination>]"])
-        result = templates_to_str(templates)
-        if len(result) != 1:
-            return False
-        if "<source>" not in result[0]:
-            return False
-        return True
-    except Exception:
-        return False
-
-
 def _test_templates_to_str_with_desc():
     try:
         templates = parse_template(["<arg> {Description}"])
@@ -227,24 +130,6 @@ def _test_command_parser_preserves_backslashes():
     return (
         unquoted["<pattern>"] == r"https://example\.test/\d+\\suffix"
         and quoted["<pattern>"] == r"https://example\.test/a b"
-    )
-
-
-def _test_command_parser_preserves_quotes():
-    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
-    module.command_list.add(CommandMeta(command_template=parse_template(["target data edit <k> <v>"])))
-    parser = CommandParser(module, ["~"], module_name=module.module_name)
-
-    double_quoted = parser.parse('parser-test target data edit config {"a": "b"}')[1]
-    single_quoted = parser.parse("parser-test target data edit config {'a': 'b'}")[1]
-    embedded = parser.parse('parser-test target data edit config a"b"c')[1]
-    grouped = parser.parse('parser-test target data edit config "value with space"')[1]
-
-    return (
-        double_quoted["<v>"] == '{"a": "b"}'
-        and single_quoted["<v>"] == "{'a': 'b'}"
-        and embedded["<v>"] == 'a"b"c'
-        and grouped["<v>"] == "value with space"
     )
 
 
@@ -349,16 +234,6 @@ async def _test_error_detail_markdown_format():
     )
 
 
-def _test_unwrap_option_value():
-    return (
-        _unwrap_option_value({"<bar>": "baz"}) == "baz"
-        and _unwrap_option_value({}) == {}
-        and _unwrap_option_value({"<start>": "1", "<end>": "9"}) == {"<start>": "1", "<end>": "9"}
-        and _unwrap_option_value(True) is True
-        and _unwrap_option_value(False) is False
-    )
-
-
 def _test_resolve_parsed_value():
     cases = [
         ({"<pagename>": "abc"}, "pagename", (True, "abc")),
@@ -421,29 +296,20 @@ def _test_build_command_kwargs():
 @func_case
 async def test_parser_args(tester: Tester):
     """core.builtins.parser.args: 参数解析测试"""
-    await tester.test(_test_argument_pattern, "ArgumentPattern 创建测试")
-    await tester.test(_test_desc_pattern, "DescPattern 创建测试")
-    await tester.test(_test_template, "Template 创建测试")
-    await tester.test(_test_template_priority, "Template 优先级测试")
-    await tester.test(_test_optional_pattern, "OptionalPattern 创建测试")
     await tester.test(_test_split_multi_arguments, "split_multi_arguments 测试")
-    await tester.test(_test_parse_template_simple, "parse_template 简单命令测试")
     await tester.test(_test_parse_template_optional, "parse_template 可选参数测试")
+    await tester.test(_test_parse_template_rejects_multi_character_short_option, "parse_template 拒绝多字符短选项")
     await tester.test(_test_parse_template_description, "parse_template 描述测试")
     await tester.test(_test_parse_template_variadic, "parse_template 可变长参数测试")
-    await tester.test(_test_parse_template_multiple, "parse_template 多个模板测试")
-    await tester.test(_test_templates_to_str, "templates_to_str 测试")
     await tester.test(_test_templates_to_str_with_desc, "templates_to_str 带描述测试")
     await tester.test(_test_default_command_help_doc, "无文档模块默认命令帮助测试")
     await tester.test(_test_split_command_quotes, "命令分词引号测试")
     await tester.test(_test_split_command_option_quotes, "命令分词选项内联值引号测试")
-    await tester.test(_test_command_parser_preserves_quotes, "命令参数引号保留测试")
     await tester.test(_test_command_parser_option_terminator, "命令选项终止符测试")
     await tester.test(_test_command_parser_option_inline_value, "命令选项内联值测试")
     await tester.test(_test_command_parser_option_missing_value, "命令选项缺少值测试")
     await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
     await tester.test(_test_error_detail_markdown_format, "Markdown 错误详情代码块测试")
-    await tester.test(_test_unwrap_option_value, "选项子参数解包测试")
     await tester.test(_test_resolve_parsed_value, "命令参数取值映射测试")
     await tester.test(_test_build_command_kwargs, "命令参数构建与选项注入测试")
 

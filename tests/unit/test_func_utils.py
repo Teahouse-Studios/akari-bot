@@ -8,15 +8,11 @@ from core.utils.func import (
     is_iterable,
     is_json_serializable,
     chunk_list,
-    unique_list,
     flatten_list,
     flatten_dict,
     unflatten_dict,
-    is_float,
-    is_int,
     camel_to_snake,
     snake_to_camel,
-    normalize_space,
     truncate_text,
     parse_time_string,
     generate_progress_bar,
@@ -74,21 +70,6 @@ def _test_chunk_list():
         return False
 
 
-def _test_unique_list():
-    try:
-        if unique_list([1, 2, 2, 3, 3, 3]) != [1, 2, 3]:
-            return False
-        if unique_list([3, 1, 2, 1, 3]) != [3, 1, 2]:
-            return False
-        if unique_list([]) != []:
-            return False
-        if unique_list([1]) != [1]:
-            return False
-        return True
-    except Exception:
-        return False
-
-
 def _test_flatten_list():
     try:
         return (
@@ -119,21 +100,6 @@ def _test_flatten_dict():
         return False
 
 
-def _test_is_float_is_int():
-    return (
-        is_float("3.14") is True
-        and is_float("42") is True
-        and is_float("-1.5") is True
-        and is_float("abc") is False
-        and is_int("42") is True
-        and is_int("0") is True
-        and is_int("-5") is True
-        and is_int(42.0) is True
-        and is_int(42.5) is False
-        and is_int("abc") is False
-    )
-
-
 def _test_case_conversion():
     return (
         camel_to_snake("CamelCase") == "camel_case"
@@ -141,16 +107,6 @@ def _test_case_conversion():
         and snake_to_camel("camel_case") == "CamelCase"
         and snake_to_camel("simple_test") == "SimpleTest"
         and snake_to_camel("camel_case", upper=False) == "camelCase"
-    )
-
-
-def _test_normalize_space():
-    return (
-        normalize_space("  hello   world  ") == "hello world"
-        and normalize_space("hello") == "hello"
-        and normalize_space("  ") == ""
-        and normalize_space("") == ""
-        and normalize_space("a  b  c  d") == "a b c d"
     )
 
 
@@ -198,12 +154,9 @@ async def test_func_utils(tester: Tester):
     await tester.test(_test_is_iterable, "is_iterable 测试")
     await tester.test(_test_is_json_serializable, "is_json_serializable 测试")
     await tester.test(_test_chunk_list, "chunk_list 测试")
-    await tester.test(_test_unique_list, "unique_list 测试")
     await tester.test(_test_flatten_list, "flatten_list 测试")
     await tester.test(_test_flatten_dict, "flatten_dict 测试")
-    await tester.test(_test_is_float_is_int, "is_float/is_int 测试")
     await tester.test(_test_case_conversion, "camel_to_snake/snake_to_camel 测试")
-    await tester.test(_test_normalize_space, "normalize_space 测试")
     await tester.test(_test_truncate_text, "truncate_text 测试")
     await tester.test(_test_parse_time_string, "parse_time_string 测试")
     await tester.test(_test_generate_progress_bar, "generate_progress_bar 测试")

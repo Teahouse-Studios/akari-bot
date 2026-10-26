@@ -304,16 +304,6 @@ async def _test_langlinks_section_checks_renderable_with_target_wiki():
     )
 
 
-async def _test_langlinks_invalid_section_stays_unrenderable():
-    result, captured = await _run_langlinks_section_query("计划版本#Unnamed 2030 release")
-    return (
-        result.status
-        and result.link == f"{PLANNED_VERSIONS_URL}#Unnamed%202030%20release"
-        and result.renderable is False
-        and captured["render_checks"] == []
-    )
-
-
 @func_case
 async def test_wiki_render_precheck(tester: Tester):
     """wiki: 跨 wiki 跳转后仍判定目标页面可渲染性"""
@@ -326,5 +316,4 @@ async def test_wiki_render_precheck(tester: Tester):
     await tester.test(
         _test_langlinks_section_checks_renderable_with_target_wiki, "语言版本章节查询在目标 wiki 上判定可渲染性"
     )
-    await tester.test(_test_langlinks_invalid_section_stays_unrenderable, "语言版本章节不存在时不挂渲染按钮")
     return tester

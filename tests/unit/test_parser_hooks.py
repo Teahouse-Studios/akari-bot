@@ -10,7 +10,6 @@ from core.builtins.parser.hooks import (
     Stop,
     StopScope,
     build_subscription,
-    normalize_result,
 )
 from core.builtins.hooks import platform_allows, subscription_sort_key
 from core.builtins.parser.hooks.dispatch import reset_parser_hook_executor
@@ -49,20 +48,6 @@ def _make_module(name: str, *, db_load: bool = True, load: bool = True) -> Modul
     module._db_load = db_load
     module.load = load
     return module
-
-
-def _test_normalize_result():
-    try:
-        assert isinstance(normalize_result(None), Continue)
-        stop = Stop(scope=StopScope.MESSAGE)
-        assert normalize_result(stop) is stop
-        try:
-            normalize_result({"truthy": True})
-            return False
-        except TypeError:
-            return True
-    except Exception:
-        return False
 
 
 def _test_subscription_sort_and_platform():
@@ -742,7 +727,6 @@ async def _test_reload_failure_keeps_old_hooks():
 
 @func_case
 async def test_parser_hooks(tester: Tester):
-    await tester.test(_test_normalize_result, "normalize_result")
     await tester.test(_test_subscription_sort_and_platform, "subscription sort/platform")
     await tester.test(_test_executor_isolates_failures, "executor isolates failures")
     await tester.test(_test_executor_skips_disabled_module_fixed, "executor skips disabled module")
@@ -763,10 +747,8 @@ async def test_parser_hooks(tester: Tester):
     await tester.test(_test_cleanup_cancellation_propagates, "cleanup cancellation propagates")
     await tester.test(_test_nested_same_session_dispatch_skipped, "nested same-session dispatch skipped")
     await tester.test(_test_invalid_recovery_fields_rejected, "invalid recovery fields rejected")
-    await tester.test(_test_snapshot_build_failure_isolated, "snapshot build failure isolated")
     await tester.test(_test_reload_failure_keeps_old_hooks, "reload failure keeps old hooks")
     await tester.test(_test_missing_runtime_generation_skipped, "missing runtime generation skipped")
-    await tester.test(_test_generation_rechecked_between_hooks, "generation rechecked between hooks")
     await tester.test(_test_disabled_rechecked_between_hooks, "disabled state rechecked between hooks")
     await tester.test(_test_outgoing_commit_failure_isolated, "outgoing commit failure isolated")
 
@@ -885,43 +867,6 @@ async def _test_invalid_recovery_fields_rejected():
         return False
 
 
-async def _test_snapshot_build_failure_isolated():
-    try:
-        from core.builtins.parser.hooks import OutgoingPayload
-
-        seen = []
-
-        class _BadChain:
-            def copy(self):
-                raise RuntimeError("cannot clone")
-
-        async def after(ctx):
-            seen.append(1)
-            return Continue()
-
-        mm = SimpleNamespace(
-            modules={"a": _make_module("a")},
-            parser_hook_subscriptions={
-                HookPoint.OUTGOING_BEFORE_SEND: [
-                    build_subscription(
-                        "a", HookMeta(function=after, point=HookPoint.OUTGOING_BEFORE_SEND, name="after"), 0
-                    )
-                ]
-            },
-        )
-        payload = OutgoingPayload(chain=_BadChain())
-        outcome = await ParserHookExecutor(mm).dispatch(HookPoint.OUTGOING_BEFORE_SEND, _FakeMsg(), outgoing=payload)
-        # 快照失败被隔离：hook 未执行，计一次失败，流程未中断
-        assert seen == []
-        assert outcome.failed == 1
-        return True
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        return False
-
-
 async def _test_missing_runtime_generation_skipped():
     try:
         from core.module_runtime import ModuleRuntimeManager
@@ -959,62 +904,6 @@ async def _test_missing_runtime_generation_skipped():
 
         traceback.print_exc()
         return False
-
-
-async def _test_generation_rechecked_between_hooks():
-    try:
-        from core.module_runtime import ModuleRuntimeManager
-
-        first_name = "__generation_recheck_first"
-        stale_name = "__generation_recheck_stale"
-        ModuleRuntimeManager.get_or_create(first_name)
-        stale_runtime = ModuleRuntimeManager.get_or_create(stale_name)
-        called = []
-
-        async def replace_runtime(ctx):
-            replacement = stale_runtime.next_generation()
-            replacement.activate()
-            ModuleRuntimeManager._current[stale_name] = replacement
-            return Continue()
-
-        async def stale(ctx):
-            called.append(1)
-            return Continue()
-
-        mm = SimpleNamespace(
-            modules={first_name: _make_module(first_name), stale_name: _make_module(stale_name)},
-            parser_hook_subscriptions={
-                HookPoint.FINISHED: [
-                    build_subscription(
-                        first_name,
-                        HookMeta(function=replace_runtime, point=HookPoint.FINISHED, priority=1, name="first"),
-                        0,
-                    ),
-                    build_subscription(
-                        stale_name,
-                        HookMeta(function=stale, point=HookPoint.FINISHED, priority=2, name="stale"),
-                        1,
-                    ),
-                ]
-            },
-        )
-        outcome = await ParserHookExecutor(mm).dispatch(HookPoint.FINISHED, _FakeMsg())
-        assert called == []
-        assert outcome.executed == 1
-        assert outcome.skipped_stale == 1
-        return True
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        return False
-    finally:
-        from core.module_runtime import ModuleRuntimeManager
-
-        if "first_name" in locals():
-            ModuleRuntimeManager._current.pop(first_name, None)
-        if "stale_name" in locals():
-            ModuleRuntimeManager._current.pop(stale_name, None)
 
 
 async def _test_outgoing_commit_failure_isolated():

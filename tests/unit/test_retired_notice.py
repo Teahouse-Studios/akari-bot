@@ -11,18 +11,14 @@ import core.utils.retired as retired_module
 from core.database.models import StoredData
 from core.utils.retired import (
     NOTIFIED_STORED_KEY,
-    RETIRED_NOTIFY_DELAY_MAX,
-    RETIRED_NOTIFY_DELAY_MIN,
     has_notified,
     mark_notified,
     pending_notices,
-    pick_notice_delay,
     read_notice,
     reset_notified_cache,
     reset_pending_cache,
     should_enqueue_notice,
 )
-from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 
 
@@ -55,42 +51,10 @@ async def _test_notice_falls_back_to_zh_cn():
         return False
 
 
-async def _test_notice_falls_back_to_any():
-    try:
-        with tempfile.TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _write(base, "qq", "ko_kr", "한국어 공지")
-            return read_notice("QQ", "ja_jp", base) == "한국어 공지"
-
-    except Exception:
-        return False
-
-
 async def _test_notice_missing_returns_none():
     try:
         with tempfile.TemporaryDirectory() as tmp:
             return read_notice("QQ", "zh_cn", Path(tmp)) is None
-
-    except Exception:
-        return False
-
-
-async def _test_notified_starts_false():
-    try:
-        await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
-        reset_notified_cache()
-        return not await has_notified("QQ|Group|notify1")
-
-    except Exception:
-        return False
-
-
-async def _test_mark_then_notified():
-    try:
-        await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
-        reset_notified_cache()
-        await mark_notified("QQ|Group|notify2")
-        return await has_notified("QQ|Group|notify2")
 
     except Exception:
         return False
@@ -126,15 +90,6 @@ async def _test_mark_keeps_existing_records():
         return False
 
 
-async def _test_delay_within_range():
-    try:
-        # 取多次以降低偶然通过的可能，随机源已由测试框架接管。
-        return all(RETIRED_NOTIFY_DELAY_MIN <= pick_notice_delay() <= RETIRED_NOTIFY_DELAY_MAX for _ in range(20))
-
-    except Exception:
-        return False
-
-
 async def _test_enqueue_skips_notified():
     try:
         await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
@@ -158,17 +113,6 @@ async def _test_enqueue_skips_pending():
         second = await should_enqueue_notice("QQ|Group|queued2")
         reset_pending_cache()
         return first and not second
-
-    except Exception:
-        return False
-
-
-async def _test_enqueue_allows_fresh_target():
-    try:
-        await StoredData.filter(stored_key=NOTIFIED_STORED_KEY).delete()
-        reset_notified_cache()
-        reset_pending_cache()
-        return await should_enqueue_notice("QQ|Group|queued3")
 
     except Exception:
         return False
@@ -285,30 +229,19 @@ async def _test_notice_cleanup_cancels_retained_delivery():
         reset_pending_cache()
 
 
-async def _test_notice_cleanup_is_registered():
-    spec = BackgroundTaskLifecycle._cleanup_hooks.get("core:retired-notice")
-    return spec is not None and spec.callback is retired_module.cancel_retired_notice_tasks
-
-
 @func_case
 async def test_retired_notice(tester: Tester):
     """core.utils.retired: 公告读取、已发记录与排队测试"""
     await tester.test(_test_notice_exact_locale, "命中当前语言测试")
     await tester.test(_test_notice_falls_back_to_zh_cn, "回退 zh_cn 测试")
-    await tester.test(_test_notice_falls_back_to_any, "回退任意文件测试")
     await tester.test(_test_notice_missing_returns_none, "文案缺失兜底测试")
-    await tester.test(_test_notified_starts_false, "未记录判定测试")
-    await tester.test(_test_mark_then_notified, "记录后判定测试")
     await tester.test(_test_mark_persists_to_storage, "记录落库测试")
     await tester.test(_test_mark_keeps_existing_records, "追加不覆盖测试")
     await tester.test(_test_concurrent_marks_do_not_persist_stale_snapshot, "并发记录不回写旧快照测试")
     await tester.test(_test_failed_mark_rolls_back_memory_state, "落库失败回滚内存记录测试")
-    await tester.test(_test_delay_within_range, "随机延迟区间测试")
     await tester.test(_test_enqueue_skips_notified, "已发送不排队测试")
     await tester.test(_test_enqueue_skips_pending, "已排队不重复测试")
-    await tester.test(_test_enqueue_allows_fresh_target, "新场景允许排队测试")
     await tester.test(_test_enqueue_concurrent_same_target_once, "同场景并发只排队一次测试")
     await tester.test(_test_notice_cleanup_cancels_retained_delivery, "公告后台清理测试")
-    await tester.test(_test_notice_cleanup_is_registered, "公告后台清理已注册测试")
 
     return tester

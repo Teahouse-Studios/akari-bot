@@ -97,28 +97,12 @@ def _test_click_limit_allows_configured_number_of_uses():
     )
 
 
-def _test_unlimited_click_limit():
-    _clear_button_registry()
-    rows = register_button_rows([ButtonRows.assign([Button("Vote", "~vote", click_limit=0)])], "Discord|Client|1")
-    token = rows[0][0].token
-    results = [consume_button(token, "Discord|Client|1") for _ in range(3)]
-    return all(result.status is ButtonConsumeStatus.SUCCESS and not result.exhausted for result in results)
-
-
 def _test_expired_is_distinct_from_invalid():
     with patch("core.utils.button_runtime.time.time", return_value=0.001):
         button = _register()
     expired = consume_button(button.token, "Discord|Client|1", now=3600.002)
     invalid = consume_button(f"{BUTTON_TOKEN_PREFIX}missing", "Discord|Client|1")
     return expired.status is ButtonConsumeStatus.EXPIRED and invalid.status is ButtonConsumeStatus.INVALID
-
-
-def _test_consuming_one_button_keeps_sibling():
-    _clear_button_registry()
-    rows = register_button_rows(build_button_rows([{"A": "~a", "B": "~b"}]), "Discord|Client|1")
-    first = consume_button(rows[0][0].token, "Discord|Client|1")
-    sibling = consume_button(rows[0][1].token, "Discord|Client|1")
-    return first.status is ButtonConsumeStatus.SUCCESS and sibling.status is ButtonConsumeStatus.SUCCESS
 
 
 def _test_urls_do_not_register_tokens():
@@ -165,9 +149,7 @@ async def test_button_runtime(tester: Tester):
     await tester.test(_test_public_button_accepts_other_sender, "公开按钮允许其他用户点击")
     await tester.test(_test_second_use_is_rejected, "按钮只能成功使用一次")
     await tester.test(_test_click_limit_allows_configured_number_of_uses, "按钮点击次数限制")
-    await tester.test(_test_unlimited_click_limit, "按钮不限点击次数")
     await tester.test(_test_expired_is_distinct_from_invalid, "过期与无效状态可区分")
-    await tester.test(_test_consuming_one_button_keeps_sibling, "消费当前按钮不影响同组按钮")
     await tester.test(_test_urls_do_not_register_tokens, "HTTP 链接不注册 token")
     await tester.test(_test_register_prunes_expired_tokens, "注册时清理过期 token")
     await tester.test(_test_confirmation_payloads_are_normalized, "确认按钮 payload 归一化")

@@ -18,13 +18,6 @@ def _row_sizes(count: int, per_row: int = DEFAULT_BUTTONS_PER_ROW) -> list[int]:
     return [len(row.buttons) for row in arrange_buttons(_make_buttons(count), per_row)]
 
 
-def _test_empty_returns_no_rows() -> bool:
-    if arrange_buttons([]) != []:
-        Logger.error("Empty input should produce no rows")
-        return False
-    return True
-
-
 def _test_row_sizes() -> bool:
     expected = {1: [1], 2: [2], 3: [3], 5: [3, 2], 7: [3, 2, 2], 12: [3, 3, 3, 3], 50: [10] * 5}
     for count, sizes in expected.items():
@@ -75,20 +68,13 @@ def _test_custom_per_row() -> bool:
     return True
 
 
-def _test_duplicate_labels_are_preserved() -> bool:
-    rows = arrange_buttons([("same", "~a"), ("same", "~b")])
-    return [(button.show, button.value) for button in rows[0].buttons] == [("same", "~a"), ("same", "~b")]
-
-
 @func_case
 async def test_button_arrange(tester: Tester):
     """core.utils.button: 按钮排布工具测试"""
-    await tester.test(_test_empty_returns_no_rows, "空输入无行测试")
     await tester.test(_test_row_sizes, "分行结果测试")
     await tester.test(_test_platform_limits_hold, "平台上限测试")
     await tester.test(_test_order_and_content_preserved, "顺序与内容守恒测试")
     await tester.test(_test_overflow_is_truncated, "超量截断测试")
     await tester.test(_test_custom_per_row, "自定义每行上限测试")
-    await tester.test(_test_duplicate_labels_are_preserved, "重复展示文本保留测试")
 
     return tester

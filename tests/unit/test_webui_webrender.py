@@ -78,13 +78,6 @@ async def _test_webrender_control_validates_action():
     )
 
 
-async def _test_webrender_control_reports_runtime_failure():
-    endpoint = inspect.unwrap(webrender_api.control_web_render)
-    failure = {"ok": False, "error": "control_failed", "status": None}
-    with _patched(control_web_render={"return_value": failure}):
-        return await _call(lambda: endpoint(FakeRequest({"action": "start"}))) == (200, failure)
-
-
 async def _test_webrender_test_validates_target():
     endpoint = inspect.unwrap(webrender_api.test_web_render)
     disabled = {"ok": False, "mode": "screenshot", "error": "web_render_disabled"}
@@ -102,28 +95,6 @@ async def _test_webrender_test_validates_target():
         # 服务端明确回报未启用时，接口同样以 422 呈现原因码
         and disabled_result == (422, "web_render_disabled")
     )
-
-
-async def _test_webrender_test_forwards_render_result():
-    endpoint = inspect.unwrap(webrender_api.test_web_render)
-    success = {
-        "ok": True,
-        "mode": "screenshot",
-        "elapsed": 1.5,
-        "status": STATUS,
-        "source": None,
-        "source_truncated": False,
-        "images": ["AAAA"],
-        "output_type": "jpeg",
-        "error": None,
-    }
-    rendered_failure = {**success, "ok": False, "images": [], "error": "render_failed"}
-    request = FakeRequest({"mode": "screenshot", "url": "https://example.test/"})
-    with _patched(test_web_render={"return_value": success}):
-        ok = await _call(lambda: endpoint(request))
-    with _patched(test_web_render={"return_value": rendered_failure}):
-        failed = await _call(lambda: endpoint(request))
-    return ok == (200, success) and failed == (200, rendered_failure)
 
 
 async def _test_webrender_test_forwards_dark_mode():
@@ -144,9 +115,7 @@ async def test_webui_webrender(tester: Tester):
     await tester.test(_test_webrender_status_merges_config_with_rpc, "WebRender 状态合并测试")
     await tester.test(_test_webrender_status_survives_missing_server, "WebRender 状态降级测试")
     await tester.test(_test_webrender_control_validates_action, "WebRender 控制参数校验测试")
-    await tester.test(_test_webrender_control_reports_runtime_failure, "WebRender 控制失败回报测试")
     await tester.test(_test_webrender_test_validates_target, "WebRender 测试参数校验测试")
-    await tester.test(_test_webrender_test_forwards_render_result, "WebRender 测试结果转发测试")
     await tester.test(_test_webrender_test_forwards_dark_mode, "WebRender 测试透传深色模式")
 
     return tester

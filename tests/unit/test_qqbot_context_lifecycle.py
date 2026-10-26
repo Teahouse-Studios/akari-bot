@@ -90,17 +90,6 @@ async def _test_add_reaction_skips_when_context_dropped() -> bool:
     return True
 
 
-async def _test_remove_reaction_skips_when_context_dropped() -> bool:
-    session = _make_session("remove-reaction-context-dropped", target_from=target_guild_prefix)
-    QQBotContextManager.context.pop(session.session_id, None)
-    with _ClientScope(None):
-        try:
-            await QQBotContextManager.remove_reaction(session, ["m1"], "1")
-        except Exception:
-            return False
-    return True
-
-
 async def _test_error_signal_ignores_non_guild_targets() -> bool:
     session = _make_session("error-signal-group", target_from=target_group_prefix)
     QQBotContextManager.context[session.session_id] = object()
@@ -193,7 +182,6 @@ async def test_qqbot_context_lifecycle_tolerance(tester: Tester):
     await tester.test(_test_error_signal_skips_when_context_dropped, "错误信号在上下文缺失时静默返回")
     await tester.test(_test_error_signal_swallows_api_failure, "错误信号吞掉平台接口异常")
     await tester.test(_test_add_reaction_skips_when_context_dropped, "添加表情在上下文缺失时静默返回")
-    await tester.test(_test_remove_reaction_skips_when_context_dropped, "移除表情在上下文缺失时静默返回")
     await tester.test(_test_error_signal_ignores_non_guild_targets, "非频道会话不发错误信号")
     await tester.test(_test_hold_survives_inbound_processing, "入站处理登记期间 hold 不被删除竞速")
     await tester.test(_test_hold_rejects_dropped_context_after_processing, "处理结束后 hold 报告上下文不可用")

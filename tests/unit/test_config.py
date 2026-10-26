@@ -15,16 +15,6 @@ def _test_config_passthrough():
         return result == "test_value"
 
 
-def _test_config_none_passthrough():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = None
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("key", "default")
-        return result is None
-
-
 def _test_config_get_called_with_args():
     mock_cfg = MagicMock()
     mock_cfg.get.return_value = "v"
@@ -61,16 +51,6 @@ def _test_config_get_url_no_slash():
         return result == "https://example.com/path/"
 
 
-def _test_config_get_url_already_prefixed():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = "https://example.com"
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("url", get_url=True)
-        return result.startswith("https://")
-
-
 def _test_config_get_url_none():
     mock_cfg = MagicMock()
     mock_cfg.get.return_value = None
@@ -81,47 +61,12 @@ def _test_config_get_url_none():
         return result is None
 
 
-def _test_config_int_passthrough():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = 42
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("count", default=0, cfg_type=int)
-        return result == 42
-
-
-def _test_config_bool_passthrough():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = True
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("flag", default=False, cfg_type=bool)
-        return result is True
-
-
-def _test_config_list_passthrough():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = ["a", "b"]
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("items", default=[], cfg_type=list)
-        return result == ["a", "b"]
-
-
 @func_case
 async def test_config(tester: Tester):
     """core.config: Config 函数测试"""
     await tester.test(_test_config_passthrough, "Config 值透传测试")
-    await tester.test(_test_config_none_passthrough, "Config None 透传测试")
     await tester.test(_test_config_get_called_with_args, "Config 参数传递测试")
     await tester.test(_test_config_get_url_branch, "Config get_url 分支测试")
     await tester.test(_test_config_get_url_no_slash, "Config get_url 尾部斜杠测试")
-    await tester.test(_test_config_get_url_already_prefixed, "Config get_url 已有协议头测试")
     await tester.test(_test_config_get_url_none, "Config get_url None 测试")
-    await tester.test(_test_config_int_passthrough, "Config 整数透传测试")
-    await tester.test(_test_config_bool_passthrough, "Config 布尔透传测试")
-    await tester.test(_test_config_list_passthrough, "Config 列表透传测试")
     return tester

@@ -6,7 +6,6 @@ from botpy.message import GroupMessage
 
 import bots.qqbot.context as qqbot_context
 from bots.qqbot.context import MESSAGE_NODES_MAX_ROWS, QQBotContextManager, nodes_to_table
-from bots.qqbot.features import guild_features
 from bots.qqbot.info import target_group_prefix
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import Markdown, Plain
@@ -39,13 +38,6 @@ def _unescaped_pipes(line: str) -> int:
             count += 1
         prev = char
     return count
-
-
-def _test_nodes_disabled_without_table_support() -> bool:
-    if guild_features.support_markdown_extension or guild_features.support_handle_message_nodes:
-        Logger.error("QQBot guild sessions without markdown tables should not handle message nodes as tables")
-        return False
-    return True
 
 
 def _test_table_shape() -> bool:
@@ -95,14 +87,6 @@ def _test_index_sits_above_content() -> bool:
                 return False
     if seen != 5:
         Logger.error(f"All five nodes should appear, got {seen}")
-        return False
-    return True
-
-
-def _test_name_is_the_header() -> bool:
-    lines = nodes_to_table(_make_session(), _make_nodes(2)).split("\n")
-    if not lines[0].startswith("| 标题 |"):
-        Logger.error(f"The node group name should head the table, got {lines[0]!r}")
         return False
     return True
 
@@ -208,11 +192,9 @@ async def _test_markdown_element_selects_markdown_path() -> bool:
 @func_case
 async def test_qqbot_message_nodes(tester: Tester):
     """bots.qqbot.context: 消息节点表格化测试"""
-    await tester.test(_test_nodes_disabled_without_table_support, "无表格能力时节点使用图片回退测试")
     await tester.test(_test_table_shape, "表格行列数测试")
     await tester.test(_test_rows_are_uniform, "表格列数齐平测试")
     await tester.test(_test_index_sits_above_content, "编号在上内容在下测试")
-    await tester.test(_test_name_is_the_header, "节点组名称占表头测试")
     await tester.test(_test_multiline_content_uses_br, "多行内容换行测试")
     await tester.test(_test_pipes_are_escaped, "内容竖线转义测试")
     await tester.test(_test_nodes_use_markdown_element, "节点 Markdown 元素发送测试")

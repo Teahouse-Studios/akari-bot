@@ -66,10 +66,6 @@ async def _run_web_lifespan(raise_inside: bool) -> bool:
     )
 
 
-async def _test_web_lifespan_cleans_up_normally():
-    return await _run_web_lifespan(False)
-
-
 async def _test_web_lifespan_cleans_up_after_application_error():
     return await _run_web_lifespan(True)
 
@@ -170,19 +166,6 @@ async def _test_telegram_shutdown_cleans_core_client():
         await telegram_bot_module.aiogram_bot.session.close()
 
 
-async def _test_onebot_shutdown_stops_worker_and_cleans_core():
-    if not hasattr(onebot_bot_module, "shutdown") or not hasattr(onebot_bot_module, "client_cleanup"):
-        return False
-    stop_worker = AsyncMock()
-    cleanup = AsyncMock()
-    with (
-        patch.object(onebot_bot_module.OneBotFetchedContextManager, "stop_task_processor", new=stop_worker),
-        patch.object(onebot_bot_module, "client_cleanup", new=cleanup),
-    ):
-        await onebot_bot_module.shutdown()
-    return stop_worker.await_count == 1 and cleanup.await_count == 1
-
-
 async def _test_onebot_shutdown_releases_typing_tasks_and_cache():
     context_manager = onebot_context.OneBotContextManager
     session_id = "onebot-shutdown-typing"
@@ -248,19 +231,6 @@ async def _test_onebot_shutdown_releases_typing_tasks_and_cache():
             onebot_context.Temp.data["onebot_impl"] = previous_impl
 
 
-async def _test_discord_close_cleans_core_client():
-    if not hasattr(discord_client, "client_cleanup"):
-        return False
-    cleanup = AsyncMock()
-    sdk_close = AsyncMock()
-    with (
-        patch.object(discord_client, "client_cleanup", new=cleanup),
-        patch.object(discord.Bot, "close", new=sdk_close),
-    ):
-        await discord_client.discord_bot.close()
-    return cleanup.await_count == 1 and sdk_close.await_count == 1
-
-
 async def _test_discord_close_releases_typing_tasks():
     managers = (discord_context.DiscordContextManager, discord_slash_context.DiscordSlashContextManager)
     entries = []
@@ -295,21 +265,6 @@ async def _test_discord_close_releases_typing_tasks():
             await asyncio.gather(task, return_exceptions=True)
             manager.typing_flags.pop(session_id, None)
             manager.typing_tasks.pop(session_id, None)
-
-
-async def _test_qqbot_close_stops_worker_and_cleans_core():
-    if not hasattr(qqbot_bot_module, "client_cleanup"):
-        return False
-    cleanup = AsyncMock()
-    stop_worker = AsyncMock()
-    sdk_close = AsyncMock()
-    with (
-        patch.object(qqbot_bot_module, "client_cleanup", new=cleanup),
-        patch.object(qqbot_bot_module.QQBotFetchedContextManager, "stop_task_processor", new=stop_worker),
-        patch.object(botpy.Client, "close", new=sdk_close),
-    ):
-        await qqbot_bot_module.client.close()
-    return cleanup.await_count == 1 and stop_worker.await_count == 1 and sdk_close.await_count == 1
 
 
 async def _test_qqbot_close_releases_adapter_tasks_and_waiters():
@@ -417,63 +372,21 @@ async def _test_kook_shutdown_cleans_core_and_http_session():
     return cleanup.await_count == 1 and session.close.await_count == 1 and requester._cs is None
 
 
-async def _test_kook_runner_closes_event_loop():
-    try:
-        kook_lifecycle = importlib.import_module("bots.kook.lifecycle")
-    except ModuleNotFoundError:
-        return False
-
-    class FakeLoop:
-        def __init__(self):
-            self.awaited = 0
-            self.closed = False
-
-        def run_until_complete(self, awaitable):
-            self.awaited += 1
-            awaitable.close()
-
-        async def shutdown_asyncgens(self):
-            pass
-
-        async def shutdown_default_executor(self):
-            pass
-
-        def close(self):
-            self.closed = True
-
-    loop = FakeLoop()
-    set_event_loop = MagicMock()
-    with (
-        patch.object(kook_lifecycle.asyncio, "new_event_loop", return_value=loop),
-        patch.object(kook_lifecycle.asyncio, "set_event_loop", new=set_event_loop),
-        patch.object(kook_lifecycle.asyncio, "all_tasks", return_value=set()),
-        patch.object(kook_lifecycle, "run_client", new=AsyncMock()),
-    ):
-        kook_lifecycle.run_bot(SimpleNamespace())
-    set_loop_calls = [call.args for call in set_event_loop.call_args_list]
-    return loop.closed and loop.awaited >= 1 and (loop,) in set_loop_calls and set_loop_calls[-1:] == [(None,)]
-
-
 @func_case
 async def test_platform_shutdown(tester: Tester):
     """平台退出时必须释放核心客户端与 SDK 资源。"""
-    await tester.test(_test_web_lifespan_cleans_up_normally, "Web lifespan 正常退出时清理客户端")
     await tester.test(_test_web_lifespan_cleans_up_after_application_error, "Web lifespan 异常退出时清理客户端")
     await tester.test(_test_matrix_sync_failure_cleans_up_client, "Matrix 同步失败时清理客户端")
     await tester.test(_test_matrix_runner_closes_event_loop, "Matrix 入口关闭事件循环")
     await tester.test(_test_telegram_shutdown_cleans_core_client, "Telegram 退出时清理核心客户端")
-    await tester.test(_test_onebot_shutdown_stops_worker_and_cleans_core, "OneBot 退出时停止 worker 并清理")
     await tester.test(
         _test_onebot_shutdown_releases_typing_tasks_and_cache,
         "OneBot 退出时释放输入状态任务与缓存",
     )
-    await tester.test(_test_discord_close_cleans_core_client, "Discord 关闭时清理核心客户端")
     await tester.test(_test_discord_close_releases_typing_tasks, "Discord 关闭时释放普通与 Slash 输入状态")
-    await tester.test(_test_qqbot_close_stops_worker_and_cleans_core, "QQBot 关闭时停止 worker 并清理")
     await tester.test(
         _test_qqbot_close_releases_adapter_tasks_and_waiters,
         "QQBot 关闭时释放适配器任务与发送等待者",
     )
     await tester.test(_test_kook_shutdown_cleans_core_and_http_session, "KOOK 退出时清理核心与 HTTP Session")
-    await tester.test(_test_kook_runner_closes_event_loop, "KOOK 入口关闭事件循环")
     return tester

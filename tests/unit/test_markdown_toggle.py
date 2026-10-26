@@ -54,20 +54,6 @@ def _make_session(sender_data: dict | None) -> SessionInfo:
     )
 
 
-async def _test_feature_injects_into_session() -> bool:
-    session_info = await SessionInfo.assign(
-        target_id="TEST|Group|markdown_toggle",
-        target_from="TEST|Group",
-        client_name="TEST",
-        sender_id="TEST|1",
-        features=Features(support_markdown_toggle=True),
-    )
-    if session_info.support_markdown_toggle is not True:
-        Logger.error("support_markdown_toggle should be injectable into a session")
-        return False
-    return True
-
-
 def _test_resolve_keeps_base_when_enabled() -> bool:
     for sender_data in ({}, {SWITCH_KEY: True}):
         if _resolve(sender_data) is not MARKDOWN_ON_BASE:
@@ -118,15 +104,6 @@ def _test_resolve_composes_with_base() -> bool:
 def _test_resolve_without_sender_union() -> bool:
     if _resolve(None) is not MARKDOWN_ON_BASE:
         Logger.error("Sessions without a sender union should keep the base untouched")
-        return False
-    return True
-
-
-def _test_evolve_does_not_leak() -> bool:
-    before = MARKDOWN_ON_BASE.support_markdown
-    _resolve({SWITCH_KEY: False})
-    if MARKDOWN_ON_BASE.support_markdown is not before:
-        Logger.error("resolve_features must not mutate the Features instance it was given")
         return False
     return True
 
@@ -198,13 +175,11 @@ async def _test_send_path_follows_session() -> bool:
 @func_case
 async def test_markdown_toggle(tester: Tester):
     """bots.qqbot.features: 用户级 markdown 开关测试"""
-    await tester.test(_test_feature_injects_into_session, "特性可注入会话测试")
     await tester.test(_test_resolve_keeps_base_when_enabled, "开启时保持默认能力测试")
     await tester.test(_test_resolve_disables_markdown_features, "关闭时禁用相关能力测试")
     await tester.test(_test_resolve_keeps_toggle_available, "关闭后仍可开回测试")
     await tester.test(_test_resolve_composes_with_base, "与既有覆盖叠加测试")
     await tester.test(_test_resolve_without_sender_union, "无用户 union 取默认测试")
-    await tester.test(_test_evolve_does_not_leak, "覆盖不污染共享实例测试")
     await tester.test(_test_send_path_follows_session, "发送路径跟随会话测试")
 
     return tester

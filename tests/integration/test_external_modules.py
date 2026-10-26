@@ -1,4 +1,4 @@
-"""外部模块集成测试 - wiki, mcplayer, arcaea, mcmod 等。"""
+"""外部模块集成测试 - wiki, mcplayer, arcaea, mcmod, oba, tweet 等。"""
 
 from core.tester import (
     func_case,
@@ -39,4 +39,18 @@ async def test_arcaea(tester: Tester):
 async def test_mcmod(tester: Tester):
     """mcmod 模块测试 - MCMOD 模组查询"""
     await tester.integrate("~mcmod 创建", Contains("Minecraft"), "mcmod 搜索应返回模组信息")
+    return tester
+
+
+@func_case
+async def test_oba(tester: Tester):
+    """oba 模块测试 - OpenBMCLAPI 状态"""
+    await tester.integrate("~oba status", Contains("在线节点"), "oba status 应显示节点信息")
+    return tester
+
+
+@func_case
+async def test_tweet_not_found(tester: Tester):
+    """tweet 模块测试 - 不存在的推文"""
+    await tester.integrate("~tweet 1", Contains("推文"), "tweet 不存在的推文应提示")
     return tester

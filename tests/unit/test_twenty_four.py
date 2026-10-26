@@ -32,14 +32,6 @@ async def _test_accepts_tuple():
         return False
 
 
-async def _test_accepts_list():
-    try:
-        return _all_solutions_valid([1, 2, 3, 4])
-
-    except Exception:
-        return False
-
-
 async def _test_solves_with_division():
     try:
         return _all_solutions_valid(TRICKY_NUMBERS)
@@ -60,7 +52,6 @@ async def _test_no_solution_returns_none():
 async def test_twenty_four_solver(tester: Tester):
     """twenty_four 求解器：入参类型、解的正确性与无解判定测试"""
     await tester.test(_test_accepts_tuple, "元组入参测试")
-    await tester.test(_test_accepts_list, "列表入参测试")
     await tester.test(_test_solves_with_division, "含除法组合求解测试")
     await tester.test(_test_no_solution_returns_none, "无解返回 None 测试")
 

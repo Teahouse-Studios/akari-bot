@@ -278,7 +278,7 @@ Rendezvous Hash 选择实例；广播先快照目标，再生成逐实例投递�
        ↓
 Bot.post_message(module_name, message, session_list)
    - 从数据库查询启用了该模块的目标列表
-   - group_sessions_by_channel(): 按「场景组 + 消息通道」归拢，同一通道只推一次
+   - group_sessions_by_channel(): 按“场景组 + 消息通道”归拢，同一通道只推一次
    - 只发队首，session_info.next_hops = 该通道内其余会话的 target_id
        ↓
 PlatformAPI.post_message.submit(session_info, message, module_name)

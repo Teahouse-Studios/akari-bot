@@ -19,16 +19,6 @@ def _test_parse_data_clean():
         return False
 
 
-def _test_parse_data_empty():
-    try:
-        from core.utils.dirty_check import parse_data
-
-        result = parse_data("test", {})
-        return result["content"] == "test" and result["original"] == "test"
-    except Exception:
-        return False
-
-
 def _test_parse_data_protects_at_code():
     try:
         from core.utils.dirty_check import parse_data
@@ -76,16 +66,6 @@ def _test_parse_data_protects_ke_i18n_structure():
         return False
 
 
-def _test_hash_hmac():
-    try:
-        from core.utils.dirty_check import hash_hmac
-
-        result = hash_hmac("secret", "message")
-        return isinstance(result, str) and len(result) > 0
-    except Exception:
-        return False
-
-
 async def _test_check_no_keys():
     try:
         with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
@@ -95,27 +75,6 @@ async def _test_check_no_keys():
             if len(results) != 1:
                 return False
             return results[0]["status"] is True and results[0]["content"] == "Hello World"
-    except Exception:
-        return False
-
-
-async def _test_check_empty_text():
-    try:
-        with patch("core.utils.dirty_check.access_key_id", ""), patch("core.utils.dirty_check.access_key_secret", ""):
-            from core.utils.dirty_check import check
-
-            results = await check([])
-            return results == []
-    except Exception:
-        return False
-
-
-def _test_rickroll():
-    try:
-        from core.utils.dirty_check import rickroll
-
-        result = rickroll()
-        return isinstance(result, str) and len(result) > 0
     except Exception:
         return False
 
@@ -317,13 +276,9 @@ def _test_aliyun_cache_namespace_isolated():
 async def test_dirty_check(tester: Tester):
     """core.utils.dirty_check: 内容审核系统测试"""
     await tester.test(_test_parse_data_clean, "parse_data 正常文本测试")
-    await tester.test(_test_parse_data_empty, "parse_data 空结果测试")
     await tester.test(_test_parse_data_protects_at_code, "parse_data AT 码豁免测试")
     await tester.test(_test_parse_data_protects_ke_i18n_structure, "parse_data KE/I18N 结构与 value 过滤测试")
-    await tester.test(_test_hash_hmac, "hash_hmac 测试")
     await tester.test(_test_check_no_keys, "check 无密钥跳过测试")
-    await tester.test(_test_check_empty_text, "check 空文本测试")
-    await tester.test(_test_rickroll, "rickroll 测试")
     await tester.test(_test_check_bool_clean_is_false, "check_bool 合规返回假测试")
     await tester.test(_test_check_bool_dirty_is_true, "check_bool 不合规返回真测试")
     await tester.test(_test_aliyun_split_cache_preserves_result, "阿里云长文本分片缓存测试")

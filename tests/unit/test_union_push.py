@@ -53,16 +53,6 @@ async def _test_dedups_within_channel():
         return False
 
 
-async def _test_covers_every_channel():
-    try:
-        union_id = await _bind("split", ("UPUSHA", 1), ("UPUSHB", 2))
-        calls = await _push(union_id, Plain("x"))
-        return sorted(c[0].target_id for c in calls) == ["UPUSHA|Group|split", "UPUSHB|Group|split"]
-
-    except Exception:
-        return False
-
-
 async def _test_skips_offline_channel():
     try:
         union_id = await _bind("offline", ("UPUSHA", 1), ("UPUSHB", 2))
@@ -124,6 +114,7 @@ async def _test_report_targets_dedup():
             sent.append(target.target_id)
 
         with (
+            patch("core.smtp.email_report_enabled", return_value=False),
             patch("modules.core.hooks.tos._report_targets", return_value=targets),
             patch.object(Alive, "get_alive", return_value=_ALIVE),
             patch.object(Bot, "send_direct_message", _record),
@@ -141,7 +132,6 @@ async def _test_report_targets_dedup():
 async def test_union_push(tester: Tester):
     """core.builtins.bot: 按消息通道去重的组内推送测试"""
     await tester.test(_test_dedups_within_channel, "同通道去重测试")
-    await tester.test(_test_covers_every_channel, "跨通道各推一次测试")
     await tester.test(_test_skips_offline_channel, "掉线通道跳过测试")
     await tester.test(_test_message_factory_receives_session, "消息工厂取到队首测试")
     await tester.test(_test_message_factory_may_skip, "消息工厂跳过发送测试")

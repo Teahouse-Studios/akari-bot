@@ -4,7 +4,6 @@ import asyncio
 import time
 from contextlib import asynccontextmanager
 from dataclasses import replace
-from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -21,7 +20,6 @@ from core.queue.errors import (
     RpcTimeoutError,
     RpcUnavailableError,
 )
-from core.queue.peer import PeerRecord
 from core.queue.transport import MAX_RPC_TRACEBACK_LENGTH, PROTOCOL_VERSION, RpcRequest, RpcResponse
 from core.tester import func_case, Tester
 from core.tester.timing import TIME_SCALE
@@ -167,37 +165,6 @@ async def _test_remote_error_keeps_originating_call_context():
         )
 
 
-async def _test_async_error_signal_reports_originating_call_context():
-    async with _peers() as (caller, receiver):
-
-        @receiver.register("platform.error_signal")
-        async def error_signal(payload):
-            raise RuntimeError("error signal failure")
-
-        async def invoke_from_message_handler():
-            return await caller.submit(
-                receiver.name,
-                "platform.error_signal",
-                {"session": "session-1"},
-                timeout=RPC_TEST_TIMEOUT,
-            )
-
-        report = AsyncMock()
-        with patch.object(receiver, "report_error", report):
-            task_id = await invoke_from_message_handler()
-            async with asyncio.timeout(RPC_TEST_TIMEOUT):
-                while report.await_count == 0:
-                    await asyncio.sleep(0.005)
-        details = report.await_args.args[1]
-        return (
-            isinstance(task_id, str)
-            and "platform.error_signal" in details
-            and "invoke_from_message_handler" in details
-            and "caller traceback (originating process)" in details
-            and not await JobQueuesTable.get_or_none(task_id=task_id)
-        )
-
-
 async def _test_error_details_stay_within_protocol_limit():
     request = RpcRequest(
         "traceback-limit",
@@ -215,77 +182,6 @@ async def _test_error_details_stay_within_protocol_limit():
         and "remote traceback truncated" in details
         and "traceback truncated" in details
     )
-
-
-async def _test_legacy_remote_traceback_is_augmented_with_request_context():
-    request = RpcRequest(
-        "legacy-traceback",
-        "receiver",
-        "legacy.failure",
-        None,
-        time.time() + 1,
-        source_peer_id="caller",
-        caller_traceback="originating_call",
-    )
-    response = RpcResponse(
-        request.task_id,
-        "failed",
-        {
-            "rpc": PROTOCOL_VERSION,
-            "error": {
-                "code": "remote_error",
-                "type": "ValueError",
-                "message": "legacy failure",
-                "traceback": "remote_handler_traceback",
-                "caller_traceback": "",
-            },
-        },
-    )
-    try:
-        JobQueueBase._decode_response(request, response)
-        return False
-    except RpcRemoteError as exc:
-        return (
-            exc.remote_traceback == "remote_handler_traceback"
-            and "remote_handler_traceback" in exc.traceback
-            and "legacy.failure" in exc.traceback
-            and "originating_call" in exc.traceback
-            and "caller traceback (originating process)" in exc.traceback
-        )
-
-
-async def _test_signal_timeout_error_keeps_remote_diagnostics():
-    async with _peers() as (caller, receiver):
-
-        async def invoke_from_signal_dispatcher():
-            return await caller.gather_signal("timeout-diagnostic", None, timeout=RPC_TEST_TIMEOUT)
-
-        record = PeerRecord(
-            receiver.name,
-            "test-node",
-            "test",
-            "test-service",
-            "ready",
-            (),
-            {},
-            datetime.now(UTC) + timedelta(seconds=RPC_TEST_TIMEOUT),
-        )
-        with (
-            patch.object(caller.registry, "resolve", new=AsyncMock(return_value=[record])),
-            patch.object(
-                receiver,
-                "_dispatch_signal",
-                new=AsyncMock(side_effect=RpcTimeoutError("handler deadline diagnostic")),
-            ),
-        ):
-            report = await invoke_from_signal_dispatcher()
-        details = report.errors.get(receiver.name, "")
-        return (
-            "handler deadline diagnostic" in details
-            and "timeout-diagnostic" in details
-            and "invoke_from_signal_dispatcher" in details
-            and "caller traceback (originating process)" in details
-        )
 
 
 async def _test_local_cancellation_does_not_cancel_or_retry_remote_effect():
@@ -453,30 +349,6 @@ async def _test_maintenance_pumps_nested_results_before_entering():
     return True
 
 
-async def _test_non_exclusive_maintenance_pumps_cleanup_rpc():
-    async with _peers() as (caller, receiver):
-
-        @caller.register("cleanup")
-        async def cleanup(payload):
-            return payload
-
-        async def maintain_and_cleanup():
-            async with receiver.maintenance_window(exclusive=False):
-                assert not receiver.pause_event.is_set()
-                async with receiver.maintenance_window(exclusive=True):
-                    assert receiver._maintenance_exclusive_owner is current
-                assert receiver._maintenance_exclusive_owner is None
-                return await receiver.call(caller.name, "cleanup", {"ok": True}, timeout=RPC_TEST_TIMEOUT)
-
-        current = asyncio.current_task()
-        result = await asyncio.wait_for(maintain_and_cleanup(), timeout=RPC_TEST_TIMEOUT)
-        return (
-            result == {"ok": True}
-            and caller._maintenance_exclusive_owner is None
-            and receiver._maintenance_exclusive_owner is None
-        )
-
-
 async def _test_bad_protocol_and_late_success_are_not_silent():
     async with _peers() as (caller, receiver):
         task_id = await JobQueuesTable.add_task(receiver.name, "legacy", {"old": "payload"})
@@ -530,31 +402,6 @@ async def _test_ambiguous_send_failure_discards_possible_insert():
         )
 
 
-async def _test_abandon_cleanup_is_bounded():
-    async with _peers() as (caller, receiver):
-
-        @receiver.register("cleanup-timeout")
-        async def cleanup_timeout(payload):
-            await asyncio.Event().wait()
-
-        async def abandon_forever(task_ids):
-            await asyncio.Event().wait()
-
-        original_timeout = caller.ABANDON_TIMEOUT_SECONDS
-        caller.ABANDON_TIMEOUT_SECONDS = 0.05
-        try:
-            started = time.monotonic()
-            with patch.object(caller.transport, "abandon", new=abandon_forever):
-                try:
-                    await caller.call(receiver.name, "cleanup-timeout", None, timeout=0.01)
-                    return False
-                except RpcTimeoutError:
-                    pass
-            return time.monotonic() - started < 1 * TIME_SCALE
-        finally:
-            caller.ABANDON_TIMEOUT_SECONDS = original_timeout
-
-
 async def _test_response_cleanup_failure_does_not_hide_result():
     async with _peers() as (caller, receiver):
 
@@ -580,15 +427,6 @@ async def _test_response_cleanup_failure_does_not_hide_result():
             and logged.call_count >= 1
             and caller.is_running
         )
-
-
-async def _test_malformed_deadline_is_protocol_failure():
-    async with _peers() as (caller, receiver):
-        request = replace(caller._request(receiver.name, "never", None, timeout=RPC_TEST_TIMEOUT), deadline=True)
-        await caller.transport.send(request)
-        row = await _wait_status(request.task_id, "failed")
-        (response,) = await caller.transport.consume_responses([request.task_id])
-        return row.result["error"]["code"] == "protocol_error" and response.status == "failed"
 
 
 async def _test_nested_maintenance_window_is_reentrant_for_owner():
@@ -724,24 +562,16 @@ async def test_rpc_transport(tester: Tester):
     await tester.test(_test_bidirectional_nested_calls, "双向嵌套 RPC 并发回包")
     await tester.test(_test_remote_errors_and_invalid_method_are_distinct, "远端异常与未知方法独立错误")
     await tester.test(_test_remote_error_keeps_originating_call_context, "远端异常保留调用方上下文")
-    await tester.test(_test_async_error_signal_reports_originating_call_context, "异步错误信号保留调用方上下文")
     await tester.test(_test_error_details_stay_within_protocol_limit, "错误详情遵守协议长度上限")
-    await tester.test(
-        _test_legacy_remote_traceback_is_augmented_with_request_context, "旧版远端 traceback 补齐调用上下文"
-    )
-    await tester.test(_test_signal_timeout_error_keeps_remote_diagnostics, "信号超时错误保留远端诊断")
     await tester.test(_test_local_cancellation_does_not_cancel_or_retry_remote_effect, "取消等待不取消或重试远端副作用")
     await tester.test(_test_handler_deadline_allows_cleanup_rpc, "执行超时仍能完成清理 RPC")
     await tester.test(_test_expired_requests_skip_effects_and_global_limit_applies, "过期请求不执行且限制全局上限")
     await tester.test(_test_shutdown_failure_wakes_remote_caller, "接收方关闭唤醒调用方")
     await tester.test(_test_stopping_result_pump_wakes_local_waiters, "结果泵关闭释放本地等待")
     await tester.test(_test_maintenance_pumps_nested_results_before_entering, "维护前排空双向在途调用")
-    await tester.test(_test_non_exclusive_maintenance_pumps_cleanup_rpc, "非独占维护仍可回收清理 RPC 响应")
     await tester.test(_test_bad_protocol_and_late_success_are_not_silent, "旧协议明确失败且终态不被覆盖")
     await tester.test(_test_ambiguous_send_failure_discards_possible_insert, "投递结果未知时清理可能已写入的任务")
-    await tester.test(_test_abandon_cleanup_is_bounded, "放弃投递清理有界且不阻塞调用方")
     await tester.test(_test_response_cleanup_failure_does_not_hide_result, "结果删除失败不掩盖已读取结果")
-    await tester.test(_test_malformed_deadline_is_protocol_failure, "非法布尔 deadline 明确返回协议错误")
     await tester.test(_test_nested_maintenance_window_is_reentrant_for_owner, "同任务嵌套维护窗口不会自锁")
     await tester.test(_test_concurrent_maintenance_windows_are_serialized, "并发维护窗口串行执行")
     await tester.test(

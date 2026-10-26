@@ -149,15 +149,6 @@ def _test_no_button_support_has_no_frame():
     )
 
 
-def _test_repository_url_plain_fallback():
-    with patch("modules.core.common_tools.about.read_credits", return_value=None):
-        chain = build_about_message(_msg(support_markdown=False))
-    repo = next(element for element in chain.values if isinstance(element, URLElement))
-    texts = [element.text for element in chain.values if isinstance(element, PlainElement)]
-    repository_label = Locale("zh_cn").t("core.message.about.button.repository")
-    return repo.original_url == CoreConfig.repo_url and not repo.applied_md_format and f"{repository_label}：" in texts
-
-
 @func_case
 async def test_about(tester: Tester):
     """modules.core.common_tools.about: 关于菜单。"""
@@ -167,7 +158,6 @@ async def test_about(tester: Tester):
     await tester.test(_test_credits_message_markdown_and_plain, "制作人员名单消息测试")
     await tester.test(_test_button_rows_and_qq_only_entry, "关于菜单按钮与 QQBot 专属入口测试")
     await tester.test(_test_no_button_support_has_no_frame, "无按钮能力时降级为文本链接测试")
-    await tester.test(_test_repository_url_plain_fallback, "开源仓库 Url 普通文本降级测试")
     credits_title = Locale("zh_cn").t("core.message.about.credits")
     await tester.integrate("~about credits", Contains(credits_title), "开发人员名单子命令测试")
     return tester

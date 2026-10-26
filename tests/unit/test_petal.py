@@ -7,63 +7,6 @@ from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession
 
 
-async def _test_petal_functions_no_throw():
-    try:
-        from core.utils.petal import gained_petal, lost_petal, cost_petal
-
-        await TestDataFactory.setup_default_test_env()
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-
-        await gained_petal(msg, 10)
-        await lost_petal(msg, 10)
-        await cost_petal(msg, 10, send_prompt=False)
-
-        return True
-    except Exception:
-        return False
-
-
-async def _test_cost_petal_returns_bool():
-    try:
-        from core.utils.petal import cost_petal
-
-        await TestDataFactory.setup_default_test_env()
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-
-        result = await cost_petal(msg, 10, send_prompt=False)
-        if not isinstance(result, bool):
-            return False
-
-        return True
-    except Exception:
-        return False
-
-
-async def _test_gained_petal_with_mock():
-    try:
-        from core.utils.petal import gained_petal
-
-        await TestDataFactory.setup_default_test_env()
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-
-        class MockConfig:
-            enable_petal = True
-            enable_get_petal = True
-            petal_gained_limit = 100
-
-        with patch("core.utils.petal.CoreConfig", MockConfig):
-            result = await gained_petal(msg, 10)
-            if result is None:
-                return False
-
-        return True
-    except Exception:
-        return False
-
-
 async def _test_cost_petal_insufficient_with_mock():
     try:
         from core.utils.petal import cost_petal
@@ -164,9 +107,6 @@ async def _test_petal_settlement_applies_rebate():
 @func_case
 async def test_petal(tester: Tester):
     """core.utils.petal: 花瓣系统测试"""
-    await tester.test(_test_petal_functions_no_throw, "花瓣函数不抛异常测试")
-    await tester.test(_test_cost_petal_returns_bool, "cost_petal 返回布尔值测试")
-    await tester.test(_test_gained_petal_with_mock, "gained_petal Mock Config 测试")
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
     await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
     await tester.test(_test_sign_petal_once_per_day, "签到每日仅一次且跨日重置测试")

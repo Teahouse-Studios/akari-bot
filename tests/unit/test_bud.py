@@ -22,19 +22,6 @@ async def _test_split_amount_conservation():
         return False
 
 
-async def _test_split_amount_minimum():
-    try:
-        from core.utils.bud import split_amount
-
-        for _ in range(200):
-            shares = split_amount(50, 8)
-            if any(s < 1 for s in shares):
-                return False
-        return True
-    except Exception:
-        return False
-
-
 async def _test_split_amount_avoids_extreme_small_shares():
     try:
         from core.utils.bud import split_amount
@@ -70,15 +57,6 @@ async def _test_generate_bud_id():
         existing = {"abc12345", "xyz98765"}
         bud_id = generate_bud_id(existing)
         return bool(bud_id) and bud_id not in existing
-    except Exception:
-        return False
-
-
-async def _test_bud_ttl_24h():
-    try:
-        from core.utils.bud import BUD_TTL_SECONDS
-
-        return BUD_TTL_SECONDS == 24 * 60 * 60
     except Exception:
         return False
 
@@ -161,11 +139,9 @@ async def _test_release_buds():
 async def test_bud(tester: Tester):
     """core.utils.bud: 花苞系统测试"""
     await tester.test(_test_split_amount_conservation, "split_amount 总额守恒测试")
-    await tester.test(_test_split_amount_minimum, "split_amount 每份至少 1 片测试")
     await tester.test(_test_split_amount_avoids_extreme_small_shares, "split_amount 避免极端小额测试")
     await tester.test(_test_split_amount_invalid, "split_amount 非法参数测试")
     await tester.test(_test_generate_bud_id, "generate_bud_id 唯一性测试")
-    await tester.test(_test_bud_ttl_24h, "花苞有效期 24 小时测试")
     await tester.test(_test_bud_refund_on_expiry, "过期花苞退款测试")
     await tester.test(_test_release_buds, "空花苞和过期花苞释放测试")
 

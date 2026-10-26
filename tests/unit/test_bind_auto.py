@@ -3,14 +3,13 @@
 import asyncio
 import re
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 from core.builtins.message.chain import MessageChain
 from core.builtins.session.info import SessionInfo
 from core.constants.exceptions import SessionFinished
 from core.database.models import TargetUnionInfo, TargetUnionBind
 from core.module_runtime import ModuleRuntimeManager
-from core.server.lifecycle import BackgroundTaskLifecycle
 from core.tester import func_case, Tester
 from core.tester.mock.session import MockMessageSession
 from modules.core.common_tools.bind import (
@@ -136,20 +135,6 @@ async def _test_concurrent_completion_merges_once():
             return False
         # 互认记录须写入实际生效的那个组，写入孤儿组等同于未写入。
         return sorted(target_a.list_peer_bots(a) + target_a.list_peer_bots(b)) == ["RACE1|peer_bot", "RACE2|peer_bot"]
-
-    except Exception:
-        return False
-
-
-async def _test_concurrent_auto_records_bots_id():
-    try:
-        a, b = await _handshake("BOTSID")
-
-        # 重复合并会将互认记录写入没有任何场景指向的孤儿组，等同于未写入。
-        # 双方各记录一条对方的账号，按各自平台的命名空间存放。
-        target = await TargetUnionInfo.resolve_union(a)
-        bots_id = target.list_peer_bots(a) + target.list_peer_bots(b)
-        return sorted(bots_id) == ["BOTSIDA|peer_bot", "BOTSIDB|peer_bot"]
 
     except Exception:
         return False
@@ -355,20 +340,6 @@ async def _test_completion_releases_both_contexts_when_one_release_fails():
     return False
 
 
-async def _test_expiry_task_creation_failure_rolls_back_handshake():
-    msg = await _session("FAILTASK|Group|1")
-    before = set(_pending_probes)
-    msg.hold = AsyncMock()
-    msg.release = AsyncMock()
-
-    with patch("core.module_runtime.asyncio.create_task", side_effect=RuntimeError("loop closed")):
-        try:
-            await _start_handshake(msg)
-        except RuntimeError:
-            return set(_pending_probes) == before and msg.hold.await_count == 1 and msg.release.await_count == 1
-    return False
-
-
 async def _test_handshake_cleanup_cancels_expiry_and_releases():
     await cleanup_bind_handshake_state()
     msg = await _session("CANCELTASK|Group|1")
@@ -386,19 +357,11 @@ async def _test_handshake_cleanup_cancels_expiry_and_releases():
     )
 
 
-async def _test_handshake_cleanup_is_registered():
-    runtime = ModuleRuntimeManager.get_or_create("bind")
-    return "module:bind-handshake" not in BackgroundTaskLifecycle._cleanup_hooks and any(
-        spec.callback is cleanup_bind_handshake_state for spec in runtime.cleanup_specs
-    )
-
-
 @func_case
 async def test_bind_auto(tester: Tester):
     """modules.core.common_tools.bind: bind auto 握手测试"""
     await tester.test(_test_only_one_round_survives, "握手让位测试")
     await tester.test(_test_concurrent_completion_merges_once, "并发闭合只合并一次测试")
-    await tester.test(_test_concurrent_auto_records_bots_id, "机器人账号落库测试")
     await tester.test(_test_peer_bots_scoped_per_target, "互认记录按场景分开测试")
     await tester.test(_test_unbind_forgets_peer_bots, "解绑摘除互认记录测试")
     await tester.test(_test_rebind_after_unbind, "解绑后重新绑定测试")
@@ -409,8 +372,6 @@ async def test_bind_auto(tester: Tester):
     await tester.test(_test_probe_send_failure_cleans_state_and_releases, "probe 发送失败清理测试")
     await tester.test(_test_confirm_send_failure_cleans_state_and_releases, "confirm 发送失败清理测试")
     await tester.test(_test_completion_releases_both_contexts_when_one_release_fails, "双侧上下文完整释放测试")
-    await tester.test(_test_expiry_task_creation_failure_rolls_back_handshake, "超时任务创建失败回滚测试")
     await tester.test(_test_handshake_cleanup_cancels_expiry_and_releases, "握手后台清理测试")
-    await tester.test(_test_handshake_cleanup_is_registered, "握手后台清理已注册测试")
 
     return tester

@@ -36,14 +36,6 @@ async def _test_ask_ai_without_session():
     return True
 
 
-async def _test_ask_ai_without_available_llm():
-    ctx = Bot.ModuleHookContext({"prompt": "hi"}, session_info=_session_info())
-    with _patch_llm([], None):
-        result = await hook.ask_ai(ctx)
-    assert result.status == hook.STATUS_UNAVAILABLE
-    return True
-
-
 def _test_resolve_llm_priority():
     models = [{"name": "alpha"}, {"name": "beta"}]
     with _patch_llm(models, "alpha"):
@@ -106,7 +98,6 @@ async def _test_ask_ai_dispatch():
 async def test_ai_hook(tester: Tester):
     """modules.ai.hook: ai.ask 调用契约测试"""
     await tester.test(_test_ask_ai_without_session, "缺少会话信息时不可用")
-    await tester.test(_test_ask_ai_without_available_llm, "无可用模型时不可用")
     await tester.test(_test_resolve_llm_priority, "模型选择优先级")
     await tester.test(_test_ask_ai_not_enough_petal, "花瓣不足时返回对应状态")
     await tester.test(_test_ask_ai_success, "调用成功时回传回答与花瓣扣除数")

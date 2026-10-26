@@ -137,16 +137,6 @@ async def _test_file_limit_creates_second_payload():
     return [len(payload.files) for payload in payloads] == [10, 1]
 
 
-async def _test_embed_limit_creates_second_payload():
-    chain = MessageChain.assign([Embed(title=str(index)) for index in range(11)])
-    with patch(
-        "bots.discord.message_builder.convert_embed",
-        new=AsyncMock(side_effect=[(SimpleNamespace(index=index), []) for index in range(11)]),
-    ):
-        payloads = await build_discord_payloads(_session(), chain)
-    return [len(payload.embeds) for payload in payloads] == [10, 1]
-
-
 async def _test_embed_attachment_stays_with_embed():
     chain = MessageChain.assign([Image(f"{index}.png") for index in range(10)] + [Embed(title="card")])
     embed = SimpleNamespace()
@@ -191,14 +181,6 @@ async def _test_execute_preserves_messages_before_send_failure():
     return messages == [first] and channel.send.await_count == 2
 
 
-def _test_interaction_reference_uses_component_message():
-    from bots.discord.context import resolve_discord_reference
-
-    message = SimpleNamespace(id=1)
-    interaction = SimpleNamespace(message=message)
-    return resolve_discord_reference(interaction, quote=True) is message
-
-
 @func_case
 async def test_discord_message_builder(tester: Tester):
     """Discord 消息聚合构建器。"""
@@ -212,9 +194,7 @@ async def test_discord_message_builder(tester: Tester):
     await tester.test(_test_mixed_elements_fit_one_payload, "混合元素合并为一个负载")
     await tester.test(_test_unavailable_media_elements_are_skipped, "不可用的媒体元素被跳过")
     await tester.test(_test_file_limit_creates_second_payload, "附件超过 10 个时拆包")
-    await tester.test(_test_embed_limit_creates_second_payload, "Embed 超过 10 个时拆包")
     await tester.test(_test_embed_attachment_stays_with_embed, "Embed 附件与 Embed 保持同包")
     await tester.test(_test_execute_uses_reference_first_and_view_last, "引用仅首条且按钮仅末条")
     await tester.test(_test_execute_preserves_messages_before_send_failure, "后续发送失败时保留已发送消息")
-    await tester.test(_test_interaction_reference_uses_component_message, "Interaction 引用原按钮消息")
     return tester

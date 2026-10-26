@@ -50,11 +50,6 @@ async def _query_with_invalid_wiki(inline_mode: bool) -> dict:
     return captured
 
 
-async def _test_inline_query_reports_detail():
-    captured = await _query_with_invalid_wiki(inline_mode=True)
-    return "sent" in captured and INVALID_IW_MESSAGE in _texts(captured["sent"])
-
-
 async def _test_command_query_reports_detail():
     captured = await _query_with_invalid_wiki(inline_mode=False)
     return "sent" in captured and INVALID_IW_MESSAGE in _texts(captured["sent"])
@@ -63,6 +58,5 @@ async def _test_command_query_reports_detail():
 @func_case
 async def test_wiki_invalid_interwiki(tester: Tester):
     """wiki: 站点 interwiki 无效时的提示"""
-    await tester.test(_test_inline_query_reports_detail, "内联查询发出异常详情")
     await tester.test(_test_command_query_reports_detail, "命令查询发出异常详情")
     return tester

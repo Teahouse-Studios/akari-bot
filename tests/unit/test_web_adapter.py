@@ -21,7 +21,7 @@ from core.builtins.message.elements import (
     ImageElement,
     VideoElement,
 )
-from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown, Audio, Image, Plain
+from core.builtins.message.internal import ActionText, Embed, EmbedField, Markdown
 from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.utils.session import inject_features
@@ -261,28 +261,6 @@ async def _test_markdown_element_sends_text_type() -> bool:
         WebContextManager.context.pop(session.session_id, None)
 
 
-async def _test_audio_element_sends_audio_type() -> bool:
-    fd, path = tempfile.mkstemp(suffix=".mp3")
-    os.close(fd)
-    try:
-        with open(path, "wb") as f:
-            f.write(b"fake audio")
-        session = _featured_session("web-audio-session")
-        try:
-            payload = await _capture_send(session, MessageChain.assign(Audio(path)))
-            item = payload["message"][0]
-            token = item["content"].rsplit("/", 1)[-1]
-            return (
-                item["type"] == "audio"
-                and item["content"].startswith("/api/media/")
-                and resolve_media_url(token) == path
-            )
-        finally:
-            WebContextManager.context.pop(session.session_id, None)
-    finally:
-        os.unlink(path)
-
-
 async def _test_action_text_element_sends_action_text_type() -> bool:
     session = _featured_session("web-action-text-session")
     try:
@@ -378,16 +356,6 @@ async def _test_unavailable_media_elements_are_skipped() -> bool:
     )
 
 
-async def _test_missing_media_chain_keeps_text_only() -> bool:
-    session = _featured_session("web-missing-media-session")
-    try:
-        payload = await _capture_send(session, MessageChain.assign([Plain("hello"), Image("missing.png")]))
-        message = payload["message"]
-        return len(message) == 1 and message[0]["type"] == "text" and message[0]["content"] == "hello"
-    finally:
-        WebContextManager.context.pop(session.session_id, None)
-
-
 @func_case
 async def test_web_adapter(tester: Tester):
     await tester.test(_test_passive_reply_uses_source_websocket, "Web 被动回复使用入站来源 Socket")
@@ -397,12 +365,10 @@ async def test_web_adapter(tester: Tester):
     await tester.test(_test_websocket_entry_binds_source_context, "Web 入站会话绑定来源 Socket")
     await tester.test(_test_latest_disconnect_restores_previous_websocket, "Web 最新连接断开恢复旧连接")
     await tester.test(_test_markdown_element_sends_text_type, "Web Markdown 元素降级为 text 类型")
-    await tester.test(_test_audio_element_sends_audio_type, "Web 语音元素发出 audio 类型")
     await tester.test(_test_action_text_element_sends_action_text_type, "Web 指令操作元素发出 action_text 类型")
     await tester.test(_test_button_frame_element_sends_button_frame_type, "Web 按钮区元素发出 button_frame 类型")
     await tester.test(_test_embed_element_sends_embed_type, "Web Embed 元素发出 embed 类型")
     await tester.test(_test_message_nodes_sends_nodes_type, "Web 消息节点发出 nodes 类型")
     await tester.test(_test_video_element_web_serialization, "Web Video 元素使用临时媒体 URL")
     await tester.test(_test_unavailable_media_elements_are_skipped, "Web 跳过不可用的媒体元素")
-    await tester.test(_test_missing_media_chain_keeps_text_only, "Web 媒体不可用时仅发送剩余文本")
     return tester

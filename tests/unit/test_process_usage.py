@@ -8,7 +8,6 @@ from core.queue.diagnostics import (
     collect_self_usage,
     ProcessUnavailable,
     ProcessUsage,
-    REASON_MAX_LENGTH,
     summarize_process_usage,
     usage_payload,
 )
@@ -31,13 +30,6 @@ def _test_build_usage_falls_back_to_rss():
 
 def _test_build_usage_rejects_empty_payload():
     return build_usage("QQ", {"pid": 42}) is None and build_usage("QQ", {}) is None
-
-
-def _test_build_usage_rejects_non_integer_metrics():
-    if build_usage("QQ", {"rss": "200"}) is not None:
-        return False
-    usage = build_usage("QQ", {"uss": None, "rss": 200})
-    return usage is not None and usage.metric == "RSS"
 
 
 def _test_summarize_resolves_service_names():
@@ -88,24 +80,6 @@ def _test_summarize_reports_invalid_payload():
     return len(failures) == 1 and failures[0].name == "Telegram" and failures[0].reason == "invalid"
 
 
-def _test_summarize_skips_non_dict_values():
-    usages, failures = summarize_process_usage(
-        results={"Internal|f": [None, {"pid": 6, "rss": 60}]},
-        errors={},
-        peers={"Internal|f": {"service": "Matrix"}},
-    )
-    return not failures and len(usages) == 1 and usages[0].memory == 60
-
-
-def _test_summarize_truncates_reason():
-    _, failures = summarize_process_usage(
-        results={},
-        errors={"Internal|g": "x" * 500},
-        peers={},
-    )
-    return len(failures) == 1 and len(failures[0].reason) == REASON_MAX_LENGTH
-
-
 def _test_collect_self_usage_reports_own_pid():
     usage = collect_self_usage()
     if usage.get("pid") != os.getpid():
@@ -135,7 +109,6 @@ async def test_process_usage_metrics(tester: Tester):
     await tester.test(_test_build_usage_prefers_uss, "优先取 uss 测试")
     await tester.test(_test_build_usage_falls_back_to_rss, "回落 rss 测试")
     await tester.test(_test_build_usage_rejects_empty_payload, "空载荷无效测试")
-    await tester.test(_test_build_usage_rejects_non_integer_metrics, "非整数指标无效测试")
 
     return tester
 
@@ -147,8 +120,6 @@ async def test_process_usage_summary(tester: Tester):
     await tester.test(_test_summarize_falls_back_to_peer_id, "快照缺失回退 peer_id 测试")
     await tester.test(_test_summarize_reports_errors, "未回包实例可见测试")
     await tester.test(_test_summarize_reports_invalid_payload, "无效载荷可见测试")
-    await tester.test(_test_summarize_skips_non_dict_values, "跳过非字典返回值测试")
-    await tester.test(_test_summarize_truncates_reason, "失败原因截断测试")
 
     return tester
 

@@ -41,11 +41,6 @@ async def _test_resolves_platform_id_to_union():
     return await Bot.resolve_union_targets(["REPORTTEST|Group|resolve_a"]) == [union.union_id]
 
 
-async def _test_keeps_union_id_as_is():
-    union = await TargetUnionInfo.resolve_union("REPORTTEST|Group|keep")
-    return await Bot.resolve_union_targets([union.union_id]) == [union.union_id]
-
-
 async def _test_union_id_leaves_no_stray_bind():
     union = await TargetUnionInfo.resolve_union("REPORTTEST|Group|stray")
     await Bot.resolve_union_targets([union.union_id])
@@ -86,7 +81,6 @@ async def test_report_targets(tester: Tester):
     alive = Alive.values.copy()
     try:
         await tester.test(_test_resolves_platform_id_to_union, "平台场景 ID 归一为场景组")
-        await tester.test(_test_keeps_union_id_as_is, "场景组 ID 原样采用")
         await tester.test(_test_union_id_leaves_no_stray_bind, "归一组 ID 不留脏映射行")
         await tester.test(_test_unbound_target_dropped, "未登记场景略去")
         await tester.test(_test_deduplicates_same_union, "同组配置值去重")

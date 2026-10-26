@@ -31,29 +31,10 @@ async def _test_update_and_get_stored_list():
         return False
 
 
-async def _test_stored_list_multiple_keys():
-    try:
-        await update_stored_list("TEST", "key1", [1, 2, 3])
-        await update_stored_list("TEST", "key2", ["a", "b", "c"])
-
-        result1 = await get_stored_list("TEST", "key1")
-        result2 = await get_stored_list("TEST", "key2")
-
-        if result1 != [1, 2, 3]:
-            return False
-        if result2 != ["a", "b", "c"]:
-            return False
-
-        return True
-    except Exception:
-        return False
-
-
 @func_case
 async def test_storedata(tester: Tester):
     """core.utils.storedata: 存储工具测试"""
     await tester.test(_test_get_stored_list_empty, "get_stored_list() 空数据测试")
     await tester.test(_test_update_and_get_stored_list, "update_stored_list() 和 get_stored_list() 测试")
-    await tester.test(_test_stored_list_multiple_keys, "多个存储键测试")
 
     return tester

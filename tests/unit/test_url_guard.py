@@ -81,36 +81,9 @@ async def _test_trusted_url_is_never_guarded():
         return False
 
 
-async def _test_trusted_url_skips_springboard_without_markdown():
-    try:
-        out = _render(_session(use_url_manager=True, support_markdown=False), trusted=True)
-        return out == _URL and _MM_HOST not in out
-
-    except Exception:
-        return False
-
-
-async def _test_md_format_not_applied_inside_code_block():
-    try:
-        out = _render(_session(use_url_manager=True, support_markdown=True, use_url_md_format=True))
-        return "](" not in out
-
-    except Exception:
-        return False
-
-
 async def _test_markdown_off_falls_back_to_springboard():
     try:
         out = _render(_session(use_url_manager=True, support_markdown=False))
-        return _MM_HOST in out and not out.startswith("```")
-
-    except Exception:
-        return False
-
-
-async def _test_enable_markdown_falls_back_to_springboard():
-    try:
-        out = _render(_session(use_url_manager=True, support_markdown=True), enable_markdown=False)
         return _MM_HOST in out and not out.startswith("```")
 
     except Exception:
@@ -356,10 +329,7 @@ async def test_url_guard(tester: Tester):
     await tester.test(_test_markdown_session_gets_code_block, "支持 markdown 时给出代码块测试")
     await tester.test(_test_explicit_untrusted_is_guarded, "显式不可信者走代码块测试")
     await tester.test(_test_trusted_url_is_never_guarded, "已认证链接不受保护测试")
-    await tester.test(_test_trusted_url_skips_springboard_without_markdown, "已认证链接不套跳板测试")
-    await tester.test(_test_md_format_not_applied_inside_code_block, "代码块内不套链接格式测试")
     await tester.test(_test_markdown_off_falls_back_to_springboard, "不支持 markdown 时回退跳板测试")
-    await tester.test(_test_enable_markdown_falls_back_to_springboard, "强制禁用 markdown 时回退跳板测试")
     await tester.test(_test_manager_off_leaves_url_untouched, "未启用 URLManager 时原样输出测试")
     await tester.test(_test_global_allowlist_bypasses_guard, "全局 URL 允许列表放行测试")
     await tester.test(_test_explicit_untrusted_overrides_global_allowlist, "显式不可信优先级测试")

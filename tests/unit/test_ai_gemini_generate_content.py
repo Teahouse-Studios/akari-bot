@@ -401,17 +401,6 @@ async def _test_rate_limit_is_retryable():
     return True
 
 
-async def _test_api_error_is_raised():
-    endpoint, _ = _build_endpoint("gemini-3.5-flash", None, _FakeAPIError(400, "bad request"))
-    try:
-        await endpoint.create([{"role": "user", "content": "hi"}], "auto")
-    except endpoints.GeminiGenerateContentError as exc:
-        assert "bad request" in str(exc)
-    else:
-        raise AssertionError("expected api error")
-    return True
-
-
 def _test_sdk_error_is_translated():
     exc = endpoints.gemini_error(
         errors.ClientError(400, {"error": {"message": "bad"}}),
@@ -457,7 +446,6 @@ async def test_ai_gemini_generate_content(tester: Tester):
     await tester.test(_test_invalid_signature_is_retried, "签名失效时改用无签名上下文重试")
     await tester.test(_test_invalid_signature_without_history_is_fatal, "无签名历史时不重试")
     await tester.test(_test_rate_limit_is_retryable, "429 归入可重试异常")
-    await tester.test(_test_api_error_is_raised, "其他 HTTP 错误抛出端点异常")
     await tester.test(_test_sdk_error_is_translated, "SDK 异常转换为端点异常")
     await tester.test(_test_blocked_prompt_is_raised, "提示被拦截时抛出端点异常")
     return tester

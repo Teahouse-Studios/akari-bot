@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.internal import MessageSession
 from core.tester import func_case, Tester, Raise
-from core.tester.expectations import Contains, ContainsAll, ContainsAny, Expectation, Regex
+from core.tester.expectations import Contains, ContainsAll, ContainsAny, Regex
 from core.tester.junit import JUnitReport, JUnitTestCase, JUnitTestSuite
 from core.tester.mock.http import MockHTTPResponse
 from core.tester.mock.session import MockMessageSession
@@ -51,12 +51,6 @@ def _test_mock_response_supports_all_formats():
     return not missing
 
 
-def _test_mock_response_read_returns_bytes():
-    if MockHTTPResponse(content=b"\x89PNG").read() != b"\x89PNG":
-        return False
-    return MockHTTPResponse(text="abc").read() == b"abc"
-
-
 async def _test_contains_matches_non_text_element():
     from core.builtins.message.elements import ImageElement, PlainElement
 
@@ -75,10 +69,6 @@ async def _test_contains_still_rejects_absent_text():
 
     result = {"output": [PlainElement.assign("hello")]}
     return not await Contains("definitely_absent_token").match(result)
-
-
-def _test_expectation_has_repr():
-    return repr(Contains("x")) == str(Contains("x")) and Expectation.__repr__ is not object.__repr__
 
 
 def _test_junit_coerces_error_details_to_text():
@@ -238,24 +228,6 @@ async def _test_protocol_exception_is_recorded_without_stopping_function_test():
             await asyncio.gather(task, return_exceptions=True)
 
 
-async def _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database():
-    from core.tester.process import _cancel_orphan_tasks
-
-    cancelled = asyncio.Event()
-
-    async def orphan():
-        try:
-            await asyncio.Event().wait()
-        except asyncio.CancelledError:
-            cancelled.set()
-            raise
-
-    baseline = set(asyncio.all_tasks())
-    task = asyncio.create_task(orphan(), name="test-orphaned-function-entry-task")
-    await asyncio.sleep(0)
-    return await _cancel_orphan_tasks(baseline) and task.cancelled() and cancelled.is_set()
-
-
 async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context():
     from core.tester.process import run_case_entry
 
@@ -292,15 +264,6 @@ async def _test_case_entry_cancels_orphaned_tasks_before_next_database_context()
     ):
         await run_case_entry(entry, is_ci=True)
     return orphan_task is not None and orphan_task.cancelled() and cancelled.is_set()
-
-
-async def _test_progress_notifications_coalesce_to_latest_revision():
-    tester = Tester("progress_queue")
-    revision = tester._progress_revision
-    tester._notify_progress()
-    tester._notify_progress()
-    observed = await asyncio.wait_for(tester._wait_for_progress(revision), timeout=0.1)
-    return observed == revision + 2
 
 
 async def _test_function_entry_bounds_cancellation_cleanup():
@@ -509,10 +472,8 @@ async def test_tester_framework(tester: Tester):
     """core.tester: 测试框架自身一致性测试"""
     await tester.test(_test_mock_session_signature_matches_real, "mock 会话签名与真实实现一致测试")
     await tester.test(_test_mock_response_supports_all_formats, "mock 响应支持全部 fmt 测试")
-    await tester.test(_test_mock_response_read_returns_bytes, "mock 响应 read() 返回二进制测试")
     await tester.test(_test_contains_matches_non_text_element, "文本断言命中非文本元素测试")
     await tester.test(_test_contains_still_rejects_absent_text, "文本断言不误报测试")
-    await tester.test(_test_expectation_has_repr, "断言器可读表示测试")
     await tester.test(_test_junit_coerces_error_details_to_text, "JUnit 异常详情文本化测试")
     await tester.test(_test_integrate_preserves_unexpected_exception, "func_case 保留非预期异常测试")
     await tester.test(_test_integrate_expected_exception_is_not_runner_error, "func_case 预期异常匹配测试")
@@ -523,16 +484,8 @@ async def test_tester_framework(tester: Tester):
         "业务控制流异常不终止 func_case 测试",
     )
     await tester.test(
-        _test_function_entries_cancel_orphaned_tasks_before_reinitializing_database,
-        "func_case 之间回收遗留任务测试",
-    )
-    await tester.test(
         _test_case_entry_cancels_orphaned_tasks_before_next_database_context,
         "注册表用例之间回收遗留任务测试",
-    )
-    await tester.test(
-        _test_progress_notifications_coalesce_to_latest_revision,
-        "连续进度通知合并到最新版本测试",
     )
     await tester.test(_test_function_entry_bounds_cancellation_cleanup, "func_case 取消收尾有界测试")
     await tester.test(

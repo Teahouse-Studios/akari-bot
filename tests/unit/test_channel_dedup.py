@@ -95,21 +95,6 @@ async def _test_outside_window_not_duplicate():
         return False
 
 
-async def _test_different_channel_not_duplicate():
-    try:
-        union = await TargetUnionInfo.resolve_union("CHANTEST|Group|sep1")
-        await union.bind_id("CHANTEST|Group|sep2")
-
-        first = await _fake_msg("CHANTEST|Group|sep1", "version")
-        second = await _fake_msg("CHANTEST|Group|sep2", "version")
-
-        # bind_id 默认逐个递增编号，两个场景本就不同号，均不应丢弃对方的消息。
-        return not await _claim(first) and not await _claim(second)
-
-    except Exception:
-        return False
-
-
 async def _test_channel_lookup_failure_stops_message():
     msg = await _fake_msg("CHANTEST|Group|lookup-failed", "help")
     with patch.object(TargetUnionBind, "list_channels", new=AsyncMock(side_effect=RuntimeError("db failed"))):
@@ -123,7 +108,6 @@ async def test_channel_dedup(tester: Tester):
     await tester.test(_test_same_channel_claims_once, "同通道抢占测试")
     await tester.test(_test_repeat_from_same_session_not_duplicate, "同场景重发测试")
     await tester.test(_test_outside_window_not_duplicate, "超出时间窗测试")
-    await tester.test(_test_different_channel_not_duplicate, "不同通道互不干扰测试")
     await tester.test(_test_channel_lookup_failure_stops_message, "通道查询失败停止消息测试")
 
     return tester

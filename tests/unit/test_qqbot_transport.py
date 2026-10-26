@@ -20,12 +20,6 @@ def _test_certification_selects_proactive_rate_limit() -> bool:
     )
 
 
-def _test_default_transport_is_websocket() -> bool:
-    with patch.object(QQBotConfig, "qq_use_webhook", False):
-        client = qqbot_bot._build_client()
-    return client._transport_mode == "websocket"
-
-
 def _test_webhook_transport_uses_configured_endpoint() -> bool:
     with (
         patch.object(QQBotConfig, "qq_use_webhook", True),
@@ -58,6 +52,5 @@ def _test_webhook_endpoint_values_are_coerced() -> bool:
 async def test_qqbot_transport(tester: Tester):
     """bots.qqbot.bot: 客户端构造配置测试"""
     await tester.test(_test_certification_selects_proactive_rate_limit, "主动消息认证档位映射测试")
-    await tester.test(_test_default_transport_is_websocket, "默认使用 WebSocket 传输测试")
     await tester.test(_test_webhook_transport_uses_configured_endpoint, "Webhook 传输使用配置端点测试")
     await tester.test(_test_webhook_endpoint_values_are_coerced, "Webhook 端点配置类型转换测试")

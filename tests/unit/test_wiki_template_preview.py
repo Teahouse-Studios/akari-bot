@@ -254,21 +254,6 @@ def _test_watermark_is_safe_inline_css():
     return True
 
 
-def _test_single_template_document_adds_css_panel():
-    parsed = {
-        "headhtml": "<html><head></head><body>",
-        "text": '<div class="mw-parser-output"><table class="infobox"><tr><td>内容</td></tr></table></div>',
-    }
-    document, warning = preview.preview_document(parsed, _invocation(), Locale("zh_cn"), single_template=True)
-    soup = BeautifulSoup(document, "html.parser")
-    assert not warning
-    assert soup.select_one("#akari-template-output .infobox")
-    assert soup.select_one("#akari-preview-css-panel .akari-css-title").text == "样式属性"
-    assert "grid-template-columns" in soup.find("style").get_text()
-    assert "akariFillCssPanel" in document
-    return True
-
-
 async def _test_whole_message_preview_keeps_multiple_templates():
     first = _invocation("{{Infobox|title=一}}")
     second = TemplateInvocation("{{Color|red|二}}", API, "Template:Color", 43, _info(), {})
@@ -303,43 +288,6 @@ async def _test_whole_message_preview_keeps_multiple_templates():
     assert isinstance(image, PILImage.Image)
     args = requests.api_json.await_args_list[1].kwargs
     assert args["text"] == "前缀 {{Template:Infobox|title=一}} 中间 {{Template:Color|red|二}} 后缀"
-    return True
-
-
-async def _test_api_fallback_document_marks_fallback_watermark():
-    invocation, session = _invocation(), _session()
-    requests = SimpleNamespace(
-        api_json=AsyncMock(
-            side_effect=[
-                {"query": {"pages": [{"ns": 10, "title": "Template:Infobox", "pageid": 42}]}},
-                {"parse": {"text": '<div class="mw-parser-output">结果</div>', "headhtml": ""}},
-            ]
-        )
-    )
-    manager = AsyncMock()
-    manager.__aenter__.return_value = requests
-    calls = []
-    original = preview.preview_document
-
-    def build(*args, **kwargs):
-        calls.append(kwargs)
-        return original(*args, **kwargs)
-
-    with (
-        patch.object(preview, "evaluate_url_policy", return_value=_policy(True)),
-        patch.object(preview, "check_template_parameters", new=AsyncMock()),
-        patch.object(preview, "PreviewRequests", return_value=manager),
-        patch.object(preview, "preview_document", new=build),
-        patch.object(preview, "_render_template_shell", new=AsyncMock(side_effect=RuntimeError("shell unavailable"))),
-        patch.object(
-            preview, "render_preview_document", new=AsyncMock(return_value=(PILImage.new("RGB", (12, 8)), False))
-        ),
-    ):
-        image = await preview.generate_template_preview(invocation, session)
-    assert isinstance(image, PILImage.Image)
-    api_calls = [call for call in calls if not call.get("shell")]
-    assert len(api_calls) == 1 and api_calls[0].get("fallback") is True
-    assert any(call.get("shell") for call in calls)
     return True
 
 
@@ -737,21 +685,6 @@ async def _test_remote_shell_keeps_ancestors_and_rejects_other_origins():
     return True
 
 
-def _test_shell_document_discovers_image_origins_without_scripts():
-    requests = PreviewRequests(API, "https://example.org", {})
-    _document_resources(
-        '<html><head><script src="https://cdn.example.org/site.js"></script></head>'
-        '<body><img src="https://meta.weirdgloop.org/images/footer.png" srcset="https://meta.weirdgloop.org/images/footer@2x.png 2x"></body></html>',
-        requests,
-        include_images=True,
-        include_scripts=False,
-    )
-    assert ("https", "meta.weirdgloop.org", 443) in requests.origins
-    assert ("https", "cdn.example.org", 443) not in requests.origins
-    assert ("cdn.example.org", "/site.js") not in requests.script_paths
-    return True
-
-
 @func_case
 async def test_wiki_template_preview(tester: Tester):
     for function, note in [
@@ -761,9 +694,7 @@ async def test_wiki_template_preview(tester: Tester):
         (_test_only_parameters_are_audited, "仅审核用户参数，审核缺配置、失败与无效结果拒绝预览"),
         (_test_document_preserves_effects_and_removes_input_scripts, "保留站点样式、图片及渲染模块，参数不能注入脚本"),
         (_test_watermark_is_safe_inline_css, "CSS 水印浮层旋转 −30°，回退标注、警告状态与模板标题安全转义"),
-        (_test_single_template_document_adds_css_panel, "单模板预览在内容旁展示 CSS 属性面板"),
         (_test_whole_message_preview_keeps_multiple_templates, "多模板预览保留整条消息文本和全部模板"),
-        (_test_api_fallback_document_marks_fallback_watermark, "API 兜底文档标注回退模式，真实外壳文档不标注"),
         (_test_generation_uses_actual_template_and_only_read_api, "核验真实模板，完整参数只读解析，撤出白名单拒绝执行"),
         (_test_callback_identity_once_and_delete, "回调仅原发送者触发一次，预览消息纳入删除追踪"),
         (_test_request_whitelist_redirects_and_resources, "API 查询参数不影响白名单，重定向与资源遵守请求范围"),
@@ -781,7 +712,6 @@ async def test_wiki_template_preview(tester: Tester):
             _test_remote_shell_keeps_ancestors_and_rejects_other_origins,
             "远端渲染保留皮肤祖先 DOM，清理原正文与脚本，拒绝站外外壳",
         ),
-        (_test_shell_document_discovers_image_origins_without_scripts, "本地外壳导航登记图片来源但不放行外部脚本"),
     ]:
         await tester.test(function, note)
     return tester

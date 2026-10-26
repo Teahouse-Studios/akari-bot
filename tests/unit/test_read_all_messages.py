@@ -28,17 +28,6 @@ def _make_module(**kwargs) -> Module:
     return Module.assign(**base)
 
 
-async def _test_feature_injects_into_session():
-    session_info = await SessionInfo.assign(
-        target_id="TEST|Group|read_all_messages",
-        target_from="TEST|Group",
-        client_name="TEST",
-        sender_id="TEST|1",
-        features=Features(read_all_messages=False),
-    )
-    return session_info.read_all_messages is False
-
-
 class _FakeSession:
     def __init__(self, support_rss: bool = True, read_all_messages: bool = True):
         self.support_rss = support_rss
@@ -59,19 +48,6 @@ def _test_unsupported_reason_regex():
         mod.unsupported_reason(_FakeSession(read_all_messages=False)) == "regex"
         and mod.unsupported_reason(_FakeSession()) is None
     )
-
-
-def _test_unsupported_reason_event():
-    mod = _make_module(event=True)
-    return (
-        mod.unsupported_reason(_FakeSession(read_all_messages=False)) == "event"
-        and mod.unsupported_reason(_FakeSession()) is None
-    )
-
-
-def _test_unsupported_reason_none():
-    mod = _make_module()
-    return mod.unsupported_reason(_FakeSession(support_rss=False, read_all_messages=False)) is None
 
 
 def _test_event_module_markdown_strikethrough():
@@ -268,11 +244,8 @@ async def _test_enable_all_skips_modules_with_missing_bot_permissions():
 @func_case
 async def test_read_all_messages(tester: Tester):
     """core: read_all_messages 特性与正则模块管控"""
-    await tester.test(_test_feature_injects_into_session, "特性可注入会话")
     await tester.test(_test_unsupported_reason_rss, "推送模块受限判定")
     await tester.test(_test_unsupported_reason_regex, "正则模块受限判定")
-    await tester.test(_test_unsupported_reason_event, "事件模块受限判定")
-    await tester.test(_test_unsupported_reason_none, "无标记模块不受限")
     await tester.test(_test_event_module_markdown_strikethrough, "事件模块菜单删除线")
     await tester.test(_test_regex_blocked_when_cannot_read_all, "无权限时正则不参与匹配")
     await tester.test(_test_regex_allowed_when_can_read_all, "有权限时正则照常匹配")

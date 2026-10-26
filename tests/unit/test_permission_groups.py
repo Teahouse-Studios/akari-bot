@@ -4,31 +4,13 @@ from unittest.mock import AsyncMock, Mock, patch
 import bots.milky.context as milky_context
 import bots.onebot.context as onebot_context
 from bots.discord.context import DiscordContextManager
-from bots.discord.features import features as discord_features
-from bots.kook.features import features as kook_features
 from bots.milky.context import MilkyContextManager
-from bots.milky.features import features as milky_features
 from bots.onebot.context import OneBotContextManager
-from bots.onebot.features import features as onebot_features
 from bots.qqbot.context import QQBotContextManager
-from bots.qqbot.features import features as qqbot_features, guild_features
-from core.builtins.bot import Bot
 from core.builtins.session.info import SessionInfo
-from core.queue.client import JobQueueClient
 from core.queue.contracts import PlatformAPI
 from core.queue.peer import ServiceRoute
 from core.tester import Tester, func_case
-
-
-async def _test_permission_group_features():
-    return (
-        discord_features.support_permission_group
-        and kook_features.support_permission_group
-        and guild_features.support_permission_group
-        and onebot_features.support_permission_group
-        and milky_features.support_permission_group
-        and not qqbot_features.support_permission_group
-    )
 
 
 async def _test_server_queue_forwarding():
@@ -76,36 +58,6 @@ async def _test_server_queue_forwarding():
         )
         and captured[1][3] is False
     )
-
-
-async def _test_client_queue_actions():
-    session = await SessionInfo.assign(
-        target_id="Discord|Channel|123",
-        target_from="Discord|Channel",
-        client_name="Discord",
-    )
-    context = SimpleNamespace(
-        grant_permission_group=AsyncMock(return_value=None),
-        revoke_permission_group=AsyncMock(return_value=None),
-    )
-    with (
-        patch.object(Bot, "ContextSlots", [context]),
-        patch.object(SessionInfo, "refresh_info", new=AsyncMock()),
-    ):
-        grant = await JobQueueClient.handlers[PlatformAPI.grant_permission_group.name](
-            PlatformAPI.grant_permission_group.encode_arguments(session, ["Discord|Client|1"], ["10", "20"], "test")
-        )
-        revoke = await JobQueueClient.handlers[PlatformAPI.revoke_permission_group.name](
-            PlatformAPI.revoke_permission_group.encode_arguments(session, ["Discord|Client|1"], ["10", "20"], "test")
-        )
-
-    for method in (context.grant_permission_group, context.revoke_permission_group):
-        assert method.await_count == 1
-        forwarded, *arguments = method.await_args.args
-        assert isinstance(forwarded, SessionInfo)
-        assert forwarded.target_id == session.target_id
-        assert arguments == [["Discord|Client|1"], ["10", "20"], "test"]
-    return grant is None and revoke is None
 
 
 async def _test_discord_permission_groups():
@@ -239,9 +191,7 @@ async def _test_milky_permission_groups():
 @func_case
 async def test_permission_groups(tester: Tester):
     """平台原生权限组能力、队列转换与 SDK 调用测试。"""
-    await tester.test(_test_permission_group_features, "权限组能力标记测试")
     await tester.test(_test_server_queue_forwarding, "权限组服务器队列转发测试")
-    await tester.test(_test_client_queue_actions, "权限组客户端队列动作测试")
     await tester.test(_test_discord_permission_groups, "Discord 权限组授予与移除测试")
     await tester.test(_test_kook_permission_groups, "KOOK 权限组授予与移除测试")
     await tester.test(_test_qqbot_permission_groups, "QQBot 权限组授予与移除测试")

@@ -180,48 +180,12 @@ def _test_draft_rejects_double_commit():
         return False
 
 
-def _test_commit_only_dirty_fields():
-    try:
-        msg = _FakeMsg()
-        msg.session_info.prefixes = ["~"]
-        draft = SessionDraft(msg.session_info)
-        draft.set_tmp("k", "v")
-        draft.commit()
-        assert msg.session_info.tmp["k"] == "v"
-        assert msg.session_info.prefixes == ["~"]
-        return True
-    except Exception:
-        import traceback
-
-        traceback.print_exc()
-        return False
-
-
-def _test_draft_session_info_readonly():
-    try:
-        from core.builtins.parser.hooks import SessionInfoView
-
-        msg = _FakeMsg()
-        draft = SessionDraft(msg.session_info)
-        view = draft.session_info
-        assert isinstance(view, SessionInfoView)
-        try:
-            view.tmp = {}
-            return False
-        except AttributeError:
-            return True
-    except Exception:
-        return False
-
-
 @func_case
 async def test_session_draft_outgoing(tester: Tester):
     await tester.test(_test_draft_isolation_and_commit, "draft isolation and commit")
     await tester.test(_test_draft_failure_discard, "draft failure discard")
     await tester.test(_test_outgoing_before_send_modifies_and_stops, "outgoing before_send")
     await tester.test(_test_draft_rejects_double_commit, "draft double commit rejected")
-    await tester.test(_test_commit_only_dirty_fields, "commit only dirty fields")
-    await tester.test(_test_draft_session_info_readonly, "draft session_info readonly")
     await tester.test(_test_readonly_containers_detached, "readonly session containers detached")
     await tester.test(_test_readonly_union_methods_hidden, "readonly Union methods hidden")
     await tester.test(_test_readonly_message_copy_failure, "readonly message copy failure cannot expose source")

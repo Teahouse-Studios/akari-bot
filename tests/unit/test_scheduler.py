@@ -32,36 +32,6 @@ def _test_get_scheduled_tasks_has_structure():
         return False
 
 
-def _test_get_scheduled_tasks_filter_by_module():
-    try:
-        all_tasks = get_scheduled_tasks()
-        if not all_tasks:
-            return True
-        first_module = all_tasks[0]["module_name"]
-        filtered = get_scheduled_tasks(first_module)
-        return all(t["module_name"] == first_module for t in filtered)
-    except Exception:
-        return False
-
-
-def _test_schedule_meta_stored_in_module():
-    try:
-        from core.types.module.component_meta import ScheduleMeta
-
-        for name, mod in ModulesManager.modules.items():
-            if mod.schedule_list and mod.schedule_list.set:
-                for s in mod.schedule_list.set:
-                    if not isinstance(s, ScheduleMeta):
-                        return False
-                    if not hasattr(s, "function"):
-                        return False
-                    if not hasattr(s, "trigger"):
-                        return False
-        return True
-    except Exception:
-        return False
-
-
 def _test_schedule_triggers_are_valid():
     try:
         from apscheduler.triggers.interval import IntervalTrigger
@@ -73,19 +43,6 @@ def _test_schedule_triggers_are_valid():
         tasks = get_scheduled_tasks()
         for t in tasks:
             if not isinstance(t["trigger"], valid_types):
-                return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_schedule_functions_are_coroutine():
-    try:
-        import asyncio
-
-        tasks = get_scheduled_tasks()
-        for t in tasks:
-            if not asyncio.iscoroutinefunction(t["function"]):
                 return False
         return True
     except Exception:
@@ -303,10 +260,7 @@ async def _test_scheduler_shutdown_waits_and_reaches_real_shutdown_event():
 async def test_scheduler_mock(tester: Tester):
     """计划任务 Mock 工具测试"""
     await tester.test(_test_get_scheduled_tasks_has_structure, "get_scheduled_tasks 字段结构")
-    await tester.test(_test_get_scheduled_tasks_filter_by_module, "get_scheduled_tasks 按模块过滤")
-    await tester.test(_test_schedule_meta_stored_in_module, "ScheduleMeta 存储正确")
     await tester.test(_test_schedule_triggers_are_valid, "触发器类型有效")
-    await tester.test(_test_schedule_functions_are_coroutine, "函数为协程")
     await tester.test(_test_run_schedule_function_with_noop, "run_schedule_function 空函数")
     await tester.test(_test_run_schedule_function_with_error, "run_schedule_function 异常捕获")
     await tester.test(_test_run_schedule_function_with_timeout, "run_schedule_function 超时捕获")

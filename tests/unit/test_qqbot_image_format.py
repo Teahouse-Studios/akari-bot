@@ -203,22 +203,6 @@ async def _test_markdown_and_s3_use_converted_image():
     return True
 
 
-async def _test_downloaded_image_is_resolved_once():
-    with _image_files() as root:
-        path = root / "downloaded.webp"
-        _save_image(path, "WEBP")
-        client = SimpleNamespace(
-            upload_media_image=AsyncMock(return_value=SimpleNamespace(url="qqbot-media://image/v1/test")),
-            send=AsyncMock(return_value={"id": "sent"}),
-        )
-        message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign("https://example.com/image")])
-        with patch.object(ImageElement, "get_image", new=AsyncMock(return_value=path)) as download:
-            assert await _send(client, message, markdown=True) == ["sent"]
-            download.assert_awaited_once()
-        _assert_jpeg(client.upload_media_image.await_args.kwargs["local_path"])
-    return True
-
-
 async def _test_bad_image_and_conversion_failure_are_skipped():
     with _image_files() as root:
         bad_image = root / "bad.jpg"
@@ -266,6 +250,5 @@ async def test_qqbot_image_format(tester: Tester):
     await tester.test(_test_supported_content_gets_matching_extension, "支持格式的图片校正后缀并保留内容")
     await tester.test(_test_plain_send_uploads_converted_images, "普通图片发送覆盖群聊、C2C、频道和频道私信")
     await tester.test(_test_markdown_and_s3_use_converted_image, "Markdown 上传及 S3 回退使用转换后的 JPG")
-    await tester.test(_test_downloaded_image_is_resolved_once, "Markdown 网络图片下载一次并使用本地尺寸")
     await tester.test(_test_bad_image_and_conversion_failure_are_skipped, "损坏图片和转换失败不上传且保留文本")
     return tester

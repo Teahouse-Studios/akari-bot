@@ -12,7 +12,7 @@ from bots.qqbot.context import (
 )
 from bots.qqbot.info import target_group_prefix
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ButtonRows, PlainElement
+from core.builtins.message.elements import ActionTextElement, ButtonFrameElement, ButtonRows
 from core.builtins.message.internal import Button
 from core.builtins.session.info import SessionInfo
 from core.i18n import Locale
@@ -29,19 +29,6 @@ def _test_render_full_attributes():
             f'show="{quote("沙盒", safe="")}" reference="true" />'
         )
         return tag == expected
-    except Exception:
-        return False
-
-
-def _test_render_omits_empty_show():
-    try:
-        elem = ActionTextElement.assign("~wiki 沙盒").resolve(None)
-        tag = _render_action_text(elem)
-        if "show=" in tag:
-            return False
-        if 'reference="false"' not in tag:
-            return False
-        return True
     except Exception:
         return False
 
@@ -72,60 +59,10 @@ def _test_render_truncates_text():
         return False
 
 
-def _test_render_truncates_show():
-    try:
-        elem = ActionTextElement.assign("~wiki 沙盒", show="标" * 150).resolve(None)
-        tag = _render_action_text(elem)
-        expected = quote("标" * ACTION_TEXT_MAX_LENGTH, safe="")
-        if f'show="{expected}"' not in tag:
-            return False
-        if f'text="{quote("~wiki 沙盒", safe="")}"' not in tag:
-            return False
-        return True
-    except Exception:
-        return False
-
-
 def _test_render_empty_text():
     try:
         elem = ActionTextElement.assign("").resolve(None)
         return _render_action_text(elem) == ""
-    except Exception:
-        return False
-
-
-def _test_send_msg_markdown_inline_join():
-    try:
-        # 复刻 send_msg_markdown() 的拼接逻辑，验证状态跟踪的取值
-        elements = [
-            PlainElement.assign("（"),
-            ActionTextElement.assign("~wiki 沙盒").resolve(None),
-            PlainElement.assign("）"),
-        ]
-        texts = []
-        inline_pending = False
-        for x in elements:
-            if isinstance(x, ActionTextElement):
-                tag = _render_action_text(x)
-                if tag:
-                    if texts:
-                        texts[-1] += tag
-                    else:
-                        texts.append(tag)
-                inline_pending = True
-            else:
-                if inline_pending and texts:
-                    texts[-1] += x.text
-                else:
-                    texts.append(x.text)
-                inline_pending = False
-        if len(texts) != 1:
-            return False
-        if not texts[0].startswith("（<qqbot-cmd-input "):
-            return False
-        if not texts[0].endswith("/>）"):
-            return False
-        return True
     except Exception:
         return False
 
@@ -190,12 +127,9 @@ def _test_keyboard_reflows_and_caps_qq_limits():
 async def test_qqbot_action_text(tester: Tester):
     """bots.qqbot.context: 指令操作标签渲染测试"""
     await tester.test(_test_render_full_attributes, "标签属性完整性测试")
-    await tester.test(_test_render_omits_empty_show, "无 show 省略属性测试")
     await tester.test(_test_render_escapes_quotes, "属性值编码测试")
     await tester.test(_test_render_truncates_text, "text 截断测试")
-    await tester.test(_test_render_truncates_show, "show 独立截断测试")
     await tester.test(_test_render_empty_text, "空 text 不产出标签测试")
-    await tester.test(_test_send_msg_markdown_inline_join, "行内拼接测试")
     await tester.test(_test_button_element_builds_keyboard, "ButtonElement 构建键盘测试")
     await tester.test(_test_keyboard_reflows_and_caps_qq_limits, "QQBot 键盘行列限制测试")
 

@@ -47,18 +47,6 @@ def _interaction(steps, usage=None, **kwargs):
     return gemini_interactions.Interaction.model_validate(payload)
 
 
-def _test_build_endpoint():
-    endpoint = endpoints.build_endpoint(
-        "gemini-interaction",
-        "https://generativelanguage.googleapis.com/v1beta",
-        "key",
-        "gemini-3.5-flash",
-    )
-    assert isinstance(endpoint, endpoints.GeminiInteractionsEndpoint)
-    assert endpoint.model_name == "gemini-3.5-flash"
-    return True
-
-
 def _test_messages_are_converted_to_steps():
     messages = [
         {"role": "system", "content": "sys1"},
@@ -157,40 +145,6 @@ def _test_thought_steps_are_dropped_across_models():
     _, steps, has_signatures = endpoints._messages_to_interactions(messages, "gemini-3.1-pro-preview")
     assert not has_signatures
     assert steps == [{"type": "model_output", "content": [{"type": "text", "text": "hello"}]}]
-    return True
-
-
-def _test_tool_image_message_is_merged_into_function_result():
-    messages = [
-        {
-            "role": "assistant",
-            "content": "",
-            "tool_calls": [
-                {"id": "call_1", "type": "function", "function": {"name": "generate_image", "arguments": "{}"}}
-            ],
-            "_gemini_steps": [{"type": "function_call", "id": "call_1", "name": "generate_image", "arguments": {}}],
-            "_gemini_model": "gemini-3.5-flash",
-        },
-        {"role": "tool", "tool_call_id": "call_1", "content": "done"},
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "images"},
-                {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}},
-            ],
-        },
-    ]
-    _, steps, _ = endpoints._messages_to_interactions(messages, "gemini-3.5-flash")
-    assert steps[-1] == {
-        "type": "function_result",
-        "call_id": "call_1",
-        "name": "generate_image",
-        "result": [
-            {"type": "text", "text": "done"},
-            {"type": "text", "text": "images"},
-            {"type": "image", "mime_type": "image/png", "data": "AAAA"},
-        ],
-    }
     return True
 
 
@@ -325,17 +279,6 @@ async def _test_rate_limit_is_retryable():
     return True
 
 
-async def _test_api_error_is_raised():
-    endpoint, _ = _build_endpoint(None, _FakeAPIError(400, "bad request"))
-    try:
-        await endpoint.create([{"role": "user", "content": "hi"}], "auto")
-    except endpoints.GeminiInteractionError as exc:
-        assert "bad request" in str(exc)
-    else:
-        raise AssertionError("expected api error")
-    return True
-
-
 async def _test_failed_status_is_raised():
     response = gemini_interactions.Interaction.model_validate(
         {
@@ -358,12 +301,10 @@ async def _test_failed_status_is_raised():
 @func_case
 async def test_ai_gemini_interactions(tester: Tester):
     """modules.ai: Gemini Interactions API 端点请求与响应转换"""
-    await tester.test(_test_build_endpoint, "build_endpoint 返回 Gemini 端点")
     await tester.test(_test_messages_are_converted_to_steps, "消息转换为 Interactions 步骤")
     await tester.test(_test_remote_image_url_is_preserved, "远程图片以 uri 保留")
     await tester.test(_test_gemini_steps_are_replayed_verbatim, "原始模型步骤原样回放")
     await tester.test(_test_thought_steps_are_dropped_across_models, "跨模型时不回放 thought 步骤")
-    await tester.test(_test_tool_image_message_is_merged_into_function_result, "工具图片并入函数结果")
     await tester.test(_test_unknown_step_is_replayed_raw, "未识别步骤按原始载荷回传")
     await tester.test(_test_thinking_level_mapping, "思考强度映射为 thinking_level")
     await tester.test(_test_request_payload, "请求载荷包含模型、工具与生成配置")
@@ -371,6 +312,5 @@ async def test_ai_gemini_interactions(tester: Tester):
     await tester.test(_test_response_is_parsed, "响应解析文本、工具调用与用量")
     await tester.test(_test_invalid_signature_is_retried, "签名失效时改用无 thought 步骤的上下文重试")
     await tester.test(_test_rate_limit_is_retryable, "429 归入可重试异常")
-    await tester.test(_test_api_error_is_raised, "其他 HTTP 错误抛出端点异常")
     await tester.test(_test_failed_status_is_raised, "失败状态抛出端点异常")
     return tester

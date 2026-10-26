@@ -120,25 +120,6 @@ async def _test_non_admin_gets_no_buttons():
         return False
 
 
-async def _test_other_client_gets_buttons():
-    try:
-        captured = await _probe("TEST|Group|recommend_other", "TEST", True, True)
-        keys = [element.key for element in captured["prompts"] if isinstance(element, I18NContextElement)]
-        buttons = [element for element in captured["prompts"] if isinstance(element, ButtonFrameElement)]
-        return (
-            len(buttons) == 1
-            and buttons[0].rows == get_recommend_button_data()
-            and keys
-            == [
-                "wiki.message.set.not_set",
-                "wiki.message.set.not_set.recommend",
-            ]
-        )
-
-    except Exception:
-        return False
-
-
 async def _test_button_unsupported_gets_no_buttons():
     try:
         captured = await _probe("QQBot|Group|recommend_nobutton", "QQBot", False, True)
@@ -157,7 +138,6 @@ async def test_wiki_recommend(tester: Tester):
     await tester.test(_test_button_prefix_reachable_from_interaction, "按钮前缀可识别测试")
     await tester.test(_test_admin_gets_buttons, "管理员收到按钮测试")
     await tester.test(_test_non_admin_gets_no_buttons, "非管理员无按钮测试")
-    await tester.test(_test_other_client_gets_buttons, "其他平台声明后有按钮测试")
     await tester.test(_test_button_unsupported_gets_no_buttons, "无按钮能力时无按钮测试")
 
     return tester

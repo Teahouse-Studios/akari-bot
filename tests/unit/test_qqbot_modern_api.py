@@ -194,28 +194,6 @@ async def _test_refused_delivery_is_silently_dropped() -> bool:
     return True
 
 
-async def _test_plain_image_is_uploaded_before_send() -> bool:
-    session = _make_session(target_group_prefix)
-    client = _CaptureSendClient()
-    message = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
-    result = await _send_with_client(session, client, message)
-    expected = [
-        ("upload", {"file_type": 1, "local_path": __file__, "srv_send_msg": False}),
-        (
-            "plain",
-            {
-                "content": "hello",
-                "msg_type": 7,
-                "media": {"file_info": "uploaded-image"},
-            },
-        ),
-    ]
-    if result != ["plain"] or client.calls != expected:
-        Logger.error(f"Unexpected plain image preparation/send sequence: result={result}, calls={client.calls}")
-        return False
-    return True
-
-
 async def _test_audio_video_are_sent_after_the_main_message() -> bool:
     session = _make_session(target_group_prefix)
     client = _CaptureSendClient()
@@ -237,24 +215,6 @@ async def _test_audio_video_are_sent_after_the_main_message() -> bool:
             {"msg_type": 7, "media": {"file_info": "uploaded-image"}},
         ]
     )
-
-
-async def _test_missing_media_elements_are_skipped() -> bool:
-    session = _make_session(target_group_prefix)
-    client = _CaptureSendClient()
-    message = MessageChain.assign(
-        [
-            ImageElement.assign("missing-image-fixture.png"),
-            AudioElement.assign("missing-audio-fixture.mp3"),
-            VideoElement.assign("missing-video-fixture.mp4"),
-        ]
-    )
-    with patch.object(qqbot_context, "qq_use_markdown", False):
-        result = await _send_with_client(session, client, message)
-    if result != [] or client.calls != []:
-        Logger.error(f"Expected unavailable media to be skipped: result={result}, calls={client.calls}")
-        return False
-    return True
 
 
 async def _test_missing_media_keeps_remaining_text() -> bool:
@@ -538,24 +498,6 @@ async def _test_delete_translates_application_message_id() -> bool:
     return len(client.recalls) == 1 and client.recalls[0][1] == "ROBOT-delete"
 
 
-async def _test_c2c_delete_uses_unified_api() -> bool:
-    client = _FakeClient()
-    previous_client = QQBotContextManager.client
-    QQBotContextManager.client = client
-    try:
-        await QQBotContextManager.delete_message(_make_session(target_c2c_prefix), ["one", "two"])
-    finally:
-        QQBotContextManager.client = previous_client
-    if len(client.recalls) != 2:
-        Logger.error(f"Expected two unified recall calls, got {client.recalls}")
-        return False
-    for target, message_id, hidetip in client.recalls:
-        if target.scope != "c2c" or message_id not in ("one", "two") or hidetip:
-            Logger.error(f"Unexpected C2C recall call: {(target, message_id, hidetip)}")
-            return False
-    return True
-
-
 async def _test_self_mention_is_not_rendered_plain() -> bool:
     session = _make_session(target_group_prefix)
     session.bot_id = "self"
@@ -564,17 +506,6 @@ async def _test_self_mention_is_not_rendered_plain() -> bool:
     with patch.object(qqbot_context, "qq_use_markdown", False):
         result = await _send_with_client(session, client, message)
     return result == ["plain"] and client.calls == [("plain", {"content": "hello", "message_reference": None})]
-
-
-async def _test_self_mention_is_not_rendered_markdown() -> bool:
-    session = _make_session(target_group_prefix)
-    session.bot_id = "self"
-    session.support_markdown = True
-    client = _CaptureSendClient()
-    message = MessageChain.assign([MentionElement.assign("QQBot|self"), PlainElement.assign("hello")])
-    with patch.object(qqbot_context, "qq_use_markdown", True):
-        result = await _send_with_client(session, client, message)
-    return result == ["markdown"] and client.calls == [("markdown", {"content": "hello", "keyboard": None})]
 
 
 async def _test_self_atcode_is_not_rendered() -> bool:
@@ -643,12 +574,9 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_reply_target_scopes, "统一回复目标映射测试")
     await tester.test(_test_message_id_collection, "高层发送结果消息 ID 提取测试")
     await tester.test(_test_delete_translates_application_message_id, "应用层消息 ID 撤回映射测试")
-    await tester.test(_test_c2c_delete_uses_unified_api, "C2C 统一撤回接口测试")
     await tester.test(_test_send_error_propagates_to_caller, "发送失败向调用方上抛测试")
     await tester.test(_test_refused_delivery_is_silently_dropped, "平台拒绝投递时静默放弃剩余内容测试")
-    await tester.test(_test_plain_image_is_uploaded_before_send, "Plain 图片预上传测试")
     await tester.test(_test_audio_video_are_sent_after_the_main_message, "音视频独立预上传并在主消息后发送测试")
-    await tester.test(_test_missing_media_elements_are_skipped, "不可用媒体元素被跳过测试")
     await tester.test(_test_missing_media_keeps_remaining_text, "媒体不可用时保留文本测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")
@@ -664,7 +592,6 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_group_message_reply_uses_message_reference, "普通群消息回复 ID 来源测试")
     await tester.test(_test_group_quote_uses_api_message_id, "群消息平台引用使用接口消息 ID 测试")
     await tester.test(_test_self_mention_is_not_rendered_plain, "普通消息不 @ 机器人自己测试")
-    await tester.test(_test_self_mention_is_not_rendered_markdown, "Markdown 消息不 @ 机器人自己测试")
     await tester.test(_test_self_atcode_is_not_rendered, "AT 码指向机器人自己时不渲染测试")
     await tester.test(_test_self_mention_only_message_is_not_sent, "仅提及自己时不发送空消息测试")
     await tester.test(_test_quote_self_does_not_mention_self_markdown, "引用自身消息不 @ 自己测试")

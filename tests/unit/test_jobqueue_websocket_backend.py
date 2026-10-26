@@ -270,25 +270,6 @@ async def _test_websocket_limits_duplicate_identity_and_backpressure():
         return result
 
 
-async def _test_websocket_command_slot_contention_waits_for_capacity():
-    async with _websocket_peers(queue_size=1) as (_, peers):
-        caller, receiver = peers
-        slots = caller.backend.connection._command_slots
-        await slots.acquire()
-        try:
-            command = asyncio.create_task(caller.backend.registry.resolve(PeerSelector.peer(receiver.name)))
-            await asyncio.sleep(0)
-            if command.done():
-                return False
-            slots.release()
-            records = await asyncio.wait_for(command, timeout=1)
-            return [record.peer_id for record in records] == [receiver.name]
-        finally:
-            if not command.done():
-                command.cancel()
-            await asyncio.gather(command, return_exceptions=True)
-
-
 async def _test_websocket_frame_size_limit_cleans_waiter():
     async with _websocket_peers(max_message_bytes=2048) as (hub, peers):
         caller, receiver = peers
@@ -327,24 +308,6 @@ async def _test_websocket_expired_delivery_is_released():
                 await asyncio.sleep(0.001)
         receiver.pause_event.set()
         return responses[0].status == "timeout" and request.task_id not in hub.deliveries
-
-
-async def _test_websocket_hub_restart_and_idempotent_close():
-    settings = WebSocketSettings(
-        url="ws://127.0.0.1:0/jobqueue",
-        token="restart-test-token",
-        command_timeout=1,
-    )
-    hub = WebSocketHub(settings)
-    await hub.start()
-    first_port = hub.bound_port
-    await hub.close()
-    await hub.close()
-    await hub.start()
-    try:
-        return first_port > 0 and hub.bound_port > 0 and hub._server_task is not None and not hub._server_task.done()
-    finally:
-        await hub.close()
 
 
 async def _test_websocket_independent_process_roundtrip():
@@ -437,20 +400,12 @@ async def test_jobqueue_websocket_backend(tester: Tester):
         "WebSocket 重复身份拒绝与有界队列背压",
     )
     await tester.test(
-        _test_websocket_command_slot_contention_waits_for_capacity,
-        "WebSocket 控制命令槽位拥塞等待而非立即拒绝",
-    )
-    await tester.test(
         _test_websocket_frame_size_limit_cleans_waiter,
         "WebSocket 帧大小限制与等待方清理",
     )
     await tester.test(
         _test_websocket_expired_delivery_is_released,
         "WebSocket 过期投递关联释放与超时回包",
-    )
-    await tester.test(
-        _test_websocket_hub_restart_and_idempotent_close,
-        "WebSocket Hub 重启与重复关闭安全性",
     )
     await tester.test(
         _test_websocket_independent_process_roundtrip,

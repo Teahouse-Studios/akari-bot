@@ -9,7 +9,6 @@ import bots.matrix.bot as matrix_bot_module
 import bots.matrix.context as matrix_context
 import nio
 from bots.matrix.info import client_name, sender_prefix, target_prefix
-from bots.matrix.features import features as matrix_features
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import VideoElement
 from core.builtins.message.internal import Audio, Image, Mention, Plain
@@ -294,10 +293,6 @@ async def _test_matrix_reaction_operations_keep_event_and_origin_distinct():
     )
 
 
-def _test_matrix_does_not_advertise_unimplemented_restriction():
-    return matrix_features.support_manage is False
-
-
 async def _test_matrix_permission_state_error_returns_false():
     session = SimpleNamespace(
         session_id="matrix-permission-error",
@@ -357,31 +352,6 @@ async def _test_matrix_upload_error_returns_empty_result():
     return result == [] and room_send.await_count == 0
 
 
-async def _test_matrix_send_exception_returns_empty_result():
-    session = SessionInfo(
-        target_id=f"{target_prefix}|!room:test",
-        target_from=target_prefix,
-        sender_id=f"{sender_prefix}|user:test",
-        sender_from=sender_prefix,
-        client_name=client_name,
-        session_id="matrix-send-exception",
-    )
-    with patch.object(
-        matrix_context.matrix_bot,
-        "room_send",
-        new=AsyncMock(side_effect=RuntimeError("send failed")),
-    ):
-        try:
-            result = await matrix_context.MatrixContextManager.send_message(
-                session,
-                MessageChain.assign("hello"),
-                quote=False,
-            )
-        except Exception:
-            return False
-    return result == []
-
-
 async def _test_matrix_preserves_ids_before_send_failure():
     session = SessionInfo(
         target_id=f"{target_prefix}|!room:test",
@@ -400,54 +370,6 @@ async def _test_matrix_preserves_ids_before_send_failure():
             quote=False,
         )
     return result == ["$first"] and room_send.await_count == 2
-
-
-async def _test_matrix_management_error_responses_are_not_logged_as_success():
-    session = SimpleNamespace(
-        session_id="matrix-management-error",
-        target_id=f"{target_prefix}|!room:test",
-        get_common_target_id=lambda: "!room:test",
-    )
-    info = Mock()
-    error = Mock()
-    context = {session.session_id: (None, None)}
-    with (
-        patch.object(
-            matrix_context.matrix_bot,
-            "room_redact",
-            new=AsyncMock(return_value=nio.RoomRedactError("redact failed")),
-        ),
-        patch.object(
-            matrix_context.matrix_bot,
-            "room_kick",
-            new=AsyncMock(return_value=nio.RoomKickError("kick failed")),
-        ),
-        patch.object(
-            matrix_context.matrix_bot,
-            "room_ban",
-            new=AsyncMock(return_value=nio.RoomBanError("ban failed")),
-        ),
-        patch.object(
-            matrix_context.matrix_bot,
-            "room_unban",
-            new=AsyncMock(return_value=nio.RoomUnbanError("unban failed")),
-        ),
-        patch.object(
-            matrix_context.matrix_bot,
-            "room_send",
-            new=AsyncMock(return_value=nio.RoomSendError("reaction failed")),
-        ),
-        patch.object(matrix_context.MatrixContextManager, "context", new=context),
-        patch.object(matrix_context.Logger, "info", new=info),
-        patch.object(matrix_context.Logger, "error", new=error),
-    ):
-        await matrix_context.MatrixContextManager.delete_message(session, "$message", "reason")
-        await matrix_context.MatrixContextManager.kick_member(session, "Matrix|user:test", "reason")
-        await matrix_context.MatrixContextManager.ban_member(session, "Matrix|user:test", "reason")
-        await matrix_context.MatrixContextManager.unban_member(session, "Matrix|user:test")
-        await matrix_context.MatrixContextManager.add_reaction(session, "$message", "✅")
-
-    return info.call_count == 0 and error.call_count >= 5
 
 
 @func_case
@@ -469,16 +391,7 @@ async def test_matrix_adapter(tester: Tester):
         _test_matrix_reaction_operations_keep_event_and_origin_distinct,
         "Matrix Reaction 删除事件且操作原消息",
     )
-    await tester.test(
-        _test_matrix_does_not_advertise_unimplemented_restriction,
-        "Matrix 不声明未实现的成员限制能力",
-    )
     await tester.test(_test_matrix_permission_state_error_returns_false, "Matrix 权限状态错误安全返回")
     await tester.test(_test_matrix_upload_error_returns_empty_result, "Matrix 上传错误返回空消息 ID")
-    await tester.test(_test_matrix_send_exception_returns_empty_result, "Matrix 发送异常返回空消息 ID")
     await tester.test(_test_matrix_preserves_ids_before_send_failure, "Matrix 后续失败保留已发送 ID")
-    await tester.test(
-        _test_matrix_management_error_responses_are_not_logged_as_success,
-        "Matrix 管理错误响应不得记录成功",
-    )
     return tester

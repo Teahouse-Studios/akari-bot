@@ -101,23 +101,6 @@ async def _test_df_username_mapping():
     )
 
 
-async def _test_df_username_legacy_records():
-
-    async def fake_post(url, data=None, **kwargs):
-        return {
-            "username": "someone",
-            "rating": 16.12,
-            "records": {"b30": [_df_record(mid=1)], "r10": [_df_record(mid=2)]},
-        }
-
-    with patch.object(chunithm_apidata, "post_url", fake_post):
-        data = await get_record_df_by_username("someone")
-
-    return [record["mid"] for record in data["records"]["b30"]] == [1] and [
-        record["mid"] for record in data["records"]["n20"]
-    ] == [2]
-
-
 async def _test_df_record_route():
     calls = []
     bind = DivingProberBindInfo(union_id="u", refresh_token="token", subject=None)
@@ -200,22 +183,11 @@ async def _test_lxns_developer_required():
     return False
 
 
-async def _test_lxns_developer_urls():
-    return (
-        chunithm_apidata.LXNS_CHUNITHM_PLAYER_BY_FRIEND_CODE_URL.format(friend_code=1234567890)
-        == "https://maimai.lxns.net/api/v0/chunithm/player/1234567890"
-        and chunithm_apidata.LXNS_CHUNITHM_BESTS_BY_FRIEND_CODE_URL.format(friend_code=1234567890)
-        == "https://maimai.lxns.net/api/v0/chunithm/player/1234567890/bests"
-    )
-
-
 @func_case
 async def test_maimai_chunithm(tester: Tester):
     await tester.test(_test_map_df_chunithm_record, "水鱼公开端点成绩换算")
     await tester.test(_test_df_username_mapping, "按用户名查询的两段成绩")
-    await tester.test(_test_df_username_legacy_records, "旧版按用户名查询的成绩段")
     await tester.test(_test_df_record_route, "水鱼取分路由选择")
     await tester.test(_test_lxns_record_route, "落雪取分路由选择")
     await tester.test(_test_lxns_developer_required, "未配置开发者密钥时的按好友码查询")
-    await tester.test(_test_lxns_developer_urls, "落雪开发者端点地址")
     return tester

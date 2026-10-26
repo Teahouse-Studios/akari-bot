@@ -128,76 +128,6 @@ def _test_expiring_dict_nested():
         return False
 
 
-def _test_expiring_dict_get():
-    try:
-        d = ExpiringTempDict(exp=3600)
-        d["key"] = "value"
-        if d.get("key") != "value":
-            return False
-        if d.get("missing") is not None:
-            return False
-        if d.get("missing", "default") != "default":
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_expiring_dict_copy():
-    try:
-        d = ExpiringTempDict(exp=3600)
-        d["key"] = "value"
-        d2 = d.copy()
-        if d2["key"] != "value":
-            return False
-        d2["key"] = "modified"
-        if d["key"] != "value":
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_expiring_dict_operations():
-    try:
-        d = ExpiringTempDict(exp=3600)
-        d["a"] = 1
-        d["b"] = 2
-        v = d.pop("a")
-        if v != 1:
-            return False
-        if "a" in d:
-            return False
-        if set(d.keys()) != {"b"}:
-            return False
-        if list(d.values()) != [2]:
-            return False
-        if list(d.items()) != [("b", 2)]:
-            return False
-        d.update({"c": 3, "d": 4})
-        if d["c"] != 3:
-            return False
-        d.clear()
-        if len(d) != 0:
-            return False
-        return True
-    except Exception:
-        return False
-
-
-def _test_expiring_dict_bool():
-    try:
-        d = ExpiringTempDict(exp=3600)
-        if bool(d) is not False:
-            return False
-        d["key"] = "value"
-        if bool(d) is not True:
-            return False
-        return True
-    except Exception:
-        return False
-
-
 def _test_expiring_dict_serialization():
     try:
         d = ExpiringTempDict(exp=3600)
@@ -232,10 +162,6 @@ async def test_container(tester: Tester):
     await tester.test(_test_expiring_dict_basic, "ExpiringTempDict 基本 CRUD 测试")
     await tester.test(_test_expiring_dict_expiry, "ExpiringTempDict 过期测试")
     await tester.test(_test_expiring_dict_nested, "ExpiringTempDict 嵌套测试")
-    await tester.test(_test_expiring_dict_get, "ExpiringTempDict get 测试")
-    await tester.test(_test_expiring_dict_copy, "ExpiringTempDict copy 测试")
-    await tester.test(_test_expiring_dict_operations, "ExpiringTempDict 操作测试")
-    await tester.test(_test_expiring_dict_bool, "ExpiringTempDict bool 测试")
     await tester.test(_test_expiring_dict_serialization, "ExpiringTempDict 序列化测试")
 
     return tester

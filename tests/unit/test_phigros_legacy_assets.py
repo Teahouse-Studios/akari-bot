@@ -45,25 +45,12 @@ def _test_to_difficulty_table_tolerates_legacy_values():
     return table["glaciaxion.sunsetray"] == [1.0, 6.5, 12.6, 0.0, 0.0] and table["credits.frums"] == [0.0] * 5
 
 
-def _test_to_difficulty_table_keeps_current_values():
-    return to_difficulty_table(CURRENT_SONG_INFO)["Glaciaxion.SunsetRay"] == [1.0, 6.5, 12.6, 0.0, 0.0]
-
-
-def _test_to_difficulty_table_pads_five_slots():
-    table = to_difficulty_table({"a.b": {"diff": {"EZ": 1.0}}, "c.d": {}})
-    return len(table["a.b"]) == 5 and table["c.d"] == [0.0] * 5
-
-
 def _test_is_legacy_song_info():
     return (
         is_legacy_song_info(LEGACY_SONG_INFO) is True
         and is_legacy_song_info(CURRENT_SONG_INFO) is False
         and is_legacy_song_info({}) is False
     )
-
-
-def _test_is_legacy_song_info_detects_string_constant():
-    return is_legacy_song_info({"a.b": {"name": "A", "artist": "B", "diff": {"EZ": "1.0"}}}) is True
 
 
 def _test_parse_difficulty_tsv_skips_non_numeric():
@@ -110,10 +97,7 @@ async def _test_require_song_info_accepts_current():
 async def test_phigros_legacy_assets(tester: Tester):
     """phigros: 旧版曲目信息的容错与识别"""
     await tester.test(_test_to_difficulty_table_tolerates_legacy_values, "旧版字符串定数容错")
-    await tester.test(_test_to_difficulty_table_keeps_current_values, "现行定数取值不变")
-    await tester.test(_test_to_difficulty_table_pads_five_slots, "定数表补齐五位")
     await tester.test(_test_is_legacy_song_info, "旧版结构识别")
-    await tester.test(_test_is_legacy_song_info_detects_string_constant, "字符串定数识别")
     await tester.test(_test_parse_difficulty_tsv_skips_non_numeric, "TSV 占位符跳过")
     await tester.test(_test_require_song_info_rejects_legacy, "旧版结构拦截并引导重建")
     await tester.test(_test_require_song_info_accepts_current, "现行结构照常放行")

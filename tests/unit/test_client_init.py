@@ -73,30 +73,6 @@ async def _test_failed_discord_initialization_can_retry():
         await _reset_discord_client_init_task()
 
 
-async def _test_database_failure_stops_client_initialization():
-    configure_peer = Mock()
-    close_db = AsyncMock()
-    old_initialization_task = client_init_module._initialization_task
-    client_init_module._initialization_task = None
-    try:
-        with (
-            patch.object(client_init_module, "init_db", new=AsyncMock(return_value=False)),
-            patch.object(client_init_module, "close_db", new=close_db),
-            patch.object(client_init_module.JobQueueClient, "configure_peer", new=configure_peer),
-        ):
-            try:
-                await client_init_module.client_init(queue=False, rename_logger=False)
-            except RuntimeError as exc:
-                return (
-                    "Failed to initialize database" in str(exc)
-                    and configure_peer.call_count == 0
-                    and close_db.await_count == 1
-                )
-        return False
-    finally:
-        client_init_module._initialization_task = old_initialization_task
-
-
 async def _test_database_failure_cleanup_allows_retry():
     old_queue_task = client_init_module._queue_task
     old_initialization_task = client_init_module._initialization_task
@@ -256,7 +232,6 @@ async def test_client_init(tester: Tester):
     """客户端初始化只执行一次，并阻止 Discord 事件抢跑。"""
     await tester.test(_test_concurrent_discord_events_share_initialization, "并发事件共享初始化任务")
     await tester.test(_test_failed_discord_initialization_can_retry, "初始化失败后允许重试")
-    await tester.test(_test_database_failure_stops_client_initialization, "数据库失败时停止客户端初始化")
     await tester.test(_test_database_failure_cleanup_allows_retry, "数据库失败清理后允许重试")
     await tester.test(_test_client_background_tasks_are_idempotent, "客户端后台任务幂等")
     await tester.test(

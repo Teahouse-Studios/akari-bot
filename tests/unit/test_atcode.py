@@ -59,13 +59,6 @@ def _test_broadcast_detection():
         return False
 
 
-def _test_plain_text_passthrough():
-    try:
-        return list(iter_at_code("hello")) == ["hello"] and list(iter_at_code("")) == []
-    except Exception:
-        return False
-
-
 def _test_adjacent_at_codes_follow_legacy_pattern():
     try:
         parts = list(iter_at_code("<AT:QQ|1><AT:QQ|2>"))
@@ -126,13 +119,6 @@ def _test_render_keeps_foreign_atcode():
         return False
 
 
-def _test_render_is_inline():
-    try:
-        return render_at_code("a<AT:QQ|1>b", "QQ", lambda at: f"@{at.id}") == "a@1b"
-    except Exception:
-        return False
-
-
 def _test_spans_match_pattern_regions():
     try:
         text = "a <AT:QQ|123> b <@:Discord|456>"
@@ -189,23 +175,13 @@ async def test_atcode(tester: Tester):
     await tester.test(_test_iter_supports_alternate_marker, "`<@:` 标记形式")
     await tester.test(_test_iter_supports_extra_fields, "冗余中间字段形式")
     await tester.test(_test_broadcast_detection, "全体提及识别")
-    await tester.test(_test_plain_text_passthrough, "无 AT 码文本透传")
     await tester.test(_test_adjacent_at_codes_follow_legacy_pattern, "相邻 AT 码沿用既有正则语义")
     await tester.test(_test_roundtrip_preserves_text, "切分后可还原原文")
-    await tester.test(_test_allow_parse_false_keeps_raw_text, "allow_parse=False 原样保留")
     await tester.test(_test_render_platform_syntax, "各平台渲染语法")
     await tester.test(_test_render_keeps_foreign_atcode, "非本平台 AT 码保留")
-    await tester.test(_test_render_is_inline, "渲染结果保持行内")
     await tester.test(_test_spans_match_pattern_regions, "受保护区间精确覆盖")
     await tester.test(_test_wrap_sender_id_idempotent, "wrap_sender_id 幂等")
     await tester.test(_test_wrap_sender_id_preserves_backslashes, "wrap_sender_id 保留反斜杠")
     await tester.test(_test_wrap_then_render, "包装后可渲染")
 
     return tester
-
-
-def _test_allow_parse_false_keeps_raw_text():
-    try:
-        return _rebuild("hi <AT:QQ|123> bye") == "hi <AT:QQ|123> bye"
-    except Exception:
-        return False

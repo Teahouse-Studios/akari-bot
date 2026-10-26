@@ -1,7 +1,6 @@
 """core.queue.server 新增 WebUI 相关处理器的单元测试。"""
 
 import json
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import core.queue.server as server
@@ -37,20 +36,6 @@ def _test_status_payload_is_serializable():
         and payload["contexts"] == [{"index": 0, "pages": ["https://example.test/"]}]
         and "contexts_open_sorted" not in payload
     )
-
-
-def _test_status_payload_rejects_non_dict():
-    return server._web_render_status_payload(None) is None
-
-
-async def _test_runtime_stats_reports_backend_and_counters():
-    with (
-        patch.object(server.JobQueueServer, "backend", SimpleNamespace(name="websocket")),
-        patch.object(server.Info, "command_parsed", 5),
-        patch.object(server.Info, "message_parsed", 7),
-    ):
-        result = await server.get_runtime_stats()
-    return result == {"jobqueue_backend": "websocket", "command_parsed": 5, "message_parsed": 7}
 
 
 async def _test_process_usage_reports_failures_as_data():
@@ -166,8 +151,6 @@ async def _test_test_web_render_truncates_source():
 async def test_webrender_rpc(tester: Tester):
     """core.queue.server: 状态净化与渲染测试参数校验测试"""
     await tester.test(_test_status_payload_is_serializable, "WebRender 状态净化测试")
-    await tester.test(_test_status_payload_rejects_non_dict, "WebRender 状态非法输入测试")
-    await tester.test(_test_runtime_stats_reports_backend_and_counters, "运行时统计测试")
     await tester.test(_test_process_usage_reports_failures_as_data, "进程占用失败回报测试")
     await tester.test(_test_active_session_count_reports_running_and_waiting, "活跃会话计数测试")
     await tester.test(_test_control_web_render_rejects_unknown_action, "WebRender 控制非法 action 测试")

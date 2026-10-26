@@ -7,6 +7,7 @@ from core.tester import (
     Contains,
     ContainsAll,
     Empty,
+    Match,
     Not,
 )
 from modules.core.common_tools.help import regex_disable_prefixes
@@ -33,8 +34,7 @@ async def test_help(tester: Tester):
     """help 命令测试"""
     await tester.integrate("~help", Contains("基础模块"), "help 应显示基础模块列表")
     await tester.integrate("~help help", Contains("--img"), "help 帮助应展示强制图片选项")
-    await tester.integrate("~help version", Contains("version"), "help version 应显示版本帮助")
-    await tester.integrate("~help version", Contains("版本号"), "help version 应包含版本号描述")
+    await tester.integrate("~help version", ContainsAll("version", "版本号"), "help version 应显示版本帮助与描述")
     await tester.integrate(
         "~help url-audit",
         ContainsAll("~url-audit allowlist", "~url-audit blocklist"),
@@ -105,6 +105,19 @@ async def test_merged_setup_commands(tester: Tester):
     await tester.integrate("~setup prefix list", Contains("前缀"), "setup prefix list 应显示前缀")
     await tester.integrate("~setup locale", Contains("简体中文"), "setup locale 应显示语言列表")
     await tester.integrate("~setup alias list", Contains("别名"), "setup alias list 应显示别名列表")
+    await tester.integrate("~setup list", ContainsAll("场景设置", "用户设置"), "setup list 应一并列出两域设置")
+    await tester.integrate(
+        "~setup list target",
+        All(Contains("场景设置"), Contains("时间偏移"), Not(Contains("用户设置"))),
+        "setup list target 应只列出场景设置",
+    )
+    await tester.integrate(
+        "~setup list sender",
+        All(Contains("用户设置"), Contains("输入提示"), Not(Contains("场景设置"))),
+        "setup list sender 应只列出用户设置",
+    )
+    await tester.integrate("~setup dark", Contains("已开启深色模式"), "setup dark 应开启深色模式")
+    await tester.integrate("~setup dark", Contains("已关闭深色模式"), "setup dark 应关闭深色模式")
 
     return tester
 
@@ -182,11 +195,11 @@ async def test_ping(tester: Tester):
 @func_case
 async def test_whoami(tester: Tester):
     """whoami 命令测试"""
-    await tester.integrate("~whoami", Contains("ID"), "whoami 应显示用户 ID")
-    await tester.integrate("~whoami", Contains("TEST|0"), "whoami 应显示 TEST|0")
-    await tester.integrate("~whoami", Contains("用户组"), "whoami 应显示所属用户组")
-    await tester.integrate("~whoami", Contains("场景组"), "whoami 应显示所属场景组")
-    await tester.integrate("~whoami", Contains("TEST|Console|0"), "whoami 应列出场景组内已绑定的场景")
+    await tester.integrate(
+        "~whoami",
+        ContainsAll("ID", "TEST|0", "用户组", "场景组", "TEST|Console|0"),
+        "whoami 应显示用户 ID、所属用户组与场景组及组内已绑定的场景",
+    )
 
     return tester
 
@@ -194,9 +207,9 @@ async def test_whoami(tester: Tester):
 @func_case
 async def test_locale(tester: Tester):
     """locale 命令测试"""
-    await tester.integrate("~locale", Contains("语言"), "locale 应显示语言信息")
-    await tester.integrate("~locale", Contains("支持的语言列表"), "locale 应显示语言列表标题")
-    await tester.integrate("~locale", Contains("简体中文"), "locale 应显示简体中文")
+    await tester.integrate("~locale", ContainsAll("支持的语言列表", "简体中文"), "locale 应显示语言列表")
+    await tester.integrate("~locale en_us", Contains("Success"), "locale 切换英文后应以英文回执")
+    await tester.integrate("~locale zh_cn", Contains("成功"), "locale 恢复中文后应以中文回执")
 
     return tester
 
@@ -205,5 +218,17 @@ async def test_locale(tester: Tester):
 async def test_petal(tester: Tester):
     """petal 命令测试"""
     await tester.integrate("~petal", Contains("花瓣"), "petal 应显示花瓣信息")
+    await tester.integrate("~petal sign", Contains("签到"), "petal sign 应提示签到结果")
+
+    return tester
+
+
+@func_case
+async def test_say(tester: Tester):
+    """say 命令测试"""
+    await tester.integrate(r"~say a\b", Match(r"a\b"), "say 应原样发出单个反斜杠")
+    await tester.integrate(r"~say a\\b", Match(r"a\\b"), "say 应原样发出连续的两个反斜杠")
+    await tester.integrate(r"~say \d+", Match(r"\d+"), "say 应原样发出正则式反斜杠")
+    await tester.integrate("~say TEST|0 hi", Match("<AT:TEST|0> hi"), "say 应照旧把发送者 ID 转换为 AT 码")
 
     return tester

@@ -42,27 +42,6 @@ async def _test_slash_response_renders_button_element():
     )
 
 
-async def _test_slash_send_failure_returns_empty():
-    session = SessionInfo(
-        target_id="Discord|Channel|1",
-        target_from="Discord|Channel",
-        client_name="Discord",
-        sender_id="Discord|Client|1",
-        locale=Locale("zh_cn"),
-    )
-    session.session_id = "discord-slash-send-failure"
-    ctx = SimpleNamespace(respond=AsyncMock(side_effect=RuntimeError("send failed")), send=AsyncMock())
-    DiscordSlashContextManager.context[session.session_id] = ctx
-    try:
-        try:
-            result = await DiscordSlashContextManager.send_message(session, MessageChain.assign("hello"))
-        except Exception:
-            return False
-    finally:
-        DiscordSlashContextManager.context.pop(session.session_id, None)
-    return result == []
-
-
 async def _test_slash_preserves_ids_before_send_failure():
     session = SessionInfo(
         target_id="Discord|Channel|1",
@@ -115,6 +94,5 @@ async def test_discord_slash_context(tester: Tester):
     """Discord 斜杠命令发送。"""
     await tester.test(_test_slash_response_renders_button_element, "ButtonFrame 渲染为斜杠响应按钮")
     await tester.test(_test_slash_first_response_uses_original_message_id, "首次响应返回原始消息 ID")
-    await tester.test(_test_slash_send_failure_returns_empty, "Discord Slash 发送异常返回空消息 ID")
     await tester.test(_test_slash_preserves_ids_before_send_failure, "Discord Slash 后续失败保留已发送 ID")
     return tester

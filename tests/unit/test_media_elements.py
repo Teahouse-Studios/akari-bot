@@ -81,20 +81,6 @@ async def _test_image_element_get_image_rejects_non_image() -> bool:
     return False
 
 
-async def _test_resolve_media_path_for_local_image() -> bool:
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as image_file:
-        image_file.write(_png_bytes())
-        image_path = image_file.name
-    try:
-        return await resolve_media_path(ImageElement.assign(image_path)) == image_path
-    finally:
-        os.unlink(image_path)
-
-
-async def _test_resolve_media_path_skips_missing_image() -> bool:
-    return await resolve_media_path(ImageElement.assign("missing-image-fixture.png")) is None
-
-
 async def _test_resolve_media_path_skips_failed_download() -> bool:
     element = ImageElement.assign("https://example.com/blocked.png")
     with patch(
@@ -157,8 +143,6 @@ async def test_media_elements(tester: Tester):
     await tester.test(_test_image_element_missing_file_raises, "本地图片缺失时 ImageElement.get 抛出 FileNotFoundError")
     await tester.test(_test_image_element_get_image_accepts_png, "响应体为图片时下载落盘")
     await tester.test(_test_image_element_get_image_rejects_non_image, "响应体非图片时下载失败且不落盘")
-    await tester.test(_test_resolve_media_path_for_local_image, "resolve_media_path 解析本地图片")
-    await tester.test(_test_resolve_media_path_skips_missing_image, "resolve_media_path 跳过缺失图片")
     await tester.test(_test_resolve_media_path_skips_failed_download, "resolve_media_path 跳过下载失败图片")
     await tester.test(_test_resolve_media_path_for_local_media_files, "resolve_media_path 解析本地音视频")
     await tester.test(

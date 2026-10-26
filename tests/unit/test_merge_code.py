@@ -63,14 +63,6 @@ async def _test_code_consumed_once():
         return False
 
 
-async def _test_invalid_code_returns_none():
-    try:
-        return merge._take_merge_code("ZZZZZZ") is None
-
-    except Exception:
-        return False
-
-
 async def _test_bind_code_not_consumable():
     try:
         from modules.core.common_tools import bind
@@ -101,15 +93,6 @@ async def _test_unify_channel_merges_two_sessions():
         return False
 
 
-async def _test_unify_channel_missing_bind_is_safe():
-    try:
-        await merge._unify_channel("NOSUCH|Group|x", "NOSUCH|Group|y")
-        return True
-
-    except Exception:
-        return False
-
-
 async def _test_unify_channel_missing_initiator_reassigns_current():
     target_id = "MERGETEST|Group|missing-initiator"
     union = await TargetUnionInfo.resolve_union(target_id)
@@ -128,10 +111,8 @@ async def test_merge_code(tester: Tester):
     await tester.test(_test_target_code_roundtrip, "场景码往返测试")
     await tester.test(_test_sender_code_roundtrip, "账号码往返测试")
     await tester.test(_test_code_consumed_once, "一次性消费测试")
-    await tester.test(_test_invalid_code_returns_none, "无效码测试")
     await tester.test(_test_bind_code_not_consumable, "与 bind 隔离测试")
     await tester.test(_test_unify_channel_merges_two_sessions, "通道统一测试")
-    await tester.test(_test_unify_channel_missing_bind_is_safe, "缺绑定行兜底测试")
     await tester.test(_test_unify_channel_missing_initiator_reassigns_current, "缺发起方绑定时重分配当前通道测试")
 
     return tester

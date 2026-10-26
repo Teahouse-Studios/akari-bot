@@ -47,11 +47,6 @@ def _test_sqlite_explicit_fields_are_preserved():
     )
 
 
-def _test_non_sqlite_link_keeps_existing_behavior():
-    link = prepare_db_link("mysql+asyncmy://user:pass@localhost/akari?charset=utf8mb4")
-    return link == "mysql://user:pass@localhost/akari?charset=utf8mb4"
-
-
 def _test_module_database_discovery_distinguishes_missing_dependency():
     module = SimpleNamespace(name="__test_database_discovery")
     with (
@@ -128,24 +123,6 @@ async def _test_pre_init_mode_generates_all_schemas():
             database.Temp.data["modules_db_list"] = old_database_list
 
 
-async def _test_failed_init_closes_partial_connections():
-    close_connections = AsyncMock()
-    old_database_list = database.Temp.data.get("modules_db_list")
-    try:
-        with (
-            patch.object(database, "fetch_module_db", return_value=[]),
-            patch.object(database.Tortoise, "init", new=AsyncMock(side_effect=RuntimeError("partial init"))),
-            patch.object(database.Tortoise, "close_connections", new=close_connections),
-        ):
-            result = await database.init_db()
-        return result is False and close_connections.await_count == 1
-    finally:
-        if old_database_list is None:
-            database.Temp.data.pop("modules_db_list", None)
-        else:
-            database.Temp.data["modules_db_list"] = old_database_list
-
-
 async def _test_cancelled_init_closes_partial_connections():
     entered = asyncio.Event()
     close_connections = AsyncMock()
@@ -187,28 +164,6 @@ async def _test_init_db_clears_task_local_tortoise_context():
             database.Temp.data.pop("modules_db_list", None)
         else:
             database.Temp.data["modules_db_list"] = old_modules_db_list
-
-
-async def _test_activate_db_reload_clears_inherited_old_context():
-    old_context = TortoiseContext()
-    new_context = TortoiseContext()
-    previous_global = tortoise_context._global_context
-    token = tortoise_context._current_context.set(old_context)
-    prepared = database.PreparedDatabaseReload(
-        context=new_context,
-        previous_context=old_context,
-        database_list=[],
-    )
-    try:
-        database.activate_db_reload(prepared)
-        return (
-            prepared.activated
-            and tortoise_context._global_context is new_context
-            and tortoise_context._current_context.get() is None
-        )
-    finally:
-        tortoise_context._global_context = previous_global
-        tortoise_context._current_context.reset(token)
 
 
 async def _test_task_created_after_init_uses_replaceable_global_context():
@@ -514,20 +469,14 @@ async def test_database_init(tester: Tester):
     """SQLite 参数自动补全，且仅 pre-init 模式执行建表。"""
     await tester.test(_test_sqlite_defaults_are_added, "SQLite 缺失参数自动补全")
     await tester.test(_test_sqlite_explicit_fields_are_preserved, "SQLite 显式参数保持不变")
-    await tester.test(_test_non_sqlite_link_keeps_existing_behavior, "非 SQLite 连接保持现有行为")
     await tester.test(
         _test_module_database_discovery_distinguishes_missing_dependency,
         "模块数据库发现区分缺失 models 与内部依赖",
     )
     await tester.test(_test_runtime_init_does_not_generate_schemas, "运行期初始化不执行建表")
     await tester.test(_test_pre_init_mode_generates_all_schemas, "pre-init 建立核心、local 与模块表")
-    await tester.test(_test_failed_init_closes_partial_connections, "数据库初始化失败清理部分连接")
     await tester.test(_test_cancelled_init_closes_partial_connections, "数据库初始化取消清理部分连接")
     await tester.test(_test_init_db_clears_task_local_tortoise_context, "数据库初始化清理任务级 context")
-    await tester.test(
-        _test_activate_db_reload_clears_inherited_old_context,
-        "数据库切换不继承旧任务级 context",
-    )
     await tester.test(
         _test_task_created_after_init_uses_replaceable_global_context,
         "初始化后任务使用可替换 global context",

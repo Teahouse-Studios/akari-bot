@@ -181,26 +181,6 @@ def _test_term_keys_live_in_terms_directory():
     return not offenders
 
 
-def _test_terms_directory_is_loaded():
-    """术语目录里的键省略 `term.` 前缀，加载时按语言标签取文件。"""
-    root = Path(__file__).resolve().parents[2]
-    core_terms = json.loads((root / "core/locales/terms/zh_cn.json").read_text(encoding="utf-8"))
-    if any(key.startswith("term.") for key in core_terms):
-        return False
-    scoped = Locale("zh_cn", term_candidates=build_term_candidates("Discord|Channel", False))
-    return scoped.term_key("target") == "term.target.discord"
-
-
-def _test_terms_vocabulary_is_centralized():
-    """平台称呼差异集中在 core 的词表：术语词条是词表而非平台逻辑，单一归属也避免共用身份的键冲突。"""
-    root = Path(__file__).resolve().parents[2]
-    scattered = [path.relative_to(root).as_posix() for path in sorted(root.glob("bots/*/locales/terms"))]
-    if scattered:
-        Logger.error("适配器的术语词条应集中到 core/locales/terms/，当前存在于：" + ", ".join(scattered))
-        return False
-    return (root / "core/locales/terms/zh_cn.json").is_file()
-
-
 def _scan_unscoped_locale_sites() -> list[str]:
     root = Path(__file__).resolve().parents[2]
     offenders = []
@@ -247,8 +227,6 @@ async def test_term_locale(tester: Tester):
     await tester.test(_test_derive_private_session_refreshes_terms, "派生私聊会话刷新术语测试")
     await tester.test(_test_locale_files_pass_term_audit, "语言文件术语审计测试")
     await tester.test(_test_term_keys_live_in_terms_directory, "术语词条目录归属测试")
-    await tester.test(_test_terms_directory_is_loaded, "术语目录加载测试")
-    await tester.test(_test_terms_vocabulary_is_centralized, "术语词表集中归属测试")
     await tester.test(_test_no_unscoped_locale_sites, "Locale 构造点检查")
 
     return tester

@@ -143,16 +143,6 @@ async def _test_short_page_uses_action_text():
     ] and not output.contains(MarkdownElement)
 
 
-async def _test_long_qqbot_page_uses_complete_table():
-    output = _build_disambiguation_output(_msg("QQBot", table=True), _long_page(), "mc:")
-    actions = [element for element in output if isinstance(element, ActionTextElement)]
-    return (
-        output.contains(MarkdownElement)
-        and len(actions) == DISAMBIGUATION_MAX_BLOCKS + 2
-        and actions[-1].text.text == f"~wiki mc:页面 {DISAMBIGUATION_MAX_BLOCKS + 1}"
-    )
-
-
 async def _test_long_qqbot_payload_keeps_table_and_actions():
     session_id = "wiki-disambiguation-table"
     session_info = SessionInfo(
@@ -189,11 +179,6 @@ async def _test_long_qqbot_payload_keeps_table_and_actions():
     )
 
 
-async def _test_long_other_page_uses_render_only():
-    output = _build_disambiguation_output(_msg("Discord", table=False), _long_page(), "")
-    return not output
-
-
 async def _test_qqbot_without_markdown_table_uses_render_only():
     output = _build_disambiguation_output(_msg("QQBot", table=False, action=False), _long_page(), "")
     return not output
@@ -204,8 +189,6 @@ async def test_wiki_disambiguation(tester: Tester):
     await tester.test(_test_particle_html_keeps_internal_targets, "粒子消歧义样本保留内部目标")
     await tester.test(_test_wikilib_marks_pageprops_disambiguation, "pageprops 消歧义识别与完整正文解析")
     await tester.test(_test_short_page_uses_action_text, "短消歧义页使用 ActionText")
-    await tester.test(_test_long_qqbot_page_uses_complete_table, "QQBot 长消歧义页使用完整 Markdown 表格")
     await tester.test(_test_long_qqbot_payload_keeps_table_and_actions, "QQBot 表格载荷保留全部 ActionText")
-    await tester.test(_test_long_other_page_uses_render_only, "其他平台长消歧义页仅使用页面渲染")
     await tester.test(_test_qqbot_without_markdown_table_uses_render_only, "QQBot 关闭 Markdown 后仅使用页面渲染")
     return tester

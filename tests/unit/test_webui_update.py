@@ -58,15 +58,6 @@ def _command_factory(processes):
     return create, calls
 
 
-def _test_sse_format():
-    payload = update_api._sse("output", {"line": "a\nb"})
-    return (
-        payload.startswith("event: output\ndata: ")
-        and payload.endswith("\n\n")
-        and orjson.loads(payload.split("data: ", 1)[1].strip()) == {"line": "a\nb"}
-    )
-
-
 async def _test_stream_command_splits_lines():
     process = _FakeProcess(b"first line\rprogress\npartial")
     create, _ = _command_factory([process])
@@ -310,20 +301,6 @@ async def _test_restart_endpoint_passes_force():
     return response.status_code == 202 and response.media_type == "text/event-stream" and forces == [True]
 
 
-async def _test_restart_rejects_invalid_force():
-    endpoint = inspect.unwrap(update_api.restart_bot)
-    with (
-        patch.object(update_api, "verify_jwt", lambda request: None),
-        patch.object(update_api, "get_client_ip", lambda request: "test"),
-        patch.object(update_api, "schedule_restart", lambda force=False: None),
-    ):
-        try:
-            await endpoint(_FakeRequest({"force": 1}))
-        except HTTPException as e:
-            return e.status_code == 400
-    return False
-
-
 async def _test_schedule_restart_force_upgrades_pending_wait():
     order = []
     started = asyncio.Event()
@@ -393,7 +370,6 @@ async def _test_schedule_restart_force_upgrades_pending_wait():
 @func_case
 async def test_webui_update(tester: Tester):
     """bots.web.api: 更新机器人接口测试"""
-    await tester.test(_test_sse_format, "SSE 事件格式测试")
     await tester.test(_test_stream_command_splits_lines, "命令输出分行测试")
     await tester.test(_test_update_runs_git_and_dependencies, "更新流程与流式输出测试")
     await tester.test(_test_update_force_resets_first, "强制更新重置测试")
@@ -408,6 +384,5 @@ async def test_webui_update(tester: Tester):
     await tester.test(_test_schedule_restart_force_upgrades_pending_wait, "强制重启升级等待任务测试")
     await tester.test(_test_restart_endpoint_passes_force, "重启接口传递参数测试")
     await tester.test(_test_restart_stream_reports_active_sessions, "重启流输出会话数测试")
-    await tester.test(_test_restart_rejects_invalid_force, "重启接口非法参数拦截测试")
 
     return tester

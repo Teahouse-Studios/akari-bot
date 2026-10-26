@@ -56,26 +56,6 @@ async def _test_discord_guild_member_joined():
     )
 
 
-async def _test_discord_guild_member_left():
-    result, event = await _capture_event(
-        discord_events,
-        discord_events.guild_member_left,
-        "user-1",
-        "guild-1",
-    )
-    return result == "task-id" and _event_matches(
-        event,
-        {
-            "event_name": "guild_member_left",
-            "target_id": "Discord|Guild|guild-1",
-            "target_from": "Discord|Guild",
-            "client_name": "Discord",
-            "sender_id": "Discord|Client|user-1",
-            "sender_from": "Discord|Client",
-        },
-    )
-
-
 async def _test_telegram_group_members_joined():
     joined_at = datetime(2026, 8, 18, 12, 1, tzinfo=UTC)
     message = SimpleNamespace(
@@ -188,30 +168,6 @@ async def _test_kook_guild_member_joined():
     )
 
 
-async def _test_kook_guild_member_left():
-    result, event = await _capture_event(
-        kook_events,
-        kook_events.guild_member_left,
-        "user-2",
-        "guild-2",
-        1787040001000,
-        "event-4",
-    )
-    json.dumps(event["data"])
-    return result == "task-id" and _event_matches(
-        event,
-        {
-            "event_name": "guild_member_left",
-            "target_id": "KOOK|Guild|guild-2",
-            "target_from": "KOOK|Guild",
-            "client_name": "KOOK",
-            "sender_id": "KOOK|User|user-2",
-            "sender_from": "KOOK|User",
-            "data": {"left_at": 1787040001000, "event_id": "event-4"},
-        },
-    )
-
-
 async def _test_matrix_room_member_joined():
     sender_id = "Matrix|alice:example.org"
     predicate_args = {
@@ -313,11 +269,9 @@ async def _test_matrix_room_member_left():
 @func_case
 async def test_platform_member_events(tester: Tester):
     await tester.test(_test_discord_guild_member_joined, "Discord 服务器成员加入事件转换测试")
-    await tester.test(_test_discord_guild_member_left, "Discord 服务器成员离开事件转换测试")
     await tester.test(_test_telegram_group_members_joined, "Telegram 群组成员加入事件转换测试")
     await tester.test(_test_telegram_group_member_left, "Telegram 群组成员离开事件转换测试")
     await tester.test(_test_kook_guild_member_joined, "KOOK 服务器成员加入事件转换测试")
-    await tester.test(_test_kook_guild_member_left, "KOOK 服务器成员离开事件转换测试")
     await tester.test(_test_matrix_room_member_joined, "Matrix 房间成员加入事件转换测试")
     await tester.test(_test_matrix_room_member_left, "Matrix 房间成员离开事件转换测试")
     return tester

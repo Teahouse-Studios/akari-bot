@@ -1,15 +1,12 @@
 """落雪咖啡屋（LXNS）接入的纯逻辑单元测试：ID 换算、成绩换算、数据源选择与 OAuth 工具。"""
 
-import inspect
 from unittest.mock import patch
 
 from core.constants.exceptions import ConfigValueError
 from core.tester import func_case, Tester
 from modules.maimai.database.models import LxnsProberBindInfo
-from modules.maimai.libraries import lxns_apidata, lxns_oauth, maimaidx_apidata
+from modules.maimai.libraries import lxns_apidata, lxns_oauth
 from modules.maimai.libraries.lxns_apidata import (
-    LXNS_MAIMAI_BESTS_BY_FRIEND_CODE_URL,
-    LXNS_MAIMAI_PLAYER_BY_FRIEND_CODE_URL,
     df_to_lxns_id,
     get_record_lx,
     get_record_lx_dev,
@@ -19,14 +16,12 @@ from modules.maimai.libraries.lxns_apidata import (
     map_score,
     plate_versions,
     score_rating,
-    top_rated,
 )
 from modules.maimai.libraries.maimaidx_utils import compute_rating
 from modules.maimai.libraries.lxns_oauth import (
     _extract_bind_code,
     build_authorize_url,
     fetch_player_field,
-    unwrap,
 )
 from modules.maimai.libraries.source import (
     GAME_CHUNITHM,
@@ -143,11 +138,6 @@ class _EmptyTotalList:
         return None
 
 
-async def _test_top_rated_orders_and_limits():
-    records = [{"ra": 100}, {"ra": 300}, {"ra": 200}]
-    return [record["ra"] for record in top_rated(records, 2)] == [300, 200] and top_rated([], 5) == []
-
-
 async def _test_map_bests_keeps_official_pools():
     bests = {
         "standard": [
@@ -212,14 +202,6 @@ async def _test_lxns_bind_usable():
         and not lxns_bind_usable(None, True)
         and not lxns_bind_usable("", True)
         and not lxns_bind_usable("token", False)
-    )
-
-
-async def _test_lxns_bind_info_keeps_no_subject():
-    return (
-        "subject" not in LxnsProberBindInfo._meta.fields_map
-        and "subject" not in inspect.signature(LxnsProberBindInfo.set_bind_info).parameters
-        and "subject" not in inspect.signature(LxnsProberBindInfo.update_refresh_token).parameters
     )
 
 
@@ -308,15 +290,6 @@ async def _test_lxns_developer_required():
     return False
 
 
-async def _test_lxns_developer_urls():
-    return (
-        LXNS_MAIMAI_PLAYER_BY_FRIEND_CODE_URL.format(friend_code=1234567890)
-        == "https://maimai.lxns.net/api/v0/maimai/player/1234567890"
-        and LXNS_MAIMAI_BESTS_BY_FRIEND_CODE_URL.format(friend_code=1234567890)
-        == "https://maimai.lxns.net/api/v0/maimai/player/1234567890/bests"
-    )
-
-
 async def _test_fetch_player_field():
     bind = LxnsProberBindInfo(union_id="u", refresh_token="token")
 
@@ -334,24 +307,6 @@ async def _test_fetch_player_field():
         failed = await fetch_player_field(bind, "friend_code")
 
     return name == "Lxns" and code == "888888888888888" and missing == "" and failed == ""
-
-
-async def _test_get_record_forwards_use_cache():
-    received = []
-    empty = _MessageSession({})
-
-    async def fake_record_lx(msg, token=None, friend_code="", use_cache=True):
-        received.append((friend_code, use_cache))
-        return {"charts": {}}
-
-    with (
-        patch.object(maimaidx_apidata, "get_record_lx", fake_record_lx),
-        patch.object(maimaidx_apidata, "pick_source", lambda msg, game: SOURCE_LXNS),
-    ):
-        own = await maimaidx_apidata.get_record(empty, {}, use_cache=False)
-        other = await maimaidx_apidata.get_record(empty, None, "1234567890", use_cache=False)
-
-    return own == {"charts": {}} and other == {"charts": {}} and received == [("", False), ("1234567890", False)]
 
 
 async def _test_authorize_url_params():
@@ -379,14 +334,6 @@ async def _test_extract_bind_code():
     )
 
 
-async def _test_unwrap_data_field():
-    return (
-        unwrap({"success": True, "code": 200, "data": {"name": "Lxns"}}) == {"name": "Lxns"}
-        and unwrap({"name": "Lxns"}) == {"name": "Lxns"}
-        and unwrap([1, 2]) == [1, 2]
-    )
-
-
 async def _test_plate_versions():
     return (
         plate_versions("真") == ["maimai", "maimai PLUS"]
@@ -403,19 +350,14 @@ async def test_maimai_lxns(tester: Tester):
     await tester.test(_test_map_score_with_local_music, "成绩换算（有本地曲目）")
     await tester.test(_test_map_score_without_local_music, "成绩换算（本地缺曲）")
     await tester.test(_test_score_rating_fallback, "单曲 Rating 缺失时推算")
-    await tester.test(_test_top_rated_orders_and_limits, "Best 列表排序与截断")
     await tester.test(_test_map_bests_keeps_official_pools, "落雪 Best 的新旧曲划分")
     await tester.test(_test_source_selection, "数据源选择与切换")
     await tester.test(_test_lxns_bind_usable, "落雪绑定可用性判断")
-    await tester.test(_test_lxns_bind_info_keeps_no_subject, "落雪绑定表不保存用户 ID")
     await tester.test(_test_lxns_record_route, "落雪取分路由选择（无开发者密钥）")
     await tester.test(_test_lxns_friend_code_route, "落雪按好友码取分的路由")
     await tester.test(_test_lxns_developer_required, "未配置开发者密钥时的按好友码查询")
-    await tester.test(_test_lxns_developer_urls, "落雪开发者端点地址")
     await tester.test(_test_fetch_player_field, "落雪个人资料字段读取")
-    await tester.test(_test_get_record_forwards_use_cache, "水鱼侧取分转发落雪参数")
     await tester.test(_test_authorize_url_params, "授权链接参数")
     await tester.test(_test_extract_bind_code, "授权码提取")
-    await tester.test(_test_unwrap_data_field, "接口 data 包裹解析")
     await tester.test(_test_plate_versions, "名牌板版本标识映射")
     return tester

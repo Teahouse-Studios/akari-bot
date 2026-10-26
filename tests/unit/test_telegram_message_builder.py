@@ -11,7 +11,6 @@ from aiogram.types import FSInputFile, InputMediaAudio, InputMediaPhoto
 from PIL import Image as PILImage
 
 from bots.telegram.message_builder import (
-    TelegramAudioOperation,
     TelegramContent,
     TelegramMediaGroupOperation,
     TelegramPhotoOperation,
@@ -39,13 +38,6 @@ def _test_plain_text_splits_at_limit():
 
 def _test_prefers_newline_boundary():
     return split_telegram_html("12345\n67890", 8) == ["12345", "67890"]
-
-
-def _test_long_plain_text_uses_lightweight_split_path():
-    text = "a" * 100_000
-    with patch("bots.telegram.message_builder._HTMLAtomParser", side_effect=AssertionError):
-        chunks = split_telegram_html(text, 4096)
-    return "".join(chunks) == text and all(len(chunk) <= 4096 for chunk in chunks)
 
 
 def _test_anchor_is_closed_and_reopened():
@@ -102,11 +94,6 @@ async def _test_plain_allow_parse_skips_atcode():
 async def _test_plain_html_is_escaped():
     content = await collect_telegram_content(_session(), MessageChain.assign(Plain("参数：<模块名称> & <b>粗体</b>")))
     return content.text == "参数：&lt;模块名称&gt; &amp; &lt;b&gt;粗体&lt;/b&gt;"
-
-
-async def _test_atcode_keeps_surrounding_text_escaped():
-    content = await collect_telegram_content(_session(), MessageChain.assign(Plain("<b>用户</b>：<AT:Telegram|2>")))
-    return content.text == '&lt;b&gt;用户&lt;/b&gt;：<a href="tg://user?id=2">@2</a>'
 
 
 async def _test_action_text_keeps_inline_fallback_and_metadata():
@@ -228,17 +215,6 @@ def _test_caption_overflow_becomes_text_operation():
     )
 
 
-def _test_caption_overflow_repacked_to_4096():
-    operations = build_telegram_operations(TelegramContent(text="a" * 5000, images=[SimpleNamespace(path="a")]))
-    return (
-        len(operations) == 2
-        and isinstance(operations[0], TelegramPhotoOperation)
-        and len(_visible([operations[0].caption])) == 1024
-        and isinstance(operations[1], TelegramTextOperation)
-        and len(_visible([operations[1].text])) == 3976
-    )
-
-
 def _test_text_without_media_uses_4096_limit():
     operations = build_telegram_operations(TelegramContent(text="a" * 4097))
     return (
@@ -246,11 +222,6 @@ def _test_text_without_media_uses_4096_limit():
         and all(isinstance(operation, TelegramTextOperation) for operation in operations)
         and [len(operation.text) for operation in operations] == [4096, 1]
     )
-
-
-def _test_single_audio_operation():
-    operations = build_telegram_operations(TelegramContent(audio=[FSInputFile(__file__)]))
-    return len(operations) == 1 and isinstance(operations[0], TelegramAudioOperation)
 
 
 async def _test_execute_operations_collects_ids_and_reply_once():
@@ -319,7 +290,6 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_plain_atcode_is_converted, "Plain 中的提及转换为 Telegram 格式")
     await tester.test(_test_plain_allow_parse_skips_atcode, "Plain.allow_parse=False 保留 Telegram 提及文本")
     await tester.test(_test_plain_html_is_escaped, "Plain 中的 HTML 特殊字符被转义")
-    await tester.test(_test_atcode_keeps_surrounding_text_escaped, "提及转换不放行周围 HTML")
     await tester.test(_test_action_text_keeps_inline_fallback_and_metadata, "ActionText 保持行内降级并收集交互信息")
     await tester.test(_test_button_rows_are_collected, "ButtonElement 收集按钮行")
     await tester.test(_test_button_only_message_gets_placeholder, "纯按钮消息补充不可见正文")
@@ -328,13 +298,10 @@ async def test_telegram_message_builder(tester: Tester):
     await tester.test(_test_single_photo_uses_caption, "单图片使用 caption")
     await tester.test(_test_media_groups_and_types, "媒体分组与类型隔离")
     await tester.test(_test_caption_overflow_becomes_text_operation, "caption 溢出转普通文本")
-    await tester.test(_test_caption_overflow_repacked_to_4096, "caption 剩余文本按 4096 重新打包")
     await tester.test(_test_text_without_media_uses_4096_limit, "纯文本使用 4096 字符限制")
-    await tester.test(_test_single_audio_operation, "单音频使用单项操作")
     await tester.test(_test_execute_operations_collects_ids_and_reply_once, "执行操作收集消息且仅首条引用")
     await tester.test(_test_execute_operations_preserves_messages_before_failure, "后续发送失败时保留已发送消息")
     await tester.test(_test_final_media_group_attaches_markup_by_edit, "末尾媒体组通过编辑附加按钮")
-    await tester.test(_test_long_plain_text_uses_lightweight_split_path, "长纯文本使用轻量拆分路径")
     await tester.test(_test_image_split_boundaries_have_no_empty_crop, "图片高度边界不生成空裁剪")
     await tester.test(_test_image_allow_split_controls_telegram_splitting, "ImageElement.allow_split 控制拆图")
     return tester

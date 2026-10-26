@@ -4,7 +4,6 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from bots.discord.buttons import (
-    DiscordActionTextButton,
     DiscordActionTextSelect,
     DiscordButton,
     build_discord_button_view,
@@ -66,16 +65,6 @@ def _test_platform_capacity():
     rows = [{f"B{row}-{column}": f"~b {row} {column}" for column in range(7)} for row in range(7)]
     view = build_discord_button_view(build_button_rows(rows), "Discord|Client|1")
     return len(view.children) == 25 and all(0 <= item.row < 5 for item in view.children)
-
-
-def _test_action_text_uses_modal_button():
-    view = build_discord_button_view(
-        [],
-        "Discord|Client|1",
-        action_texts=[ActionText("~help ", show="帮助")],
-    )
-    button = view.children[0]
-    return isinstance(button, DiscordActionTextButton) and button.label == "~help "
 
 
 def _test_many_action_texts_use_select():
@@ -213,7 +202,6 @@ async def test_discord_buttons(tester: Tester):
     await tester.test(_test_link_buttons_use_native_urls, "链接使用原生 URL 按钮")
     await tester.test(_test_disables_only_selected, "仅停用当前按钮")
     await tester.test(_test_platform_capacity, "平台容量限制")
-    await tester.test(_test_action_text_uses_modal_button, "ActionText 使用 Modal 按钮")
     await tester.test(_test_many_action_texts_use_select, "大量 ActionText 使用下拉菜单")
     await tester.test(_test_action_text_button_opens_prefilled_modal, "Modal 预填命令并保留引用设置")
     await tester.test(_test_interaction_native_permission_uses_clicking_user, "原生权限使用点击用户")

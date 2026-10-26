@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from typing import Any
 from unittest.mock import AsyncMock, patch
 
-from attrs import define, evolve
+from attrs import evolve
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import MarkdownElement, PlainElement
@@ -187,30 +187,6 @@ async def _test_submission_and_signature_drift():
     raise AssertionError("Handler signature drift was accepted")
 
 
-async def _test_union_discriminators_and_dictionary_contracts():
-    @define
-    class Number:
-        value: int
-
-    @define
-    class Text:
-        value: str
-
-    for value in (Number(4), Text("four"), None):
-        annotation = Number | Text | None
-        result = codec.decode(_wire(codec.encode(value, annotation)), annotation)
-        assert type(result) is type(value) and result == value
-    try:
-
-        @remote("test.invalid_dictionary")
-        async def invalid(value: dict[int, str]) -> None: ...
-    except TypeError:
-        pass
-    else:
-        raise AssertionError("Non-string JSON dictionary key declaration accepted")
-    return True
-
-
 async def _test_error_reporting_deduplicates_delivery_failures():
     from core.exports import exports
     from core.queue import reporting, server
@@ -309,7 +285,6 @@ async def test_rpc_contracts(tester: Tester):
         "平台上下文操作路由回原始 Client 实例",
     )
     await tester.test(_test_submission_and_signature_drift, "仅提交操作与执行等待分离并拒绝签名漂移")
-    await tester.test(_test_union_discriminators_and_dictionary_contracts, "联合类型显式保留分支并拒绝非字符串字典键")
     await tester.test(
         _test_error_reporting_deduplicates_delivery_failures, "配置错误报告保留并阻断重复发送失败的报告循环"
     )

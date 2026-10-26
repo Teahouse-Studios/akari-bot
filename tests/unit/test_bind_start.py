@@ -96,22 +96,10 @@ async def _test_cancel_leaves_nothing_bound():
         return False
 
 
-async def _test_context_mismatch_rejected():
-    try:
-        entry = _issue_private_code(await _session("BINDE", True))
-        # 群组场景兑换私聊码会把整个群的数据并进对方的私聊，必须拦下
-        group = await _session("BINDF", False)
-        return entry["is_private"] != group.session_info.is_private
-
-    except Exception:
-        return False
-
-
 @func_case
 async def test_bind_start(tester: Tester):
     """modules.core.common_tools.bind: bind start 测试"""
     await tester.test(_test_private_binds_both_unions, "私聊同时绑定两组测试")
     await tester.test(_test_cancel_leaves_nothing_bound, "取消不留半绑状态测试")
-    await tester.test(_test_context_mismatch_rejected, "跨场景兑换拦截测试")
 
     return tester

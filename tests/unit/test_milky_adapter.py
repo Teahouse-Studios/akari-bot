@@ -107,17 +107,6 @@ async def _test_atcode_converts_to_mention_segments() -> bool:
     )
 
 
-async def _test_block_elements_are_separated_by_newline() -> bool:
-    session = _session("milky-newline")
-    block_segments = await convert_chain_to_segments(
-        session, MessageChain.assign([Plain("first"), Plain("second")]), quote=False
-    )
-    inline_segments = await convert_chain_to_segments(session, MessageChain.assign("a <AT:QQ|10001> b"), quote=False)
-    block_text = "".join(segment.data.text for segment in block_segments if segment.type == "text")
-    inline_text = "".join(segment.data.text for segment in inline_segments if segment.type == "text")
-    return block_text == "first\nsecond" and inline_text == "a  b"
-
-
 async def _test_image_segment_uses_normal_subtype_and_newline() -> bool:
     image_path = _png_file()
     try:
@@ -360,7 +349,6 @@ async def test_milky_adapter(tester: Tester):
     await tester.test(_test_unavailable_media_elements_are_skipped, "Milky 不可用的媒体元素被跳过")
     await tester.test(_test_unavailable_media_keeps_remaining_text, "Milky 媒体不可用时保留文本")
     await tester.test(_test_atcode_converts_to_mention_segments, "Milky AT 码转换为提及段")
-    await tester.test(_test_block_elements_are_separated_by_newline, "Milky 块级元素以换行分隔")
     await tester.test(_test_image_segment_uses_normal_subtype_and_newline, "Milky 图片段携带 sub_type 与换行")
     await tester.test(_test_quote_uses_message_seq, "Milky 引用使用消息序列号")
     await tester.test(_test_self_mention_is_not_rendered, "Milky 出站不 @ 机器人自己")

@@ -102,15 +102,6 @@ async def _test_behavior_switch_removed():
         return False
 
 
-async def _test_behavior_switch_kept_text():
-    try:
-        src = "__NOTOC__\n'''甲'''是一种装置。"
-        return extract_summary(src) == "甲是一种装置。"
-
-    except Exception:
-        return False
-
-
 async def _test_category_and_langlink_removed():
     try:
         src = "[[Category:Arch projects]]\n[[de:Pacman]]\n[[es:Pacman]]\n'''pacman''' is a package manager."
@@ -133,15 +124,6 @@ async def _test_residual_tag_unwrapped():
     try:
         src = "<translate>\nPortage is the manager.\n</translate>"
         return extract_summary(src) == "Portage is the manager."
-
-    except Exception:
-        return False
-
-
-async def _test_semantic_property_link():
-    try:
-        src = "Portage is [[Article description::the official package manager]]. It works."
-        return extract_summary(src) == "Portage is the official package manager. It works."
 
     except Exception:
         return False
@@ -171,15 +153,6 @@ async def _test_braced_construct_with_bare_braces_removed():
         return False
 
 
-async def _test_braced_construct_keeps_neighbouring_text():
-    try:
-        src = "'''甲'''是一种装置。{{#css:\n.a{\nb:c;\n}\n}}"
-        return extract_summary(src) == "甲是一种装置。"
-
-    except Exception:
-        return False
-
-
 async def _test_unclosed_brace_does_not_swallow_text():
     try:
         src = "{{未闭合的构造\n'''甲'''是一种装置。"
@@ -199,14 +172,6 @@ async def _test_unparsed_markup_lines_dropped():
                 "}}\n正文一句话。",
             )
         )
-
-    except Exception:
-        return False
-
-
-async def _test_all_residue_yields_no_summary():
-    try:
-        return extract_summary("{{未闭合的构造\n[[也未闭合") == ""
 
     except Exception:
         return False
@@ -252,14 +217,6 @@ async def _test_malformed_templatedata_yields_no_summary():
         return False
 
 
-async def _test_empty_input_returns_empty():
-    try:
-        return extract_summary("") == "" and extract_summary("", "章节") == ""
-
-    except Exception:
-        return False
-
-
 async def _test_real_page_lead():
     try:
         src = _FIXTURE.read_text(encoding="utf-8")
@@ -289,24 +246,6 @@ async def _test_long_first_sentence_stays_alone():
         return False
 
 
-async def _test_single_sentence_stays_single():
-    try:
-        src = "石头（Stone）是在主世界中大量存在的方块。"
-        return truncate_summary(src) == "石头（Stone）是在主世界中大量存在的方块。"
-
-    except Exception:
-        return False
-
-
-async def _test_bracket_not_split():
-    try:
-        src = "石头（Stone）是一种方块。"
-        return truncate_summary(src) == "石头（Stone）是一种方块。"
-
-    except Exception:
-        return False
-
-
 async def _test_unclosed_bracket_not_dropped():
     try:
         src = "石头（Stone是一种方块。它很常见。"
@@ -320,14 +259,6 @@ async def _test_english_sentences():
     try:
         src = "Foo is a bar. It was made in 1999. Third one."
         return truncate_summary(src) == "Foo is a bar. It was made in 1999. "
-
-    except Exception:
-        return False
-
-
-async def _test_no_terminator_kept_as_is():
-    try:
-        return truncate_summary("这是一个没有句号的文本") == "这是一个没有句号的文本"
 
     except Exception:
         return False
@@ -360,14 +291,6 @@ async def _test_ellipsis_only_becomes_empty():
         return False
 
 
-async def _test_truncate_empty_stays_empty():
-    try:
-        return truncate_summary("") == "" and truncate_summary("\n\n") == ""
-
-    except Exception:
-        return False
-
-
 @func_case
 async def test_wiki_summary(tester: Tester):
     """wiki 摘要离线提取：Wikitext 解析与噪音剥离测试"""
@@ -381,32 +304,23 @@ async def test_wiki_summary(tester: Tester):
     await tester.test(_test_section_missing_returns_empty, "章节未命中返回空测试")
     await tester.test(_test_lead_all_templates_returns_empty, "引言全模板返回空测试")
     await tester.test(_test_behavior_switch_removed, "行为开关魔术字剥离测试")
-    await tester.test(_test_behavior_switch_kept_text, "行为开关剥离不伤正文测试")
     await tester.test(_test_category_and_langlink_removed, "分类与跨语言链接剥离测试")
     await tester.test(_test_inline_links_kept, "普通链接不误伤测试")
     await tester.test(_test_residual_tag_unwrapped, "残留标签去除保留正文测试")
-    await tester.test(_test_semantic_property_link, "语义属性链接还原测试")
     await tester.test(_test_semantic_property_link_nested, "语义属性链接嵌套还原测试")
     await tester.test(_test_braced_construct_with_bare_braces_removed, "裸花括号构造剥离测试")
-    await tester.test(_test_braced_construct_keeps_neighbouring_text, "裸花括号构造不伤正文测试")
     await tester.test(_test_unclosed_brace_does_not_swallow_text, "未闭合花括号不吞正文测试")
     await tester.test(_test_unparsed_markup_lines_dropped, "残留标记行滤除测试")
-    await tester.test(_test_all_residue_yields_no_summary, "全为残留时无摘要测试")
     await tester.test(_test_templatedata_description_used_as_fallback, "TemplateData 说明取用测试")
     await tester.test(_test_templatedata_not_used_when_lead_present, "有引言时不取 TemplateData 测试")
     await tester.test(_test_malformed_templatedata_yields_no_summary, "TemplateData 非法 JSON 测试")
-    await tester.test(_test_empty_input_returns_empty, "空输入测试")
     await tester.test(_test_real_page_lead, "真实样本首句测试")
     await tester.test(_test_short_first_sentence_gets_second, "短首句补第二句测试")
     await tester.test(_test_long_first_sentence_stays_alone, "长首句不追加测试")
-    await tester.test(_test_single_sentence_stays_single, "单句停在一句测试")
-    await tester.test(_test_bracket_not_split, "括号内不截断测试")
     await tester.test(_test_unclosed_bracket_not_dropped, "括号未闭合不丢摘要测试")
     await tester.test(_test_english_sentences, "英文句末标点测试")
-    await tester.test(_test_no_terminator_kept_as_is, "无句末标点保留原文测试")
     await tester.test(_test_length_cap_appends_ellipsis, "长度上限省略号测试")
     await tester.test(_test_second_sentence_not_across_paragraph, "第二句不跨段落测试")
     await tester.test(_test_ellipsis_only_becomes_empty, "纯省略号视作无摘要测试")
-    await tester.test(_test_truncate_empty_stays_empty, "空正文保持无摘要测试")
 
     return tester

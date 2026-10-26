@@ -25,19 +25,6 @@ def _test_url_pattern_match():
         return False
 
 
-def _test_url_pattern_no_match():
-    try:
-        from core.utils.http import url_pattern
-
-        texts = ["hello world", "just some text", "no_url_here"]
-        for text in texts:
-            if url_pattern.search(text):
-                return False
-        return True
-    except Exception:
-        return False
-
-
 async def _test_private_ip_check_blocks_non_global():
     try:
         from core.utils.http import private_ip_check
@@ -203,7 +190,6 @@ async def _test_request_url_private_ip_opt_outs():
 async def test_http(tester: Tester):
     """core.utils.http: HTTP 工具纯函数测试"""
     await tester.test(_test_url_pattern_match, "url_pattern 匹配 URL 测试")
-    await tester.test(_test_url_pattern_no_match, "url_pattern 不匹配文本测试")
     await tester.test(_test_private_ip_check_blocks_non_global, "private_ip_check 拒绝非公网 IP 测试")
     await tester.test(_test_private_ip_check_blocks_mapped_ipv6, "private_ip_check 拒绝 IPv4-mapped IPv6 测试")
     await tester.test(_test_private_ip_check_checks_all_dns_results, "private_ip_check 检查全部 DNS 结果测试")

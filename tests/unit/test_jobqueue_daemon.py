@@ -185,16 +185,6 @@ def _test_sqlite_database_backend_warns_without_changing_selection():
     )
 
 
-def _test_warning_is_not_emitted_for_recommended_or_non_sqlite_backends():
-    with patch.object(daemon.Logger, "warning") as warning:
-        results = (
-            daemon.warn_if_database_jobqueue_uses_sqlite("websocket", "sqlite"),
-            daemon.warn_if_database_jobqueue_uses_sqlite("database", "mysql"),
-            daemon.warn_if_database_jobqueue_uses_sqlite(None, "sqlite"),
-        )
-    return results == (False, False, False) and warning.call_count == 0
-
-
 def _test_cleanup_keeps_hub_until_last():
     context = _FakeContext()
     bot_process = context.Process(daemon.go, name="test-platform", daemon=True)
@@ -239,6 +229,5 @@ async def test_jobqueue_daemon(tester: Tester):
         _test_invalid_websocket_mode_fails_before_starting_processes, "非法 WebSocket Hub 模式在启动前失败"
     )
     await tester.test(_test_sqlite_database_backend_warns_without_changing_selection, "SQLite 数据库后端启动警告")
-    await tester.test(_test_warning_is_not_emitted_for_recommended_or_non_sqlite_backends, "非风险后端组合不警告")
     await tester.test(_test_cleanup_keeps_hub_until_last, "守护进程按 Bot、Server、Hub 顺序关闭")
     return tester

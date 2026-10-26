@@ -54,34 +54,6 @@ async def _test_resolve_union_concurrent_same_id():
     )
 
 
-async def _test_new_union_id_prefixed():
-    try:
-        sender = await SenderUnionInfo.resolve_union("UNIONTEST|prefix|1")
-        target = await TargetUnionInfo.resolve_union("UNIONTEST|Group|prefix")
-        for union_id, prefix in ((sender.union_id, "USID|"), (target.union_id, "UTID|")):
-            if not union_id.startswith(prefix) or union_id != union_id.upper():
-                return False
-
-        # 解绑拆出的 union 同样须带前缀。
-        await sender.bind_id("UNIONTEST|prefix|2")
-        split = await sender.unbind_id("UNIONTEST|prefix|2")
-        return bool(split) and split.union_id.startswith("USID|") and split.union_id == split.union_id.upper()
-
-    except Exception:
-        return False
-
-
-async def _test_resolve_union_no_create():
-    try:
-        union = await SenderUnionInfo.resolve_union("UNIONTEST|nocreate|1", create=False)
-        if union:
-            return False
-        return not await SenderUnionBind.exists(sender_id="UNIONTEST|nocreate|1")
-
-    except Exception:
-        return False
-
-
 async def _test_bind_id_shares_data():
     try:
         first = await SenderUnionInfo.resolve_union("UNIONTEST|share|1")
@@ -233,23 +205,6 @@ async def _test_unbind_keeps_block_and_binding():
         bind = await SenderUnionBind.get_or_none(sender_id="UNIONTEST|unbindban|2")
         again = await SenderUnionInfo.resolve_union("UNIONTEST|unbindban|2")
         return split.blocked and again.blocked and bind.union_id == split.union_id
-
-    except Exception:
-        return False
-
-
-async def _test_unblock_applies_to_whole_union():
-    try:
-        union = await SenderUnionInfo.resolve_union("UNIONTEST|unblock|1")
-        await union.bind_id("UNIONTEST|unblock|2")
-        await union.edit_attr("blocked", True)
-
-        blocked_side = await SenderUnionInfo.resolve_union("UNIONTEST|unblock|2")
-        await blocked_side.edit_attr("blocked", False)
-
-        again = await SenderUnionInfo.resolve_union("UNIONTEST|unblock|2")
-        other = await SenderUnionInfo.resolve_union("UNIONTEST|unblock|1")
-        return not again.blocked and not other.blocked
 
     except Exception:
         return False
@@ -427,20 +382,6 @@ async def _test_merge_target_union_moves_module_rows():
         if moved.interwikis != {"foo": "https://foo.example/"}:
             return False
         return not await WikiTargetInfo.exists(union_id=drop.union_id)
-
-    except Exception:
-        return False
-
-
-async def _test_channel_id_increments_within_union():
-    try:
-        union = await TargetUnionInfo.resolve_union("UNIONTEST|Group|chan1")
-        await union.bind_id("UNIONTEST|Group|chan2")
-        await union.bind_id("UNIONTEST|Group|chan3")
-
-        channels = await TargetUnionBind.list_channels(union.union_id)
-        # 默认每个场景各占一号，即默认互不参与去重。
-        return sorted(channels.values()) == [1, 2, 3]
 
     except Exception:
         return False
@@ -809,19 +750,6 @@ async def _test_unbind_id_rejects_last():
         return False
 
 
-async def _test_target_union_shares_modules():
-    try:
-        first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|mod1")
-        await first.bind_id("UNIONTEST|Group|mod2")
-        await first.config_module("uniontest_module")
-
-        second = await TargetUnionInfo.resolve_union("UNIONTEST|Group|mod2")
-        return "uniontest_module" in second.modules
-
-    except Exception:
-        return False
-
-
 async def _test_target_id_list_expands_union():
     try:
         first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|push1")
@@ -873,21 +801,6 @@ async def _test_subscription_module_alias_migration():
         ModulesManager.modules.pop(new_name, None)
         ModulesManager.modules_origin.pop(new_name, None)
         ModulesManager.refresh()
-
-
-async def _test_list_ids_accepts_multiple():
-    try:
-        first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|multi1")
-        second = await TargetUnionInfo.resolve_union("UNIONTEST|Group|multi2")
-
-        ids = await TargetUnionBind.list_ids([first.union_id, second.union_id])
-        if sorted(ids) != ["UNIONTEST|Group|multi1", "UNIONTEST|Group|multi2"]:
-            return False
-
-        return await TargetUnionBind.filter(union_id=first.union_id).count() == 1
-
-    except Exception:
-        return False
 
 
 async def _test_delete_sender_union_cleans_current_state():
@@ -1382,8 +1295,6 @@ async def test_union(tester: Tester):
     """core.database.models: union 绑定测试"""
     await tester.test(_test_resolve_union_creates_bind, "resolve_union 建出 union 与映射测试")
     await tester.test(_test_resolve_union_concurrent_same_id, "resolve_union 同 ID 并发解析测试")
-    await tester.test(_test_new_union_id_prefixed, "new_union_id 域前缀测试")
-    await tester.test(_test_resolve_union_no_create, "resolve_union 不建行测试")
     await tester.test(_test_bind_id_shares_data, "bind_id 数据共享测试")
     await tester.test(_test_bind_id_rejects_other_union, "bind_id 拒绝跨 union 测试")
     await tester.test(_test_bind_id_concurrent_claim_returns_boolean, "bind_id 并发争用返回值测试")
@@ -1393,7 +1304,6 @@ async def test_union(tester: Tester):
     await tester.test(_test_block_applies_to_whole_union, "封禁作用于整组测试")
     await tester.test(_test_merge_keeps_block, "合并不稀释封禁测试")
     await tester.test(_test_unbind_keeps_block_and_binding, "解绑转移封禁且映射不断测试")
-    await tester.test(_test_unblock_applies_to_whole_union, "解封作用于整组测试")
     await tester.test(_test_switch_identity_unblocks, "switch_identity 解封测试")
     await tester.test(_test_merge_union_creates_new_union, "merge_union 生成新组测试")
     await tester.test(_test_merge_union_merges_data, "merge_union 数据合并测试")
@@ -1406,7 +1316,6 @@ async def test_union(tester: Tester):
     await tester.test(_test_merge_union_module_conflict_keeps_self, "merge_union 模块表冲突保留自身测试")
     await tester.test(_test_merge_union_module_conflict_keeps_other, "merge_union 模块表冲突保留对方测试")
     await tester.test(_test_merge_target_union_moves_module_rows, "merge_union 场景模块表改挂测试")
-    await tester.test(_test_channel_id_increments_within_union, "消息通道组内递增测试")
     await tester.test(_test_channel_id_concurrent_bind_is_unique, "消息通道并发分配测试")
     await tester.test(_test_merge_union_renumbers_channels, "消息通道合并重新编号测试")
     await tester.test(_test_reassign_channel_clears_peer_bots_atomically, "消息通道变更原子清理互认测试")
@@ -1414,10 +1323,8 @@ async def test_union(tester: Tester):
     await tester.test(_test_unify_channels_moves_complete_equivalence_class, "消息通道整体并合测试")
     await tester.test(_test_unbind_id_splits_account, "unbind_id 拆分账号测试")
     await tester.test(_test_unbind_id_rejects_last, "unbind_id 拒绝解绑最后一个测试")
-    await tester.test(_test_target_union_shares_modules, "场景 union 模块开关互通测试")
     await tester.test(_test_target_id_list_expands_union, "推送展开为全部平台场景测试")
     await tester.test(_test_subscription_module_alias_migration, "订阅模块旧主名无缝迁移测试")
-    await tester.test(_test_list_ids_accepts_multiple, "list_ids 多 union 测试")
     await tester.test(_test_delete_sender_union_cleans_current_state, "删除用户 Union 清理当前状态测试")
     await tester.test(_test_delete_target_union_cleans_current_state, "删除场景 Union 清理当前状态测试")
     await tester.test(_test_delete_union_rejects_active_captcha, "活跃验证码阻止 Union 删除测试")

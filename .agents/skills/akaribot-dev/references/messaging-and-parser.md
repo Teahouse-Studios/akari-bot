@@ -539,9 +539,9 @@ parser 主干只保留解析与派发，**策略行为一律挂在 `HookPoint` �
 - 用户侧由 `~bind channel` 一组命令管理，`~bind channel auto` 会让两个小可用一对口令互认，
   自动合并场景组并统一通道号。
 - **命令去重**：`modules/core/hooks/routing.py` 订阅 `CHANNEL_CLAIM`，以模块 runtime 状态做抢占式认领。
-  跨平台的消息 ID 无法互通，判定「同一条消息」靠「纯文本 hash 一致 + 收到时间相差不超过
-  `CHANNEL_DEDUP_WINDOW`（10 秒）」。查表与写入之间不能有 `await`，靠单线程事件循环保证原子性。
-- **推送去重**：见下面的「主动推送流程」。
+  跨平台的消息 ID 无法互通，判定“同一条消息”靠“纯文本 hash 一致 + 收到时间相差不超过
+  `CHANNEL_DEDUP_WINDOW`（10 秒）”。查表与写入之间不能有 `await`，靠单线程事件循环保证原子性。
+- **推送去重**：见下面的“主动推送流程”。
 - 另有 `target_data["bots_id"]` 记录彼此的机器人账号，用于屏蔽对方发的消息——那是另一件事，别和去重混为一谈。
 
 > ⚠️ 测试环境**不走这个 `parser()`**，走的是 `core/tester/mock/parser.py` 的简化版。诊断测试与生产差异时，同时读取主技能直接链接的 `testing.md`。
@@ -616,7 +616,7 @@ class ExecutionLockList:
 
 ### 12.6 错字纠正
 
-`modules/core/hooks/typo.py` 订阅 `COMMAND_UNMATCHED`，用 `rapidfuzz` 逐层模糊匹配：模块名 → 命令 → 选项 → 参数。它不直接发消息，而是返回 `RecoveryProposal`，由 parser 的 `_try_command_recovery()` 用 `wait_confirm` 问用户「你是不是想输入 xxx」。
+`modules/core/hooks/typo.py` 订阅 `COMMAND_UNMATCHED`，用 `rapidfuzz` 逐层模糊匹配：模块名 → 命令 → 选项 → 参数。它不直接发消息，而是返回 `RecoveryProposal`，由 parser 的 `_try_command_recovery()` 用 `wait_confirm` 问用户“你是不是想输入 xxx”。
 
 阈值全部在 `core/config/core.py` 的 `CoreConfig` 里声明（默认值如下）：
 
@@ -629,7 +629,7 @@ class ExecutionLockList:
 | `typo_check_module_diff_ratio` | `0.5` | 模块名**长度比**下限 |
 | `typo_check_args_diff_ratio` | `0.5` | 参数**数量比**下限 |
 
-长度比那两项是为了挡住「短输入误匹配到长命令」（源码注释举的例子是 `~p` → `~decrypt`）：`min_len / max_len < ratio` 就丢弃这个匹配。
+长度比那两项是为了挡住“短输入误匹配到长命令”（源码注释举的例子是 `~p` → `~decrypt`）：`min_len / max_len < ratio` 就丢弃这个匹配。
 
 用户可以在自己的 `sender_data` 里把 `typo_check` 设成 `False` 关掉这个功能。
 

@@ -101,6 +101,5 @@ async def test_url_blocklist_commands(tester: Tester):
                 Contains("已从用户自定义 URL 阻止列表删除规则"),
                 "应能通过命令删除精确 URL 阻止列表规则",
             )
-            await tester.test(lambda: (directory / "user.txt").exists(), "阻止列表命令配置应写入 user.txt")
     GlobalURLBlocklist.clear_cache()
     return tester

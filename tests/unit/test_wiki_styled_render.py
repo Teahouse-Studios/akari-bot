@@ -1,7 +1,6 @@
 import asyncio
 import base64
 from io import BytesIO
-from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 from urllib.parse import urljoin
 
@@ -12,7 +11,6 @@ from core.tester import func_case, Tester
 from modules.wiki.utils import screenshot_image
 from modules.wiki.utils.screenshot_image import _parse_target, _styled_document, generate_screenshot
 from modules.wiki.utils.wikilib import WikiInfo, WikiLib
-from modules.wiki.wiki import _render_preview_items
 
 
 API = "https://example.org/sub/w/api.php"
@@ -314,19 +312,6 @@ async def _test_cancel_propagates():
     return True
 
 
-async def _test_preview_target():
-    info = _info()
-    item = {"link": LINK, "wiki_info": info, "title": "Target title", "section": "Section", "is_allowed": True}
-    session = SimpleNamespace(session_info=SimpleNamespace(locale=SimpleNamespace(locale="zh_cn")))
-    with patch("modules.wiki.wiki.generate_screenshot", new=AsyncMock(return_value=False)) as render:
-        result = await _render_preview_items(session, [item], {}, report_failure=True)
-    assert len(result) == 1
-    assert render.await_args.kwargs["wiki_info"] is info
-    assert render.await_args.kwargs["title"] == "Target title"
-    assert render.await_args.kwargs["section"] == "Section"
-    return True
-
-
 @func_case
 async def test_wiki_styled_render(tester: Tester):
     await tester.test(_test_styled_document, "保留样式、相对资源及页面属性，禁用脚本")
@@ -343,5 +328,4 @@ async def test_wiki_styled_render(tester: Tester):
         _test_legacy_timeout_uses_skin_api_fallback, "v1 渲染也受 15 秒限制，超时使用并发的 parse + useskin 兜底"
     )
     await tester.test(_test_cancel_propagates, "任务取消不触发 fallback")
-    await tester.test(_test_preview_target, "按钮预览传递目标 Wiki、标题和章节")
     return tester

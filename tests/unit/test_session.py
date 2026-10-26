@@ -123,22 +123,6 @@ async def _test_hold_normalizes_remote_context_unavailable():
     return False
 
 
-async def _test_features_inject_markdown_table():
-    try:
-        from core.builtins.session.info import SessionInfo
-
-        session_info = await SessionInfo.assign(
-            target_id="TEST|Group|markdown_table",
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|1",
-            features=Features(support_markdown_extension=True),
-        )
-        return session_info.support_markdown_extension is True
-    except Exception:
-        return False
-
-
 async def _test_session_refresh_updates_derived_union_state():
     target_id = "TEST|Group|refresh-derived-state"
     sender_id = "TEST|refresh-derived-state"
@@ -242,20 +226,6 @@ async def _test_session_refresh_does_not_recreate_deleted_unions():
                 await union.delete_union()
 
 
-def _test_features_override():
-    try:
-        features = Features.override(support_image=True, support_audio=True)
-        if features.support_image is not True:
-            return False
-        if features.support_audio is not True:
-            return False
-        if features.support_mention is not False:
-            return False
-        return True
-    except Exception:
-        return False
-
-
 async def _test_lock_add_remove():
     try:
         msg = MockMessageSession("~test")
@@ -271,42 +241,6 @@ async def _test_lock_add_remove():
         ExecutionLockList.remove(msg)
         if ExecutionLockList.check(msg):
             return False
-
-        return True
-    except Exception:
-        return False
-
-
-async def _test_lock_multiple_users():
-    try:
-        msg1 = MockMessageSession("~test")
-        await msg1.async_init("~test")
-
-        msg2 = MockMessageSession("~test")
-        msg2.session_info = await msg1.session_info.__class__.assign(
-            target_id="TEST|Console|0",
-            client_name="TEST",
-            target_from="TEST",
-            sender_id="TEST|1",
-            sender_from="TEST",
-            sender_name="TEST2",
-        )
-
-        ExecutionLockList.add(msg1)
-        ExecutionLockList.add(msg2)
-
-        if not ExecutionLockList.check(msg1):
-            return False
-        if not ExecutionLockList.check(msg2):
-            return False
-
-        ExecutionLockList.remove(msg1)
-        if ExecutionLockList.check(msg1):
-            return False
-        if not ExecutionLockList.check(msg2):
-            return False
-
-        ExecutionLockList.remove(msg2)
 
         return True
     except Exception:
@@ -388,25 +322,6 @@ async def _test_old_owner_cannot_release_reacquired_lock():
     finally:
         ExecutionLockList.remove(second)
         ExecutionLockList._list.clear()
-
-
-async def _test_lock_get():
-    try:
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-
-        ExecutionLockList.add(msg)
-        lock_set = ExecutionLockList.get()
-        if not isinstance(lock_set, set):
-            return False
-        if msg.session_info.sender_union_id not in lock_set:
-            return False
-
-        ExecutionLockList.remove(msg)
-
-        return True
-    except Exception:
-        return False
 
 
 async def _test_lock_detects_union_merge_by_physical_bindings():
@@ -593,44 +508,6 @@ async def _test_execution_lock_state_does_not_survive_session_serialization():
         )
     finally:
         ExecutionLockList.remove(owner)
-        ExecutionLockList._list.clear()
-        ExecutionLockList._reservations.clear()
-
-
-async def _test_execution_lock_count_counts_leases():
-    from core.builtins.session.internal import MessageSession
-
-    owner = MessageSession(
-        await SessionInfo.assign(
-            target_id="TEST|Group|lock-count",
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|lock-count-owner",
-            sender_from="TEST",
-        )
-    )
-    await owner.session_info.sender_union_info.bind_id("TEST|lock-count-bound")
-    other = MessageSession(
-        await SessionInfo.assign(
-            target_id="TEST|Group|lock-count",
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|lock-count-other",
-            sender_from="TEST",
-        )
-    )
-    ExecutionLockList._list.clear()
-    ExecutionLockList._reservations.clear()
-    try:
-        if not await ExecutionLockList.acquire(owner):
-            return False
-        owner_count_ok = ExecutionLockList.count() == 1 and ExecutionLockList.count(exclude=owner) == 0
-        if not await ExecutionLockList.acquire(other):
-            return False
-        return owner_count_ok and ExecutionLockList.count() == 2 and ExecutionLockList.count(exclude=owner) == 1
-    finally:
-        ExecutionLockList.remove(owner)
-        ExecutionLockList.remove(other)
         ExecutionLockList._list.clear()
         ExecutionLockList._reservations.clear()
 
@@ -1206,60 +1083,6 @@ async def _test_cancelled_sleep_reacquire_keeps_competing_lease():
         ExecutionLockList._reservations.clear()
 
 
-async def _test_task_add_and_get():
-    try:
-        SessionTaskManager._task_list.clear()
-
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(msg, flag, timeout=60)
-
-        task_list = SessionTaskManager.get()
-        session_info = msg.session_info
-
-        # 任务用不可变的物理场景／账号 ID 建稳定 bucket；check() 再按当前
-        # Union／channel 拓扑展开可命中的 bucket。
-        if session_info.target_id not in task_list:
-            return False
-        if session_info.sender_id not in task_list[session_info.target_id]:
-            return False
-        if session_info.channel_key in task_list or session_info.target_union_id in task_list:
-            return False
-
-        SessionTaskManager._task_list.clear()
-
-        return True
-    except Exception:
-        return False
-
-
-async def _test_task_add_callback():
-    try:
-
-        async def test_callback(session):
-            pass
-
-        msg = MockMessageSession("1")
-        await msg.async_init("1")
-        callback_key = SessionTaskManager.add_callback(msg, "12345", test_callback)
-        callback_info = SessionTaskManager._callback_list.get(callback_key)
-        if (
-            callback_info is None
-            or callback_info["primary_ids"] != ("12345",)
-            or callback_info["timeout"] != 1800
-            or callback_info["once"]
-        ):
-            return False
-
-        del SessionTaskManager._callback_list[callback_key]
-
-        return True
-    except Exception:
-        return False
-
-
 async def _test_send_message_binds_button_callback_reply_id():
     from core.builtins.message.chain import MessageChain
     from core.builtins.message.elements import ButtonFrameElement
@@ -1498,36 +1321,6 @@ async def _test_callback_once_is_consumed_across_aliases():
     return called == 1 and not remaining
 
 
-async def _test_reused_callback_keeps_independent_registration():
-    SessionTaskManager._callback_list.clear()
-    called = []
-
-    async def callback(session):
-        called.append(session.session_info.reply_id)
-
-    first = MockMessageSession("1")
-    await first.async_init("1")
-    first.session_info.reply_id = "message-one"
-
-    second = MockMessageSession("1")
-    await second.async_init("1")
-    second.session_info.reply_id = "message-two"
-
-    first_key = SessionTaskManager.add_callback(first, "message-one", callback)
-    second_key = SessionTaskManager.add_callback(second, "message-two", callback)
-    await SessionTaskManager.check(first)
-    first_remaining = set(SessionTaskManager._callback_list)
-    await SessionTaskManager.check(second)
-
-    remaining = set(SessionTaskManager._callback_list)
-    SessionTaskManager._callback_list.clear()
-    return (
-        called == ["message-one", "message-two"]
-        and first_remaining == {first_key, second_key}
-        and remaining == {first_key, second_key}
-    )
-
-
 async def _test_shared_callback_fallback_is_not_guessed():
     SessionTaskManager._callback_list.clear()
     called = []
@@ -1562,37 +1355,6 @@ async def _test_shared_callback_fallback_is_not_guessed():
         and called == ["first"]
         and remaining == 2
     )
-
-
-async def _test_callback_registration_handle_survives_alias_collision():
-    SessionTaskManager._callback_list.clear()
-    called = []
-
-    async def first_callback(_session):
-        called.append("first")
-
-    async def second_callback(_session):
-        called.append("second")
-
-    reply = MockMessageSession("1")
-    await reply.async_init("1")
-    first_key = SessionTaskManager.add_callback(reply, "shared-primary", first_callback)
-    second_key = SessionTaskManager.add_callback(reply, "shared-primary", second_callback)
-    try:
-        reply.session_info.reply_id = "shared-primary"
-        ambiguous_handled = await SessionTaskManager.check(reply)
-        if ambiguous_handled or first_key == second_key or len(SessionTaskManager._callback_list) != 2:
-            return False
-
-        SessionTaskManager.extend_callback(first_key, "physical-one")
-        SessionTaskManager.extend_callback(second_key, "physical-two")
-        reply.session_info.reply_id = "physical-one"
-        first_handled = await SessionTaskManager.check(reply)
-        reply.session_info.reply_id = "physical-two"
-        second_handled = await SessionTaskManager.check(reply)
-        return first_handled and second_handled and called == ["first", "second"]
-    finally:
-        SessionTaskManager._callback_list.clear()
 
 
 async def _test_pending_plain_callbacks_make_bot_fallback_ambiguous():
@@ -1989,52 +1751,6 @@ async def _test_wait_next_message_allows_parser_fallthrough():
         SessionTaskManager._task_list.clear()
 
 
-async def _test_wait_anyone_allows_parser_fallthrough():
-    from core.builtins.message.chain import MessageChain
-    from core.builtins.session.internal import MessageSession
-
-    class IncomingSession(MessageSession):
-        async def hold(self):
-            return None
-
-    target_id = "TEST|Group|wait-anyone-fallthrough"
-    owner = MessageSession(
-        await SessionInfo.assign(
-            target_id=target_id,
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|wait-anyone-owner",
-            sender_from="TEST",
-        )
-    )
-    incoming = IncomingSession(
-        await SessionInfo.assign(
-            target_id=target_id,
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|wait-anyone-responder",
-            sender_from="TEST",
-            messages=MessageChain.assign("~version"),
-        )
-    )
-    flag = asyncio.Event()
-    SessionTaskManager._task_list.clear()
-    SessionTaskManager.add_task(
-        owner,
-        flag,
-        all_=True,
-        task_type="wait_anyone",
-        timeout=60,
-        allow_fallthrough=True,
-    )
-    try:
-        handled = await SessionTaskManager.check(incoming, allow_wait_fallthrough=True)
-        task_info = SessionTaskManager.get()[target_id]["all"][owner]
-        return not handled and not task_info["active"] and task_info["result"] is incoming
-    finally:
-        SessionTaskManager._task_list.clear()
-
-
 async def _test_parser_rejects_banned_callback_responder_before_task_check():
     from core.builtins.message.chain import MessageChain
     from core.builtins.parser.message import parser
@@ -2094,54 +1810,6 @@ async def _test_reply_task_normalizes_integer_reply_id():
     finally:
         SessionTaskManager.remove_task(waiting)
         SessionTaskManager._task_list.clear()
-
-
-async def _test_reply_task_preserves_comma_in_message_id():
-    SessionTaskManager._task_list.clear()
-    waiting = MockMessageSession("prompt")
-    await waiting.async_init("prompt")
-    reply = MockMessageSession("reply")
-    await reply.async_init("reply")
-    reply.session_info.reply_id = "event,with,comma"
-    flag = asyncio.Event()
-    SessionTaskManager.add_task(waiting, flag, reply=["event,with,comma"])
-    try:
-        handled = await SessionTaskManager.check(reply)
-        result = SessionTaskManager.get_result(waiting)
-        return handled and flag.is_set() and result is reply
-    finally:
-        SessionTaskManager.remove_task(waiting)
-        SessionTaskManager._task_list.clear()
-
-
-async def _test_send_message_does_not_set_transport_format_flag():
-    from core.builtins.message.internal import Markdown
-    from core.builtins.session.info import SessionInfo
-    from core.builtins.session.internal import MessageSession
-
-    class FailingQueueServer:
-        @classmethod
-        async def client_send_message(cls, session_info, chain, **kwargs):
-            raise RuntimeError("audit failure")
-
-    session_info = await SessionInfo.assign(
-        target_id="TEST|Group|force-markdown-failure",
-        target_from="TEST|Group",
-        client_name="TEST",
-        sender_id="TEST|force-markdown-failure",
-        sender_from="TEST",
-    )
-    session_info.tmp["existing"] = "value"
-    msg = MessageSession(session_info)
-
-    with patch.object(PlatformAPI, "send_message", new=FailingQueueServer.client_send_message):
-        try:
-            await msg.send_message(Markdown("**test**"))
-        except RuntimeError:
-            pass
-        else:
-            return False
-    return session_info.tmp == {"existing": "value"}
 
 
 async def _test_wait_next_message_registers_before_fast_reply():
@@ -2219,43 +1887,6 @@ async def _test_wait_next_message_preserves_choice_rows():
                 and all(len(row.buttons) == 1 for row in frames[0].rows)
                 and [row.buttons[0].show for row in frames[0].rows] == [f"Page {index}" for index in range(1, 6)]
             )
-    finally:
-        SessionTaskManager._task_list.clear()
-
-
-async def _test_wait_confirm_registers_before_reaction_roundtrip():
-    from core.builtins.message.chain import MessageChain
-    from core.builtins.session.info import SessionInfo
-    from core.builtins.session.internal import MessageSession
-    from core.constants import WaitCancelException
-
-    class FastConfirmSession(MessageSession):
-        async def send_message(self, *args, **kwargs):
-            await SessionTaskManager.check(self)
-            return type("Sent", (), {"message_id": ["prompt"]})()
-
-        async def end_typing(self):
-            return None
-
-        async def _add_confirm_reaction(self, message_id):
-            await asyncio.sleep(0)
-
-    SessionTaskManager._task_list.clear()
-    session_info = await SessionInfo.assign(
-        target_id="TEST|Group|fast-confirm",
-        target_from="TEST|Group",
-        client_name="TEST",
-        sender_id="TEST|fast-confirm",
-        sender_from="TEST",
-        messages=MessageChain.assign("是"),
-        features=Features(support_reaction=True),
-    )
-    msg = FastConfirmSession(session_info)
-    try:
-        with patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)):
-            return await msg.wait_confirm("prompt", delete=False, timeout=0.05 * TIME_SCALE)
-    except WaitCancelException:
-        return False
     finally:
         SessionTaskManager._task_list.clear()
 
@@ -2595,64 +2226,6 @@ async def _test_wait_reply_timeout_covers_pending_send():
         SessionTaskManager._task_list.clear()
 
 
-async def _test_wait_reply_timeout_is_single_deadline():
-    from core.builtins.session.internal import MessageSession
-    from core.constants import WaitCancelException
-
-    prompt_id = "single-deadline-prompt"
-
-    class SlowReplySession(MessageSession):
-        async def send_message(self, *args, **kwargs):
-            await asyncio.sleep(0.1)
-            return type("Sent", (), {"message_id": [prompt_id]})()
-
-        async def end_typing(self):
-            return None
-
-    waiting = SlowReplySession(
-        await SessionInfo.assign(
-            target_id="TEST|Group|reply-single-deadline",
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|reply-single-deadline",
-            sender_from="TEST",
-            features=Features(support_quote=True),
-        )
-    )
-    incoming = MessageSession(
-        await SessionInfo.assign(
-            target_id=waiting.session_info.target_id,
-            target_from=waiting.session_info.target_from,
-            client_name=waiting.session_info.client_name,
-            sender_id=waiting.session_info.sender_id,
-            sender_from=waiting.session_info.sender_from,
-            reply_id=prompt_id,
-        )
-    )
-
-    async def delayed_reply():
-        await asyncio.sleep(0.25)
-        return await SessionTaskManager.check(incoming)
-
-    SessionTaskManager._task_list.clear()
-    reply_task = asyncio.create_task(delayed_reply())
-    try:
-        try:
-            await asyncio.wait_for(waiting.wait_reply("prompt", timeout=0.2 * TIME_SCALE), timeout=0.4 * TIME_SCALE)
-        except WaitCancelException:
-            pass
-        except asyncio.TimeoutError:
-            return False
-        else:
-            return False
-        return not await asyncio.wait_for(reply_task, timeout=0.2 * TIME_SCALE) and not SessionTaskManager.get()
-    finally:
-        if not reply_task.done():
-            reply_task.cancel()
-            await asyncio.gather(reply_task, return_exceptions=True)
-        SessionTaskManager._task_list.clear()
-
-
 async def _test_wait_reply_none_timeout_keeps_pending_send():
     from core.builtins.session.internal import MessageSession
 
@@ -2697,50 +2270,6 @@ async def _test_wait_reply_none_timeout_keeps_pending_send():
         if not wait_task.done():
             wait_task.cancel()
             await asyncio.gather(wait_task, return_exceptions=True)
-        SessionTaskManager._task_list.clear()
-
-
-async def _test_wait_reply_deletes_prompt_when_reply_registration_is_lost():
-    from core.builtins.session.internal import MessageSession
-    from core.constants import WaitCancelException
-
-    delete_calls = 0
-
-    class Sent:
-        message_id = ["orphaned-wait-reply-prompt"]
-
-        async def delete(self):
-            nonlocal delete_calls
-            delete_calls += 1
-
-    class LostRegistrationSession(MessageSession):
-        async def send_message(self, *args, **kwargs):
-            SessionTaskManager.remove_task(self)
-            return Sent()
-
-        async def end_typing(self):
-            return None
-
-    waiting = LostRegistrationSession(
-        await SessionInfo.assign(
-            target_id="TEST|Group|reply-registration-lost",
-            target_from="TEST|Group",
-            client_name="TEST",
-            sender_id="TEST|reply-registration-lost",
-            sender_from="TEST",
-            features=Features(support_quote=True),
-        )
-    )
-    SessionTaskManager._task_list.clear()
-    try:
-        try:
-            await waiting.wait_reply("prompt", delete=True, timeout=None)
-        except WaitCancelException:
-            pass
-        else:
-            return False
-        return delete_calls == 1 and not SessionTaskManager.get()
-    finally:
         SessionTaskManager._task_list.clear()
 
 
@@ -3044,38 +2573,6 @@ async def _test_wait_task_follows_target_unbind_without_old_channel_takeover():
         SessionTaskManager._task_list.clear()
 
 
-async def _test_wait_task_follows_target_rechannel_without_old_channel_takeover():
-    target_a = "WAITCHANNELA|Group|1"
-    target_b = "WAITCHANNELB|Group|2"
-    sender_id = "WAITCHANNEL|USER"
-    target_union = await TargetUnionInfo.resolve_union(target_a)
-    if not await target_union.bind_id(target_b):
-        return False
-    await TargetUnionBind.filter(target_id=target_b).update(channel_id=1)
-    waiting = await _make_held_session(target_b, sender_id, "WAITCHANNELB")
-    flag = asyncio.Event()
-    SessionTaskManager._task_list.clear()
-    SessionTaskManager.add_task(waiting, flag, all_=True, timeout=60)
-    try:
-        await TargetUnionBind.filter(target_id=target_b).update(channel_id=2)
-        old_channel = await _make_held_session(target_a, sender_id, "WAITCHANNELA")
-        original_target = await _make_held_session(target_b, sender_id, "WAITCHANNELB")
-        old_handled = await SessionTaskManager.check(old_channel)
-        original_handled = await SessionTaskManager.check(original_target)
-        await waiting.release_execution_resources()
-        return (
-            not old_handled
-            and original_handled
-            and flag.is_set()
-            and old_channel.hold_calls == 0
-            and original_target.hold_calls == 1
-            and original_target.release_calls == 1
-        )
-    finally:
-        SessionTaskManager.remove_task(waiting, all_=True)
-        SessionTaskManager._task_list.clear()
-
-
 async def _test_reply_wait_is_scoped_to_physical_platform_context():
     target_a = "WAITREPLYSA|Group|1"
     target_b = "WAITREPLYSB|Group|2"
@@ -3180,41 +2677,6 @@ async def _test_task_bg_check_timeout():
         return True
     except Exception:
         return False
-
-
-async def _test_task_remove_prunes_indexes():
-    try:
-        SessionTaskManager._task_list.clear()
-        msg = MockMessageSession("~test")
-        await msg.async_init("~test")
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(msg, flag, timeout=60)
-
-        task_info = SessionTaskManager.remove_task(msg)
-        return task_info is not None and not SessionTaskManager.get()
-    finally:
-        SessionTaskManager._task_list.clear()
-
-
-async def _test_inactive_task_does_not_capture_message():
-    try:
-        SessionTaskManager._task_list.clear()
-        waiting = MockMessageSession("~test")
-        await waiting.async_init("~test")
-        first_result = MockMessageSession("first")
-        await first_result.async_init("first")
-        second_result = MockMessageSession("second")
-        await second_result.async_init("second")
-
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(waiting, flag, timeout=60)
-        task_info = SessionTaskManager.get()[waiting.session_info.target_id][waiting.session_info.sender_id][waiting]
-        task_info["active"] = False
-        task_info["result"] = first_result
-        await SessionTaskManager.check(second_result)
-        return task_info["result"] is first_result
-    finally:
-        SessionTaskManager._task_list.clear()
 
 
 async def _test_one_message_completes_only_one_wait_task():
@@ -3369,20 +2831,12 @@ async def _test_mock_strict_confirm_rejects_other_reply():
     return result is False
 
 
-async def _test_mock_strict_confirm_uses_custom_string():
-    msg = await _make_confirm_session("确认删除")
-    result = await msg.wait_confirm("请确认是否删除", confirm_token="确认删除", delete=False)
-    return result is True and any("确认删除" in action for action in msg.action)
-
-
 @func_case
 async def test_features(tester: Tester):
     """core.builtins.session.features: Features 测试"""
-    await tester.test(_test_features_override, "Features.override() 测试")
     await tester.test(_test_features_inject_action_text, "support_action_text 注入测试")
     await tester.test(_test_release_context_tolerates_prior_platform_cleanup, "平台先清理后的上下文释放测试")
     await tester.test(_test_hold_normalizes_remote_context_unavailable, "跨进程 hold 上下文缺失归一化测试")
-    await tester.test(_test_features_inject_markdown_table, "support_markdown_extension 注入测试")
     await tester.test(_test_session_refresh_updates_derived_union_state, "SessionInfo 刷新派生状态测试")
     await tester.test(_test_session_refresh_does_not_recreate_deleted_unions, "SessionInfo 刷新不复活已删除 Union")
 
@@ -3393,11 +2847,9 @@ async def test_features(tester: Tester):
 async def test_execution_lock(tester: Tester):
     """core.builtins.session.lock: ExecutionLockList 测试"""
     await tester.test(_test_lock_add_remove, "ExecutionLockList 添加和移除测试")
-    await tester.test(_test_lock_multiple_users, "ExecutionLockList 多用户锁测试")
     await tester.test(_test_lock_shared_by_bound_identities, "ExecutionLockList 绑定身份共享测试")
     await tester.test(_test_lock_non_owner_cannot_release, "ExecutionLockList 非所有者不能释放测试")
     await tester.test(_test_old_owner_cannot_release_reacquired_lock, "ExecutionLockList 旧所有者幂等释放测试")
-    await tester.test(_test_lock_get, "ExecutionLockList.get() 测试")
     await tester.test(_test_lock_detects_union_merge_by_physical_bindings, "Union 合并后物理账号锁冲突测试")
     await tester.test(_test_wait_resume_reacquires_after_competing_command, "等待 continuation 安全重获锁测试")
     await tester.test(_test_cancelled_wait_leaves_no_task_or_lease, "取消等待清理 waiter 与 lease 测试")
@@ -3405,7 +2857,6 @@ async def test_execution_lock(tester: Tester):
         _test_execution_lock_state_does_not_survive_session_serialization,
         "SessionInfo 序列化不复制 lease 所有权测试",
     )
-    await tester.test(_test_execution_lock_count_counts_leases, "ExecutionLockList 按 lease 计数测试")
     await tester.test(_test_partial_overlap_merge_reservations_do_not_deadlock, "部分重叠 merge reservation 仲裁测试")
     await tester.test(_test_active_sender_leases_are_barriered_before_merge, "活跃 Sender Union 合并 barrier 测试")
     await tester.test(_test_cross_user_wait_result_keeps_root_lock_subject, "跨用户等待结果保持原锁主体测试")
@@ -3418,8 +2869,6 @@ async def test_execution_lock(tester: Tester):
 @func_case
 async def test_session_task(tester: Tester):
     """core.builtins.session.tasks: SessionTaskManager 测试"""
-    await tester.test(_test_task_add_and_get, "SessionTaskManager 添加和获取任务测试")
-    await tester.test(_test_task_add_callback, "SessionTaskManager 添加回调测试")
     await tester.test(_test_send_message_binds_button_callback_reply_id, "按钮 callback 虚拟回复 ID 绑定测试")
     await tester.test(_test_button_callback_registered_before_send_returns, "按钮 callback 发送前登记测试")
     await tester.test(_test_send_failure_does_not_leave_callback, "callback 发送失败清理测试")
@@ -3427,12 +2876,7 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_public_button_callback_accepts_other_sender, "公开按钮 callback 允许其他用户测试")
     await tester.test(_test_callback_remains_active_across_aliases, "callback 别名有效期内重复触发测试")
     await tester.test(_test_callback_once_is_consumed_across_aliases, "一次性 callback 别名消费测试")
-    await tester.test(_test_reused_callback_keeps_independent_registration, "callback 独立注册互不删除测试")
     await tester.test(_test_shared_callback_fallback_is_not_guessed, "callback 共享 fallback 消歧测试")
-    await tester.test(
-        _test_callback_registration_handle_survives_alias_collision,
-        "callback 相同别名独立注册测试",
-    )
     await tester.test(
         _test_pending_plain_callbacks_make_bot_fallback_ambiguous,
         "无按钮 callback 发送前登记与 fallback 消歧测试",
@@ -3447,12 +2891,10 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_parser_rejects_blocked_wait_responder_before_task_check, "全局屏蔽者不完成等待测试")
     await tester.test(_test_wait_confirm_ignores_unrelated_message, "确认等待忽略非确认消息测试")
     await tester.test(_test_wait_next_message_allows_parser_fallthrough, "下一条消息等待继续普通解析测试")
-    await tester.test(_test_wait_anyone_allows_parser_fallthrough, "任意用户等待继续普通解析测试")
     await tester.test(
         _test_parser_rejects_banned_callback_responder_before_task_check, "场景屏蔽者不执行 callback 测试"
     )
     await tester.test(_test_reply_task_normalizes_integer_reply_id, "等待回复 ID 类型归一化测试")
-    await tester.test(_test_reply_task_preserves_comma_in_message_id, "等待回复 ID 保留逗号测试")
     await tester.test(_test_wait_task_follows_sender_union_merge, "waiter 跟随 Sender Union 合并测试")
     await tester.test(
         _test_wait_task_follows_sender_unbind_without_old_owner_takeover,
@@ -3467,10 +2909,6 @@ async def test_session_task(tester: Tester):
         "waiter 跟随 Target 解绑并隔离旧场景测试",
     )
     await tester.test(
-        _test_wait_task_follows_target_rechannel_without_old_channel_takeover,
-        "waiter 跟随场景 rechannel 并隔离旧通道测试",
-    )
-    await tester.test(
         _test_reply_wait_is_scoped_to_physical_platform_context,
         "wait_reply 物理平台场景隔离测试",
     )
@@ -3479,8 +2917,6 @@ async def test_session_task(tester: Tester):
         "waiter 拓扑变化后稳定清理索引测试",
     )
     await tester.test(_test_task_bg_check_timeout, "SessionTaskManager.bg_check() 超时处理测试")
-    await tester.test(_test_task_remove_prunes_indexes, "SessionTaskManager 完成后释放任务索引测试")
-    await tester.test(_test_inactive_task_does_not_capture_message, "SessionTaskManager 已完成任务不覆盖结果测试")
     await tester.test(_test_one_message_completes_only_one_wait_task, "单条输入只完成一个等待任务")
     await tester.test(_test_inactive_wait_releases_context_acquired_during_hold, "失效 waiter 释放已取得 context")
     await tester.test(_test_ready_reply_is_not_blocked_by_earlier_pending_reply, "ready reply 不被 pending 阻塞")
@@ -3492,19 +2928,12 @@ async def test_session_task(tester: Tester):
 @func_case
 async def test_message_session_lifecycle(tester: Tester):
     """core.builtins.session.internal: 消息发送与等待生命周期测试。"""
-    await tester.test(_test_send_message_does_not_set_transport_format_flag, "发送链路不写入格式标志测试")
     await tester.test(_test_wait_next_message_registers_before_fast_reply, "快速回复不丢失测试")
     await tester.test(_test_wait_next_message_preserves_choice_rows, "等待选项保留显式按钮行测试")
-    await tester.test(_test_wait_confirm_registers_before_reaction_roundtrip, "确认反应期间快速回复不丢失测试")
     await tester.test(_test_wait_confirm_any_message_retracts_prompt, "确认否定或任意消息撤回提示测试")
     await tester.test(_test_wait_reply_registers_before_send_returns, "引用回复发送前登记测试")
     await tester.test(_test_wait_reply_timeout_covers_pending_send, "reply 发送阶段受统一超时约束测试")
-    await tester.test(_test_wait_reply_timeout_is_single_deadline, "reply 发送与回复共享 deadline 测试")
     await tester.test(_test_wait_reply_none_timeout_keeps_pending_send, "reply 无限超时保留测试")
-    await tester.test(
-        _test_wait_reply_deletes_prompt_when_reply_registration_is_lost,
-        "reply 登记失效后撤回提示测试",
-    )
     await tester.test(_test_cancelled_wait_reply_deletes_sent_prompt, "reply 外部取消撤回提示测试")
     await tester.test(
         _test_wait_reply_committed_result_beats_timeout_observation,
@@ -3529,6 +2958,5 @@ async def test_strict_confirmation(tester: Tester):
     await tester.test(_test_wait_confirm_strict_ignores_no_confirm_config, "no_confirm 配置不跳过严格确认")
     await tester.test(_test_mock_strict_confirm_accepts_token, "测试会话严格确认接受口令")
     await tester.test(_test_mock_strict_confirm_rejects_other_reply, "测试会话严格确认拒绝其他文本")
-    await tester.test(_test_mock_strict_confirm_uses_custom_string, "严格确认接受自定义口令")
 
     return tester

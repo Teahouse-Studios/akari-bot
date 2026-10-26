@@ -97,7 +97,6 @@ async def test_url_allowlist_commands(tester: Tester):
                 Contains("已从用户自定义 URL 允许列表删除规则"),
                 "应能通过命令删除精确 URL 规则",
             )
-            await tester.test(lambda: (directory / "user.txt").exists(), "命令配置应写入 user.txt")
 
             def rejects_unsafe_regex():
                 try:

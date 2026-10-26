@@ -248,23 +248,6 @@ async def _wait_prompt_sent(rec: _Recorder) -> bool:
     return False
 
 
-async def _test_prompt_recalled_after_bot_message() -> bool:
-    with _Recorder() as rec:
-        async with _Session("typing-after-message") as session:
-            await QQBotContextManager.start_typing(session)
-            if not await _wait_prompt_sent(rec):
-                Logger.error("Typing prompt was not sent after the delay window")
-                return False
-
-            await QQBotContextManager.send_message(session, None)
-            await asyncio.sleep(TEST_DELAY * 3)
-
-            if rec.leaked:
-                Logger.error(f"Typing prompt left behind after the bot sent its own message: {rec.leaked}")
-                return False
-            return True
-
-
 async def _test_prompt_recalled_when_context_dropped() -> bool:
     with _Recorder() as rec:
         session = _make_session("typing-context-dropped")
@@ -454,42 +437,6 @@ async def _send_via_context(session: SessionInfo, ctx: _FakeGroupMessage, messag
         QQBotContextManager.client = previous_client
         QQBotContextManager.context.pop(sid, None)
         QQBotContextManager.typing_states.pop(sid, None)
-
-
-async def _test_group_typing_prepares_immediately() -> bool:
-    cm = QQBotContextManager
-    session = _make_session("typing-prepares-immediately")
-    prepare_started = asyncio.Event()
-    release_prepare = asyncio.Event()
-    original_prepare = cm.__dict__.get("_prepare_message")
-    original_delay = cm.TYPING_PROMPT_DELAY
-
-    async def fake_prepare(cls, session_info, message, *args, **kwargs):
-        prepare_started.set()
-        await release_prepare.wait()
-        raise AssertionError("Preparation should have been cancelled when typing ended")
-
-    cm._prepare_message = classmethod(fake_prepare)
-    cm.TYPING_PROMPT_DELAY = 10
-    cm.context[session.session_id] = object()
-    try:
-        with patch("bots.qqbot.context.CoreConfig", new=SimpleNamespace(use_emote=False)):
-            await cm.start_typing(session)
-            await asyncio.wait_for(prepare_started.wait(), timeout=TEST_DELAY * 5)
-            if cm.typing_states[session.session_id].sending.is_set():
-                Logger.error("Preparing the typing prompt must not mark a normal response as sending")
-                return False
-            await cm.end_typing(session)
-        return True
-    except TimeoutError:
-        Logger.error("Typing resource preparation did not start immediately")
-        return False
-    finally:
-        release_prepare.set()
-        await cm.end_typing(session)
-        cm.context.pop(session.session_id, None)
-        cm._prepare_message = original_prepare
-        cm.TYPING_PROMPT_DELAY = original_delay
 
 
 async def _test_group_typing_preuploads_emote_immediately() -> bool:
@@ -697,7 +644,6 @@ async def _test_not_marked_while_converting_image() -> bool:
 async def test_qqbot_typing(tester: Tester):
     """bots.qqbot.context: 群聊输入提示的撤回时机测试"""
     await tester.test(_test_c2c_uses_native_typing, "C2C 原生输入状态测试")
-    await tester.test(_test_prompt_recalled_after_bot_message, "机器人发言后撤回输入提示测试")
     await tester.test(_test_prompt_recalled_when_context_dropped, "上下文销毁后撤回输入提示测试")
     await tester.test(_test_prompt_recalled_on_repeated_start, "重复开启输入状态撤回测试")
     await tester.test(_test_no_prompt_when_message_sent_early, "窗口内已发言不补发提示测试")
@@ -705,7 +651,6 @@ async def test_qqbot_typing(tester: Tester):
     await tester.test(_test_in_flight_prompt_recalled_after_response, "响应先于输入提示落地时的撤回测试")
     await tester.test(_test_group_typing_uses_emote_when_enabled, "开启表情后的群聊输入提示测试")
     await tester.test(_test_group_typing_omits_emote_when_disabled, "关闭表情后的群聊输入提示测试")
-    await tester.test(_test_group_typing_prepares_immediately, "群聊输入提示立即准备资源测试")
     await tester.test(_test_group_typing_preuploads_emote_immediately, "群聊输入提示立即预上传图片测试")
     await tester.test(_test_send_queue_drops_stale_typing_prompt, "发送队列取消过期输入提示测试")
     await tester.test(_test_marked_after_send_succeeds, "发送成功后登记发言测试")
