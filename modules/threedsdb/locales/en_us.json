@@ -1,3 +1,6 @@
 {
-    "threedsdb.message.no_results": "No results found."
+    "threedsdb.message.no_results": "No results found.",
+    "threedsdb.help.desc": "",
+    "threedsdb.help.command": "",
+    "threedsdb.message.limited_results": ""
 }
