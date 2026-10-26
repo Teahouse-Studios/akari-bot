@@ -1,1 +1,7 @@
-{}
+{
+    "config.comments.module_wolframalpha_secret.wolfram_alpha_appid": "",
+    "wolframalpha.help": "",
+    "wolframalpha.help.ask": "",
+    "wolframalpha.message.incomprehensible": "",
+    "wolframalpha.help.desc": ""
+}
