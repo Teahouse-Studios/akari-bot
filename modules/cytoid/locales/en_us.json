@@ -9,5 +9,6 @@
     "cytoid.message.bind.success": "Linking successfully: ${user}",
     "cytoid.message.unbind.success": "Unlinking successfully.",
     "cytoid.message.user_not_found": "User not found.",
-    "cytoid.message.user_unbound": "The user is not linked. Please link user by \"${cmd}\"."
+    "cytoid.message.user_unbound": "The user is not linked. Please link user by \"${cmd}\".",
+    "cytoid.message.fetch_failed": ""
 }
