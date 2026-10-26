@@ -1,1 +1,25 @@
-{}
+{
+    "ip.message.postal_code": "",
+    "ip.message.reverse": "",
+    "ip.message.location": "",
+    "ip.message.ip_property.multicast": "",
+    "ip.message.real_ip": "",
+    "ip.message.ip_property.private": "",
+    "ip.message.ip_property.loopback": "",
+    "ip.message.ip_property.unspecified": "",
+    "ip.message.ip_property.sixtofour": "",
+    "ip.message.ip_property.site_local": "",
+    "ip.message.invalid": "",
+    "ip.message.ip_property.global": "",
+    "ip.message.ip_property.ipv4_mapped": "",
+    "ip.message.utc": "",
+    "ip.message.ip_property.unknown": "",
+    "ip.message.ip_property": "",
+    "ip.message.ip_property.link_local": "",
+    "ip.message.asn": "",
+    "ip.message.ip_property.teredo": "",
+    "ip.message.organization": "",
+    "ip.help": "",
+    "ip.message.type": "",
+    "ip.message.ip_property.reserved": ""
+}
