@@ -123,5 +123,7 @@
     "maimai.message.grade_invalid": "",
     "maimai.message.plate.difficult.last": "",
     "maimai.help.maimai-regex.plate": "",
-    "maimai.message.process": ""
+    "maimai.message.process": "",
+    "maimai.message.oauth.lx.prompt": "",
+    "maimai.message.oauth.rate_limit": ""
 }
