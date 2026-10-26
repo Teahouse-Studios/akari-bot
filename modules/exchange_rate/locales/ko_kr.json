@@ -1,1 +1,10 @@
-{}
+{
+    "exchange_rate.help.desc": "",
+    "exchange_rate.help": "",
+    "exchange_rate.message.invalid.unit": "",
+    "exchange_rate.message.invalid.non_digital": "",
+    "config.comments.module_exchange_rate_secret.exchange_rate_api_key": "",
+    "exchange_rate.message.invalid.non_positive": "",
+    "exchange_rate.message": "",
+    "exchange_rate.help.regex.desc": ""
+}
