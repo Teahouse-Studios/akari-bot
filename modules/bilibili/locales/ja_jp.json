@@ -1,1 +1,24 @@
-{}
+{
+    "bilibili.message.embed.share": "",
+    "bilibili.message.embed.type": "",
+    "bilibili.help.regex.av": "",
+    "bilibili.message.embed.like": "",
+    "bilibili.message.failed": "",
+    "bilibili.message.detail": "",
+    "bilibili.message.embed.time": "",
+    "bilibili.help": "",
+    "bilibili.help.regex.url": "",
+    "bilibili.message.invalid": "",
+    "bilibili.message.not_found": "",
+    "bilibili.message.embed.reply": "",
+    "bilibili.message.embed.view": "",
+    "bilibili.message.embed.danmaku": "",
+    "bilibili.message.embed.coin": "",
+    "bilibili.help.regex.bv": "",
+    "bilibili.help.desc": "",
+    "bilibili.message.error.rejected": "",
+    "bilibili.message": "",
+    "bilibili.message.embed.fans": "",
+    "bilibili.help.option.i": "",
+    "bilibili.message.embed.favorite": ""
+}
