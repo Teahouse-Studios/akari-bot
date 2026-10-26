@@ -40,5 +40,10 @@
     "wikilog.help.keepalive.disable": "Disable login status check for the bot.",
     "wikilog.message.untrust.wiki": "Failed: This wiki is not currently on the allowlist.",
     "wikilog.message.keepalive.logged.as": "[Keep alive] Logged in as ${name}: ${wiki}",
-    "wikilog.message.keepalive.failed": "[Keep alive] Failed to check login status: ${link}"
+    "wikilog.message.keepalive.failed": "[Keep alive] Failed to check login status: ${link}",
+    "wikilog.help.note.set": "",
+    "wikilog.help.note.remove": "",
+    "wikilog.message.note": "",
+    "wikilog.message.note.success": "",
+    "wikilog.message.note.failed": ""
 }
