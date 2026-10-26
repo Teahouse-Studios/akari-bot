@@ -1,1 +1,14 @@
-{}
+{
+    "cytoid.help.r10": "",
+    "cytoid.message.bind.success": "",
+    "cytoid.help.desc": "",
+    "cytoid.message.bind.failed": "",
+    "cytoid.message.user_unbound": "",
+    "cytoid.help.bind": "",
+    "cytoid.help.unbind": "",
+    "cytoid.help.b30": "",
+    "cytoid.message.unbind.success": "",
+    "cytoid.message.fetch_failed": "",
+    "cytoid.help.profile": "",
+    "cytoid.message.user_not_found": ""
+}
