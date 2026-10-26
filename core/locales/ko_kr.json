@@ -248,5 +248,17 @@
     "tos.message.warning": "경고:\n이용 약관에 따라 귀하는 당사의 행동 강령을 위반했습니다.",
     "tos.message.warning.count": "이번이 ${current_warns}번째 경고입니다.",
     "tos.message.warning.last": "이번이 마지막 경고입니다.",
-    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 차단할 것입니다."
+    "tos.message.warning.prompt": "경고가 ${warn_counts}회를 초과할 경우, 귀하의 계정을 차단할 것입니다.",
+    "config.comments.jobqueue.jobqueue_websocket_max_message_bytes": "",
+    "config.comments.jobqueue.jobqueue_websocket_queue_size": "",
+    "config.notes.jobqueue.backend.websocket": "",
+    "config.comments.jobqueue.jobqueue_backend": "",
+    "config.comments.jobqueue.jobqueue_websocket_command_timeout": "",
+    "config.comments.jobqueue.jobqueue_websocket_url": "",
+    "config.notes.jobqueue.backend.intro": "",
+    "config.notes.jobqueue.backend.database": "",
+    "config.notes.jobqueue.backend.consistency": "",
+    "config.comments.jobqueue_secret.jobqueue_websocket_token": "",
+    "config.comments.jobqueue.jobqueue_node_id": "",
+    "config.comments.jobqueue.jobqueue_websocket_mode": ""
 }
