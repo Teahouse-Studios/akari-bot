@@ -248,5 +248,17 @@
     "tos.message.warning": "Warning:\nYou have violated our Code of Conduct according to our Terms of Service.",
     "tos.message.warning.count": "You have received ${current_warns} warnings.",
     "tos.message.warning.last": "This is the last warning.",
-    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings."
+    "tos.message.warning.prompt": "Your account will be blocked if you receive more than ${warn_counts} warnings.",
+    "config.comments.jobqueue.jobqueue_websocket_max_message_bytes": "",
+    "config.comments.jobqueue.jobqueue_websocket_queue_size": "",
+    "config.notes.jobqueue.backend.websocket": "",
+    "config.comments.jobqueue.jobqueue_backend": "",
+    "config.comments.jobqueue.jobqueue_websocket_command_timeout": "",
+    "config.comments.jobqueue.jobqueue_websocket_url": "",
+    "config.notes.jobqueue.backend.intro": "",
+    "config.notes.jobqueue.backend.database": "",
+    "config.notes.jobqueue.backend.consistency": "",
+    "config.comments.jobqueue_secret.jobqueue_websocket_token": "",
+    "config.comments.jobqueue.jobqueue_node_id": "",
+    "config.comments.jobqueue.jobqueue_websocket_mode": ""
 }
