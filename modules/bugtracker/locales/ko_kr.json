@@ -1,1 +1,7 @@
-{}
+{
+    "bugtracker.help.regex.desc": "",
+    "bugtracker.help": "",
+    "bugtracker.message.invalid_mojira_id": "",
+    "bugtracker.message.get_failed": "",
+    "bugtracker.message.error.server": ""
+}
