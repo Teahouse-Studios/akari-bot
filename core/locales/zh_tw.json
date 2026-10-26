@@ -248,5 +248,17 @@
     "tos.message.warning": "警告：\n依據使用條款，你已違反我們的行為準則。",
     "tos.message.warning.count": "這是第 ${current_warns} 次警告。",
     "tos.message.warning.last": "這是最後一次警告。",
-    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳號。"
+    "tos.message.warning.prompt": "如超過 ${warn_counts} 次警告，我們將會封鎖你的帳號。",
+    "config.comments.jobqueue.jobqueue_websocket_max_message_bytes": "",
+    "config.comments.jobqueue.jobqueue_websocket_queue_size": "",
+    "config.notes.jobqueue.backend.websocket": "",
+    "config.comments.jobqueue.jobqueue_backend": "",
+    "config.comments.jobqueue.jobqueue_websocket_command_timeout": "",
+    "config.comments.jobqueue.jobqueue_websocket_url": "",
+    "config.notes.jobqueue.backend.intro": "",
+    "config.notes.jobqueue.backend.database": "",
+    "config.notes.jobqueue.backend.consistency": "",
+    "config.comments.jobqueue_secret.jobqueue_websocket_token": "",
+    "config.comments.jobqueue.jobqueue_node_id": "",
+    "config.comments.jobqueue.jobqueue_websocket_mode": ""
 }
