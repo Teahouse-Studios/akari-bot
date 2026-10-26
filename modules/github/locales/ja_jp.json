@@ -1,1 +1,12 @@
-{}
+{
+    "github.help.desc": "",
+    "github.help.user": "",
+    "github.help.repo": "",
+    "github.help.search": "",
+    "github.message.user.not_found": "",
+    "github.message.search.not_found": "",
+    "github.message.search": "",
+    "github.message.repo.not_found": "",
+    "github.help": "",
+    "config.comments.module_github_secret.github_pat": ""
+}
