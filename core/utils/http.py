@@ -122,7 +122,7 @@ async def request_url(
                 error_fmt = (
                     f"{str(mock_resp.status_code)}[KE:Image,path=https://http.cat/{str(mock_resp.status_code)}.jpg]"
                 )
-                if 500 <= mock_resp.status_code < 600:
+                if mock_resp.status_code == 429 or 500 <= mock_resp.status_code < 600:
                     raise ExternalException(error_fmt)
                 raise ValueError(error_fmt)
             if fmt:
