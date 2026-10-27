@@ -9,7 +9,13 @@ from bots.matrix import client
 from bots.matrix.client import matrix_bot
 from bots.matrix.config import MatrixConfig
 from bots.matrix.context import MatrixContextManager, MatrixFetchedContextManager
-from bots.matrix.events import member_joined, member_left, should_dispatch_member_joined, should_dispatch_member_left
+from bots.matrix.events import (
+    member_joined,
+    member_left,
+    message_recalled,
+    should_dispatch_member_joined,
+    should_dispatch_member_left,
+)
 from bots.matrix.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -206,6 +212,15 @@ async def on_reaction(room: nio.MatrixRoom, event: nio.ReactionEvent):
     await Bot.process_message(session, (room, event))
 
 
+async def on_redaction(room: nio.MatrixRoom, event: nio.RedactionEvent):
+    if not event.redacts:
+        return
+    sender_id = f"{sender_prefix}|{event.sender[1:]}"
+    if sender_id in ignored_sender:
+        return
+    await message_recalled(event.redacts, room.room_id, sender_id)
+
+
 async def _sync_room_state() -> bool:
     response = await matrix_bot.sync(
         timeout=10000, since=matrix_bot.next_batch, full_state=True, set_presence="unavailable"
@@ -272,6 +287,7 @@ async def _run_client():
     matrix_bot.add_event_callback(on_room_member, nio.RoomMemberEvent)
     matrix_bot.add_event_callback(on_message, nio.RoomMessageFormatted)
     matrix_bot.add_event_callback(on_reaction, nio.ReactionEvent)
+    matrix_bot.add_event_callback(on_redaction, nio.RedactionEvent)
     matrix_bot.add_to_device_callback(on_verify, nio.KeyVerificationEvent)
     matrix_bot.add_event_callback(on_in_room_verify, nio.RoomMessageUnknown)
 

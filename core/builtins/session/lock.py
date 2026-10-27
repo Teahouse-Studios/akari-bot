@@ -13,10 +13,12 @@ if TYPE_CHECKING:
 class ExecutionState:
     """仅存在于 Server 进程中的一次命令执行状态。"""
 
-    __slots__ = ("held_contexts", "lock_owner_task", "lock_subject", "lock_token")
+    __slots__ = ("command_entry", "held_contexts", "lock_owner_task", "lock_subject", "lock_token")
 
     def __init__(self) -> None:
         self.lock_token: str | None = None
+        # 本次命令的输出与任务记录，实现见 core.builtins.session.command_lifecycle。
+        self.command_entry = None
         # parser 的根 asyncio.Task 是 lease 的最终生命周期边界。正常路径仍由
         # parser finally 主动释放；若调用链遭遇取消、意外 BaseException 或其它
         # 未覆盖的退出路径，任务完成回调会回收遗留 lease，避免用户永久卡锁。
@@ -38,6 +40,12 @@ class ExecutionLockList:
     # 结束的普通命令”和“另一个也在等待扩域的合并命令”，避免后者互相等待。
     _reservations: set[str] = set()
     _changed = asyncio.Event()
+
+    @staticmethod
+    def try_state(msg: "MessageSession") -> ExecutionState | None:
+        """取得已存在的执行状态；不替尚未执行命令的会话创建状态。"""
+        state = getattr(msg, "_execution_state", None)
+        return state if isinstance(state, ExecutionState) else None
 
     @staticmethod
     def state(msg: "MessageSession") -> ExecutionState:

@@ -101,6 +101,8 @@ class OutgoingPayload:
     chain: Any
     quote: bool = True
     message_ids: list | None = None
+    # 私信发送与场景内发送的 message_id 命名空间可能重叠，观察者需据此区分。
+    private: bool = False
 
     @staticmethod
     def _clone_chain(chain: Any) -> Any:
@@ -123,12 +125,15 @@ class OutgoingPayload:
 
     def snapshot(self) -> "OutgoingPayload":
         ids = list(self.message_ids) if self.message_ids is not None else None
-        return OutgoingPayload(chain=self._clone_chain(self.chain), quote=self.quote, message_ids=ids)
+        return OutgoingPayload(
+            chain=self._clone_chain(self.chain), quote=self.quote, message_ids=ids, private=self.private
+        )
 
     def apply_from(self, other: "OutgoingPayload") -> None:
         # 提交时再断开一次引用：成功 hook 若继续持有草稿链，之后的就地修改不得污染正式结果
         self.chain = self._clone_chain(other.chain)
         self.quote = other.quote
+        self.private = other.private
         if other.message_ids is not None:
             self.message_ids = list(other.message_ids)
 

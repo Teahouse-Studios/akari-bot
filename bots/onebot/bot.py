@@ -10,6 +10,7 @@ from hypercorn import Config as HyperConfig
 from bots.onebot.client import aiocqhttp_bot
 from bots.onebot.config import AiocqhttpConfig
 from bots.onebot.context import OneBotContextManager, OneBotFetchedContextManager
+from bots.onebot.events import message_recalled
 from bots.onebot.info import *
 from bots.onebot.utils import to_message_chain, get_onebot_implementation
 from core.builtins.bot import Bot
@@ -209,6 +210,25 @@ if enable_listening_self_message:
 @aiocqhttp_bot.on_message("group", "private")
 async def _(event: Event):
     await message_handler(event)
+
+
+@aiocqhttp_bot.on_notice("group_recall")
+async def _(event: Event):
+    if f"{sender_prefix}|{event.user_id}" in ignored_sender:
+        return
+    await message_recalled(
+        message_id=event.message_id,
+        user_id=event.user_id,
+        group_id=event.group_id,
+        operator_id=getattr(event, "operator_id", None),
+    )
+
+
+@aiocqhttp_bot.on_notice("friend_recall")
+async def _(event: Event):
+    if f"{sender_prefix}|{event.user_id}" in ignored_sender:
+        return
+    await message_recalled(message_id=event.message_id, user_id=event.user_id)
 
 
 @aiocqhttp_bot.on("notice.notify")

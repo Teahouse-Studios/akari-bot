@@ -3,6 +3,7 @@ import asyncio
 from bots.milky.client import milky_bot
 from bots.milky.config import MilkyConfig
 from bots.milky.context import MilkyContextManager, MilkyFetchedContextManager
+from bots.milky.events import message_recalled
 from bots.milky.info import *
 from bots.milky.utils import MILKY_IMPL_TEMP_KEY, get_milky_implementation, message_field, to_message_chain
 from core.builtins.bot import Bot
@@ -353,8 +354,28 @@ async def bot_offline_handler(event: dict) -> None:
     Logger.error(f"Milky bot went offline: {reason}")
 
 
+async def message_recall_handler(event: dict) -> None:
+    message = _event_data(event)
+    message_seq = message_field(message, "message_seq")
+    sender_uin = message_field(message, "sender_id") or message_field(message, "user_id")
+    if message_seq is None or sender_uin is None:
+        return
+    if f"{sender_prefix}|{sender_uin}" in ignored_sender:
+        return
+    group_id = None
+    if message_field(message, "message_scene") == "group":
+        group_id = message_field(message, "group_id") or message_field(message, "peer_id")
+    await message_recalled(
+        message_id=message_seq,
+        user_id=sender_uin,
+        group_id=group_id,
+        operator_id=message_field(message, "operator_id") or sender_uin,
+    )
+
+
 EVENT_HANDLERS = {
     "message_receive": message_handler,
+    "message_recall": message_recall_handler,
     "friend_request": friend_request_handler,
     "friend_nudge": friend_nudge_handler,
     "group_invitation": group_invitation_handler,

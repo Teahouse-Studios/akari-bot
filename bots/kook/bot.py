@@ -5,7 +5,7 @@ from khl import Bot as khlBot, EventTypes, Event, Message, MessageTypes
 from bots.kook.client import bot
 from bots.kook.config import KookConfig
 from bots.kook.context import KOOKContextManager, KOOKFetchedContextManager, KOOKReactionContext
-from bots.kook.events import guild_member_joined, guild_member_left
+from bots.kook.events import guild_member_joined, guild_member_left, message_recalled
 from bots.kook.info import *
 from bots.kook.lifecycle import run_bot
 from core.builtins.bot import Bot
@@ -88,6 +88,24 @@ async def msg_handler(message: Message):
     )
 
     await Bot.process_message(session, message)
+
+
+@bot.on_event(EventTypes.DELETED_MESSAGE)
+async def deleted_message(b: khlBot, event: Event):
+    body = event.extra.get("body", {})
+    author_id = body.get("author_id")
+    if author_id is None or f"{sender_prefix}|{author_id}" in ignored_sender:
+        return
+    await message_recalled(body.get("msg_id"), author_id, group_id=body.get("channel_id"))
+
+
+@bot.on_event(EventTypes.DELETED_PRIVATE_MESSAGE)
+async def deleted_private_message(b: khlBot, event: Event):
+    body = event.extra.get("body", {})
+    author_id = body.get("author_id")
+    if author_id is None or f"{sender_prefix}|{author_id}" in ignored_sender:
+        return
+    await message_recalled(body.get("msg_id"), author_id)
 
 
 @bot.on_event(EventTypes.ADDED_REACTION)

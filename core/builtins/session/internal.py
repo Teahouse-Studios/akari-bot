@@ -459,7 +459,7 @@ class MessageSession:
             dispatch_outgoing_result,
         )
 
-        outgoing_payload = OutgoingPayload(chain=chain, quote=False)
+        outgoing_payload = OutgoingPayload(chain=chain, quote=False, private=True)
         stop_send = await dispatch_outgoing_before_send(self, outgoing_payload)
         if isinstance(stop_send, Stop):
             return []

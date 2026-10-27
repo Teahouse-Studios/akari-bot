@@ -13,7 +13,7 @@ from bots.discord.config import DiscordConfig, DiscordSecretConfig
 from bots.discord.buttons import set_action_text_submit_handler, set_button_click_handler
 from bots.discord.interactions import handle_action_text_submit, handle_button_click
 from bots.discord.context import DiscordContextManager, DiscordFetchedContextManager, DiscordReactionContext
-from bots.discord.events import guild_member_joined, guild_member_left
+from bots.discord.events import guild_member_joined, guild_member_left, message_recalled
 from bots.discord.info import *
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
@@ -156,6 +156,25 @@ async def on_message(message: discord.Message):
     )
 
     await Bot.process_message(session, message)
+
+
+@discord_bot.event
+async def on_raw_message_delete(payload: discord.RawMessageDeleteEvent):
+    cached = getattr(payload, "cached_message", None)
+    if cached is not None and cached.author == discord_bot.user:
+        return
+    try:
+        channel = await discord_bot.fetch_channel(payload.channel_id)
+    except Exception:
+        Logger.exception(f"Failed to fetch Discord channel {payload.channel_id} for a delete notice: ")
+        channel = None
+    target_from = target_dm_channel_prefix if isinstance(channel, discord.DMChannel) else target_channel_prefix
+    await message_recalled(
+        message_id=payload.message_id,
+        channel_id=payload.channel_id,
+        target_from=target_from,
+        author_id=getattr(getattr(cached, "author", None), "id", None),
+    )
 
 
 @discord_bot.event

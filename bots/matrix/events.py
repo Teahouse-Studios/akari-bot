@@ -1,6 +1,7 @@
 from bots.matrix.info import client_name, sender_prefix, target_prefix
 from core.builtins.bot import Bot
 from core.builtins.session.info import EventInfo
+from core.logger import Logger
 
 
 def should_dispatch_member_joined(
@@ -84,4 +85,28 @@ async def member_left(
         sender_from=sender_prefix,
         data=data,
     )
+    return await Bot.process_event(event_info)
+
+
+async def message_recalled(
+    message_id: str,
+    room_id: str,
+    operator_id: str | None = None,
+):
+    """将 Matrix 消息撤回通知转换为核心事件。"""
+    try:
+        event_info = await EventInfo.assign(
+            event_name="message_recalled",
+            target_id=f"{target_prefix}|{room_id}",
+            target_from=target_prefix,
+            client_name=client_name,
+            sender_id=operator_id,
+            sender_from=sender_prefix if operator_id else None,
+            data={"message_id": str(message_id), "operator_id": operator_id},
+            create=False,
+        )
+    except ValueError:
+        # 未记录过的场景不因撤回事件建立身份数据。
+        Logger.debug(f"Ignored recall from unknown room {room_id}.")
+        return None
     return await Bot.process_event(event_info)

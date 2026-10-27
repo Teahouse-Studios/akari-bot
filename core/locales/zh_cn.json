@@ -15,6 +15,7 @@
     "config.comments.config.enable_analytics": "是否开启内置的统计功能。",
     "config.comments.config.enable_bind_auto": "是否开启“bind auto”命令以自动配对同一场景内的其他实例。",
     "config.comments.config.enable_commit_url": "是否在展示版本信息时显示 commit URL。",
+    "config.comments.config.command_recall_cleanup": "是否在用户撤回触发命令的消息后删除机器人已发送的输出，并终止仍在执行的命令。",
     "config.comments.config.enable_dirty_check": "是否开启文字过滤检测。",
     "config.comments.config.enable_get_petal": "是否允许获取花瓣。",
     "config.comments.config.enable_joke": "是否开启玩笑，启用后将在服务器时间 4 月 1 日时发生。",

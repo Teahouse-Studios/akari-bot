@@ -46,6 +46,7 @@ class CoreConfig:
     mention_required: bool = False
     no_confirm: bool = False
     quick_confirm: bool = True
+    command_recall_cleanup: bool = True
 
     # 通用功能
     enable_analytics: bool = True

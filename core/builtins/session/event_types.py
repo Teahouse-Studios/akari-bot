@@ -7,6 +7,7 @@ EventName: TypeAlias = (
         "member_left",
         "guild_member_joined",
         "guild_member_left",
+        "message_recalled",
     ]
     | str
 )

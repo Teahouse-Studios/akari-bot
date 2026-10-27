@@ -12,6 +12,7 @@ from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.internal import I18NContext
 from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import parser
+from core.builtins.session.command_lifecycle import CommandLifecycleRegistry
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
@@ -152,6 +153,8 @@ async def receive_message(session_info: SessionInfo) -> None:
 
 @ServerAPI.receive_event.bind(JobQueueServer)
 async def receive_event(event_info: EventInfo) -> None:
+    # 目标 Union 可能已被删除，撤回处理必须先于 refresh_info。
+    await CommandLifecycleRegistry.handle_message_recall(event_info)
     await event_info.refresh_info()
     await ModulesManager.dispatch_event(event_info)
 

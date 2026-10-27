@@ -29,7 +29,7 @@ from core.utils.func import convert_list
 from core.utils.session import inject_features
 
 from core.queue.contracts import PlatformAPI, ServerAPI
-from core.queue.errors import RpcUnavailableError
+from core.queue.errors import RpcCancelledError, RpcUnavailableError
 
 enable_analytics = CoreConfig.enable_analytics
 
@@ -92,6 +92,9 @@ class Bot:
             ctx_manager.activate_context(session_info)
             try:
                 await ServerAPI.receive_message(session_info)
+            except RpcCancelledError:
+                # 撤回触发消息时服务端会终止命令，属于预期结果。
+                Logger.debug(f"Message {session_info.session_id or 'unknown'} was cancelled by the server.")
             finally:
                 # 队列异常或任务被取消时也必须释放平台 SDK 消息对象。
                 ctx_manager.deactivate_context(session_info)

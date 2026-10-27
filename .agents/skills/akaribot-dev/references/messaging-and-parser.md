@@ -10,6 +10,7 @@
 - [KE 码](#122-ke-码消息元素文本表示)
 - [上下文保持](#123-上下文保持长任务)
 - [执行锁](#124-执行锁防并发)
+- [撤回清理](#127-撤回清理)
 - [TOS 与错字纠正](#125-tos-限流)
 - [自定义异常](#128-自定义异常)
 
@@ -603,6 +604,8 @@ class ExecutionLockList:
 
 也可通过 `Bot.ExecutionLockList` 访问。锁是**进程内内存**，server 进程崩溃重启后自动清空。
 
+`ExecutionState` 另持有 `command_entry`，指向本页 12.7 的撤回追踪记录；等待结果的续跑会话共享同一份状态。
+
 ### 12.5 TOS 限流
 
 `modules/core/hooks/tos.py` 订阅 parser 入口 hook，用令牌桶双层限流：
@@ -632,6 +635,15 @@ class ExecutionLockList:
 长度比那两项是为了挡住“短输入误匹配到长命令”（源码注释举的例子是 `~p` → `~decrypt`）：`min_len / max_len < ratio` 就丢弃这个匹配。
 
 用户可以在自己的 `sender_data` 里把 `typo_check` 设成 `False` 关掉这个功能。
+
+### 12.7 撤回清理
+
+平台把用户撤回消息的事件（`message_recalled`）交给 `ServerAPI.receive_event`，先于 `refresh_info()` 交给 `core/builtins/session/command_lifecycle.py` 的 `CommandLifecycleRegistry`：
+
+- 键为 `(client_name, target_id, 触发消息 ID)`；`COMMAND_BEFORE_EXECUTE` / `REGEX_BEFORE_EXECUTE` 登记当前 parser task，`OUTGOING_SENT` 累积平台返回的消息 ID，`FINISHED` 停止追踪并保留输出记录到 `OUTPUT_TTL`。
+- 命中撤回时先置 `cancelled`（`OUTGOING_BEFORE_SEND` 随即拦截新发送），再 `task.cancel()` 终止执行中的命令，最后按 `support_delete` 删除已记录的输出。
+- 只有撤回操作者与命令发起者一致时才收尾；记录只存在执行命令的 Server 进程内存，重启或多 Server 实例分流后无法找回。
+- 适配器负责把平台事件转成 `EventInfo(event_name="message_recalled", data={"message_id": ..., "operator_id": ...})`；`modules/core/hooks/recall.py` 承载上述 hook 订阅。
 
 
 ---
