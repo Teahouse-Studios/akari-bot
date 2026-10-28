@@ -11,6 +11,7 @@ from core.builtins.session.lock import ExecutionLockList
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants import SessionContextUnavailable
 from core.database.models import SenderUnionInfo, TargetUnionBind, TargetUnionInfo
+from core.logger import Logger
 from core.queue.contracts import PlatformAPI
 from core.queue.errors import RpcRemoteError
 from core.tester import func_case, Tester
@@ -1933,6 +1934,136 @@ async def _test_wait_confirm_any_message_retracts_prompt():
     return True
 
 
+async def _make_typing_wait_session(target: str):
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.session.internal import MessageSession
+
+    class Sent:
+        message_id = [f"{target}-prompt"]
+
+        async def delete(self):
+            return None
+
+    target_id = f"TEST|Group|{target}"
+    sender_id = f"TEST|{target}"
+    incoming = MessageSession(
+        await SessionInfo.assign(
+            target_id=target_id,
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id=sender_id,
+            sender_from="TEST",
+            messages=MessageChain.assign("是"),
+        )
+    )
+
+    class RecordingWaitSession(MessageSession):
+        async def send_message(self, *args, **kwargs):
+            await SessionTaskManager.check(incoming)
+            return Sent()
+
+    return (
+        RecordingWaitSession(
+            await SessionInfo.assign(
+                target_id=target_id,
+                target_from="TEST|Group",
+                client_name="TEST",
+                sender_id=sender_id,
+                sender_from="TEST",
+            )
+        ),
+        incoming,
+    )
+
+
+async def _test_wait_confirm_restores_typing_prompt():
+    msg, _incoming = await _make_typing_wait_session("typing-restore")
+    calls = []
+    SessionTaskManager._task_list.clear()
+    try:
+        with (
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+            patch.object(PlatformAPI, "start_typing", new=AsyncMock(side_effect=lambda *_args: calls.append("start"))),
+            patch.object(PlatformAPI, "end_typing", new=AsyncMock(side_effect=lambda *_args: calls.append("end"))),
+        ):
+            await msg.start_typing()
+            confirmed = await msg.wait_confirm("prompt", timeout=0.05 * TIME_SCALE)
+        return confirmed and calls == ["start", "end", "start"]
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_wait_confirm_keeps_typing_off_without_active_prompt():
+    msg, _incoming = await _make_typing_wait_session("typing-inactive")
+    calls = []
+    SessionTaskManager._task_list.clear()
+    try:
+        with (
+            patch.object(PlatformAPI, "hold_context", new=AsyncMock(return_value=None)),
+            patch.object(PlatformAPI, "start_typing", new=AsyncMock(side_effect=lambda *_args: calls.append("start"))),
+            patch.object(PlatformAPI, "end_typing", new=AsyncMock(side_effect=lambda *_args: calls.append("end"))),
+        ):
+            confirmed = await msg.wait_confirm("prompt", timeout=0.05 * TIME_SCALE)
+        return confirmed and calls == []
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_waits_restore_typing_prompt_after_timeout():
+    from core.builtins.session.internal import MessageSession
+    from core.constants import WaitCancelException
+
+    class Sent:
+        message_id = ["timeout-prompt"]
+
+        async def delete(self):
+            return None
+
+    class TimeoutSession(MessageSession):
+        async def send_message(self, *args, **kwargs):
+            return Sent()
+
+    session_info = await SessionInfo.assign(
+        target_id="TEST|Group|typing-timeout",
+        target_from="TEST|Group",
+        client_name="TEST",
+        sender_id="TEST|typing-timeout",
+        sender_from="TEST",
+        features=Features(support_quote=True),
+    )
+    waits = {
+        "wait_confirm": lambda msg: msg.wait_confirm("prompt", timeout=0.01 * TIME_SCALE),
+        "wait_next_message": lambda msg: msg.wait_next_message("prompt", timeout=0.01 * TIME_SCALE),
+        "wait_anyone": lambda msg: msg.wait_anyone("prompt", timeout=0.01 * TIME_SCALE),
+        "wait_reply": lambda msg: msg.wait_reply("prompt", timeout=0.01 * TIME_SCALE),
+    }
+    SessionTaskManager._task_list.clear()
+    try:
+        for name, wait in waits.items():
+            msg = TimeoutSession(session_info)
+            calls = []
+            with (
+                patch.object(
+                    PlatformAPI, "start_typing", new=AsyncMock(side_effect=lambda *_args: calls.append("start"))
+                ),
+                patch.object(PlatformAPI, "end_typing", new=AsyncMock(side_effect=lambda *_args: calls.append("end"))),
+            ):
+                await msg.start_typing()
+                try:
+                    await wait(msg)
+                except WaitCancelException:
+                    pass
+                else:
+                    Logger.error(f"{name} should have timed out")
+                    return False
+            if calls != ["start", "end", "start"]:
+                Logger.error(f"{name} typing sequence was {calls}")
+                return False
+        return True
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
 async def _test_wait_reply_registers_before_send_returns():
     from core.builtins.session.internal import MessageSession
 
@@ -2931,6 +3062,9 @@ async def test_message_session_lifecycle(tester: Tester):
     await tester.test(_test_wait_next_message_registers_before_fast_reply, "快速回复不丢失测试")
     await tester.test(_test_wait_next_message_preserves_choice_rows, "等待选项保留显式按钮行测试")
     await tester.test(_test_wait_confirm_any_message_retracts_prompt, "确认否定或任意消息撤回提示测试")
+    await tester.test(_test_wait_confirm_restores_typing_prompt, "确认成功后恢复输入提示测试")
+    await tester.test(_test_wait_confirm_keeps_typing_off_without_active_prompt, "未展示提示时等待不触发输入状态测试")
+    await tester.test(_test_waits_restore_typing_prompt_after_timeout, "等待超时后恢复输入提示测试")
     await tester.test(_test_wait_reply_registers_before_send_returns, "引用回复发送前登记测试")
     await tester.test(_test_wait_reply_timeout_covers_pending_send, "reply 发送阶段受统一超时约束测试")
     await tester.test(_test_wait_reply_none_timeout_keeps_pending_send, "reply 无限超时保留测试")

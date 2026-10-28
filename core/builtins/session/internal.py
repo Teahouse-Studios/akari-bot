@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime, UTC
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Callable, Coroutine, Match, NoReturn, cast
@@ -639,10 +641,29 @@ class MessageSession:
     async def start_typing(self):
         """用于在会话中开始输入状态。"""
         await PlatformAPI.start_typing(self.session_info)
+        ExecutionLockList.state(self).typing_owner = self
 
     async def end_typing(self):
         """用于结束会话中的输入状态。"""
-        await PlatformAPI.end_typing(self.session_info)
+        state = ExecutionLockList.state(self)
+        owner = state.typing_owner or self
+        state.typing_owner = None
+        await PlatformAPI.end_typing(owner.session_info)
+
+    @asynccontextmanager
+    async def _typing_paused(self) -> AsyncIterator[None]:
+        # 恢复时须沿用最初展示提示的会话；等待取得的回复会话没有对应的平台提示。
+        owner = ExecutionLockList.state(self).typing_owner
+        if owner is not None:
+            await owner.end_typing()
+        try:
+            yield
+        finally:
+            if owner is not None:
+                try:
+                    await owner.start_typing()
+                except Exception:
+                    Logger.exception("Failed to restore the typing prompt after waiting.")
 
     async def _add_confirm_reaction(self, message_id: str | list[str]):
         if self.session_info.support_reaction:
@@ -685,59 +706,64 @@ class MessageSession:
         if CoreConfig.no_confirm and not strict_mode:
             return no_confirm_action
         released_lease = ExecutionLockList.remove(self) if release_execution_lock else False
-        await self.end_typing()
-        if message_chain:
-            chain = get_message_chain(self.session_info, message_chain)
-        else:
-            chain = MessageChain.assign(I18NContext("core.message.confirm"))
-        token = normalize_confirm_token(self.session_info, confirm_token) if strict_mode else None
-        # 合并转发消息无从追加提示行，此时略过
-        if isinstance(chain, MessageChain):
+        async with self._typing_paused():
+            if message_chain:
+                chain = get_message_chain(self.session_info, message_chain)
+            else:
+                chain = MessageChain.assign(I18NContext("core.message.confirm"))
+            token = normalize_confirm_token(self.session_info, confirm_token) if strict_mode else None
+            # 合并转发消息无从追加提示行，此时略过
+            if isinstance(chain, MessageChain):
+                if strict_mode:
+                    chain.append(I18NContext("message.wait.confirm.prompt.strict", token=token))
+                elif append_instruction:
+                    chain.append(I18NContext(confirm_prompt_key(self.session_info)))
+
+            if (
+                not strict_mode
+                and self.session_info.support_button
+                and isinstance(chain, MessageChain)
+                and quick_confirm
+            ):
+                chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
+                chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
+
             if strict_mode:
-                chain.append(I18NContext("message.wait.confirm.prompt.strict", token=token))
-            elif append_instruction:
-                chain.append(I18NContext(confirm_prompt_key(self.session_info)))
-
-        if not strict_mode and self.session_info.support_button and isinstance(chain, MessageChain) and quick_confirm:
-            chain.append(Button(self.session_info.locale.t("message.button.yes"), "confirm_yes"))
-            chain.append(Button(self.session_info.locale.t("message.button.no"), "confirm_no"))
-
-        if strict_mode:
-            matcher = _is_confirm_token(token)
-        else:
-            matcher = None if consume_any_message else _is_confirmation_message
-        send = None
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(
-            self,
-            flag,
-            timeout=timeout,
-            task_type="wait",
-            matcher=matcher,
-        )
-        try:
-            # 等待任务须在跨进程发送提示前登记；平台可能已展示消息并收到用户操作，
-            # 而发送 action 的结果尚未回到 Server。
-            send = await self.send_message(chain, quote)
-            if quick_confirm and not strict_mode and not self.session_info.support_button:
-                await self._add_confirm_reaction(send.message_id)
-            await asyncio.wait_for(flag.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
-            if send and delete:
-                await send.delete()
-            raise WaitCancelException
-        finally:
-            task_info = SessionTaskManager.remove_task(self)
-        result = task_info.get("result") if task_info else None
-        if result:
-            if send and delete:
-                await send.delete()
-            # 严格确认的匹配器已限定为完全等于口令，命中即通过
-            confirmed = True if strict_mode else result.as_display(text_only=True) in confirm_command
-            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                matcher = _is_confirm_token(token)
+            else:
+                matcher = None if consume_any_message else _is_confirmation_message
+            send = None
+            flag = asyncio.Event()
+            SessionTaskManager.add_task(
+                self,
+                flag,
+                timeout=timeout,
+                task_type="wait",
+                matcher=matcher,
+            )
+            try:
+                # 等待任务须在跨进程发送提示前登记；平台可能已展示消息并收到用户操作，
+                # 而发送 action 的结果尚未回到 Server。
+                send = await self.send_message(chain, quote)
+                if quick_confirm and not strict_mode and not self.session_info.support_button:
+                    await self._add_confirm_reaction(send.message_id)
+                await asyncio.wait_for(flag.wait(), timeout=timeout)
+            except asyncio.TimeoutError:
+                if send and delete:
+                    await send.delete()
                 raise WaitCancelException
-            return confirmed
-        raise WaitCancelException
+            finally:
+                task_info = SessionTaskManager.remove_task(self)
+            result = task_info.get("result") if task_info else None
+            if result:
+                if send and delete:
+                    await send.delete()
+                # 严格确认的匹配器已限定为完全等于口令，命中即通过
+                confirmed = True if strict_mode else result.as_display(text_only=True) in confirm_command
+                if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                    raise WaitCancelException
+                return confirmed
+            raise WaitCancelException
 
     async def wait_next_message(
         self,
@@ -760,32 +786,32 @@ class MessageSession:
         """
         send = None
         released_lease = ExecutionLockList.remove(self)
-        await self.end_typing()
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(self, flag, timeout=timeout, task_type="wait_next", allow_fallthrough=True)
-        task_info = None
-        try:
-            if message_chain:
-                chain = get_message_chain(self.session_info, message_chain)
-                # 合并转发消息无从追加提示行，此时略过
-                if append_instruction and isinstance(chain, MessageChain):
-                    chain.append(I18NContext("message.wait.next_message.prompt"))
-                send = await self.send_message(chain, quote)
-            await asyncio.wait_for(flag.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
+        async with self._typing_paused():
+            flag = asyncio.Event()
+            SessionTaskManager.add_task(self, flag, timeout=timeout, task_type="wait_next", allow_fallthrough=True)
+            task_info = None
+            try:
+                if message_chain:
+                    chain = get_message_chain(self.session_info, message_chain)
+                    # 合并转发消息无从追加提示行，此时略过
+                    if append_instruction and isinstance(chain, MessageChain):
+                        chain.append(I18NContext("message.wait.next_message.prompt"))
+                    send = await self.send_message(chain, quote)
+                await asyncio.wait_for(flag.wait(), timeout=timeout)
+            except asyncio.TimeoutError:
+                if send and delete:
+                    await send.delete()
+                raise WaitCancelException
+            finally:
+                task_info = SessionTaskManager.remove_task(self)
+            result = task_info.get("result") if task_info else None
             if send and delete:
                 await send.delete()
+            if result:
+                if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                    raise WaitCancelException
+                return result
             raise WaitCancelException
-        finally:
-            task_info = SessionTaskManager.remove_task(self)
-        result = task_info.get("result") if task_info else None
-        if send and delete:
-            await send.delete()
-        if result:
-            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
-                raise WaitCancelException
-            return result
-        raise WaitCancelException
 
     async def wait_anyone(
         self,
@@ -806,35 +832,35 @@ class MessageSession:
         """
         send = None
         released_lease = ExecutionLockList.remove(self)
-        await self.end_typing()
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(
-            self,
-            flag,
-            all_=True,
-            timeout=timeout,
-            task_type="wait_anyone",
-            allow_fallthrough=True,
-        )
-        task_info = None
-        try:
-            if message_chain:
-                chain = get_message_chain(self.session_info, message_chain)
-                send = await self.send_message(chain, quote)
-            await asyncio.wait_for(flag.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
-            if send and delete:
-                await send.delete()
-            raise WaitCancelException
-        finally:
-            task_info = SessionTaskManager.remove_task(self, all_=True)
-        if task_info and "result" in task_info:
-            if send and delete:
-                await send.delete()
-            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+        async with self._typing_paused():
+            flag = asyncio.Event()
+            SessionTaskManager.add_task(
+                self,
+                flag,
+                all_=True,
+                timeout=timeout,
+                task_type="wait_anyone",
+                allow_fallthrough=True,
+            )
+            task_info = None
+            try:
+                if message_chain:
+                    chain = get_message_chain(self.session_info, message_chain)
+                    send = await self.send_message(chain, quote)
+                await asyncio.wait_for(flag.wait(), timeout=timeout)
+            except asyncio.TimeoutError:
+                if send and delete:
+                    await send.delete()
                 raise WaitCancelException
-            return task_info["result"]
-        raise WaitCancelException
+            finally:
+                task_info = SessionTaskManager.remove_task(self, all_=True)
+            if task_info and "result" in task_info:
+                if send and delete:
+                    await send.delete()
+                if released_lease and not await ExecutionLockList.acquire(self, wait=True):
+                    raise WaitCancelException
+                return task_info["result"]
+            raise WaitCancelException
 
     async def wait_reply(
         self,
@@ -866,36 +892,36 @@ class MessageSession:
             return await self.wait_next_message(chain, False, delete, timeout, False)
 
         released_lease = ExecutionLockList.remove(self)
-        await self.end_typing()
-        chain = get_message_chain(self.session_info, message_chain)
-        if append_instruction and isinstance(chain, MessageChain):
-            chain.append(I18NContext("message.wait.reply.prompt"))
-        send = None
-        flag = asyncio.Event()
-        SessionTaskManager.add_task(self, flag, all_=all_, reply_pending=True, timeout=timeout)
-        try:
-            async with asyncio.timeout(timeout):
-                send = await self.send_message(chain, quote)
-                if not send.message_id or not SessionTaskManager.set_task_reply(self, send.message_id, all_=all_):
+        async with self._typing_paused():
+            chain = get_message_chain(self.session_info, message_chain)
+            if append_instruction and isinstance(chain, MessageChain):
+                chain.append(I18NContext("message.wait.reply.prompt"))
+            send = None
+            flag = asyncio.Event()
+            SessionTaskManager.add_task(self, flag, all_=all_, reply_pending=True, timeout=timeout)
+            try:
+                async with asyncio.timeout(timeout):
+                    send = await self.send_message(chain, quote)
+                    if not send.message_id or not SessionTaskManager.set_task_reply(self, send.message_id, all_=all_):
+                        raise WaitCancelException
+                    await flag.wait()
+            except TimeoutError:
+                pass
+            finally:
+                task_info = SessionTaskManager.remove_task(self, all_=all_)
+                if send and delete:
+                    try:
+                        await send.delete()
+                    except asyncio.CancelledError:
+                        raise
+                    except Exception:
+                        Logger.exception("Failed to delete a wait_reply prompt.")
+            result = task_info.get("result") if task_info else None
+            if result:
+                if released_lease and not await ExecutionLockList.acquire(self, wait=True):
                     raise WaitCancelException
-                await flag.wait()
-        except TimeoutError:
-            pass
-        finally:
-            task_info = SessionTaskManager.remove_task(self, all_=all_)
-            if send and delete:
-                try:
-                    await send.delete()
-                except asyncio.CancelledError:
-                    raise
-                except Exception:
-                    Logger.exception("Failed to delete a wait_reply prompt.")
-        result = task_info.get("result") if task_info else None
-        if result:
-            if released_lease and not await ExecutionLockList.acquire(self, wait=True):
-                raise WaitCancelException
-            return result
-        raise WaitCancelException
+                return result
+            raise WaitCancelException
 
     async def sleep(self, s: float):
         """
