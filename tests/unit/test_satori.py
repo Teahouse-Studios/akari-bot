@@ -94,13 +94,14 @@ async def _test_outbound_quote_and_mention():
         upload=lambda element: None,
     )
     return (
-        len(elements) == 3
+        len(elements) == 4
         and isinstance(elements[0], sat.Quote)
         and elements[0].id == "7"
         and isinstance(elements[1], sat.At)
         and elements[1].id == "42"
-        and isinstance(elements[2], sat.Text)
-        and elements[2].text == "收到"
+        and isinstance(elements[2], sat.Br)
+        and isinstance(elements[3], sat.Text)
+        and elements[3].text == "收到"
     )
 
 
@@ -118,11 +119,47 @@ async def _test_outbound_self_mention_and_image():
         quote=False,
     )
     return (
-        len(elements) == 2
+        len(elements) == 3
         and isinstance(elements[0], sat.Text)
         and elements[0].text == " "
-        and isinstance(elements[1], sat.Image)
-        and elements[1].src == "https://example.com/a.png"
+        and isinstance(elements[1], sat.Br)
+        and isinstance(elements[2], sat.Image)
+        and elements[2].src == "https://example.com/a.png"
+    )
+
+
+def _shape(elements):
+    return [element.text if isinstance(element, sat.Text) else element.tag for element in elements]
+
+
+async def _test_outbound_line_breaks():
+    session = await _session()
+
+    async def upload(element):
+        return element.path
+
+    async def convert(chain):
+        return _shape(
+            await convert_chain_to_elements(
+                session,
+                chain,
+                bot_ids={"1"},
+                upload=upload,
+                quote=False,
+            )
+        )
+
+    separate = await convert(MessageChain.assign([Plain("A"), Plain("B")]))
+    blank_line = await convert(MessageChain.assign([Plain("A\n\nB")]))
+    trailing_break = await convert(MessageChain.assign([Plain("A\n"), Plain("B")]))
+    around_media = await convert(MessageChain.assign([Plain("A"), Image("https://example.com/a.png"), Plain("B")]))
+    sections = await convert(MessageChain.assign([Plain("A：\n1"), Plain("B：\n2")]))
+    return (
+        separate == ["A", "br", "B"]
+        and blank_line == ["A", "br", "br", "B"]
+        and trailing_break == ["A", "br", "B"]
+        and around_media == ["A", "br", "img", "br", "B"]
+        and sections == ["A：", "br", "1", "br", "B：", "br", "2"]
     )
 
 
@@ -149,4 +186,5 @@ async def test_satori_outbound(tester: Tester):
     await tester.test(_test_outbound_at_code, "文本内 AT 码转换")
     await tester.test(_test_outbound_quote_and_mention, "引用与提及元素")
     await tester.test(_test_outbound_self_mention_and_image, "跳过自身提及与图片转换")
+    await tester.test(_test_outbound_line_breaks, "换行与元素边界保留")
     return tester

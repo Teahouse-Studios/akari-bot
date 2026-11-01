@@ -240,10 +240,16 @@ def resolve_at_code(element: PlainElement) -> list[sat.Element]:
 def _append_text(elements: list[sat.Element], text: str) -> None:
     if not text:
         return
-    if elements and isinstance(elements[-1], sat.Text):
-        elements[-1].text += text
-        return
-    elements.append(sat.Text(text))
+    # Satori 会把标签边界处含换行的空白当作排版空白丢弃，行内换行改用 <br> 表达。
+    for index, part in enumerate(text.replace("\r\n", "\n").replace("\r", "\n").split("\n")):
+        if index:
+            elements.append(sat.Br())
+        if not part:
+            continue
+        if elements and isinstance(elements[-1], sat.Text):
+            elements[-1].text += part
+        else:
+            elements.append(sat.Text(part))
 
 
 def _embed_text(element: EmbedElement) -> str:
@@ -274,16 +280,27 @@ async def convert_chain_to_elements(
     if quote and session_info.message_id:
         elements.append(sat.Quote(id=session_info.message_id))
 
+    has_content = False
+
+    def separate() -> None:
+        nonlocal has_content
+        if has_content and elements and not isinstance(elements[-1], sat.Br):
+            elements.append(sat.Br())
+        has_content = True
+
     for element in message.as_sendable(session_info):
         if isinstance(element, PlainElement):
-            for part in resolve_at_code(element):
-                if isinstance(part, sat.At) and part.id in bot_ids:
-                    continue
+            parts = [part for part in resolve_at_code(element) if not (isinstance(part, sat.At) and part.id in bot_ids)]
+            if not parts:
+                continue
+            separate()
+            for part in parts:
                 if isinstance(part, sat.Text):
                     _append_text(elements, part.text)
                 else:
                     elements.append(part)
         elif isinstance(element, MentionElement):
+            separate()
             if element.client == client_name and element.id not in bot_ids:
                 elements.append(sat.At(id=element.id))
             else:
@@ -291,22 +308,35 @@ async def convert_chain_to_elements(
         elif isinstance(element, ImageElement):
             src = await upload(element)
             if src:
+                separate()
                 elements.append(sat.Image.of(url=src))
         elif isinstance(element, AudioElement):
             src = await upload(element)
             if src:
+                separate()
                 elements.append(sat.Audio.of(url=src))
         elif isinstance(element, VideoElement):
             src = await upload(element)
             if src:
+                separate()
                 elements.append(sat.Video.of(url=src))
         elif isinstance(element, URLElement):
-            _append_text(elements, element.url)
+            if element.url:
+                separate()
+                _append_text(elements, element.url)
         elif isinstance(element, EmbedElement):
-            _append_text(elements, _embed_text(element))
+            text = _embed_text(element)
+            if text:
+                separate()
+                _append_text(elements, text)
         elif isinstance(element, RawElement):
-            _append_text(elements, element.value)
+            if element.value:
+                separate()
+                _append_text(elements, element.value)
         else:
-            _append_text(elements, str(element))
+            text = str(element)
+            if text:
+                separate()
+                _append_text(elements, text)
 
     return elements
