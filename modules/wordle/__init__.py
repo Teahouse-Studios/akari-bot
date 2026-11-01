@@ -6,9 +6,6 @@ from core.utils.cooldown import CoolDown
 from core.utils.game import PlayState, GAME_EXPIRED
 from core.utils.petal import gained_petal
 from .board import WordleBoard, WordleBoardImage
-from .config import WordleConfig
-
-text_mode = WordleConfig.wordle_disable_image
 
 wordle = module(
     "wordle",
@@ -43,7 +40,7 @@ async def _(msg: Bot.MessageSession, hard: bool = False, trial: bool = False):
         play_state.update(answer=board.word)
         Logger.info(f"Answer: {board.word}")
         start_msg = []
-        if not text_mode:
+        if msg.session_info.support_image:
             start_msg.append(BImage(board_image.board_image))
             start_msg.append(BImage(board_image.keyboard_image))
         start_msg.append(I18NContext("wordle.message.start"))
@@ -76,10 +73,10 @@ async def _(msg: Bot.MessageSession, hard: bool = False, trial: bool = False):
 
             if not board.is_game_over() and board.get_trials() <= 6:
                 Logger.info(f"{word} != {board.word}, attempt {board.get_trials() - 1}")
-                if text_mode:
-                    await wait.send_message(board.format_board())
-                else:
+                if msg.session_info.support_image:
                     await wait.send_message([BImage(board_image.board_image), BImage(board_image.keyboard_image)])
+                else:
+                    await wait.send_message(board.format_board())
 
         if board.is_game_over():
             play_state.disable()
@@ -96,12 +93,12 @@ async def _(msg: Bot.MessageSession, hard: bool = False, trial: bool = False):
                     if reward := await gained_petal(reply_target, petal):
                         g_msg.append(reward)
             qc.reset()
-            if text_mode:
-                await reply_target.send_message([Plain(board.format_board())] + g_msg, quote=False)
-            else:
+            if msg.session_info.support_image:
                 await reply_target.send_message(
                     [BImage(board_image.board_image), BImage(board_image.keyboard_image)] + g_msg, quote=False
                 )
+            else:
+                await reply_target.send_message([Plain(board.format_board())] + g_msg, quote=False)
 
 
 @wordle.command("stop {{I18N:game.help.stop}}")

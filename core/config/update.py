@@ -289,9 +289,6 @@ if config["config_version"] < config_version:
         reorganizer.set_table("github")
         reorganizer.reorganize_key("github_pat", True)
 
-        reorganizer.set_table("maimai")
-        reorganizer.reorganize_key("diving_fish_developer_token", True)
-
         reorganizer.set_table("mod_dl")
         reorganizer.reorganize_key("curseforge_api_key", True)
 
@@ -299,14 +296,8 @@ if config["config_version"] < config_version:
         reorganizer.reorganize_key("ncmusic_enable_card")
         reorganizer.reorganize_key("ncmusic_api", True)
 
-        reorganizer.set_table("wiki")
-        reorganizer.reorganize_key("wiki_whitelist_url")
-
         reorganizer.set_table("wolframalpha")
         reorganizer.reorganize_key("wolfram_alpha_appid", True)
-
-        reorganizer.set_table("wordle")
-        reorganizer.reorganize_key("wordle_disable_image")
 
         config["config_version"] = 1
         for c in configs:
