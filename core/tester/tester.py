@@ -31,7 +31,7 @@ class Tester:
         self._progress_event.set()
 
     def mock_config(self, config_cls: type, /, **values: Any) -> AbstractContextManager[None]:
-        """返回临时覆盖配置项的上下文管理器，用法与 :func:`core.tester.mock_config` 相同。"""
+        """返回临时覆盖配置项的上下文管理器，用法与 :class:`core.tester.mock_config` 相同。"""
         return mock_config(config_cls, **values)
 
     async def test(

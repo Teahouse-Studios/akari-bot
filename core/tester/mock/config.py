@@ -4,18 +4,18 @@
 既不读取也不改写任何配置文件；退出上下文后原值自动恢复。
 """
 
-from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import AbstractContextManager
 from typing import Any
+from unittest.mock import patch
 
 from core.config import CFGManager
 
 _MISSING = object()
 
-# 还原时写回 classmethod 描述符本身，保持 CFGManager.get 在类上的原始形态
-_original_descriptor = CFGManager.__dict__["get"]
 _original_get = CFGManager.get
 _overrides: dict[tuple[str | None, bool, str], Any] = {}
+# patch 由最外层上下文持有，嵌套进入时不再重复替换，也就不会被内层退出提前还原
+_patcher: Any = None
 _depth = 0
 
 
@@ -77,21 +77,22 @@ def _mock_get(
 
 
 def _install() -> None:
-    global _depth
+    global _depth, _patcher
     if _depth == 0:
-        CFGManager.get = _mock_get
+        _patcher = patch.object(CFGManager, "get", _mock_get)
+        _patcher.start()
     _depth += 1
 
 
 def _uninstall() -> None:
-    global _depth
+    global _depth, _patcher
     _depth -= 1
     if _depth == 0:
-        setattr(CFGManager, "get", _original_descriptor)
+        patcher, _patcher = _patcher, None
+        patcher.stop()
 
 
-@contextmanager
-def mock_config(config_cls: type, /, **values: Any) -> Iterator[None]:
+class mock_config(AbstractContextManager[None]):
     """在上下文内临时覆盖配置项。
 
     覆盖只作用于进程内的配置读取，不读写配置文件；退出后恢复原取值。
@@ -99,19 +100,23 @@ def mock_config(config_cls: type, /, **values: Any) -> Iterator[None]:
     :param config_cls: 配置模板类，例如 ``CoreConfig``。
     :param values: 字段名与临时取值，形如 ``use_emote=True``。
     """
-    if not values:
-        raise ValueError("mock_config requires at least one config field.")
-    # 先解析全部字段，避免字段名有误时已写入的覆盖残留
-    keys = [(name, _field_key(config_cls, name)) for name in values]
-    saved: list[tuple[tuple[str | None, bool, str], Any]] = []
-    for name, key in keys:
-        saved.append((key, _overrides.get(key, _MISSING)))
-        _overrides[key] = values[name]
-    _install()
-    try:
-        yield
-    finally:
-        for key, previous in reversed(saved):
+
+    def __init__(self, config_cls: type, /, **values: Any):
+        if not values:
+            raise ValueError("mock_config requires at least one config field.")
+        # 先解析全部字段，避免字段名有误时已写入的覆盖残留
+        self._entries = [(_field_key(config_cls, name), value) for name, value in values.items()]
+        self._saved: list[list[tuple[tuple[str | None, bool, str], Any]]] = []
+
+    def __enter__(self) -> None:
+        saved = [(key, _overrides.get(key, _MISSING)) for key, _ in self._entries]
+        self._saved.append(saved)
+        for key, value in self._entries:
+            _overrides[key] = value
+        _install()
+
+    def __exit__(self, *exc_info: object) -> None:
+        for key, previous in reversed(self._saved.pop()):
             if previous is _MISSING:
                 _overrides.pop(key, None)
             else:
