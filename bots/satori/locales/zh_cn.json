@@ -1,0 +1,12 @@
+{
+    "config.comments.bot_satori_secret.satori_token": "连接 Satori 服务端使用的令牌，服务端未配置鉴权时留空。",
+    "config.comments.bot_satori.satori_admin_roles": "被视作管理员的群组角色 ID 或名称。",
+    "config.comments.bot_satori.satori_enable_listening_self_message": "是否监听机器人自身发送的消息。",
+    "config.comments.bot_satori.satori_host": "Satori 服务端的主机地址。",
+    "config.comments.bot_satori.satori_limited_emoji": "消息处理失败时向消息挂上的表态表情 ID，留空则不显示。",
+    "config.comments.bot_satori.satori_path": "Satori 服务端 API 的路径前缀。",
+    "config.comments.bot_satori.satori_port": "Satori 服务端的端口。",
+    "config.comments.bot_satori.satori_secure": "是否以 HTTPS 与 WSS 连接 Satori 服务端。",
+    "config.comments.bot_satori.satori_timeout": "调用 Satori API 的超时时间，单位为秒。",
+    "config.comments.bot_satori.satori_typing_emoji": "处理消息期间向消息挂上的表态表情 ID，留空则不显示。"
+}

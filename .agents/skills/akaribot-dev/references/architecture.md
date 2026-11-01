@@ -33,6 +33,7 @@
 | Telegram     | `bots/telegram/` | aiogram               |
 | KOOK         | `bots/kook/`     | khl-py                |
 | Matrix       | `bots/matrix/`   | matrix-nio            |
+| Satori       | `bots/satori/`   | satori-python         |
 | Web          | `bots/web/`      | FastAPI               |
 
 `bots/onebot/` 与 `bots/milky/` 的 `client_name` 都是 `QQ`，是同一平台的两套协议实现。
@@ -78,7 +79,7 @@ uv lock                    # 锁定依赖
 | `akari-bot-webrender` | 网页渲染服务           |
 | `akari-bot-webui`   | Web 控制台前端           |
 
-平台 SDK：`aiocqhttp`(OneBot) / `milky-python-sdk`(Milky) / `qq-botpy-sdk`(QQ 官方) / `py-cord`(Discord) / `aiogram`(Telegram) / `khl-py`(KOOK) / `matrix-nio`(Matrix)。
+平台 SDK：`aiocqhttp`(OneBot) / `milky-python-sdk`(Milky) / `qq-botpy-sdk`(QQ 官方) / `py-cord`(Discord) / `aiogram`(Telegram) / `khl-py`(KOOK) / `matrix-nio`(Matrix) / `satori-python`(Satori)。
 
 ---
 

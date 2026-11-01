@@ -30,6 +30,7 @@ _多功能、跨平台、可自由扩展的异步聊天机器人助手_
 - [X] Telegram
 - [X] KOOK（开黑啦）
 - [X] Matrix
+- [X] Satori（Beta）
 
 ### 公共实例
 

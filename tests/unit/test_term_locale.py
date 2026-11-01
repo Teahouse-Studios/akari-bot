@@ -45,6 +45,8 @@ EXPECTED_WORDING = (
     ("Telegram|Supergroup", False, "超级群组"),
     ("Telegram|Channel", False, "频道"),
     ("Telegram|Private", True, "私聊"),
+    ("Satori|Channel", False, "频道"),
+    ("Satori|Private", True, "私聊"),
     ("Matrix|Room", False, "聊天室"),
     ("Web|Console", True, "控制台"),
     ("TEST|Console", False, "场景"),

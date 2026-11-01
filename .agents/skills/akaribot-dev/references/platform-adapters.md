@@ -45,6 +45,8 @@ target_prefix_list = [target_group_prefix, target_private_prefix]
 
 `sender_prefix_list` 与 `target_prefix_list` 是**必需**的：`core/client/init.py` 登记客户端时要用它们来判断某个 ID 属于哪个平台。中间那几个具体前缀的命名各平台并不统一（onebot / milky 用 `target_group_prefix` + `target_private_prefix`，discord 用 `target_channel_prefix` / `target_dm_channel_prefix` / `target_guild_prefix`，web 只有一个 `target_prefix`），按自己平台的场景类型取名即可，只要都收进 `target_prefix_list`。
 
+跨平台协议（如 Satori）在同一服务端可能桥接多个底层平台，场景与用户 ID 可在前缀之后继续携带底层平台名（如 `Satori|Channel|qq|<guild>|<channel>`）。`Alive.determine_target_from` 按最长前缀匹配，`target_prefix_list` 仍只登记 `Satori|Channel` / `Satori|Private`，`get_common_target_id()` 取得的仍是最后一段原始 ID。
+
 **术语词条**：会话称呼（群聊 / 频道 / 私聊）由 i18n 组件的 `{TERM:name}` 占位符解析，候选链由 `target_from` 与 `is_private` 推出（`core/builtins/session/terms.py`）。适配器**不需要**建术语文件，新增平台时只在 `core/locales/terms/zh_cn.json` 追加词条：
 
 ```json

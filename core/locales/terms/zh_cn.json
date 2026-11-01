@@ -4,6 +4,7 @@
     "target.qq.group": "群聊",
     "target.qqbot.group": "群聊",
     "target.qqbot.guild": "频道",
+    "target.satori": "频道",
     "target.discord": "频道",
     "target.discord.guild": "服务器",
     "target.kook": "频道",
