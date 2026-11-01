@@ -1,0 +1,20 @@
+# https://toml.io/cn/v1.0.0
+# 注意：TOML 不是 Python。請不要在此處使用 Python 語法。
+# 例如：TOML 中的布林值必須是小寫。
+
+[bot_satori]
+# 用戶端的組態部分，此處填寫的值可在訊息中以明文顯示。請不要在此部分填寫敏感資訊。
+enable = false # 是否啟用此用戶端。
+satori_host = "127.0.0.1" # Satori 服务端的主机地址。
+satori_port = 5140 # Satori 服务端的端口。
+satori_path = "<Replace me with str value>" # Satori 服务端 API 的路径前缀。
+satori_secure = false # 是否以 HTTPS 与 WSS 连接 Satori 服务端。
+satori_timeout = 30 # 调用 Satori API 的超时时间，单位为秒。
+satori_enable_listening_self_message = false # 是否监听机器人自身发送的消息。
+satori_admin_roles = ["admin", "owner"] # 被视作管理员的群组角色 ID 或名称。
+satori_typing_emoji = "⌛" # 处理消息期间向消息挂上的表态表情 ID，需协议端支持。留空则不显示。
+satori_limited_emoji = "❌" # 消息处理失败时向消息挂上的表态表情 ID，需协议端支持。留空则不显示。
+
+[bot_satori_secret]
+# 用戶端的金鑰組態部分，此處的值若意外出現在傳送的訊息中，機器人會嘗試攔截。但請務必提防洩漏。
+satori_token = "<Replace me with str value>" # 连接 Satori 服务端使用的令牌，服务端未配置鉴权时留空。
