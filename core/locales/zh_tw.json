@@ -33,7 +33,7 @@
     "config.comments.config.no_confirm": "是否無需傳送者確認訊息後再執行指令。",
     "config.comments.config.petal_gained_limit": "單日取得花瓣上限。",
     "config.comments.config.petal_lost_limit": "單日失去花瓣上限。",
-    "config.comments.config.petal_rebate_rate": "花瓣週期結算時保留的比例，範圍 0 到 1 之間。",
+    "config.comments.config.petal_keep_rate": "花瓣週期結算時保留的比例，範圍 0 到 1 之間。",
     "config.comments.config.petal_reset_crontab": "花瓣週期的 Cron 表達式。",
     "config.comments.config.petal_sign_max": "單日簽到取得花瓣上限。",
     "config.comments.config.petal_sign_min": "單日簽到取得花瓣下限。",

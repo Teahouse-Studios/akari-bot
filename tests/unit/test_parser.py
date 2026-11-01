@@ -14,7 +14,7 @@ from core.builtins.parser.command import CommandParser, _split_command
 from core.builtins.parser.message import _build_command_kwargs, _resolve_parsed_value
 from core.builtins.message.elements import MarkdownElement
 from core.builtins.bot import Bot
-from core.constants.exceptions import InvalidTemplatePattern
+from core.constants.exceptions import InvalidCommandFormatError, InvalidTemplatePattern
 from core.tester import func_case, Tester
 from core.types import Module
 from core.types.module.component_meta import CommandMeta
@@ -131,6 +131,35 @@ def _test_command_parser_preserves_backslashes():
         unquoted["<pattern>"] == r"https://example\.test/\d+\\suffix"
         and quoted["<pattern>"] == r"https://example\.test/a b"
     )
+
+
+def _test_command_parser_keeps_restricted_commands():
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(CommandMeta(command_template=parse_template(["list"])))
+    module.command_list.add(CommandMeta(command_template=parse_template(["purge <count>"]), required_superuser=True))
+    msg = SimpleNamespace(
+        session_info=SimpleNamespace(
+            locale=None,
+            prefixes=["~"],
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id="TEST|1",
+        ),
+        check_super_user=lambda: False,
+    )
+
+    filtered_parser = CommandParser(module, ["~"], module_name=module.module_name, msg=msg)
+    try:
+        filtered_parser.parse("parser-test purge 3")
+    except InvalidCommandFormatError:
+        pass
+    else:
+        return False
+
+    execution_parser = CommandParser(module, ["~"], module_name=module.module_name, msg=msg, include_restricted=True)
+    restricted = execution_parser.parse("parser-test purge 3")
+    public = execution_parser.parse("parser-test list")
+    return restricted[0].required_superuser and restricted[1]["<count>"] == "3" and not public[0].required_superuser
 
 
 def _build_option_parser():
@@ -309,6 +338,7 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_command_parser_option_inline_value, "命令选项内联值测试")
     await tester.test(_test_command_parser_option_missing_value, "命令选项缺少值测试")
     await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
+    await tester.test(_test_command_parser_keeps_restricted_commands, "执行期解析保留受限命令测试")
     await tester.test(_test_error_detail_markdown_format, "Markdown 错误详情代码块测试")
     await tester.test(_test_resolve_parsed_value, "命令参数取值映射测试")
     await tester.test(_test_build_command_kwargs, "命令参数构建与选项注入测试")

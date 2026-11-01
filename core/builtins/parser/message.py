@@ -472,7 +472,13 @@ async def _execute_module(
             return
 
         none_templates = True  # 标记模块是否有命令模板
-        for func in module.command_list.get(msg.session_info.target_from):
+        # 模块是否按模板路由与查看者的权限无关，受限命令同样算作模板命令
+        for func in module.command_list.get(
+            msg.session_info.target_from,
+            show_required_superuser=True,
+            show_required_base_superuser=True,
+            show_required_admin=True,
+        ):
             if func.command_template:
                 none_templates = False
                 break
@@ -973,7 +979,13 @@ async def _execute_module_command(msg: "Bot.MessageSession", module, command_fir
     _typing = False
     try:
         command_parser = CommandParser(
-            module, msg=msg, module_name=command_first_word, command_prefixes=msg.session_info.prefixes
+            module,
+            msg=msg,
+            module_name=command_first_word,
+            command_prefixes=msg.session_info.prefixes,
+            # 受限命令保留在模板集合中，由 COMMAND_BEFORE_EXECUTE 策略给出权限提示，
+            # 否则无权使用时会误报语法错误
+            include_restricted=True,
         )
         try:
             parsed_msg = command_parser.parse(msg.trigger_msg)

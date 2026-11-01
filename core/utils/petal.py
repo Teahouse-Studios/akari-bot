@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 
+from apscheduler.triggers.cron import CronTrigger
 from tortoise.expressions import F
 from tortoise.transactions import in_transaction
 
@@ -9,12 +10,14 @@ from core.builtins.message.elements import I18NContextElement
 from core.builtins.message.internal import I18NContext
 from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo, StoredData
+from core.logger import Logger
 from core.utils.random import Random
 
 # 花瓣余额挂在 union 上，日额度也须随之跨平台共享，因此存储不再按客户端分桶，
 # 桶内亦按 union 而非平台账号索引；否则一个人绑几个平台就能领几倍的每日上限。
 # 花瓣属于用户而非场景，不涉及消息通道维度。
 PETAL_STORE_SCOPE = "Union"
+PETAL_CYCLE_STORE_KEY = f"{PETAL_STORE_SCOPE}|petalcycle"
 _petal_mutation_lock = asyncio.Lock()
 
 
@@ -218,16 +221,68 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
         return amount
 
 
-async def settle_petals() -> int:
-    """结算所有用户的花瓣余额，并返回成功结算的用户数。"""
-    if CoreConfig.enable_petal:
-        rebate_rate = min(max(float(CoreConfig.petal_rebate_rate), 0.0), 1.0)
-        settled = 0
-        for sender_union_info in await SenderUnionInfo.all():
-            if await sender_union_info.settle_petal(rebate_rate):
-                settled += 1
-        return settled
-    return 0
+async def _reset_rows(connection, keep_rate: float) -> int:
+    rows = await SenderUnionInfo.filter(petal__gt=0).using_db(connection).select_for_update()
+    if not rows:
+        return 0
+    for row in rows:
+        row.petal = max(0, int(row.petal * keep_rate))
+    # 分批写入，避免用户量大时单条 UPDATE 超出数据库的语句长度上限。
+    await SenderUnionInfo.bulk_update(rows, fields=["petal"], batch_size=500, using_db=connection)
+    return len(rows)
 
 
-__all__ = ["gained_petal", "lost_petal", "cost_petal", "sign_get_petal", "settle_petals"]
+def _decode_reset_due(stored: StoredData | None) -> datetime | None:
+    if not stored or not stored.value:
+        return None
+    try:
+        due = datetime.fromisoformat(str(stored.value[0]))
+    except (TypeError, ValueError):
+        Logger.warning("Invalid petal settlement marker, treated as missing.")
+        return None
+    return due if due.tzinfo else due.astimezone()
+
+
+async def reset_petals_if_due() -> int:
+    if not CoreConfig.enable_petal:
+        return 0
+    try:
+        trigger = CronTrigger.from_crontab(CoreConfig.petal_reset_crontab)
+    except (AttributeError, TypeError, ValueError):
+        Logger.exception(f"Invalid petal_reset_crontab {CoreConfig.petal_reset_crontab!r}, skipped reset.")
+        return 0
+    now = datetime.now(trigger.timezone)
+    # 取严格晚于当前时刻的下一次触发时间：当前恰好落在触发点上时也不会重复结算。
+    following = trigger.get_next_fire_time(now, now)
+    if following is None:
+        Logger.warning("Petal reset crontab has no future fire time, skipped reset.")
+        return 0
+    keep_rate = min(max(float(CoreConfig.petal_keep_rate), 0.0), 1.0)
+    try:
+        async with _petal_mutation_lock:
+            async with in_transaction("default") as connection:
+                stored = await (
+                    StoredData.filter(stored_key=PETAL_CYCLE_STORE_KEY).using_db(connection).select_for_update().first()
+                )
+                due = _decode_reset_due(stored)
+                if due is not None and now < due:
+                    return 0
+                reset_users = await _reset_rows(connection, keep_rate)
+                if stored is None:
+                    await StoredData.create(
+                        stored_key=PETAL_CYCLE_STORE_KEY,
+                        value=[following.isoformat()],
+                        using_db=connection,
+                    )
+                else:
+                    stored.value = [following.isoformat()]
+                    await stored.save(using_db=connection, update_fields=["value"])
+    except Exception:
+        # 周期结算属于后台维护，失败只记录并在下个检查点重试，不中断同批次的其它维护工作。
+        Logger.exception("Failed to reset petals, will retry on the next check.")
+        return 0
+    Logger.info(f"Petal reset finished: {reset_users} user(s) reseted, next reset period at {following.isoformat()}.")
+    return reset_users
+
+
+__all__ = ["gained_petal", "lost_petal", "cost_petal", "sign_get_petal", "reset_petals_if_due"]

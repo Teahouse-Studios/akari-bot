@@ -1,5 +1,6 @@
 """core.utils.petal 单元测试 - 花瓣系统（需要数据库/配置）。"""
 
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from core.tester import func_case, Tester
@@ -87,21 +88,32 @@ async def _test_sign_petal_once_per_day():
         await StoredData.filter(stored_key=f"{store_key}").delete()
 
 
-async def _test_petal_settlement_applies_rebate():
-    from core.database.models import SenderUnionInfo
-    from core.utils.petal import settle_petals
+async def _test_petal_reset_runs_once_per_cycle():
+    from core.database.models import SenderUnionInfo, StoredData
+    from core.utils.petal import PETAL_CYCLE_STORE_KEY, reset_petals_if_due
 
     sender = await TestDataFactory.ensure_sender(petal=10)
 
     class MockConfig:
         enable_petal = True
-        petal_rebate_rate = 0.2
+        petal_keep_rate = 0.2
+        petal_reset_crontab = "0 0 1 * *"
 
-    with patch("core.utils.petal.CoreConfig", MockConfig):
-        await settle_petals()
+    try:
+        await StoredData.filter(stored_key=PETAL_CYCLE_STORE_KEY).delete()
+        with patch("core.utils.petal.CoreConfig", MockConfig):
+            first = await reset_petals_if_due()
+            second = await reset_petals_if_due()
+            # 模拟停机跨过周期边界：标记停留在过去的周期时补结算一次。
+            stored = await StoredData.get(stored_key=PETAL_CYCLE_STORE_KEY)
+            stored.value = [(datetime.now().astimezone() - timedelta(days=1)).isoformat()]
+            await stored.save(update_fields=["value"])
+            third = await reset_petals_if_due()
 
-    refreshed = await SenderUnionInfo.get(union_id=sender.union_id)
-    return refreshed.petal == 2
+        refreshed = await SenderUnionInfo.get(union_id=sender.union_id)
+        return first >= 1 and second == 0 and third >= 1 and refreshed.petal == 0
+    finally:
+        await StoredData.filter(stored_key=PETAL_CYCLE_STORE_KEY).delete()
 
 
 @func_case
@@ -110,6 +122,6 @@ async def test_petal(tester: Tester):
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
     await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
     await tester.test(_test_sign_petal_once_per_day, "签到每日仅一次且跨日重置测试")
-    await tester.test(_test_petal_settlement_applies_rebate, "花瓣返点结算测试")
+    await tester.test(_test_petal_reset_runs_once_per_cycle, "花瓣周期结算每周期仅一次测试")
 
     return tester

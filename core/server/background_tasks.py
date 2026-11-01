@@ -8,6 +8,7 @@ from core.database.models import JobQueuesTable
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
 from core.utils.http import get_url
+from core.utils.petal import reset_petals_if_due
 from core.utils.web_render import check_web_render_status, init_web_render
 
 
@@ -19,6 +20,7 @@ async def hourly_background_task():
     await SessionTaskManager.bg_check()
     await JobQueuesTable.clear_task()
     await ExpiringTempDict.clear_all()
+    await reset_petals_if_due()
 
 
 async def _fetch_public_ip() -> str | None:
@@ -79,11 +81,15 @@ async def init_background_task():
             Info.web_render_status = False
             Logger.exception("Failed to initialize WebRender.")
 
-    # 两项初始化并行执行，并保持结构化并发语义：任一任务意外失败时，TaskGroup
-    # 会取消并等待另一个任务，避免父任务已经结束、浏览器初始化却仍在后台继续。
+    async def _init_petal_reset():
+        await reset_petals_if_due()
+
+    # 各项初始化并行执行，并保持结构化并发语义：任一任务意外失败时，TaskGroup
+    # 会取消并等待其余任务，避免父任务已经结束、浏览器初始化却仍在后台继续。
     async with asyncio.TaskGroup() as group:
         group.create_task(fetch_ip_info(), name="server-ip-info-init")
         group.create_task(_init_web_render(), name="server-web-render-init")
+        group.create_task(_init_petal_reset(), name="server-petal-settlement")
 
 
 def _background_task_done(task: asyncio.Task[None]) -> None:

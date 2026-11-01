@@ -33,7 +33,7 @@
     "config.comments.config.no_confirm": "送信者がメッセージを確認せずにコマンドを実行するかどうか。",
     "config.comments.config.petal_gained_limit": "1 日に獲得できるペタルの最大数。",
     "config.comments.config.petal_lost_limit": "1 日に失われるペタルの最大数。",
-    "config.comments.config.petal_rebate_rate": "ペタル サイクルの終わりに保持される割合。範囲は 0 ～ 1 です。",
+    "config.comments.config.petal_keep_rate": "ペタル サイクルの終わりに保持される割合。範囲は 0 ～ 1 です。",
     "config.comments.config.petal_reset_crontab": "ペタル サイクルの Cron 式。",
     "config.comments.config.petal_sign_max": "1 日にサインインすることで獲得できるペタルの最大数。",
     "config.comments.config.petal_sign_min": "1 日にサインインすることで獲得できるペタルの最小数。",

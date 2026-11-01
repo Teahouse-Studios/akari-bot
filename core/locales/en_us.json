@@ -33,7 +33,7 @@
     "config.comments.config.no_confirm": "Whether to execute the command without the sender confirming the message.",
     "config.comments.config.petal_gained_limit": "The maximum number of petals users can get per day.",
     "config.comments.config.petal_lost_limit": "The maximum number of petals users can lose per day.",
-    "config.comments.config.petal_rebate_rate": "The ratio of petals retained at the end of the petal cycle. Ranges from 0 to 1.",
+    "config.comments.config.petal_keep_rate": "The ratio of petals retained at the end of the petal cycle. Ranges from 0 to 1.",
     "config.comments.config.petal_reset_crontab": "Cron expression for the petal cycle.",
     "config.comments.config.petal_sign_max": "The maximum number of petals users can get from signing in per day.",
     "config.comments.config.petal_sign_min": "The minimum number of petals users can get from signing in per day.",

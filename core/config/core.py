@@ -78,7 +78,7 @@ class CoreConfig:
     petal_sign_max: int = 12
     petal_sign_rate: float = 0.5
     petal_reset_crontab: str = "0 0 1 * *"
-    petal_rebate_rate: float = 0.2
+    petal_keep_rate: float = 0.1
 
     # 玩笑
     enable_joke: bool = True

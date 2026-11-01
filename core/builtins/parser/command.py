@@ -72,6 +72,7 @@ class CommandParser:
         msg: "Bot.MessageSession | None" = None,
         is_superuser: bool | None = None,
         is_admin: bool | None = None,
+        include_restricted: bool = False,
     ):
         """
         初始化命令解析器。
@@ -83,6 +84,8 @@ class CommandParser:
         :param is_superuser: 是否为超级用户（如为 None 则从会话自动检测）
         :param is_admin: 是否为场景管理员。为 None 时不过滤管理员命令，保持命令解析行为；
             传入布尔值则据其过滤 ``required_admin`` 命令，供帮助文档按权限展示
+        :param include_restricted: 是否保留当前会话无权使用的命令。执行命令时保留，由
+            ``COMMAND_BEFORE_EXECUTE`` 策略判定权限；帮助展示与可用性判断需要过滤
         """
         self.command_prefixes = command_prefixes
 
@@ -106,14 +109,23 @@ class CommandParser:
             (self.msg.session_info.sender_id in exports["Bot"].base_superuser_list) if self.msg else False
         )
 
+        if include_restricted:
+            show_required_superuser = True
+            show_required_base_superuser = True
+            show_required_admin = True
+        else:
+            show_required_superuser = is_superuser
+            show_required_base_superuser = is_base_superuser
+            show_required_admin = True if is_admin is None else (is_admin or is_superuser)
+
         for match in (
             args.command_list.set
             if not self.msg
             else args.command_list.get(
                 self.msg.session_info.target_from,
-                show_required_superuser=is_superuser,
-                show_required_base_superuser=is_base_superuser,
-                show_required_admin=True if is_admin is None else (is_admin or is_superuser),
+                show_required_superuser=show_required_superuser,
+                show_required_base_superuser=show_required_base_superuser,
+                show_required_admin=show_required_admin,
             )
         ):
             if match.command_template:
