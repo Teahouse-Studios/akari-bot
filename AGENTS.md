@@ -45,7 +45,8 @@ COVERAGE=1 CI=1 uv run python tester.py   # 附带覆盖率报告（htmlcov/inde
 ```
 
 - **不加 `CI=1` 会挂起**：无 `Expectation` 的用例会走 `input()` 等人工复核。`CI=1` 下这些用例转为 SKIP，并输出 `junit.xml`。
-- **首次运行前需要有配置**：`config/` 为空时 `bot.py` 会自动生成；CI 里的做法是 `mkdir -p config && cp -r assets/config_store/zh_cn/* config/`。
+- **测试不读 `config/`**：`tester.py` 与 `tests/run_one.py` 都会把 `assets/config_store/zh_cn` 铺到临时目录（`AKARI_CONFIG_PATH`）再叠加测试覆盖项，本机配置不参与测试。
+- **需要非默认配置值时用 `mock_config`**：`with mock_config(CoreConfig, use_emote=True):` 在进程内覆盖配置项，不读写配置文件，退出上下文即恢复。字段名必须是模板类声明过的项。
 
 测试用例的两种写法：`@func_case` 标记的 `async def test_x(tester: Tester)`，内部用 `tester.integrate(输入, 期望)` 跑命令、`tester.test(函数)` 跑纯函数；或用 `@case(输入, 期望)` 直接装饰在 `@mod.command` 上。断言器（`Match` / `Contains` / `Regex` / `AnyOutput` / `All` / `Not` …）见 `core/tester/expectations.py`。
 

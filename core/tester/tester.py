@@ -2,9 +2,12 @@ import asyncio
 import inspect
 import traceback
 from collections.abc import Callable
+from contextlib import AbstractContextManager
+from typing import Any
 
 from core.logger import Logger
 from .expectations import Expectation
+from .mock.config import mock_config
 from .process import run_test_case
 
 
@@ -26,6 +29,10 @@ class Tester:
     def _notify_progress(self) -> None:
         self._progress_revision += 1
         self._progress_event.set()
+
+    def mock_config(self, config_cls: type, /, **values: Any) -> AbstractContextManager[None]:
+        """返回临时覆盖配置项的上下文管理器，用法与 :func:`core.tester.mock_config` 相同。"""
+        return mock_config(config_cls, **values)
 
     async def test(
         self,

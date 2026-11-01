@@ -1,9 +1,9 @@
 """core.utils.petal 单元测试 - 花瓣系统（需要数据库/配置）。"""
 
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
-from core.tester import func_case, Tester
+from core.config.base import CoreConfig
+from core.tester import func_case, Tester, mock_config
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession
 
@@ -16,10 +16,7 @@ async def _test_cost_petal_insufficient_with_mock():
         msg = MockMessageSession("~test")
         await msg.async_init("~test")
 
-        class MockConfig:
-            enable_petal = True
-
-        with patch("core.utils.petal.CoreConfig", MockConfig):
+        with mock_config(CoreConfig, enable_petal=True):
             result = await cost_petal(msg, 100, send_prompt=False)
             if result is not False:
                 return False
@@ -37,13 +34,13 @@ async def _test_petal_session_balance_stays_in_sync():
     msg = MockMessageSession("~test")
     await msg.async_init("~test")
 
-    class MockConfig:
-        enable_petal = True
-        enable_get_petal = True
-        petal_gained_limit = 100
-        petal_lost_limit = 100
-
-    with patch("core.utils.petal.CoreConfig", MockConfig):
+    with mock_config(
+        CoreConfig,
+        enable_petal=True,
+        enable_get_petal=True,
+        petal_gained_limit=100,
+        petal_lost_limit=100,
+    ):
         await gained_petal(msg, 10)
         await cost_petal(msg, 3, send_prompt=False)
         await lost_petal(msg, 2)
@@ -60,15 +57,9 @@ async def _test_sign_petal_once_per_day():
     msg = MockMessageSession("~test")
     await msg.async_init("~test")
 
-    class MockConfig:
-        enable_petal = True
-        petal_sign_min = 5
-        petal_sign_max = 5
-        petal_sign_rate = 1.0
-
     store_key = "Union|signedpetal"
     try:
-        with patch("core.utils.petal.CoreConfig", MockConfig):
+        with mock_config(CoreConfig, enable_petal=True, petal_sign_min=5, petal_sign_max=5, petal_sign_rate=1.0):
             first = await sign_get_petal(msg)
             second = await sign_get_petal(msg)
             # 今日已签到返回 0，余额不再增加
@@ -94,14 +85,9 @@ async def _test_petal_reset_runs_once_per_cycle():
 
     sender = await TestDataFactory.ensure_sender(petal=10)
 
-    class MockConfig:
-        enable_petal = True
-        petal_keep_rate = 0.2
-        petal_reset_crontab = "0 0 1 * *"
-
     try:
         await StoredData.filter(stored_key=PETAL_CYCLE_STORE_KEY).delete()
-        with patch("core.utils.petal.CoreConfig", MockConfig):
+        with mock_config(CoreConfig, enable_petal=True, petal_keep_rate=0.2, petal_reset_crontab="0 0 1 * *"):
             first = await reset_petals_if_due()
             second = await reset_petals_if_due()
             # 模拟停机跨过周期边界：标记停留在过去的周期时补结算一次。

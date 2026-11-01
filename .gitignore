@@ -11,6 +11,9 @@
 *.db-shm
 *.db-wal
 
+# AkariBot I18N
+akari_bot_i18n/*
+
 # Python
 __pycache__/
 
@@ -103,7 +106,7 @@ modules/phigros/assets/song_info.json
 /data/retired/*
 
 # WebUI
-webui/*
+/data/webui/*
 
 # ==========
 # Testing & CI
@@ -114,6 +117,8 @@ bots/test/*
 modules/test/*
 
 # Test Files
+akari_test_config_*
+akari_test_union_merge_logs_*
 /test*.*
 !tester.py
 
@@ -131,3 +136,5 @@ assets/modules_list.json
 assets/schedulers_list.json
 
 matrix_store
+
+webui/*

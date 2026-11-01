@@ -6,9 +6,10 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.info import SessionInfo
+from core.config.base import CoreConfig
 from core.constants.exceptions import SendMessageFailed, SessionFinished, WaitCancelException
 from core.database.models import SenderUnionInfo
-from core.tester import Tester, func_case
+from core.tester import Tester, func_case, mock_config
 from core.tester.timing import TIME_SCALE
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession
@@ -54,12 +55,9 @@ async def _test_abuse_warn_target_sends_message():
     msg.session_info.sender_union_info.warns = 0
     msg.session_info.sender_union_info.trusted = False
 
-    class MockConfig:
-        issue_url = "https://github.com/test/issues"
-
     with (
+        mock_config(CoreConfig, issue_url="https://github.com/test/issues"),
         patch.object(MockMessageSession, "check_super_user", lambda self: False),
-        patch("modules.core.hooks.tos.CoreConfig", MockConfig),
         patch("modules.core.hooks.tos.tos_report", new_callable=AsyncMock),
         patch("modules.core.hooks.tos._warning_counts", return_value=1),
     ):
@@ -100,9 +98,12 @@ async def _test_tos_report_email_takes_priority():
 
     direct_sender = AsyncMock()
     with (
-        patch.object(SMTPConfig, "enable_email_report", True),
-        patch.object(SMTPConfig, "smtp_host", "smtp.example.com"),
-        patch.object(SMTPConfig, "smtp_recipients", ["ops@example.com"]),
+        mock_config(
+            SMTPConfig,
+            enable_email_report=True,
+            smtp_host="smtp.example.com",
+            smtp_recipients=["ops@example.com"],
+        ),
         patch("core.smtp.send_email") as send_email,
         patch.object(Bot, "send_direct_message", direct_sender),
         patch("modules.core.hooks.tos._report_targets", return_value=["TEST|Group|report"]),

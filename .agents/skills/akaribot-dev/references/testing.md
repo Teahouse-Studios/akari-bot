@@ -115,9 +115,21 @@ async def _(msg: Bot.MessageSession, word: str):
 
 反过来说：**测试通过不代表该命令在真实平台上可达**。模块级、命令级和正则级的平台过滤行为并不一致，模块开关与真实平台权限也没有被完整覆盖；改动涉及 `available_for` / `exclude_from` / 启用状态 / 权限时要另行确认。
 
-其他环境替身在 `core/tester/mock/` 下：`database`（内存库）、`loader`（模块加载）、`random`（固定随机种子）、`fixtures`（HTTP 响应回放）。需要覆盖 Config 时用 `unittest.mock.patch`。
+其他环境替身在 `core/tester/mock/` 下：`database`（内存库）、`loader`（模块加载）、`random`（固定随机种子）、`fixtures`（HTTP 响应回放）、`config`（配置项覆盖）。
 
-测试引导还会把会落盘的内容移出仓库：整份配置来自临时目录（`AKARI_CONFIG_PATH`），union 合并日志写进临时目录（`AKARI_UNION_MERGE_LOGS_PATH`）并在收尾时删除。用例会真实走到合并流程，不隔离的话每次测试运行都会在 `data/union_merge_logs/` 里留下大量合成的快照。需要留存这些日志时自行设置 `AKARI_UNION_MERGE_LOGS_PATH` 指向保留目录即可，已显式设置的值优先。
+需要让某个配置项取非当前值时用 `mock_config`。它在进程内替换配置读取，不读写任何配置文件，退出上下文即恢复原值：
+
+```python
+from core.config.base import CoreConfig
+from core.tester import mock_config
+
+with mock_config(CoreConfig, use_emote=True, enable_petal=False):
+    ...
+```
+
+也可以写成 `with tester.mock_config(...)`。字段名必须是该模板类声明过的配置项，写错会抛 `AttributeError`；覆盖只在当前上下文有效，可以嵌套。
+
+测试引导还会把会落盘的内容移出仓库：整份配置来自临时目录（`AKARI_CONFIG_PATH`），`tester.py` 与 `tests/run_one.py` 都从 `assets/config_store/zh_cn` 铺一份再叠加测试覆盖项，因此两者都不读取仓库的 `config/`；union 合并日志写进临时目录（`AKARI_UNION_MERGE_LOGS_PATH`）并在收尾时删除。用例会真实走到合并流程，不隔离的话每次测试运行都会在 `data/union_merge_logs/` 里留下大量合成的快照。需要留存这些日志时自行设置 `AKARI_UNION_MERGE_LOGS_PATH` 指向保留目录即可，已显式设置的值优先。
 
 ### 9.4 测试规范
 

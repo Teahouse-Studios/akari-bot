@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import bot as daemon
 from core.config.jobqueue import JobQueueConfig, JobQueueSecretConfig
-from core.tester import func_case, Tester
+from core.tester import func_case, Tester, mock_config
 
 
 class _FakeEvent:
@@ -104,13 +104,16 @@ async def _run_daemon_once(*, backend: str, mode: str, hub_ready: bool = True):
         with (
             patch.object(daemon.multiprocessing, "get_context", return_value=context),
             patch.object(daemon, "bots_path", _FakeBotsPath()),
-            patch.object(JobQueueConfig, "jobqueue_backend", backend),
-            patch.object(JobQueueConfig, "jobqueue_websocket_mode", mode),
-            patch.object(JobQueueConfig, "jobqueue_websocket_url", "ws://127.0.0.1:8765/jobqueue"),
-            patch.object(JobQueueConfig, "jobqueue_websocket_queue_size", 1000),
-            patch.object(JobQueueConfig, "jobqueue_websocket_max_message_bytes", 1048576),
-            patch.object(JobQueueConfig, "jobqueue_websocket_command_timeout", 10),
-            patch.object(JobQueueSecretConfig, "jobqueue_websocket_token", ""),
+            mock_config(
+                JobQueueConfig,
+                jobqueue_backend=backend,
+                jobqueue_websocket_mode=mode,
+                jobqueue_websocket_url="ws://127.0.0.1:8765/jobqueue",
+                jobqueue_websocket_queue_size=1000,
+                jobqueue_websocket_max_message_bytes=1048576,
+                jobqueue_websocket_command_timeout=10,
+            ),
+            mock_config(JobQueueSecretConfig, jobqueue_websocket_token=""),
         ):
             try:
                 await daemon.run_bot()

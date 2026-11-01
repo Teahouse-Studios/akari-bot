@@ -10,10 +10,11 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import command_prefix
+from core.config.base import CoreConfig
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.queue.errors import RpcRemoteError
-from core.tester import Tester, func_case
+from core.tester import Tester, func_case, mock_config
 from modules.captcha import (
     CAPTCHA_BUTTON_ROWS,
     CAPTCHA_BUTTONS_PER_ROW,
@@ -98,7 +99,7 @@ async def _test_captcha_event_and_private_token():
         return SimpleNamespace(message_id=["verification-message"])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=group_session)),
         patch.object(MessageSession, "restrict_member", new=restrict),
         patch.object(MessageSession, "send_message", new=send_message),
@@ -189,7 +190,7 @@ async def _test_wrong_button_marks_challenge_failed():
         return SimpleNamespace(message_id=["verification-message"])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=group_session)),
         patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "send_message", new=send_message),
@@ -257,7 +258,7 @@ async def _test_preparing_challenge_resumes_after_restart():
 
     restrict = AsyncMock(return_value=None)
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=restrict),
         patch.object(MessageSession, "send_message", new=send_message),
@@ -299,7 +300,7 @@ async def _test_delivery_failure_marks_error_after_successful_unrestrict():
         return SimpleNamespace(message_id=[])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "unrestrict_member", new=unrestrict),
@@ -338,7 +339,7 @@ async def _test_delivery_failure_keeps_active_status_when_unrestrict_fails():
         return SimpleNamespace(message_id=[])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "unrestrict_member", new=unrestrict),
@@ -384,7 +385,7 @@ async def _test_emote_captcha_uses_localized_buttons():
         return SimpleNamespace(message_id=["emote-verification-message"])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=True)),
+        mock_config(CoreConfig, use_emote=True),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "send_message", new=send_message),
@@ -468,7 +469,7 @@ async def _test_emote_captcha_restores_markdown_after_send_error():
     )
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=True)),
+        mock_config(CoreConfig, use_emote=True),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=AsyncMock(return_value=None)),
         patch.object(MessageSession, "send_message", new=AsyncMock(side_effect=RuntimeError("send failed"))),
@@ -654,7 +655,7 @@ async def _test_sender_unbind_during_member_join_preserves_challenge_migration()
         return SimpleNamespace(message_id=["verification-message"])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=restrict_member),
         patch.object(MessageSession, "send_message", new=send_message),
@@ -1061,7 +1062,7 @@ async def _test_target_unbind_during_member_join_preserves_challenge_migration()
         return SimpleNamespace(message_id=["verification-message"])
 
     with (
-        patch("modules.captcha.CoreConfig", new=SimpleNamespace(use_emote=False)),
+        mock_config(CoreConfig, use_emote=False),
         patch("core.builtins.bot.Bot.fetch_target", new=AsyncMock(return_value=session)),
         patch.object(MessageSession, "restrict_member", new=restrict_member),
         patch.object(MessageSession, "send_message", new=send_message),

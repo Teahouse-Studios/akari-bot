@@ -1,9 +1,8 @@
 """JobQueue 后端装配和介质无关契约测试。"""
 
 import time
-from unittest.mock import patch
 
-from core.config.jobqueue import JobQueueConfig
+from core.config.jobqueue import JobQueueConfig, JobQueueSecretConfig
 from core.queue.backend import create_jobqueue_backend
 from core.queue.base import JobQueueBase
 from core.queue.database import DatabaseJobQueueBackend, DatabaseMessageTransport, DatabasePeerRegistry
@@ -17,7 +16,7 @@ from core.queue.websocket import (
     _request_to_wire,
     _response_to_wire,
 )
-from core.tester import func_case, Tester
+from core.tester import func_case, Tester, mock_config
 
 
 async def _test_database_backend_is_a_complete_isolated_bundle():
@@ -36,17 +35,20 @@ async def _test_database_backend_is_a_complete_isolated_bundle():
 
 
 async def _test_backend_factory_obeys_config_without_fallback():
-    with patch.object(JobQueueConfig, "jobqueue_backend", "database"):
+    with mock_config(JobQueueConfig, jobqueue_backend="database"):
         configured = create_jobqueue_backend()
     if not isinstance(configured, DatabaseJobQueueBackend):
         return False
     with (
-        patch.object(JobQueueConfig, "jobqueue_websocket_mode", "embedded"),
-        patch.object(JobQueueConfig, "jobqueue_websocket_url", "ws://127.0.0.1:8765/jobqueue"),
-        patch.object(JobQueueConfig, "jobqueue_websocket_queue_size", 1000),
-        patch.object(JobQueueConfig, "jobqueue_websocket_max_message_bytes", 1048576),
-        patch.object(JobQueueConfig, "jobqueue_websocket_command_timeout", 10),
-        patch("core.config.jobqueue.JobQueueSecretConfig.jobqueue_websocket_token", ""),
+        mock_config(
+            JobQueueConfig,
+            jobqueue_websocket_mode="embedded",
+            jobqueue_websocket_url="ws://127.0.0.1:8765/jobqueue",
+            jobqueue_websocket_queue_size=1000,
+            jobqueue_websocket_max_message_bytes=1048576,
+            jobqueue_websocket_command_timeout=10,
+        ),
+        mock_config(JobQueueSecretConfig, jobqueue_websocket_token=""),
     ):
         websocket = create_jobqueue_backend("websocket")
     if not isinstance(websocket, WebSocketJobQueueBackend):
@@ -54,7 +56,7 @@ async def _test_backend_factory_obeys_config_without_fallback():
     for name, error_type in (("redis", ValueError), ("", ValueError), (None, ValueError)):
         try:
             if name is None:
-                with patch.object(JobQueueConfig, "jobqueue_backend", None):
+                with mock_config(JobQueueConfig, jobqueue_backend=None):
                     create_jobqueue_backend()
             else:
                 create_jobqueue_backend(name)

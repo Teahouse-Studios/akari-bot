@@ -6,10 +6,9 @@ import sys
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from unittest.mock import patch
 from uuid import uuid4
 
-from core.config.jobqueue import JobQueueConfig
+from core.config.jobqueue import JobQueueConfig, JobQueueSecretConfig
 from core.queue.base import current_peer, JobQueueBase
 from core.queue.errors import RpcProtocolError, RpcUnavailableError
 from core.queue.peer import PeerSelector, SignalContext
@@ -19,7 +18,7 @@ from core.queue.websocket import (
     WebSocketSettings,
 )
 from core.queue.transport import RpcRequest
-from core.tester import func_case, Tester
+from core.tester import func_case, Tester, mock_config
 
 
 @asynccontextmanager
@@ -166,9 +165,12 @@ async def _test_websocket_disconnect_wakes_outstanding_call():
 
 def _test_websocket_settings_use_mode_and_url_as_single_source():
     with (
-        patch.object(JobQueueConfig, "jobqueue_websocket_mode", " EMBEDDED "),
-        patch.object(JobQueueConfig, "jobqueue_websocket_url", " ws://localhost:8766 "),
-        patch("core.config.jobqueue.JobQueueSecretConfig.jobqueue_websocket_token", ""),
+        mock_config(
+            JobQueueConfig,
+            jobqueue_websocket_mode=" EMBEDDED ",
+            jobqueue_websocket_url=" ws://localhost:8766 ",
+        ),
+        mock_config(JobQueueSecretConfig, jobqueue_websocket_token=""),
     ):
         settings = WebSocketSettings.from_config()
     if (
@@ -202,9 +204,12 @@ def _test_websocket_settings_use_mode_and_url_as_single_source():
             pass
 
     with (
-        patch.object(JobQueueConfig, "jobqueue_websocket_mode", "embedded"),
-        patch.object(JobQueueConfig, "jobqueue_websocket_url", "ws://127.0.0.1:0/jobqueue"),
-        patch("core.config.jobqueue.JobQueueSecretConfig.jobqueue_websocket_token", ""),
+        mock_config(
+            JobQueueConfig,
+            jobqueue_websocket_mode="embedded",
+            jobqueue_websocket_url="ws://127.0.0.1:0/jobqueue",
+        ),
+        mock_config(JobQueueSecretConfig, jobqueue_websocket_token=""),
     ):
         try:
             WebSocketSettings.from_config()

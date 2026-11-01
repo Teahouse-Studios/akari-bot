@@ -27,6 +27,9 @@ atexit.register(_cleanup_test_union_merge_logs)
 # 以文件路径直接启动时，sys.path 首位是 tests/ 而非项目根，须先补上才能 import core
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# 导入 tester 即完成测试配置铺设，须早于任何 core.* 导入（说明见 core/constants/path.py）
+from tester import test_config_path  # noqa: E402,F401
+
 from core.tester.mock.database import init_db, close_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
@@ -90,6 +93,7 @@ if __name__ == "__main__":
         code = 1
     # 框架加载的模块会留下未完成的后台任务，正常返回会挂起，故强制退出
     _cleanup_test_union_merge_logs()
+    shutil.rmtree(test_config_path, ignore_errors=True)
     sys.stdout.flush()
     sys.stderr.flush()
     os._exit(code)
