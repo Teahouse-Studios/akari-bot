@@ -48,7 +48,7 @@ async def _test_offset_follows_target_data() -> bool:
     return True
 
 
-async def _test_core_default_used_when_scene_unset() -> bool:
+async def _test_core_default_used_when_target_unset() -> bool:
     with mock_config(CoreConfig, timezone_offset="+5:30"):
         session_info = await _make_session("TEST|Group|tz_core", "TEST|tz_core")
     if session_info.timezone_offset != timedelta(hours=5, minutes=30):
@@ -129,7 +129,7 @@ def _test_session_info_serialization_preserves_offsets() -> bool:
 async def test_timezone_offset(tester: Tester):
     """core.builtins.session.info: 时区偏移取值来源测试"""
     await tester.test(_test_offset_follows_target_data, "偏移量跟随场景设置测试")
-    await tester.test(_test_core_default_used_when_scene_unset, "场景未设置时跟随核心默认时区")
+    await tester.test(_test_core_default_used_when_target_unset, "场景未设置时跟随核心默认时区")
     await tester.test(_test_user_offset_only_affects_display, "用户时区仅影响展示")
     await tester.test(_test_invalid_target_offset_falls_back_to_core, "非法场景时区回退核心默认")
     await tester.test(_test_zero_offset_label, "零偏移标签规范化")

@@ -10,7 +10,7 @@ from core.tester.mock.session import MockMessageSession
 from core.utils.timezone import core_now
 
 
-async def _set_scene_offset(msg: MockMessageSession, offset: str) -> None:
+async def _set_target_offset(msg: MockMessageSession, offset: str) -> None:
     await msg.session_info.target_union_info.edit_target_data("timezone_offset", offset)
     await msg.session_info.refresh_info()
 
@@ -21,7 +21,7 @@ async def _delete_store(store_key: str) -> None:
     await StoredData.filter(stored_key=store_key).delete()
 
 
-async def _other_scene_session(msg: MockMessageSession, target_id: str, offset: str):
+async def _other_target_session(msg: MockMessageSession, target_id: str, offset: str):
     from core.builtins.session.info import SessionInfo
     from core.builtins.session.internal import MessageSession
 
@@ -116,9 +116,9 @@ async def _test_sign_is_shared_across_scenes():
     await _delete_store("Union|signedpetal")
     try:
         with mock_config(CoreConfig, enable_petal=True, petal_sign_min=5, petal_sign_max=5, petal_sign_rate=1.0):
-            await _set_scene_offset(msg, "+8")
+            await _set_target_offset(msg, "+8")
             first = await sign_get_petal(msg)
-            other = await _other_scene_session(msg, "TEST|Console|petal_scene_b", "+14")
+            other = await _other_target_session(msg, "TEST|Console|petal_target_b", "+14")
             second = await sign_get_petal(other)
         # 同一用户在不同场景共用签到记录，不能因场景时区不同重复签到。
         return first == 5 and second == 0
@@ -126,7 +126,7 @@ async def _test_sign_is_shared_across_scenes():
         await _delete_store("Union|signedpetal")
 
 
-async def _test_sign_scene_offset_change_rolls():
+async def _test_sign_target_offset_change_rolls():
     from core.database.models import StoredData
     from core.utils.petal import sign_get_petal
 
@@ -136,9 +136,9 @@ async def _test_sign_scene_offset_change_rolls():
     await _delete_store("Union|signedpetal")
     try:
         with mock_config(CoreConfig, enable_petal=True, petal_sign_min=5, petal_sign_max=5, petal_sign_rate=1.0):
-            await _set_scene_offset(msg, "+8")
+            await _set_target_offset(msg, "+8")
             first = await sign_get_petal(msg)
-            await _set_scene_offset(msg, "+14")
+            await _set_target_offset(msg, "+14")
             second = await sign_get_petal(msg)
 
             stored = await StoredData.get(stored_key="Union|signedpetal")
@@ -190,7 +190,7 @@ async def _test_sign_scene_offset_change_rolls():
         await _delete_store("Union|signedpetal")
 
 
-async def _test_gained_lost_limits_follow_scene_offset():
+async def _test_gained_lost_limits_follow_target_offset():
     from core.database.models import StoredData
     from core.utils.petal import gained_petal, lost_petal
 
@@ -208,7 +208,7 @@ async def _test_gained_lost_limits_follow_scene_offset():
             petal_gained_limit=5,
             petal_lost_limit=5,
         ):
-            await _set_scene_offset(msg, "+5:30")
+            await _set_target_offset(msg, "+5:30")
             await gained_petal(msg, 1)
             await lost_petal(msg, 1)
 
@@ -256,8 +256,8 @@ async def test_petal(tester: Tester):
     await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
     await tester.test(_test_sign_petal_once_per_day, "签到每日仅一次且跨日重置测试")
     await tester.test(_test_sign_is_shared_across_scenes, "签到记录跨场景共享")
-    await tester.test(_test_sign_scene_offset_change_rolls, "改场景时区后首个周期按 24 小时滚动")
-    await tester.test(_test_gained_lost_limits_follow_scene_offset, "获取与失去上限按场景时区刷新")
+    await tester.test(_test_sign_target_offset_change_rolls, "改场景时区后首个周期按 24 小时滚动")
+    await tester.test(_test_gained_lost_limits_follow_target_offset, "获取与失去上限按场景时区刷新")
     await tester.test(_test_petal_reset_runs_once_per_cycle, "花瓣周期结算每周期仅一次测试")
 
     return tester
