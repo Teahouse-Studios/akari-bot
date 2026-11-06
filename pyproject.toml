@@ -88,7 +88,7 @@ dependencies = [
     "google-play-scraper>=1.2.2,<2.0.0",
     "gql>=4.0.0,<5.0.0",
     "mcstatus>=14.1.0,<14.2.0",
-    "numpy<2.5.3",
+    "numpy<2.5.5",
     "openai>=3.6.0,<3.7.0",
     "pandas>=3.0.0,<4.0.0",
     "pint>=0.25.0,<1.0.0",
