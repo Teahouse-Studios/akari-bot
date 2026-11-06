@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import uuid
-from datetime import timedelta, datetime
+from datetime import date, datetime, timedelta, timezone, tzinfo
 from typing import Self
 
 from attrs import define, field
@@ -18,8 +19,9 @@ from core.builtins.utils import command_prefix
 from core.config.base import BaseConfig, CoreConfig
 from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
-from core.utils.func import parse_time_string
+from core.logger import Logger
 from core.utils.session import inject_features
+from core.utils.timezone import core_offset, format_offset, parse_offset
 
 default_locale = BaseConfig.default_locale
 
@@ -32,6 +34,32 @@ def _current_client_peer_id() -> str | None:
     from core.constants import Info
 
     return (Info.peer_id or None) if Info.peer_role == "client" else None
+
+
+def _resolve_offset_text(value, fallback: str | None, source: str) -> str | None:
+    if value is None or value == "":
+        return fallback
+    offset = parse_offset(value)
+    if offset is None:
+        Logger.warning(f"Invalid {source} timezone offset {value!r}, falling back to {fallback!r}.")
+        return fallback
+    return format_offset(offset)
+
+
+def _resolve_offsets(
+    target_union_info: TargetUnionInfo, sender_union_info: SenderUnionInfo | None
+) -> tuple[str, timedelta, str | None, timedelta | None]:
+    core_label = format_offset(core_offset())
+    target_label = _resolve_offset_text(target_union_info.target_data.get("timezone_offset"), core_label, "scene")
+    target_label = target_label or core_label
+    target_offset = parse_offset(target_label)
+    if target_offset is None:
+        target_offset = core_offset()
+        target_label = format_offset(target_offset)
+    user_value = sender_union_info.sender_data.get("timezone_offset") if sender_union_info else None
+    user_label = _resolve_offset_text(user_value, None, "user")
+    user_offset = parse_offset(user_label) if user_label else None
+    return target_label, target_offset, user_label, user_offset
 
 
 @define
@@ -173,6 +201,8 @@ class SessionInfo:
     locale: Locale = field(factory=lambda: Locale(default_locale))
     _tz_offset: str | None = None
     timezone_offset: timedelta | None = None
+    _display_tz_offset: str | None = None
+    display_timezone_offset: timedelta | None = None
     bot_name: str | None = None
     bot_id: str | None = None
     muted: bool | None = None
@@ -239,11 +269,11 @@ class SessionInfo:
             sender_from = Alive.determine_sender_from(sender_id)
         if not client_name:
             client_name = Alive.determine_client(target_from)
-        timestamp = datetime.now().timestamp()
+        timestamp = time.time()
         session_id = str(uuid.uuid4())
         locale = Locale(target_union_info.locale, term_candidates=build_term_candidates(target_from, is_private))
         bot_name = locale.t("bot_name")
-        _tz_offset = target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
+        target_label, target_offset, user_label, user_offset = _resolve_offsets(target_union_info, sender_union_info)
         platform_prefixes = list(prefixes) if prefixes is not None else []
         custom_prefixes = target_union_info.target_data.get("command_prefix", [])
         if isinstance(custom_prefixes, str):
@@ -279,9 +309,11 @@ class SessionInfo:
             locale=locale,
             muted=target_union_info.muted,
             bot_name=bot_name,
-            tz_offset=_tz_offset,
+            tz_offset=target_label,
             enabled_modules=target_union_info.modules,
-            timezone_offset=parse_time_string(_tz_offset),
+            timezone_offset=target_offset,
+            display_tz_offset=user_label,
+            display_timezone_offset=user_offset,
             petal=sender_union_info.petal if sender_union_info else None,
             prefixes=prefixes,
             platform_prefixes=platform_prefixes,
@@ -355,8 +387,12 @@ class SessionInfo:
             target_union_info.locale, term_candidates=build_term_candidates(self.target_from, self.is_private)
         )
         self.bot_name = self.locale.t("bot_name")
-        self._tz_offset = target_union_info.target_data.get("timezone_offset", CoreConfig.timezone_offset)
-        self.timezone_offset = parse_time_string(self._tz_offset)
+        (
+            self._tz_offset,
+            self.timezone_offset,
+            self._display_tz_offset,
+            self.display_timezone_offset,
+        ) = _resolve_offsets(target_union_info, sender_union_info)
         custom_prefixes = target_union_info.target_data.get("command_prefix", [])
         if isinstance(custom_prefixes, str):
             custom_prefixes = [custom_prefixes]
@@ -422,6 +458,56 @@ class SessionInfo:
         if not self.sender_union_info:
             return False
         return self.sender_union_info.sender_data.get("dark_mode", False)
+
+    @property
+    def target_offset(self) -> timedelta:
+        """模块业务使用的场景偏移量。"""
+        if self.timezone_offset is not None:
+            return self.timezone_offset
+        if self._tz_offset:
+            offset = parse_offset(self._tz_offset)
+            if offset is not None:
+                return offset
+        return core_offset()
+
+    @property
+    def display_offset(self) -> timedelta:
+        """向用户展示时间使用的偏移量。"""
+        if self.display_timezone_offset is not None:
+            return self.display_timezone_offset
+        if self._display_tz_offset:
+            offset = parse_offset(self._display_tz_offset)
+            if offset is not None:
+                return offset
+        return self.target_offset
+
+    @property
+    def tz(self) -> tzinfo:
+        """模块业务使用的时区。"""
+        return timezone(self.target_offset)
+
+    @property
+    def display_tz(self) -> tzinfo:
+        """向用户展示时间使用的时区。"""
+        return timezone(self.display_offset)
+
+    @property
+    def tz_label(self) -> str:
+        """场景偏移量的规范字符串。"""
+        return format_offset(self.target_offset)
+
+    @property
+    def display_tz_label(self) -> str:
+        """展示偏移量的规范字符串。"""
+        return format_offset(self.display_offset)
+
+    def now(self) -> datetime:
+        """取场景时区的当前时间。"""
+        return datetime.now(self.tz)
+
+    def today(self) -> date:
+        """取场景时区的当前日期。"""
+        return self.now().date()
 
 
 @define

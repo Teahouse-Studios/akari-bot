@@ -1,14 +1,13 @@
-import time
-
 from core.config.base import CoreConfig
 from core.logger import Logger
 from core.utils.http import url_pattern
 from core.utils.random import Random
+from core.utils.timezone import core_now
 
 
 def shuffle_joke(text: str) -> str:
-    current_time = time.localtime()
-    if not (CoreConfig.enable_joke and current_time.tm_mon == 4 and current_time.tm_mday == 1):
+    current_time = core_now()
+    if not (CoreConfig.enable_joke and current_time.month == 4 and current_time.day == 1):
         return text
 
     shuffle_rate = CoreConfig.shuffle_rate

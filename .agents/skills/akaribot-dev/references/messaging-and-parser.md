@@ -276,7 +276,8 @@ class SessionInfo:
     banned_users: list | None = None
     custom_admins: list | None = None
     locale: Locale | None = None      # 注意是 Locale 对象，不是 str
-    timezone_offset: timedelta | None = None
+    timezone_offset: timedelta | None = None           # 场景业务时区；未设置时回退核心默认
+    display_timezone_offset: timedelta | None = None   # 用户显示时区；未设置时跟随场景
     bot_name / bot_id: str | None = None
     muted: bool | None = None
     enabled_modules: list | None = None
@@ -344,7 +345,7 @@ class MessageSession:
 
     # 消息转换 / 格式化
     def as_display(self, text_only=False) -> str
-    def format_time(self, ...) -> str           # 按会话时区/语言格式化时间
+    def format_time(self, ...) -> str           # 按用户显示时区/语言格式化，不参与业务判定
     def format_num(self, number, precision=0) -> str  # 按语言习惯格式化数字
 
     # 平台操作（通过 JobQueue 回到 bot 进程）

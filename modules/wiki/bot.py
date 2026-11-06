@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
@@ -6,6 +6,7 @@ from core.component import module
 from core.logger import Logger
 from core.queue.contracts import ServerAPI
 from core.scheduler import DateTrigger, IntervalTrigger
+from core.utils.timezone import core_now
 from .database.models import WikiBotAccountList
 from .utils.bot import BotAccount, LoginFailed
 from .utils.wikilib import BlockedWikiError, WikiLib
@@ -64,7 +65,7 @@ async def _(ctx: Bot.ModuleHookContext):
     Logger.debug("Received login_wiki_bots hook: " + str(ctx.args["cookies"]))
 
 
-@wb.schedule(DateTrigger(datetime.now() + timedelta(seconds=30)))
+@wb.schedule(DateTrigger(core_now() + timedelta(seconds=30)))
 @wb.schedule(IntervalTrigger(minutes=30))
 async def _():
     try:

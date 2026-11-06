@@ -118,6 +118,10 @@ async def test_merged_setup_commands(tester: Tester):
     )
     await tester.integrate("~setup dark", Contains("已开启深色模式"), "setup dark 应开启深色模式")
     await tester.integrate("~setup dark", Contains("已关闭深色模式"), "setup dark 应关闭深色模式")
+    await tester.integrate("~setup timeoffset +5:30", Contains("UTC+5:30"), "场景时区应支持半小时偏移")
+    await tester.integrate("~setup timeoffset reset", Contains("默认"), "场景时区应能恢复默认")
+    await tester.integrate("~setup timezone +3", Contains("UTC+3"), "用户显示时区应能单独设置")
+    await tester.integrate("~setup timezone reset", Contains("跟随"), "用户显示时区应能恢复跟随场景")
 
     return tester
 

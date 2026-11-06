@@ -56,11 +56,24 @@ def _render(support_button: bool = False, can_edit: bool = True) -> list:
 
 def _test_sender_rows_default_to_enabled() -> bool:
     rows = build_sender_rows(_make_msg())
-    if len(rows) != 3:
-        Logger.error(f"Sender panel should list exactly three settings, got {len(rows)}")
+    if len(rows) != 4:
+        Logger.error(f"Sender panel should list exactly four settings, got {len(rows)}")
         return False
-    if any(row.value != "已开启" for row in rows if row.label != "深色模式"):
-        Logger.error(f"Sender settings should default to enabled, got {[r.value for r in rows]}")
+    toggles = {"输入提示", "拼写检查"}
+    if any(row.value != "已开启" for row in rows if row.label in toggles):
+        Logger.error(f"Sender toggles should default to enabled, got {[r.value for r in rows]}")
+        return False
+    timezone_row = _row_by_label(rows, "显示时区")
+    if not timezone_row or timezone_row.value != "UTC+8":
+        Logger.error(f"Display timezone should follow the scene offset, got {timezone_row and timezone_row.value}")
+        return False
+    return True
+
+
+def _test_sender_timezone_row_carries_current_value() -> bool:
+    row = _row_by_label(build_sender_rows(_make_msg()), "显示时区")
+    if not row or row.command != "setup timezone +8":
+        Logger.error(f"Display timezone should prefill its command, got {row and row.command!r}")
         return False
     return True
 
@@ -330,6 +343,7 @@ def _test_help_buttons_present() -> bool:
 async def test_setup_panel(tester: Tester):
     """modules.core.common_tools.setup: 设置面板构造测试"""
     await tester.test(_test_sender_rows_default_to_enabled, "个人设置默认开启测试")
+    await tester.test(_test_sender_timezone_row_carries_current_value, "显示时区预填当前值测试")
     await tester.test(_test_target_prefix_and_cooldown_defaults, "场景设置默认值测试")
     await tester.test(_test_mute_row_wording, "静音项措辞测试")
     await tester.test(_test_sign_row_follows_petal_config, "签到项随配置测试")

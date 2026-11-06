@@ -12,6 +12,7 @@ from core.config.base import CoreConfig
 from core.database.models import SenderUnionInfo, StoredData
 from core.logger import Logger
 from core.utils.random import Random
+from core.utils.timezone import core_now, core_tz
 
 # 花瓣余额挂在 union 上，日额度也须随之跨平台共享，因此存储不再按客户端分桶，
 # 桶内亦按 union 而非平台账号索引；否则一个人绑几个平台就能领几倍的每日上限。
@@ -50,8 +51,8 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
                     .first()
                 )
                 quota = dict((stored.value if stored else [{}])[0])
-                now = datetime.now()
-                expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+                now = core_now()
+                expired = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
                 record = quota.get(union_id)
                 if not record or now.timestamp() > record["expired"]:
                     record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
@@ -109,8 +110,8 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
                     .first()
                 )
                 quota = dict((stored.value if stored else [{}])[0])
-                now = datetime.now()
-                expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+                now = core_now()
+                expired = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
                 record = quota.get(union_id)
                 if not record or now.timestamp() > record["expired"]:
                     record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
@@ -197,8 +198,8 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
                     .first()
                 )
                 quota = dict((stored.value if stored else [{}])[0])
-                now = datetime.now()
-                expired = datetime.combine((now + timedelta(days=1)).date(), datetime.min.time())
+                now = core_now()
+                expired = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
                 record = quota.get(union_id)
                 if not record or now.timestamp() > record["expired"]:
                     record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
@@ -240,18 +241,18 @@ def _decode_reset_due(stored: StoredData | None) -> datetime | None:
     except (TypeError, ValueError):
         Logger.warning("Invalid petal settlement marker, treated as missing.")
         return None
-    return due if due.tzinfo else due.astimezone()
+    return due if due.tzinfo else due.replace(tzinfo=core_tz())
 
 
 async def reset_petals_if_due() -> int:
     if not CoreConfig.enable_petal:
         return 0
     try:
-        trigger = CronTrigger.from_crontab(CoreConfig.petal_reset_crontab)
+        trigger = CronTrigger.from_crontab(CoreConfig.petal_reset_crontab, timezone=core_tz())
     except (AttributeError, TypeError, ValueError):
         Logger.exception(f"Invalid petal_reset_crontab {CoreConfig.petal_reset_crontab!r}, skipped reset.")
         return 0
-    now = datetime.now(trigger.timezone)
+    now = core_now(trigger.timezone)
     # 取严格晚于当前时刻的下一次触发时间：当前恰好落在触发点上时也不会重复结算。
     following = trigger.get_next_fire_time(now, now)
     if following is None:

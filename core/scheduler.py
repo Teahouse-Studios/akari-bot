@@ -15,12 +15,13 @@ from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, SchedulerAlreadyRunningError
 from apscheduler.triggers.combining import AndTrigger, OrTrigger
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.cron import CronTrigger as APSchedulerCronTrigger
+from apscheduler.triggers.date import DateTrigger as APSchedulerDateTrigger
 from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
 
 from core.config.base import CoreConfig
 from core.module_runtime import ModuleRuntimeManager
+from core.utils.timezone import core_tz
 
 if TYPE_CHECKING:
     from core.types import Module
@@ -39,6 +40,20 @@ def _schedule_interval_multiplier() -> float:
     return multiplier
 
 
+class CronTrigger(APSchedulerCronTrigger):
+    def __init__(self, *args, **kwargs):
+        if kwargs.get("timezone") is None:
+            kwargs["timezone"] = core_tz()
+        super().__init__(*args, **kwargs)
+
+
+class DateTrigger(APSchedulerDateTrigger):
+    def __init__(self, *args, **kwargs):
+        if kwargs.get("timezone") is None:
+            kwargs["timezone"] = core_tz()
+        super().__init__(*args, **kwargs)
+
+
 class IntervalTrigger(APSchedulerIntervalTrigger):
     """按全局配置倍率调整间隔的 APScheduler IntervalTrigger。"""
 
@@ -54,6 +69,8 @@ class IntervalTrigger(APSchedulerIntervalTrigger):
         timezone=None,
         jitter=None,
     ):
+        if timezone is None:
+            timezone = core_tz()
         interval = timedelta(weeks=weeks, days=days, hours=hours, minutes=minutes, seconds=seconds)
         if not interval:
             interval = timedelta(seconds=1)

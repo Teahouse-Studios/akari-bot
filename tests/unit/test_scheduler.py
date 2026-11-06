@@ -10,7 +10,7 @@ from core.config.base import CoreConfig
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from core.scheduler import IntervalTrigger, Scheduler, SchedulerLifecycle
-from core.tester import func_case, Tester
+from core.tester import func_case, Tester, mock_config
 from core.tester.mock.scheduler import (
     get_scheduled_tasks,
     run_schedule_function,
@@ -256,6 +256,14 @@ async def _test_scheduler_shutdown_waits_and_reaches_real_shutdown_event():
         SchedulerLifecycle.prepare()
 
 
+def _test_cron_trigger_uses_core_offset():
+    from core.scheduler import CronTrigger
+
+    with mock_config(CoreConfig, timezone_offset="+5:30"):
+        trigger = CronTrigger.from_crontab("0 9 * * *")
+    return trigger.timezone.utcoffset(None) == timedelta(hours=5, minutes=30)
+
+
 @func_case
 async def test_scheduler_mock(tester: Tester):
     """计划任务 Mock 工具测试"""
@@ -264,6 +272,7 @@ async def test_scheduler_mock(tester: Tester):
     await tester.test(_test_run_schedule_function_with_noop, "run_schedule_function 空函数")
     await tester.test(_test_run_schedule_function_with_error, "run_schedule_function 异常捕获")
     await tester.test(_test_run_schedule_function_with_timeout, "run_schedule_function 超时捕获")
+    await tester.test(_test_cron_trigger_uses_core_offset, "CronTrigger 使用核心默认时区")
     await tester.test(_test_interval_trigger_applies_configured_multiplier, "IntervalTrigger 应用间隔倍率")
     await tester.test(_test_interval_trigger_rejects_invalid_multiplier, "IntervalTrigger 拒绝无效倍率")
     await tester.test(

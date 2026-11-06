@@ -2,6 +2,7 @@
 
 import base64
 from contextlib import ExitStack
+from datetime import timezone
 from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
@@ -315,7 +316,8 @@ async def _test_ask_llm_returns_accumulated_image_cost():
 
     session_info = SimpleNamespace(
         locale=Locale("zh_cn"),
-        _tz_offset="+0",
+        tz=timezone.utc,
+        tz_label="+0",
         sender_union_info=SimpleNamespace(sender_data={}),
         support_markdown=False,
         support_markdown_extension=False,

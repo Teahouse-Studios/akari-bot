@@ -1,5 +1,4 @@
 import re
-from datetime import date
 from html import unescape
 from urllib import parse
 
@@ -11,6 +10,7 @@ from core.builtins.message.internal import Plain, Image, Url, I18NContext
 from core.component import module
 from core.i18n import Locale
 from core.utils.http import get_url
+from core.utils.timezone import core_today
 
 
 async def get_weekly(with_img=False, zh_tw=False):
@@ -49,7 +49,7 @@ async def get_weekly(with_img=False, zh_tw=False):
         if get_image.status:
             imglink = get_image.file
 
-    iso_year, iso_week, _ = date.today().isocalendar()
+    iso_year, iso_week, _ = core_today().isocalendar()
 
     msg_list.append(
         I18NContext(

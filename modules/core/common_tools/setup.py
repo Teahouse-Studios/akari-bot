@@ -8,6 +8,7 @@ from core.component import module
 from core.config.base import CoreConfig
 from core.i18n import Locale
 from core.utils.button import arrange_buttons
+from core.utils.timezone import format_offset, parse_offset
 
 setup = module(
     "setup",
@@ -22,26 +23,6 @@ setup = module(
         "alias": "setup alias",
     },
 )
-
-
-@setup.command("typing {{I18N:core.help.setup.typing}}")
-async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
-        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", True)
-        await msg.finish(I18NContext("core.message.setup.typing.enable"))
-    else:
-        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", False)
-        await msg.finish(I18NContext("core.message.setup.typing.disable"))
-
-
-@setup.command("check {{I18N:core.help.setup.check}}")
-async def _(msg: Bot.MessageSession):
-    if not msg.session_info.sender_union_info.sender_data.get("typo_check", True):
-        await msg.session_info.sender_union_info.edit_sender_data("typo_check", True)
-        await msg.finish(I18NContext("core.message.setup.check.enable"))
-    else:
-        await msg.session_info.sender_union_info.edit_sender_data("typo_check", False)
-        await msg.finish(I18NContext("core.message.setup.check.disable"))
 
 
 @setup.command("sign {{I18N:core.help.setup.sign}}", required_admin=True, load=CoreConfig.enable_petal)
@@ -63,21 +44,6 @@ async def _(msg: Bot.MessageSession):
     )
 
 
-@setup.command("timeoffset <offset> {{I18N:core.help.setup.timeoffset}}", required_admin=True)
-async def _(msg: Bot.MessageSession, offset: str):
-    try:
-        tstr_split = [int(part) for part in offset.split(":")]
-        hour = tstr_split[0]
-        minute = tstr_split[1] if len(tstr_split) > 1 else 0
-        if hour > 12 or minute >= 60:
-            raise ValueError
-        offset = f"{hour:+}" if minute == 0 else f"{hour:+}:{abs(minute):02d}"
-    except ValueError:
-        await msg.finish(I18NContext("core.message.setup.timeoffset.invalid"))
-    await msg.session_info.target_union_info.edit_target_data("timezone_offset", offset)
-    await msg.finish(I18NContext("core.message.setup.timeoffset.success", offset="" if offset == "+0" else offset))
-
-
 @setup.command("cooldown <second> {{I18N:core.help.setup.cooldown}}", required_admin=True)
 async def _(msg: Bot.MessageSession, second: int):
     second = 0 if second < 0 else second
@@ -95,6 +61,18 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.setup.invalid-module-prompt.disable"))
 
 
+@setup.command("timeoffset <offset> {{I18N:core.help.setup.timeoffset}}", required_admin=True)
+async def _(msg: Bot.MessageSession, offset: str):
+    parsed = parse_offset(offset)
+    if parsed is None:
+        await msg.finish(I18NContext("core.message.setup.timeoffset.invalid"))
+    value = format_offset(parsed)
+    await msg.session_info.target_union_info.edit_target_data("timezone_offset", value)
+    msg.session_info._tz_offset = value
+    msg.session_info.timezone_offset = parsed
+    await msg.finish(I18NContext("core.message.setup.timeoffset.success", offset="" if value == "+0" else value))
+
+
 # 不加 available_for：框架只能按平台名过滤命令，无法按会话特性过滤。若改用平台名，
 # 将来其他平台声明了 support_markdown_toggle，面板会出现「有此行、命令却不可用」的死行。
 # 以能力标志作唯一判据可避免该情形，代价是其他平台的帮助列表中仍会列出这条命令。
@@ -110,6 +88,16 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.setup.markdown.disable"))
 
 
+@setup.command("check {{I18N:core.help.setup.check}}")
+async def _(msg: Bot.MessageSession):
+    if not msg.session_info.sender_union_info.sender_data.get("typo_check", True):
+        await msg.session_info.sender_union_info.edit_sender_data("typo_check", True)
+        await msg.finish(I18NContext("core.message.setup.check.enable"))
+    else:
+        await msg.session_info.sender_union_info.edit_sender_data("typo_check", False)
+        await msg.finish(I18NContext("core.message.setup.check.disable"))
+
+
 @setup.command("dark {{I18N:core.help.setup.dark}}")
 async def _(msg: Bot.MessageSession):
     if msg.session_info.dark_mode:
@@ -117,6 +105,28 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.setup.dark.disable"))
     await msg.session_info.sender_union_info.edit_sender_data("dark_mode", True)
     await msg.finish(I18NContext("core.message.setup.dark.enable"))
+
+
+@setup.command("timezone <offset> {{I18N:core.help.setup.timezone}}")
+async def _(msg: Bot.MessageSession, offset: str):
+    parsed = parse_offset(offset)
+    if parsed is None:
+        await msg.finish(I18NContext("core.message.setup.timezone.invalid"))
+    value = format_offset(parsed)
+    await msg.session_info.sender_union_info.edit_sender_data("timezone_offset", value)
+    msg.session_info._display_tz_offset = value
+    msg.session_info.display_timezone_offset = parsed
+    await msg.finish(I18NContext("core.message.setup.timezone.success", offset="" if value == "+0" else value))
+
+
+@setup.command("typing {{I18N:core.help.setup.typing}}")
+async def _(msg: Bot.MessageSession):
+    if not msg.session_info.sender_union_info.sender_data.get("typing_prompt", True):
+        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", True)
+        await msg.finish(I18NContext("core.message.setup.typing.enable"))
+    else:
+        await msg.session_info.sender_union_info.edit_sender_data("typing_prompt", False)
+        await msg.finish(I18NContext("core.message.setup.typing.disable"))
 
 
 @define
@@ -149,7 +159,7 @@ def build_target_rows(msg: Bot.MessageSession) -> list[SettingRow]:
     target_data = target_union_info.target_data
     muted = bool(target_union_info.muted)
     prefixes = target_data.get("command_prefix") or []
-    tz_offset = msg.session_info._tz_offset
+    tz_offset = msg.session_info.tz_label
     cooldown = int(target_data.get("cooldown_time", 0))
 
     rows = [
@@ -247,6 +257,15 @@ def build_sender_rows(msg: Bot.MessageSession) -> list[SettingRow]:
                 "setup markdown",
             ),
         )
+    display_tz = msg.session_info.display_tz_label
+    rows.append(
+        SettingRow(
+            label=locale.t("core.message.setup.list.item.timezone"),
+            value=locale.t("core.message.setup.list.value.timeoffset", offset="" if display_tz == "+0" else display_tz),
+            action=locale.t("core.message.setup.list.action.modify"),
+            command=f"setup timezone {display_tz}",
+        )
+    )
     rows.append(
         _toggle_row(
             locale,

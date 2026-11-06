@@ -25,6 +25,7 @@ from core.config.network import proxy, ssl_verify
 from core.i18n import safe_strftime
 from core.logger import Logger
 from core.utils.cache import random_cache_path
+from core.utils.timezone import core_offset_text, core_tz
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo
@@ -273,58 +274,26 @@ class FormattedTimeElement(BaseElement):
         """
         ftime_template = []
         if session_info:
-            dt = datetime.fromtimestamp(self.timestamp, UTC) + session_info.timezone_offset
+            locale = session_info.locale
+            tz = session_info.display_tz
+            tz_label = session_info.display_tz_label
+            date_key = "time.date.simple.format" if self.simple else "time.date.format"
+            time_key = "time.time.format" if self.seconds else "time.time.nosec.format"
+        else:
+            locale = None
+            tz = core_tz()
+            tz_label = core_offset_text()
+            date_key = "%Y-%m-%d" if self.simple else "%B %d, %Y"
+            time_key = "%H:%M:%S" if self.seconds else "%H:%M"
 
-            if self.date:
-                if self.simple:
-                    ftime_template.append(session_info.locale.t("time.date.simple.format"))
-                else:
-                    ftime_template.append(session_info.locale.t("time.date.format"))
-
-            if self.time:
-                if self.seconds:
-                    ftime_template.append(session_info.locale.t("time.time.format"))
-                else:
-                    ftime_template.append(session_info.locale.t("time.time.nosec.format"))
-
-            if self.timezone:
-                if session_info._tz_offset == "+0":
-                    ftime_template.append("(UTC)")
-                else:
-                    ftime_template.append(f"(UTC{session_info._tz_offset})")
-
-            return safe_strftime(dt, " ".join(ftime_template))
-
+        dt = datetime.fromtimestamp(self.timestamp, UTC).astimezone(tz)
         if self.date:
-            if self.simple:
-                ftime_template.append("%Y-%m-%d")
-            else:
-                ftime_template.append("%B %d, %Y")
-
+            ftime_template.append(locale.t(date_key) if locale else date_key)
         if self.time:
-            if self.seconds:
-                ftime_template.append("%H:%M:%S")
-            else:
-                ftime_template.append("%H:%M")
-
+            ftime_template.append(locale.t(time_key) if locale else time_key)
         if self.timezone:
-            tz_template = "(UTC)"
-            offset = datetime.now().astimezone().utcoffset()
-            if offset:
-                total_min = int(offset.total_seconds() // 60)
-                sign = "+" if total_min >= 0 else "-"
-                abs_min = abs(total_min)
-                hours = abs_min // 60
-                mins = abs_min % 60
-
-                if mins == 0:
-                    tz_template = f"(UTC{sign}{hours})" if hours != 0 else "(UTC)"
-                else:
-                    tz_template = f"(UTC{sign}{hours}:{mins:02d})"
-
-            ftime_template.append(tz_template)
-
-        return safe_strftime(datetime.fromtimestamp(self.timestamp), " ".join(ftime_template))
+            ftime_template.append("(UTC)" if tz_label == "+0" else f"(UTC{tz_label})")
+        return safe_strftime(dt, " ".join(ftime_template))
 
     def kecode(self, session_info: SessionInfo | None = None):
         """转换为 KE 码格式。

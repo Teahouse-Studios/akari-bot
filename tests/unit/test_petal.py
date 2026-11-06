@@ -1,9 +1,10 @@
 """core.utils.petal 单元测试 - 花瓣系统（需要数据库/配置）。"""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from core.config.base import CoreConfig
 from core.tester import func_case, Tester, mock_config
+from core.utils.timezone import core_now
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession
 
@@ -65,7 +66,7 @@ async def _test_sign_petal_once_per_day():
             # 今日已签到返回 0，余额不再增加
             if first != 5 or second != 0:
                 return False
-            # 模拟跨过服务器 0 点：把签到记录的过期时间改为过去
+            # 模拟跨过每日边界：把签到记录的过期时间改为过去
             stored = await StoredData.get(stored_key=store_key)
             quota = dict(stored.value[0])
             quota[msg.session_info.sender_union_id]["expired"] = 0
@@ -77,6 +78,50 @@ async def _test_sign_petal_once_per_day():
         return third == 5 and actual.petal == 10
     finally:
         await StoredData.filter(stored_key=f"{store_key}").delete()
+
+
+async def _test_sign_survives_core_offset_change():
+    from core.database.models import StoredData
+    from core.utils.petal import sign_get_petal
+
+    await TestDataFactory.ensure_sender(petal=0)
+    msg = MockMessageSession("~test")
+    await msg.async_init("~test")
+    union_id = msg.session_info.sender_union_id
+
+    async def _clear_quota():
+        stored = await StoredData.get_or_none(stored_key="Union|signedpetal")
+        if not stored:
+            return
+        quota = dict(stored.value[0])
+        quota.pop(union_id, None)
+        stored.value = [quota]
+        await stored.save(update_fields=["value"])
+
+    await _clear_quota()
+    try:
+        with mock_config(
+            CoreConfig,
+            enable_petal=True,
+            petal_sign_min=5,
+            petal_sign_max=5,
+            petal_sign_rate=1.0,
+            timezone_offset="+8",
+        ):
+            first = await sign_get_petal(msg)
+        with mock_config(
+            CoreConfig,
+            enable_petal=True,
+            petal_sign_min=5,
+            petal_sign_max=5,
+            petal_sign_rate=1.0,
+            timezone_offset="+14",
+        ):
+            second = await sign_get_petal(msg)
+        # 改动核心时区不能改变已经写入的绝对到期时刻，因此不能重复签到。
+        return first == 5 and second == 0
+    finally:
+        await _clear_quota()
 
 
 async def _test_petal_reset_runs_once_per_cycle():
@@ -92,7 +137,7 @@ async def _test_petal_reset_runs_once_per_cycle():
             second = await reset_petals_if_due()
             # 模拟停机跨过周期边界：标记停留在过去的周期时补结算一次。
             stored = await StoredData.get(stored_key=PETAL_CYCLE_STORE_KEY)
-            stored.value = [(datetime.now().astimezone() - timedelta(days=1)).isoformat()]
+            stored.value = [(core_now() - timedelta(days=1)).isoformat()]
             await stored.save(update_fields=["value"])
             third = await reset_petals_if_due()
 
@@ -108,6 +153,7 @@ async def test_petal(tester: Tester):
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
     await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
     await tester.test(_test_sign_petal_once_per_day, "签到每日仅一次且跨日重置测试")
+    await tester.test(_test_sign_survives_core_offset_change, "核心时区变更不影响已写入的签到到期时刻")
     await tester.test(_test_petal_reset_runs_once_per_cycle, "花瓣周期结算每周期仅一次测试")
 
     return tester

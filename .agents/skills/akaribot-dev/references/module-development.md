@@ -50,6 +50,16 @@ status, reload_count = await ModulesManager.reload_module("module_name")
 
 直接编辑 `config/*.toml` 即可，**不需要任何重载命令**：配置读取会触发 `CFGManager.watch()`；它按短时间间隔扫描 mtime，发现变动就自动 `load()`，因此修改可能延迟至多一个 watch 间隔生效。
 
+### 获取当前时间 / 时区
+
+不要在模块中直接导入 `datetime.datetime` 或调用 `datetime.now()`、`date.today()`、`time.localtime()` 获取时间，这些写法会跟随宿主服务器时区。按用途选择入口：
+
+- **核心默认时区**（全局配置、定时任务、跨场景数据）：`from core.utils.timezone import core_now, core_today, core_tz`
+- **场景业务时区**（命令中的“今天/本周”等会影响业务判定的时间）：`msg.session_info.now()`、`msg.session_info.today()`、`msg.session_info.tz`
+- **用户展示时区**：`msg.format_time(...)` 或 `FormattedTime(...)`；它们只影响渲染，不参与业务判定
+
+需要自己解析或格式化偏移时使用 `core.utils.func.parse_offset` / `format_offset`。业务记录保存绝对时刻；场景或用户时区变化只能影响之后的边界，不能改变已写入的到期时间。
+
 ---
 
 

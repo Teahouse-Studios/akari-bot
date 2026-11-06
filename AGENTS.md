@@ -152,6 +152,7 @@ Tortoise ORM，**双连接**：`default`（可配 MySQL）+ `local`（本地 SQL
 - Ruff：行宽 120、双引号，忽略 E402/F405/F403/E741/E721。
 - 中文排版：中英文之间加空格、全角标点、称呼用户用“你”、机器人自称用“机器人”而非“我”、第三人称用“它”。
 - 默认命令前缀 `~` / `～`。
+- **获取时间统一走 `core.utils.timezone` 或 `SessionInfo.now()` / `today()`**，不要在业务代码中直接使用 `datetime.datetime.now()`、`date.today()`、`time.localtime()`；用户展示用 `msg.format_time()` / `FormattedTime`。
 
 ## 陷阱
 

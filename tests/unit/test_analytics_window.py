@@ -5,14 +5,14 @@ from datetime import timedelta
 
 from core.database.models import AnalyticsData
 from core.tester import func_case, Tester
-from modules.core.su_tools.analytics import local_midnight
+from core.utils.timezone import core_midnight
 
 
 async def _test_window_emits_no_naive_warning():
     try:
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
-            old = local_midnight()
+            old = core_midnight()
             await AnalyticsData.get_count_by_times(old + timedelta(days=1), old)
         # 不带时区的时间会被 Tortoise 当作 UTC，除了刷警告还会让窗口整体偏移一个时区差。
         return not [w for w in caught if "naive datetime" in str(w.message)]
@@ -24,7 +24,7 @@ async def _test_window_emits_no_naive_warning():
 async def _test_window_counts_today_only():
     marker = "analytics_window_probe"
     try:
-        old = local_midnight()
+        old = core_midnight()
         new = old + timedelta(days=1)
         before = await AnalyticsData.get_count_by_times(new, old, marker)
 

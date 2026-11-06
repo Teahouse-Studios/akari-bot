@@ -6,6 +6,7 @@ from string import Template
 import yaml
 
 from core.constants.path import module_data_path
+from core.utils.timezone import core_now, core_tz
 from .config import AiConfig
 
 ai_module_path = Path(__file__).parent
@@ -126,9 +127,11 @@ def get_llm_billing(llm: dict, context_tokens: int = 0, now: datetime | None = N
                         prices[price_name] = safe_price(tier[config_name])
 
     if billing_type != "per_call" and use_time_rules:
-        current = now or datetime.now()
-        if current.tzinfo is not None:
-            current = current.astimezone()
+        current = now or core_now()
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=core_tz())
+        else:
+            current = current.astimezone(core_tz())
         current_time = current.time()
         for rule in time_rules:
             if not isinstance(rule, dict) or not isinstance(rule.get("time_range"), str):

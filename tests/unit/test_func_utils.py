@@ -14,7 +14,7 @@ from core.utils.func import (
     camel_to_snake,
     snake_to_camel,
     truncate_text,
-    parse_time_string,
+    parse_offset,
     generate_progress_bar,
 )
 
@@ -119,14 +119,14 @@ def _test_truncate_text():
     )
 
 
-def _test_parse_time_string():
+def _test_parse_offset():
     return (
-        parse_time_string("+8:00") == timedelta(hours=8)
-        and parse_time_string("-5:30") == timedelta(hours=-5, minutes=-30)
-        and parse_time_string("+0:00") == timedelta()
-        and parse_time_string("8:00") == timedelta(hours=8)
-        and parse_time_string("+9") == timedelta(hours=9)
-        and parse_time_string("invalid") == timedelta()
+        parse_offset("+8:00") == timedelta(hours=8)
+        and parse_offset("-5:30") == timedelta(hours=-5, minutes=-30)
+        and parse_offset("+0:00") == timedelta()
+        and parse_offset("8:00") == timedelta(hours=8)
+        and parse_offset("+9") == timedelta(hours=9)
+        and parse_offset("invalid") == timedelta()
     )
 
 
@@ -158,6 +158,6 @@ async def test_func_utils(tester: Tester):
     await tester.test(_test_flatten_dict, "flatten_dict 测试")
     await tester.test(_test_case_conversion, "camel_to_snake/snake_to_camel 测试")
     await tester.test(_test_truncate_text, "truncate_text 测试")
-    await tester.test(_test_parse_time_string, "parse_time_string 测试")
+    await tester.test(_test_parse_offset, "parse_offset 测试")
     await tester.test(_test_generate_progress_bar, "generate_progress_bar 测试")
     return tester

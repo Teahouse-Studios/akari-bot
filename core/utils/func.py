@@ -195,26 +195,52 @@ def truncate_text(text: str, length: int, suffix: str = "...") -> str:
     return text
 
 
-def parse_time_string(text: str) -> timedelta:
-    """将 UTC 偏移量字符串转为 timedelta。"""
-    try:
-        negative = False
-        if text[0] == "+":
-            text = text[1:]
-        elif text[0] == "-":
-            negative = True
-            text = text[1:]
-        tstr_split = text.split(":")
-        hour = int(tstr_split[0])
-        minute = 0
-        if len(tstr_split) == 2:
-            minute = int(tstr_split[1])
-        if negative:
-            hour = -hour
-            minute = -minute
-        return timedelta(hours=hour, minutes=minute)
-    except Exception:
-        return timedelta()
+def parse_offset(value: Any, fallback: bool = False) -> timedelta | None:
+    """解析 UTC 偏移量。"""
+    invalid = timedelta() if fallback else None
+    if isinstance(value, timedelta):
+        total_seconds = value.total_seconds()
+    elif isinstance(value, bool):
+        return invalid
+    elif isinstance(value, int):
+        total_seconds = value * 3600
+    elif isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return invalid
+        sign = 1
+        if text[0] in "+-":
+            if text[0] == "-":
+                sign = -1
+            text = text[1:].strip()
+        if not text:
+            return invalid
+        parts = text.split(":")
+        if len(parts) > 2:
+            return invalid
+        try:
+            hours = int(parts[0])
+            minutes = int(parts[1]) if len(parts) == 2 else 0
+        except ValueError:
+            return invalid
+        if hours < 0 or minutes < 0 or minutes >= 60:
+            return invalid
+        total_seconds = sign * (hours * 3600 + minutes * 60)
+    else:
+        return invalid
+    if total_seconds % 60:
+        return invalid
+    if not -12 * 3600 <= total_seconds <= 14 * 3600:
+        return invalid
+    return timedelta(seconds=total_seconds)
+
+
+def format_offset(offset: timedelta) -> str:
+    """将 UTC 偏移量格式化为 ``+8``、``+5:30`` 或 ``-3``。"""
+    total_minutes = int(offset.total_seconds() // 60)
+    sign = "+" if total_minutes >= 0 else "-"
+    hours, minutes = divmod(abs(total_minutes), 60)
+    return f"{sign}{hours}:{minutes:02d}" if minutes else f"{sign}{hours}"
 
 
 def generate_progress_bar(

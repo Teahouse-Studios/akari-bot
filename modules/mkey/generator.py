@@ -20,7 +20,6 @@
 from __future__ import print_function
 
 import struct
-from datetime import date
 from pathlib import Path
 
 from Crypto.Cipher import AES
@@ -30,6 +29,7 @@ from Crypto.Util.number import bytes_to_long
 from Crypto.Util.strxor import strxor
 
 from core.utils.func import is_int
+from core.utils.timezone import core_today
 
 
 class MkeyGenerator:
@@ -433,10 +433,10 @@ class MkeyGenerator:
         if not is_int(inquiry):
             raise ValueError("Inquiry string must represent a decimal number.")
 
-        if not month:
-            month = date.today().month
-        if not day:
-            day = date.today().day
+        if not month or not day:
+            today = core_today()
+            month = month or today.month
+            day = day or today.day
 
         if month < 1 or month > 12:
             raise ValueError("Month must be between 1 and 12.")

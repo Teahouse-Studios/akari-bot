@@ -1010,13 +1010,11 @@ class MessageSession:
                 ftime_template.append(self.session_info.locale.t("time.time.format"))
             else:
                 ftime_template.append(self.session_info.locale.t("time.time.nosec.format"))
+        tz_label = self.session_info.display_tz_label
         if timezone:
-            if self.session_info._tz_offset == "+0":
-                ftime_template.append("(UTC)")
-            else:
-                ftime_template.append(f"(UTC{self.session_info._tz_offset})")
+            ftime_template.append("(UTC)" if tz_label == "+0" else f"(UTC{tz_label})")
         return safe_strftime(
-            datetime.fromtimestamp(timestamp, UTC) + self.session_info.timezone_offset,
+            datetime.fromtimestamp(timestamp, UTC).astimezone(self.session_info.display_tz),
             " ".join(ftime_template),
         )
 

@@ -1,6 +1,6 @@
 import asyncio
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 import orjson
@@ -24,6 +24,10 @@ from core.utils.image import get_fontsize
 ctd_assets_path = Path(__file__).parent / "assets"
 nunito_light_path = ctd_assets_path / "Nunito Light.ttf"
 nunito_regular_path = ctd_assets_path / "Nunito Regular.ttf"
+
+
+def _parse_record_time(value: str) -> datetime:
+    return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=UTC)
 
 
 async def get_rating(msg: Bot.MessageSession, uid, query_type):
@@ -96,9 +100,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
         if query_type == "recentRecords":
             nowtime = time.time()
             best_records = [
-                x
-                for x in best_records
-                if (nowtime - datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ").timestamp()) <= 60 * 24 * 60 * 60
+                x for x in best_records if (nowtime - _parse_record_time(x["date"]).timestamp()) <= 60 * 24 * 60 * 60
             ]
         rank = 0
         resources = []
@@ -113,12 +115,7 @@ async def get_rating(msg: Bot.MessageSession, uid, query_type):
             acc = x["accuracy"]
             rt = x["rating"]
             details = x["details"]
-            _date = datetime.strptime(x["date"], "%Y-%m-%dT%H:%M:%S.%fZ")
-            local_time = _date + msg.session_info.timezone_offset
-            playtime = local_time.timestamp()
-            nowtime = time.time()
-            playtime = playtime - nowtime
-            playtime = -playtime
+            playtime = time.time() - _parse_record_time(x["date"]).timestamp()
             t = playtime / 60 / 60 / 24
             dw = "d"
             if t < 1:
