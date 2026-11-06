@@ -55,8 +55,8 @@ async def ask_llm(
 ) -> tuple[list, int, int, int, int, list, Decimal]:
     client = build_endpoint(endpoint, api_url, api_key, model_name, generation)
 
-    tz_label = session.session_info.tz_label
-    now_tz = datetime.now(session.session_info.tz)
+    tz_label = session.session_info.display_tz_label
+    now_tz = datetime.now(session.session_info.display_tz)
     fmt_now = now_tz.strftime("%Y-%m-%d %H:%M:%S %A") + (f"(UTC{tz_label})" if tz_label != "+0" else "(UTC)")
 
     session_locale = session.session_info.locale

@@ -16,10 +16,31 @@ from core.utils.timezone import core_now, core_tz
 
 # 花瓣余额挂在 union 上，日额度也须随之跨平台共享，因此存储不再按客户端分桶，
 # 桶内亦按 union 而非平台账号索引；否则一个人绑几个平台就能领几倍的每日上限。
-# 花瓣属于用户而非场景，不涉及消息通道维度。
+# 每日周期按触发场景的时区计算，记录内保存周期偏移，跨场景共用同一条记录。
 PETAL_STORE_SCOPE = "Union"
 PETAL_CYCLE_STORE_KEY = f"{PETAL_STORE_SCOPE}|petalcycle"
 _petal_mutation_lock = asyncio.Lock()
+
+
+def _next_local_midnight(now: datetime) -> datetime:
+    return datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
+
+
+def _cycle_record(quota: dict, union_id: str, now: datetime, offset_label: str) -> dict:
+    record = quota.get(union_id)
+    if isinstance(record, dict) and now.timestamp() < record.get("expired", 0):
+        return record
+    previous_offset = record.get("offset") if isinstance(record, dict) else offset_label
+    # 场景时区变更后的首个周期按 24 小时滚动，避免改时区提前刷新。
+    expired = now + timedelta(days=1) if previous_offset != offset_label else _next_local_midnight(now)
+    record = {
+        "time": now.timestamp(),
+        "expired": expired.timestamp(),
+        "amount": 0,
+        "offset": offset_label,
+    }
+    quota[union_id] = record
+    return record
 
 
 async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement | None:
@@ -51,12 +72,7 @@ async def gained_petal(msg: Bot.MessageSession, amount: int) -> I18NContextEleme
                     .first()
                 )
                 quota = dict((stored.value if stored else [{}])[0])
-                now = core_now()
-                expired = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
-                record = quota.get(union_id)
-                if not record or now.timestamp() > record["expired"]:
-                    record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
-                    quota[union_id] = record
+                record = _cycle_record(quota, union_id, msg.session_info.now(), msg.session_info.tz_label)
                 changed = min(amount, max(0, limit - record["amount"])) if limit > 0 else amount
                 if changed:
                     record["amount"] += changed
@@ -110,12 +126,7 @@ async def lost_petal(msg: Bot.MessageSession, amount: int) -> I18NContextElement
                     .first()
                 )
                 quota = dict((stored.value if stored else [{}])[0])
-                now = core_now()
-                expired = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
-                record = quota.get(union_id)
-                if not record or now.timestamp() > record["expired"]:
-                    record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
-                    quota[union_id] = record
+                record = _cycle_record(quota, union_id, msg.session_info.now(), msg.session_info.tz_label)
                 changed = min(amount, max(0, limit - record["amount"])) if limit > 0 else amount
                 if changed:
                     record["amount"] += changed
@@ -198,12 +209,7 @@ async def sign_get_petal(msg: Bot.MessageSession) -> int | None:
                     .first()
                 )
                 quota = dict((stored.value if stored else [{}])[0])
-                now = core_now()
-                expired = datetime.combine(now.date() + timedelta(days=1), datetime.min.time(), tzinfo=now.tzinfo)
-                record = quota.get(union_id)
-                if not record or now.timestamp() > record["expired"]:
-                    record = {"time": now.timestamp(), "expired": expired.timestamp(), "amount": 0}
-                    quota[union_id] = record
+                record = _cycle_record(quota, union_id, msg.session_info.now(), msg.session_info.tz_label)
                 if record["amount"]:
                     # 今日已签到，返回 0 由上层提示“明日再试”。
                     return 0

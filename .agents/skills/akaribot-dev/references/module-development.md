@@ -58,7 +58,7 @@ status, reload_count = await ModulesManager.reload_module("module_name")
 - **场景业务时区**（命令中的“今天/本周”等会影响业务判定的时间）：`msg.session_info.now()`、`msg.session_info.today()`、`msg.session_info.tz`
 - **用户展示时区**：`msg.format_time(...)` 或 `FormattedTime(...)`；它们只影响渲染，不参与业务判定
 
-需要自己解析或格式化偏移时使用 `core.utils.func.parse_offset` / `format_offset`。业务记录保存绝对时刻；场景或用户时区变化只能影响之后的边界，不能改变已写入的到期时间。
+需要自己解析或格式化偏移时使用 `core.utils.func.parse_offset` / `format_offset`。
 
 ---
 

@@ -1,12 +1,39 @@
 """core.utils.petal 单元测试 - 花瓣系统（需要数据库/配置）。"""
 
-from datetime import timedelta
+import time
+from datetime import datetime, timedelta
 
 from core.config.base import CoreConfig
 from core.tester import func_case, Tester, mock_config
-from core.utils.timezone import core_now
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession
+from core.utils.timezone import core_now
+
+
+async def _set_scene_offset(msg: MockMessageSession, offset: str) -> None:
+    await msg.session_info.target_union_info.edit_target_data("timezone_offset", offset)
+    await msg.session_info.refresh_info()
+
+
+async def _delete_store(store_key: str) -> None:
+    from core.database.models import StoredData
+
+    await StoredData.filter(stored_key=store_key).delete()
+
+
+async def _other_scene_session(msg: MockMessageSession, target_id: str, offset: str):
+    from core.builtins.session.info import SessionInfo
+    from core.builtins.session.internal import MessageSession
+
+    session_info = await SessionInfo.assign(
+        target_id=target_id,
+        target_from="TEST|Console",
+        client_name="TEST",
+        sender_id=msg.session_info.sender_id,
+    )
+    await session_info.target_union_info.edit_target_data("timezone_offset", offset)
+    await session_info.refresh_info()
+    return MessageSession(session_info=session_info)
 
 
 async def _test_cost_petal_insufficient_with_mock():
@@ -80,48 +107,123 @@ async def _test_sign_petal_once_per_day():
         await StoredData.filter(stored_key=f"{store_key}").delete()
 
 
-async def _test_sign_survives_core_offset_change():
+async def _test_sign_is_shared_across_scenes():
+    from core.utils.petal import sign_get_petal
+
+    await TestDataFactory.ensure_sender(petal=0)
+    msg = MockMessageSession("~test")
+    await msg.async_init("~test")
+    await _delete_store("Union|signedpetal")
+    try:
+        with mock_config(CoreConfig, enable_petal=True, petal_sign_min=5, petal_sign_max=5, petal_sign_rate=1.0):
+            await _set_scene_offset(msg, "+8")
+            first = await sign_get_petal(msg)
+            other = await _other_scene_session(msg, "TEST|Console|petal_scene_b", "+14")
+            second = await sign_get_petal(other)
+        # 同一用户在不同场景共用签到记录，不能因场景时区不同重复签到。
+        return first == 5 and second == 0
+    finally:
+        await _delete_store("Union|signedpetal")
+
+
+async def _test_sign_scene_offset_change_rolls():
     from core.database.models import StoredData
     from core.utils.petal import sign_get_petal
 
     await TestDataFactory.ensure_sender(petal=0)
     msg = MockMessageSession("~test")
     await msg.async_init("~test")
-    union_id = msg.session_info.sender_union_id
+    await _delete_store("Union|signedpetal")
+    try:
+        with mock_config(CoreConfig, enable_petal=True, petal_sign_min=5, petal_sign_max=5, petal_sign_rate=1.0):
+            await _set_scene_offset(msg, "+8")
+            first = await sign_get_petal(msg)
+            await _set_scene_offset(msg, "+14")
+            second = await sign_get_petal(msg)
 
-    async def _clear_quota():
-        stored = await StoredData.get_or_none(stored_key="Union|signedpetal")
-        if not stored:
-            return
-        quota = dict(stored.value[0])
-        quota.pop(union_id, None)
-        stored.value = [quota]
-        await stored.save(update_fields=["value"])
+            stored = await StoredData.get(stored_key="Union|signedpetal")
+            quota = dict(stored.value[0])
+            quota[msg.session_info.sender_union_id]["expired"] = 0
+            stored.value = [quota]
+            await stored.save(update_fields=["value"])
+            third = await sign_get_petal(msg)
 
-    await _clear_quota()
+            stored = await StoredData.get(stored_key="Union|signedpetal")
+            record = dict(stored.value[0])[msg.session_info.sender_union_id]
+            rolled = 86000 < record["expired"] - time.time() <= 86500
+            moved = record["offset"] == "+14"
+
+            quota = dict(stored.value[0])
+            quota[msg.session_info.sender_union_id]["expired"] = 0
+            stored.value = [quota]
+            await stored.save(update_fields=["value"])
+            fourth = await sign_get_petal(msg)
+
+            stored = await StoredData.get(stored_key="Union|signedpetal")
+            stable_record = dict(stored.value[0])[msg.session_info.sender_union_id]
+            stable_expiry = datetime.fromtimestamp(stable_record["expired"], tz=msg.session_info.tz)
+            stable = (stable_expiry.hour, stable_expiry.minute, stable_expiry.second) == (0, 0, 0)
+
+            quota = dict(stored.value[0])
+            quota[msg.session_info.sender_union_id].pop("offset", None)
+            quota[msg.session_info.sender_union_id]["expired"] = 0
+            stored.value = [quota]
+            await stored.save(update_fields=["value"])
+            fifth = await sign_get_petal(msg)
+
+            stored = await StoredData.get(stored_key="Union|signedpetal")
+            legacy_record = dict(stored.value[0])[msg.session_info.sender_union_id]
+            legacy_rolled = 86000 < legacy_record["expired"] - time.time() <= 86500
+
+        return (
+            first == 5
+            and second == 0
+            and third == 5
+            and fourth == 5
+            and fifth == 5
+            and rolled
+            and moved
+            and stable
+            and legacy_rolled
+        )
+    finally:
+        await _delete_store("Union|signedpetal")
+
+
+async def _test_gained_lost_limits_follow_scene_offset():
+    from core.database.models import StoredData
+    from core.utils.petal import gained_petal, lost_petal
+
+    await TestDataFactory.ensure_sender(petal=10)
+    msg = MockMessageSession("~test")
+    await msg.async_init("~test")
+    keys = ("Union|gainedpetal", "Union|lostpetal")
+    for key in keys:
+        await _delete_store(key)
     try:
         with mock_config(
             CoreConfig,
             enable_petal=True,
-            petal_sign_min=5,
-            petal_sign_max=5,
-            petal_sign_rate=1.0,
-            timezone_offset="+8",
+            enable_get_petal=True,
+            petal_gained_limit=5,
+            petal_lost_limit=5,
         ):
-            first = await sign_get_petal(msg)
-        with mock_config(
-            CoreConfig,
-            enable_petal=True,
-            petal_sign_min=5,
-            petal_sign_max=5,
-            petal_sign_rate=1.0,
-            timezone_offset="+14",
-        ):
-            second = await sign_get_petal(msg)
-        # 改动核心时区不能改变已经写入的绝对到期时刻，因此不能重复签到。
-        return first == 5 and second == 0
+            await _set_scene_offset(msg, "+5:30")
+            await gained_petal(msg, 1)
+            await lost_petal(msg, 1)
+
+        for key in keys:
+            stored = await StoredData.get(stored_key=key)
+            record = dict(stored.value[0])[msg.session_info.sender_union_id]
+            if record["offset"] != "+5:30":
+                return False
+            expiry = datetime.fromtimestamp(record["expired"], tz=msg.session_info.tz)
+            if (expiry.hour, expiry.minute, expiry.second) != (0, 0, 0):
+                return False
+        return True
     finally:
-        await _clear_quota()
+        for key in keys:
+            await _delete_store(key)
 
 
 async def _test_petal_reset_runs_once_per_cycle():
@@ -153,7 +255,9 @@ async def test_petal(tester: Tester):
     await tester.test(_test_cost_petal_insufficient_with_mock, "cost_petal 花瓣不足 Mock 测试")
     await tester.test(_test_petal_session_balance_stays_in_sync, "花瓣变更后会话余额同步测试")
     await tester.test(_test_sign_petal_once_per_day, "签到每日仅一次且跨日重置测试")
-    await tester.test(_test_sign_survives_core_offset_change, "核心时区变更不影响已写入的签到到期时刻")
+    await tester.test(_test_sign_is_shared_across_scenes, "签到记录跨场景共享")
+    await tester.test(_test_sign_scene_offset_change_rolls, "改场景时区后首个周期按 24 小时滚动")
+    await tester.test(_test_gained_lost_limits_follow_scene_offset, "获取与失去上限按场景时区刷新")
     await tester.test(_test_petal_reset_runs_once_per_cycle, "花瓣周期结算每周期仅一次测试")
 
     return tester
