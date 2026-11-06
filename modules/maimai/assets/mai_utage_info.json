@@ -852,6 +852,45 @@
     "title": "[協]エイリアンエイリアン",
     "type": "DX"
   },
+  "110781": {
+    "artist": "GYARI",
+    "bpm": 144,
+    "charts": [
+      {
+        "notes": [
+          642,
+          44,
+          41,
+          7,
+          49
+        ]
+      },
+      {
+        "notes": [
+          112,
+          58,
+          0,
+          184,
+          142
+        ]
+      }
+    ],
+    "comment": "さらに言うことを聞いてくれるアカネチャン",
+    "id": "110781",
+    "level": [
+      "13?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[協]Seyana. ～何でも言うことを聞いてくれるアカネチャン～",
+    "type": "DX"
+  },
   "110793": {
     "artist": "みきとP",
     "bpm": 150,
@@ -1589,6 +1628,35 @@
     "title": "[奏]さくゆいたいそう",
     "type": "DX"
   },
+  "111638": {
+    "artist": "南ノ南",
+    "bpm": 220,
+    "charts": [
+      {
+        "notes": [
+          866,
+          21,
+          277,
+          84,
+          49
+        ]
+      }
+    ],
+    "comment": "せかせかせかせかせかせかせかせかせかせか",
+    "id": "111638",
+    "level": [
+      "14?"
+    ],
+    "referrals_num": {
+      "mode": "normal",
+      "player": [
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[耐]星界ちゃんと可不ちゃんのおつかい合騒曲",
+    "type": "DX"
+  },
   "111714": {
     "artist": "ピノキオピー",
     "bpm": 140,
@@ -1791,6 +1859,45 @@
     },
     "release_ver_code": "maimai でらっくす PRiSM PLUS",
     "title": "[好]好きな惣菜発表ドラゴン",
+    "type": "DX"
+  },
+  "111859": {
+    "artist": "GYARI",
+    "bpm": 180,
+    "charts": [
+      {
+        "notes": [
+          544,
+          89,
+          77,
+          14,
+          24
+        ]
+      },
+      {
+        "notes": [
+          239,
+          40,
+          67,
+          235,
+          263
+        ]
+      }
+    ],
+    "comment": "花隈の歌は可愛いし小春六花はマジでうるさい",
+    "id": "111859",
+    "level": [
+      "13+?"
+    ],
+    "referrals_num": {
+      "mode": "buddy_normal",
+      "player": [
+        1,
+        1
+      ]
+    },
+    "release_ver_code": "maimai でらっくす PRiSM PLUS",
+    "title": "[騒]ありきたりな恋の歌",
     "type": "DX"
   },
   "120227": {
