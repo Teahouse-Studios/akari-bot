@@ -230,7 +230,7 @@ async def _test_card_element_uses_qqbot_card_payload() -> bool:
             title="Wiki",
             description="A page",
             url="https://example.com/wiki",
-            pic_url="https://example.com/wiki.png",
+            pic_url=__file__,
         )
     )
     for use_markdown in (False, True):
@@ -255,7 +255,7 @@ async def _test_card_element_uses_qqbot_card_payload() -> bool:
                             "title": "Wiki",
                             "description": "A page",
                             "url": "https://example.com/wiki",
-                            "pic_url": "https://example.com/wiki.png",
+                            "pic_url": "qqbot-media://image/v1/test",
                         },
                     },
                 },
@@ -298,6 +298,34 @@ async def _test_card_element_uses_qqbot_card_payload() -> bool:
     with patch.object(qqbot_context, "qq_use_markdown", False):
         result = await _send_with_client(session, client, MessageChain.assign(CardElement.assign(title="Card text")))
     return result == ["plain"] and client.calls == [("plain", {"content": "Card text", "message_reference": None})]
+
+
+async def _test_card_image_uses_material_reference() -> bool:
+    source_url = "https://example.com/wiki.png"
+    material_url = "qqbot-media://image/v1/card"
+    session = _make_session(target_group_prefix)
+    session.support_card = True
+    for source, uploaded_url in ((source_url, material_url), (source_url, None), (material_url, None)):
+        client = _CaptureSendClient(media_image_url=uploaded_url)
+        message = MessageChain.assign(
+            CardElement.assign(title="Wiki", description="A page", url="https://example.com/wiki", pic_url=source)
+        )
+        with (
+            patch.object(qqbot_context, "qq_use_markdown", False),
+            patch.object(ImageElement, "get", new=AsyncMock(return_value=__file__)),
+        ):
+            result = await _send_with_client(session, client, message)
+        assert result == ["plain"]
+        card = client.calls[0][1]["card"]
+        assert card["content"]["title"] == "Wiki" and card["content"]["description"] == "A page"
+        assert card["content"]["url"] == "https://example.com/wiki"
+        assert card["content"].get("pic_url") == (material_url if uploaded_url or source == material_url else None)
+        assert source_url not in str(card)
+        if source == source_url:
+            assert client.media_image_calls == [{"local_path": __file__}]
+        else:
+            assert not client.media_image_calls
+    return True
 
 
 async def _test_missing_media_keeps_remaining_text() -> bool:
@@ -661,6 +689,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_refused_delivery_is_silently_dropped, "平台拒绝投递时静默放弃剩余内容测试")
     await tester.test(_test_audio_video_are_sent_after_the_main_message, "音视频独立预上传并在主消息后发送测试")
     await tester.test(_test_card_element_uses_qqbot_card_payload, "卡片元素使用 QQBot 图文卡片载荷测试")
+    await tester.test(_test_card_image_uses_material_reference, "卡片图片上传为素材引用，上传失败保留文字内容")
     await tester.test(_test_missing_media_keeps_remaining_text, "媒体不可用时保留文本测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")

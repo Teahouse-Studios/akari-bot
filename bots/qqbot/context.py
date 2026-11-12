@@ -108,7 +108,7 @@ async def _upload_media(
     return {"file_info": file_info}
 
 
-async def _upload_markdown_image(client: botpy.Client, target: ReplyTarget, *, local_path: str) -> str | None:
+async def _upload_material_image(client: botpy.Client, target: ReplyTarget, *, local_path: str) -> str | None:
     if target.scope not in ("group", "c2c"):
         return None
 
@@ -691,6 +691,24 @@ class QQBotContextManager(ContextManager):
         async def empty_send() -> list[str]:
             return []
 
+        async def prepare_card(element: CardElement) -> dict:
+            card = element.to_card()
+            if not element.pic_url or element.pic_url.startswith("qqbot-media://"):
+                return card
+            card["content"].pop("pic_url", None)
+            image_path = await _resolve_qqbot_image(Image(element.pic_url))
+            if image_path is not None:
+                try:
+                    image_url = await _upload_material_image(client, target, local_path=image_path)
+                    if image_url:
+                        card["content"]["pic_url"] = image_url
+                except Exception:
+                    Logger.exception(
+                        f"Failed to upload a QQBot card image for {session_info.session_id}; "
+                        "the remaining card will still be sent: "
+                    )
+            return card
+
         async def send_cards(cards: list[dict], msg_ids: list[str]) -> None:
             for card in cards:
                 try:
@@ -772,7 +790,7 @@ class QQBotContextManager(ContextManager):
                 elif isinstance(x, (AudioElement, VideoElement)):
                     media.append(x)
                 elif isinstance(x, CardElement):
-                    cards.append(x.to_card())
+                    cards.append(await prepare_card(x))
                 elif isinstance(x, MentionElement):
                     if (
                         x.client == client_name
@@ -932,7 +950,7 @@ class QQBotContextManager(ContextManager):
                     if image_path is not None:
                         try:
                             try:
-                                markdown_url = await _upload_markdown_image(client, target, local_path=image_path)
+                                markdown_url = await _upload_material_image(client, target, local_path=image_path)
                             except Exception:
                                 markdown_url = None
                                 Logger.exception(
@@ -966,7 +984,7 @@ class QQBotContextManager(ContextManager):
                     media.append(x)
                     inline_pending = False
                 elif isinstance(x, CardElement):
-                    cards.append(x.to_card())
+                    cards.append(await prepare_card(x))
                     inline_pending = False
                 elif isinstance(x, MentionElement):
                     if (

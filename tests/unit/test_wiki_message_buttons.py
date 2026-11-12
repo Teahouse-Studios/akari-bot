@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ButtonFrameElement, CardElement, I18NContextElement, URLElement
+from core.builtins.message.elements import ButtonFrameElement, CardElement, I18NContextElement, ImageElement, URLElement
 from core.builtins.parser.command import CommandParser
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
@@ -81,6 +81,7 @@ async def _run_query(
             "modules.wiki.wiki._render_preview_items",
             new=render_preview or AsyncMock(return_value=MessageChain.assign("rendered preview")),
         ),
+        patch("modules.wiki.wiki.generate_screenshot", new=AsyncMock(return_value=["/tmp/wiki-preview.png"])),
         patch("modules.wiki.wiki._start_background_with_release", new=_run_background),
         patch.object(MessageSession, "hold", new=AsyncMock()),
         patch.object(MessageSession, "release", new=AsyncMock()),
@@ -185,7 +186,7 @@ async def _test_multiple_redirects_build_choice_rows():
     ]
 
 
-async def _test_found_page_keeps_render_buttons():
+async def _test_found_page_uses_compatible_preview_mode():
     page = PageInfo(
         info=WikiInfo(api=API, realurl=ARTICLE, is_allowed=True),
         title="示例页面",
@@ -194,8 +195,16 @@ async def _test_found_page_keeps_render_buttons():
         status=True,
         renderable=True,
     )
-    for style in ("text", "card"):
-        session_info = await _session_info(f"wiki-found-buttons-{style}")
+    for style, render_mode in (
+        ("text", "button"),
+        ("card", None),
+        ("card", "button"),
+        ("card", "auto"),
+        ("card", "off"),
+    ):
+        session_info = await _session_info(f"wiki-found-buttons-{style}-{render_mode}")
+        if render_mode is not None:
+            session_info.target_union_info.target_data["wiki_render_mode"] = render_mode
         if style == "card":
             session_info.client_name = "QQBot"
             session_info.support_card = True
@@ -204,22 +213,25 @@ async def _test_found_page_keeps_render_buttons():
         render_preview = AsyncMock(return_value=MessageChain.assign("rendered preview"))
         sent, waits = await _run_query(page, session, render_preview)
 
-        assert len(sent) == 1 and not waits and render_preview.await_count == 1
+        assert not waits
         frames = [element for element in sent[0] if isinstance(element, ButtonFrameElement)]
         urls = [element.url for element in sent[0] if isinstance(element, URLElement)]
         cards = [element for element in sent[0] if isinstance(element, CardElement)]
         if style == "card":
             assert len(cards) == 1 and cards[0].url == ARTICLE and not urls
+            assert not any(MessageChain.assign(chain).contains(ButtonFrameElement) for chain in sent)
+            if render_mode == "off":
+                assert len(sent) == 1
+            else:
+                assert len(sent) == 2 and MessageChain.assign(sent[1]).contains(ImageElement)
         else:
             assert urls == [ARTICLE] and not cards
-        assert render_preview.await_args.args[1][0]["link"] == ARTICLE
-        assert render_preview.await_args.args[1][0]["wiki_info"] is page.info
-        assert render_preview.await_args.args[1][0]["title"] == page.title
-        buttons = [(button.show, button.value) for frame in frames for row in frame.rows for button in row.buttons]
-        assert buttons == [
-            (Locale("zh_cn").t("wiki.message.render.action.button"), "wiki_render_preview"),
-            (Locale("zh_cn").t("wiki.message.render.action.delete"), "wiki_render_delete"),
-        ]
+            assert len(sent) == 1 and render_preview.await_count == 1
+            buttons = [(button.show, button.value) for frame in frames for row in frame.rows for button in row.buttons]
+            assert buttons == [
+                (Locale("zh_cn").t("wiki.message.render.action.button"), "wiki_render_preview"),
+                (Locale("zh_cn").t("wiki.message.render.action.delete"), "wiki_render_delete"),
+            ]
     return True
 
 
@@ -230,6 +242,7 @@ async def _test_style_command_persists_and_rejects_invalid_modes():
             target_from="QQBot|Group",
             client_name="QQBot",
             sender_id="QQBot|wiki-style-admin",
+            features=Features(support_button=True, support_card=True),
         )
     )
     module = ModulesManager.return_modules_list()["wiki"]
@@ -255,6 +268,9 @@ async def _test_style_command_persists_and_rejects_invalid_modes():
             saved = await TargetUnionInfo.get(union_id=session.session_info.target_union_id)
             assert saved.target_data["wiki_message_style"] == expected
             assert any(isinstance(item, I18NContextElement) and item.key == message_key for item in sent[-1])
+            if expected == "card":
+                text = sent[-1].as_sendable(session.session_info).to_str()
+                assert "不支持按钮" in text and "auto" in text
     return True
 
 
@@ -297,7 +313,9 @@ async def test_wiki_message_buttons(tester: Tester):
     await tester.test(_test_not_found_sends_no_button_only_message, "多个候选时不发出空按钮消息")
     await tester.test(_test_single_suggestion_sends_no_button_only_message, "单个候选时不发出空按钮消息")
     await tester.test(_test_multiple_redirects_build_choice_rows, "多个重定向候选时构造按钮行")
-    await tester.test(_test_found_page_keeps_render_buttons, "正常页面照常挂渲染按钮")
+    await tester.test(
+        _test_found_page_uses_compatible_preview_mode, "卡片样式自动发送预览且保留关闭设置，文字样式支持按钮"
+    )
     await tester.test(_test_style_command_persists_and_rejects_invalid_modes, "Wiki 样式设置持久化且拒绝非法参数")
     await tester.test(_test_style_command_visibility_matches_card_support, "Wiki 样式命令仅在支持卡片的 QQBot 场景显示")
 

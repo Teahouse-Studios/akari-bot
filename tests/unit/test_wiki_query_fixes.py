@@ -308,8 +308,9 @@ async def _test_url_target_keeps_revision_and_fragment():
 
 
 async def _test_url_render_modes():
-    for mode in ("off", "button", "auto"):
-        session = _session(mode, buttons=True)
+    for mode, style in (("off", "text"), ("button", "text"), ("auto", "text"), ("button", "card")):
+        session = _session(mode, buttons=True, style=style, client_name="QQBot" if style == "card" else "TEST")
+        session.session_info.support_card = style == "card"
         session.matched_msg = [ARTICLE.replace("$1", "Target") + "#Section"]
         page = PageInfo(
             info=_info(),
@@ -349,7 +350,7 @@ async def _test_url_render_modes():
             await _parse_wiki_urls(session)
             if mode == "off":
                 assert not sent and not auto_render.await_count and not button_render.await_count
-            elif mode == "button":
+            elif mode == "button" and style != "card":
                 assert len(sent) == 1 and not auto_render.await_count and not button_render.await_count
                 assert any(isinstance(item, ButtonFrameElement) for item in sent[0][0])
                 assert not any(isinstance(item, URLElement) for item in sent[0][0])
@@ -369,18 +370,23 @@ async def _test_url_render_modes():
             else:
                 assert len(sent) == 1 and auto_render.await_count == 1
                 assert auto_render.await_args.kwargs["section"] == "Section"
+                assert not sent[0][0].contains(ButtonFrameElement)
     return True
 
 
 async def _test_card_style_query_output():
     target = SimpleNamespace(api_link=API, interwikis={}, headers={}, prefix=None)
-    for style, client_name, support_card, allowed, expected_card in (
-        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, True),
-        (WIKI_MESSAGE_STYLE_TEXT, "QQBot", True, True, False),
-        ("invalid", "QQBot", True, True, False),
-        (WIKI_MESSAGE_STYLE_CARD, "TEST", False, True, False),
-        (WIKI_MESSAGE_STYLE_CARD, "QQBot", False, True, False),
-        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, False, False),
+    for style, client_name, support_card, allowed, description, talk_page, expected_card in (
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, "Card summary", False, True),
+        (WIKI_MESSAGE_STYLE_TEXT, "QQBot", True, True, "Card summary", False, False),
+        ("invalid", "QQBot", True, True, "Card summary", False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "TEST", False, True, "Card summary", False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", False, True, "Card summary", False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, False, "Card summary", False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, None, False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, "", False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, " \n\t", False, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, "Card summary", True, False),
     ):
         session = _session(style=style, client_name=client_name)
         session.session_info.support_card = support_card
@@ -388,7 +394,13 @@ async def _test_card_style_query_output():
         info = _info()
         info.is_allowed = allowed
         info.logo_url = "https://example.org/logo.png"
-        page = PageInfo(info=info, title="Target", link=ARTICLE.replace("$1", "Target"), desc="Card summary")
+        page = PageInfo(
+            info=info,
+            title="Target",
+            link=ARTICLE.replace("$1", "Target"),
+            desc=description,
+            is_talk_page=talk_page,
+        )
         sent = []
 
         async def finish(self, chain=None, **_kwargs):
@@ -411,11 +423,13 @@ async def _test_card_style_query_output():
         cards = [item for item in sent[0] if isinstance(item, CardElement)]
         if expected_card:
             assert len(cards) == 1
-            assert cards[0].title == "Target" and cards[0].description == "Card summary"
+            assert cards[0].title == "Target" and cards[0].description == description
             assert cards[0].url == page.link and cards[0].pic_url == info.logo_url
             assert not sent[0].contains(URLElement)
         else:
-            assert not cards and "Card summary" in sent[0].to_str()
+            assert not cards
+            if description and description.strip() and not talk_page:
+                assert description in sent[0].to_str()
             assert any(isinstance(item, URLElement) and item.original_url == page.link for item in sent[0])
 
     session = _session(style=WIKI_MESSAGE_STYLE_CARD, client_name="QQBot")
@@ -449,8 +463,8 @@ async def _test_card_style_query_output():
         ),
     ):
         await query_pages(session, "File:Audio")
-    assert sent[0].contains(CardElement) and sent[1].contains(AudioElement)
-    assert next(item for item in sent[0] if isinstance(item, CardElement)).pic_url != page.file
+    assert not sent[0].contains(CardElement) and sent[1].contains(AudioElement)
+    assert any(isinstance(item, URLElement) and item.original_url == page.link for item in sent[0])
     return True
 
 

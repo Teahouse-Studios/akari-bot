@@ -63,8 +63,15 @@ def _invocation(source=SOURCE):
     return TemplateInvocation(source, API, "Template:Infobox", 42, _info(), {})
 
 
-async def _query(*, allowed=True, title="Template:Infobox", mode="button", prefix=None, api=API, multiple=False):
+async def _query(
+    *, allowed=True, title="Template:Infobox", mode="button", prefix=None, api=API, multiple=False, style="text"
+):
     session = _session(render=mode)
+    if style == "card":
+        session.session_info.client_name = "QQBot"
+        session.session_info.support_card = True
+        session.session_info.support_button = False
+        session.session_info.target_union_info.target_data["wiki_message_style"] = style
     page = PageInfo(info=_info(api), title=title, id=42, link="https://example.org/wiki/" + title, status=True)
     sent = []
     target = SimpleNamespace(api_link=API, headers={}, prefix=prefix, interwikis={"other": api})
@@ -77,13 +84,19 @@ async def _query(*, allowed=True, title="Template:Infobox", mode="button", prefi
         sent.append((MessageChain.assign(chain), kwargs))
         return SimpleNamespace(message_id=["query"])
 
+    async def background(_session, factory, **_kwargs):
+        return await factory()
+
     with (
         patch.object(Bot.Info, "web_render_status", True),
         patch.object(WikiLib, "parse_page_info", new=AsyncMock(return_value=page)) as parse,
         patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target)),
         patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
         patch("modules.wiki.wiki.evaluate_url_policy", return_value=_policy(allowed)),
-        patch("modules.wiki.wiki._start_background_with_release", new=AsyncMock()) as preload,
+        patch(
+            "modules.wiki.wiki._start_background_with_release",
+            new=AsyncMock(side_effect=background if style == "card" else None),
+        ) as preload,
         patch.object(MessageSession, "hold", new=AsyncMock()),
         patch.object(MessageSession, "release", new=AsyncMock()),
         patch.object(MessageSession, "finish", new=finish),
@@ -137,6 +150,21 @@ async def _test_buttons_are_whitelisted_and_preloaded():
     assert parse.await_args.args == () and parse.await_args.kwargs["title"] == "Template:Infobox"
     _, _, background, _ = await _query(mode="auto", multiple=True)
     assert background.await_count == 1
+    for mode in ["button", "auto", "off"]:
+        with patch(
+            "modules.wiki.wiki.generate_template_preview", new=AsyncMock(return_value="/tmp/template-preview.png")
+        ) as render:
+            sent, buttons, _, _ = await _query(style="card", mode=mode)
+        assert not buttons
+        images = [element for chain, _ in sent for element in chain if isinstance(element, ImageElement)]
+        if mode == "off":
+            assert not images
+        else:
+            assert [image.path for image in images] == ["/tmp/template-preview.png"]
+            invocation = render.await_args.args[0]
+            assert invocation.source == SOURCE and invocation.title == "Template:Infobox"
+            assert render.await_args.kwargs["source"] == SOURCE
+            assert [item.source for item in render.await_args.kwargs["invocations"]] == [SOURCE]
     return True
 
 
@@ -689,7 +717,7 @@ async def _test_remote_shell_keeps_ancestors_and_rejects_other_origins():
 async def test_wiki_template_preview(tester: Tester):
     for function, note in [
         (_test_parameters, "保留重复、空值及嵌套参数，拒绝无效调用"),
-        (_test_buttons_are_whitelisted_and_preloaded, "白名单、命名空间、模式与站点路由控制按钮，消息发出后预载"),
+        (_test_buttons_are_whitelisted_and_preloaded, "文字样式预载按钮预览，卡片样式自动渲染完整参数且 off 停用"),
         (_test_expression_routing_keeps_complete_parameters, "表达式入口将完整参数传入页面查询，同名调用绑定第一条"),
         (_test_only_parameters_are_audited, "仅审核用户参数，审核缺配置、失败与无效结果拒绝预览"),
         (_test_document_preserves_effects_and_removes_input_scripts, "保留站点样式、图片及渲染模块，参数不能注入脚本"),

@@ -121,6 +121,8 @@ def _wiki_render_mode(session: Bot.MessageSession | QueryInfo) -> str:
         return WIKI_RENDER_MODE_AUTO
     target_union = session.session_info.target_union_info
     configured = (target_union.target_data or {}).get(WIKI_RENDER_MODE_KEY) if target_union else None
+    if _wiki_message_style(session) == WIKI_MESSAGE_STYLE_CARD and configured != WIKI_RENDER_MODE_OFF:
+        return WIKI_RENDER_MODE_AUTO
     if configured not in {WIKI_RENDER_MODE_BUTTON, WIKI_RENDER_MODE_AUTO, WIKI_RENDER_MODE_OFF}:
         return WIKI_RENDER_MODE_BUTTON if session.session_info.support_button else WIKI_RENDER_MODE_AUTO
     if configured == WIKI_RENDER_MODE_BUTTON and not session.session_info.support_button:
@@ -157,6 +159,21 @@ def _template_invocation(page, source, headers, language=None, *, allow_empty=Fa
     return TemplateInvocation(source, page.info.api, page.title, page.id, page.info, dict(headers), language)
 
 
+async def _render_template_preview_message(invocation, session, *, source=None, invocations=None):
+    try:
+        kwargs = {}
+        if source is not None:
+            kwargs["source"] = source
+        if invocations is not None:
+            kwargs["invocations"] = invocations
+        return Image(await generate_template_preview(invocation, session, **kwargs))
+    except TemplatePreviewError as error:
+        return I18NContext(error.key)
+    except Exception:
+        Logger.exception("Failed to render Wiki template preview: ")
+        return I18NContext("wiki.message.template_preview.unavailable")
+
+
 def _build_template_preview_callback(invocation, tracker, *, source=None, invocations=None, preload_session=None):
     created = time.monotonic()
     attempted = False
@@ -164,18 +181,7 @@ def _build_template_preview_callback(invocation, tracker, *, source=None, invoca
     start_lock = asyncio.Lock()
 
     async def prepare(session):
-        try:
-            kwargs = {}
-            if source is not None:
-                kwargs["source"] = source
-            if invocations is not None:
-                kwargs["invocations"] = invocations
-            return Image(await generate_template_preview(invocation, session, **kwargs))
-        except TemplatePreviewError as error:
-            return I18NContext(error.key)
-        except Exception:
-            Logger.exception("Failed to preload Wiki template preview: ")
-            return I18NContext("wiki.message.template_preview.unavailable")
+        return await _render_template_preview_message(invocation, session, source=source, invocations=invocations)
 
     async def preload(session=None):
         nonlocal task
@@ -951,7 +957,7 @@ async def _query_pages_impl(
                     template
                     and preview_enabled
                     and isinstance(session, Bot.MessageSession)
-                    and session.session_info.support_button
+                    and (session.session_info.support_button or message_style == WIKI_MESSAGE_STYLE_CARD)
                     and session.session_info.support_image
                     and Bot.Info.web_render_status
                     and render_mode != WIKI_RENDER_MODE_OFF
@@ -1054,7 +1060,7 @@ async def _query_pages_impl(
                             else:
                                 plain_slice.append(_format_page_desc(r.desc, session))
 
-                    if card_mode:
+                    if card_mode and card_description and card_description.strip():
                         plain_slice.append(
                             Card(
                                 title=display_title or r.title,
@@ -1345,12 +1351,13 @@ async def _query_pages_impl(
             and len(preview_invocations) == preview_page_count
             and len({item.api for item in preview_invocations}) == 1
         )
+        automatic_template_preview = preview_ready and message_style == WIKI_MESSAGE_STYLE_CARD
         if preview_ready:
             render_infobox_list.clear()
             render_section_list.clear()
             render_button_items.clear()
         has_message_content = bool(msg_list) or bool(render_button_items)
-        if preview_ready and has_message_content:
+        if preview_ready and has_message_content and not automatic_template_preview:
             preview_label = session.t("wiki.message.template_preview.button")
             msg_list.append(
                 ButtonFrame(
@@ -1424,6 +1431,7 @@ async def _query_pages_impl(
                     not dl_list,
                     not wait_list,
                     not wait_possible_list,
+                    not automatic_template_preview,
                 ]
             ):
                 try:
@@ -1501,6 +1509,13 @@ async def _query_pages_impl(
                     preview = await file_preview(f, session.session_info)
                     if preview:
                         await send_message(preview, quote=False)
+
+        async def template_preview():
+            if automatic_template_preview:
+                result = await _render_template_preview_message(
+                    preview_invocations[0], session, source=preview_source, invocations=preview_invocations
+                )
+                await send_message(result, quote=False)
 
         async def wait_confirm():
             if wait_msg_list and session.session_info.support_wait:
@@ -1601,7 +1616,7 @@ async def _query_pages_impl(
                     )
 
         async def _bgtask():
-            await _gather_background(image_and_audio(), wait_confirm(), infobox(), section())
+            await _gather_background(image_and_audio(), wait_confirm(), infobox(), section(), template_preview())
 
         await _start_background_with_release(session, _bgtask, name="wiki-query-background")
 
