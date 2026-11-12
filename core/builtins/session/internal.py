@@ -15,7 +15,7 @@ from deprecated import deprecated
 
 from core.builtins.filter import filter_badwords
 from core.builtins.message.chain import MessageChain, get_message_chain, Chainable, MessageNodes
-from core.builtins.message.internal import Button, I18NContext, I18NContextElement, PlainElement
+from core.builtins.message.internal import Button, CardElement, I18NContext, I18NContextElement, PlainElement
 from core.builtins.session.info import SessionInfo, FetchedSessionInfo
 from core.builtins.session.bot_state import BotState
 from core.builtins.session.lock import ExecutionLockList, ExecutionState
@@ -89,6 +89,10 @@ def _filter_message_chain_badwords(
     for element in chain.values:
         if isinstance(element, PlainElement):
             element.text = session_info.locale.t_str(filter_badwords(element.text))
+        elif isinstance(element, CardElement):
+            for attribute in ("title", "description"):
+                if text := getattr(element, attribute):
+                    setattr(element, attribute, session_info.locale.t_str(filter_badwords(text)))
     return chain
 
 

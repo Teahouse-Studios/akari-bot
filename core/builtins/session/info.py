@@ -169,6 +169,7 @@ class SessionInfo:
     support_video: bool = False
     support_mention: bool = False
     support_embed: bool = False
+    support_card: bool = False
     support_delete: bool = False
     support_manage: bool = False
     support_permission_group: bool = False

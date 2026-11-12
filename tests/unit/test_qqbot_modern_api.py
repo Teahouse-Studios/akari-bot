@@ -23,6 +23,8 @@ from bots.qqbot.info import (
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
     AudioElement,
+    ButtonElement,
+    CardElement,
     ImageElement,
     MarkdownElement,
     MentionElement,
@@ -215,6 +217,87 @@ async def _test_audio_video_are_sent_after_the_main_message() -> bool:
             {"msg_type": 7, "media": {"file_info": "uploaded-image"}},
         ]
     )
+
+
+async def _test_card_element_uses_qqbot_card_payload() -> bool:
+    class _CardCaptureClient(_CaptureSendClient):
+        async def send(self, target, **kwargs):
+            self.calls.append(kwargs)
+            return {"id": f"message-{len(self.calls)}"}
+
+    message = MessageChain.assign(
+        CardElement.assign(
+            title="Wiki",
+            description="A page",
+            url="https://example.com/wiki",
+            pic_url="https://example.com/wiki.png",
+        )
+    )
+    for use_markdown in (False, True):
+        session = _make_session(target_group_prefix)
+        session.support_card = True
+        session.support_markdown = use_markdown
+        client = _CaptureSendClient()
+        QQBotContextManager.context[session.session_id] = object()
+        try:
+            with patch.object(qqbot_context, "qq_use_markdown", use_markdown):
+                result = await _send_with_client(session, client, message)
+        finally:
+            QQBotContextManager.context.pop(session.session_id, None)
+        if result != ["plain"] or client.calls != [
+            (
+                "plain",
+                {
+                    "msg_type": qqbot_context.MessageType.CARD,
+                    "card": {
+                        "type": "tuwen",
+                        "content": {
+                            "title": "Wiki",
+                            "description": "A page",
+                            "url": "https://example.com/wiki",
+                            "pic_url": "https://example.com/wiki.png",
+                        },
+                    },
+                },
+            )
+        ]:
+            return False
+        for elements in (
+            [*message, CardElement.assign(title="Second")],
+            [MarkdownElement.assign("hello") if use_markdown else PlainElement.assign("hello"), *message],
+        ):
+            client = _PartialFailClient()
+            with patch.object(qqbot_context, "qq_use_markdown", use_markdown):
+                result = await _send_with_client(session, client, MessageChain.assign(elements))
+            if result != ["first"]:
+                return False
+
+    session.support_button = True
+    session.locale = Locale("zh_cn")
+    client = _CardCaptureClient()
+    with patch.object(qqbot_context, "qq_use_markdown", True):
+        result = await _send_with_client(
+            session,
+            client,
+            MessageChain.assign([*message, ButtonElement.assign("Open", "https://example.com")]),
+        )
+    payloads = client.calls
+    assert (
+        result == ["message-1", "message-2"]
+        and len(payloads) == 2
+        and "markdown" in payloads[0]
+        and payloads[0].get("keyboard") is not None
+        and "card" not in payloads[0]
+        and "card" in payloads[1]
+        and "markdown" not in payloads[1]
+        and "keyboard" not in payloads[1]
+    )
+    session = _make_session(target_guild_prefix)
+    session.support_card = True
+    client = _CaptureSendClient()
+    with patch.object(qqbot_context, "qq_use_markdown", False):
+        result = await _send_with_client(session, client, MessageChain.assign(CardElement.assign(title="Card text")))
+    return result == ["plain"] and client.calls == [("plain", {"content": "Card text", "message_reference": None})]
 
 
 async def _test_missing_media_keeps_remaining_text() -> bool:
@@ -577,6 +660,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_send_error_propagates_to_caller, "发送失败向调用方上抛测试")
     await tester.test(_test_refused_delivery_is_silently_dropped, "平台拒绝投递时静默放弃剩余内容测试")
     await tester.test(_test_audio_video_are_sent_after_the_main_message, "音视频独立预上传并在主消息后发送测试")
+    await tester.test(_test_card_element_uses_qqbot_card_payload, "卡片元素使用 QQBot 图文卡片载荷测试")
     await tester.test(_test_missing_media_keeps_remaining_text, "媒体不可用时保留文本测试")
     await tester.test(_test_group_mention_plain_message, "群聊普通消息 Mention 渲染测试")
     await tester.test(_test_group_mention_markdown_message, "群聊 Markdown Mention 渲染测试")

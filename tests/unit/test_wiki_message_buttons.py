@@ -1,17 +1,20 @@
-"""wiki 结果消息的按钮挂载测试 - 只挂按钮的空消息不应被发出。"""
+"""wiki 结果消息的交互与样式设置测试。"""
 
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import ButtonFrameElement, I18NContextElement, URLElement
+from core.builtins.message.elements import ButtonFrameElement, CardElement, I18NContextElement, URLElement
+from core.builtins.parser.command import CommandParser
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import confirm_command
-from core.constants.exceptions import SessionFinished
+from core.constants.exceptions import InvalidCommandFormatError, SessionFinished
+from core.database.models import TargetUnionInfo
 from core.i18n import Locale
+from core.loader import ModulesManager
 from core.tester import func_case, Tester
 from modules.wiki.utils.wikilib import PageInfo, WikiInfo, WikiLib
 from modules.wiki.wiki import query_pages
@@ -191,34 +194,111 @@ async def _test_found_page_keeps_render_buttons():
         status=True,
         renderable=True,
     )
-    session = MessageSession(session_info=await _session_info("wiki-found-buttons"))
-    render_preview = AsyncMock(return_value=MessageChain.assign("rendered preview"))
-    sent, waits = await _run_query(page, session, render_preview)
+    for style in ("text", "card"):
+        session_info = await _session_info(f"wiki-found-buttons-{style}")
+        if style == "card":
+            session_info.client_name = "QQBot"
+            session_info.support_card = True
+            session_info.target_union_info.target_data["wiki_message_style"] = "card"
+        session = MessageSession(session_info=session_info)
+        render_preview = AsyncMock(return_value=MessageChain.assign("rendered preview"))
+        sent, waits = await _run_query(page, session, render_preview)
 
-    if len(sent) != 1 or waits or render_preview.await_count != 1:
-        return False
-    frames = [element for element in sent[0] if isinstance(element, ButtonFrameElement)]
-    urls = [element.url for element in sent[0] if isinstance(element, URLElement)]
-    buttons = [(button.show, button.value) for frame in frames for row in frame.rows for button in row.buttons]
-    return (
-        urls == [ARTICLE]
-        and render_preview.await_args.args[1][0]["link"] == ARTICLE
-        and render_preview.await_args.args[1][0]["wiki_info"] is page.info
-        and render_preview.await_args.args[1][0]["title"] == page.title
-        and buttons
-        == [
+        assert len(sent) == 1 and not waits and render_preview.await_count == 1
+        frames = [element for element in sent[0] if isinstance(element, ButtonFrameElement)]
+        urls = [element.url for element in sent[0] if isinstance(element, URLElement)]
+        cards = [element for element in sent[0] if isinstance(element, CardElement)]
+        if style == "card":
+            assert len(cards) == 1 and cards[0].url == ARTICLE and not urls
+        else:
+            assert urls == [ARTICLE] and not cards
+        assert render_preview.await_args.args[1][0]["link"] == ARTICLE
+        assert render_preview.await_args.args[1][0]["wiki_info"] is page.info
+        assert render_preview.await_args.args[1][0]["title"] == page.title
+        buttons = [(button.show, button.value) for frame in frames for row in frame.rows for button in row.buttons]
+        assert buttons == [
             (Locale("zh_cn").t("wiki.message.render.action.button"), "wiki_render_preview"),
             (Locale("zh_cn").t("wiki.message.render.action.delete"), "wiki_render_delete"),
         ]
+    return True
+
+
+async def _test_style_command_persists_and_rejects_invalid_modes():
+    session = MessageSession(
+        session_info=await SessionInfo.assign(
+            target_id="QQBot|Group|wiki-message-style",
+            target_from="QQBot|Group",
+            client_name="QQBot",
+            sender_id="QQBot|wiki-style-admin",
+        )
     )
+    module = ModulesManager.return_modules_list()["wiki"]
+    parser = CommandParser(module, ["~"], module_name="wiki", msg=session, include_restricted=True)
+    sent = []
+
+    async def finish(self, message_chain=None, **kwargs):
+        sent.append(MessageChain.assign(message_chain))
+        raise SessionFinished
+
+    with patch.object(MessageSession, "finish", new=finish):
+        for mode, expected, message_key in [
+            ("CARD", "card", "wiki.message.style.card"),
+            ("text", "text", "wiki.message.style.text"),
+            ("plain", "text", "wiki.message.style.invalid"),
+            ("invalid", "text", "wiki.message.style.invalid"),
+        ]:
+            command, args = parser.parse(f"wiki style {mode}")
+            try:
+                await command.function(session, args["<mode>"])
+            except SessionFinished:
+                pass
+            saved = await TargetUnionInfo.get(union_id=session.session_info.target_union_id)
+            assert saved.target_data["wiki_message_style"] == expected
+            assert any(isinstance(item, I18NContextElement) and item.key == message_key for item in sent[-1])
+    return True
+
+
+async def _test_style_command_visibility_matches_card_support():
+    module = ModulesManager.return_modules_list()["wiki"]
+    for target_from, client_name, is_admin, available in [
+        ("QQBot|Group", "QQBot", True, True),
+        ("QQBot|C2C", "QQBot", True, True),
+        ("QQBot|Guild", "QQBot", True, False),
+        ("QQBot|Direct", "QQBot", True, False),
+        ("QQ|Group", "QQ", True, False),
+        ("Discord|Channel", "Discord", True, False),
+        ("QQBot|Group", "QQBot", False, True),
+    ]:
+        session = MessageSession(
+            session_info=SessionInfo(
+                target_id=f"{target_from}|wiki-style-visibility",
+                target_from=target_from,
+                client_name=client_name,
+                sender_id=f"{client_name}|wiki-style-viewer",
+                sender_union_info=SimpleNamespace(superuser=False),
+                locale=Locale("zh_cn"),
+            )
+        )
+        parser = CommandParser(module, ["~"], module_name="wiki", msg=session, is_superuser=False, is_admin=is_admin)
+        assert ("~wiki style <mode>" in parser.return_formatted_help_doc()) == (available and is_admin)
+        parser = CommandParser(module, ["~"], module_name="wiki", msg=session, include_restricted=True)
+        try:
+            _, args = parser.parse("wiki style card")
+            matched = args.get("<mode>") == "card"
+        except InvalidCommandFormatError:
+            matched = False
+        assert matched == available
+    return True
 
 
 @func_case
 async def test_wiki_message_buttons(tester: Tester):
-    """wiki 消息按钮挂载测试"""
+    """wiki 结果消息交互与样式设置测试"""
     await tester.test(_test_not_found_sends_no_button_only_message, "多个候选时不发出空按钮消息")
     await tester.test(_test_single_suggestion_sends_no_button_only_message, "单个候选时不发出空按钮消息")
     await tester.test(_test_multiple_redirects_build_choice_rows, "多个重定向候选时构造按钮行")
     await tester.test(_test_found_page_keeps_render_buttons, "正常页面照常挂渲染按钮")
+    await tester.test(_test_style_command_persists_and_rejects_invalid_modes, "Wiki 样式设置持久化且拒绝非法参数")
+    await tester.test(_test_style_command_visibility_matches_card_support, "Wiki 样式命令仅在支持卡片的 QQBot 场景显示")
 
     return tester

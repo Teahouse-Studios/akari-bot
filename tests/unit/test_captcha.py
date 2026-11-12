@@ -122,6 +122,7 @@ async def _test_captcha_event_and_private_token():
         or len(button_values) != CAPTCHA_CHOICE_COUNT
         or len(frame.rows) != CAPTCHA_BUTTON_ROWS
         or any(len(row.buttons) != CAPTCHA_BUTTONS_PER_ROW for row in frame.rows)
+        or any(button.small for row in frame.rows for button in row.buttons)
         or any(not value.startswith(f"!token {challenge.token} ") for value in button_values)
         or prompt is None
         or prompt.kwargs["command"] != f"{command_prefix[0]}token {challenge.token}"
@@ -440,6 +441,7 @@ async def _test_emote_captcha_uses_localized_buttons():
         and [int(button.value.rsplit(maxsplit=1)[1]) for button in buttons] == challenge.choices
         and len(frame.rows) == CAPTCHA_BUTTON_ROWS
         and all(len(row.buttons) == CAPTCHA_BUTTONS_PER_ROW for row in frame.rows)
+        and all(not button.small for button in buttons)
     )
 
 

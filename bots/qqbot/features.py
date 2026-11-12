@@ -18,6 +18,7 @@ features = Features(
     support_video=True,
     support_mention=True,
     support_embed=False,
+    support_card=True,
     support_delete=True,
     support_manage=False,
     support_markdown=True,
@@ -52,6 +53,7 @@ guild_features = evolve(
     support_handle_message_nodes=False,
     support_action_text=False,
     support_button=False,
+    support_card=False,
     use_url_md_format=False,
 )
 

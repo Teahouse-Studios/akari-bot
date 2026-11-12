@@ -9,6 +9,7 @@ from typing import Union
 from urllib.parse import quote
 
 import botpy
+from attrs import evolve
 from PIL import Image as PILImage
 from botpy.interaction import Interaction
 from botpy.message import BaseMessage, C2CMessage, DirectMessage, GroupMessage, Message
@@ -35,6 +36,7 @@ from core.builtins.message.elements import (
     ButtonPermission,
     ButtonFrameElement,
     ButtonRows,
+    CardElement,
     PlainElement,
     MarkdownElement,
     ImageElement,
@@ -236,6 +238,7 @@ def _build_qqbot_keyboard(rows: list[ButtonRows], session_info: SessionInfo, tar
                         data=registered_button.url or registered_button.token,
                         at_bot_show_channel_list=False,
                     ),
+                    small=message_button.small,
                 )
             )
         if buttons:
@@ -655,6 +658,8 @@ class QQBotContextManager(ContextManager):
         ctx: BaseMessage | Interaction | None = cls.context.get(session_info.session_id)
         client = _get_client()
         target = _reply_target(session_info, ctx)
+        if session_info.support_card and target.scope not in ("group", "c2c"):
+            session_info = evolve(session_info, support_card=False)
         send_aborted = False
 
         async def send(**kwargs):
@@ -685,6 +690,25 @@ class QQBotContextManager(ContextManager):
 
         async def empty_send() -> list[str]:
             return []
+
+        async def send_cards(cards: list[dict], msg_ids: list[str]) -> None:
+            for card in cards:
+                try:
+                    result = await send(msg_type=MessageType.CARD, card=card)
+                    result_ids = _message_ids(result)
+                    msg_ids.extend(result_ids)
+                    if result_ids and not _typing_prompt:
+                        cls._on_message_sent(session_info)
+                    if result_ids:
+                        Logger.info(f"[Bot] -> [{session_info.target_id}]: Card")
+                except Exception:
+                    if not msg_ids:
+                        raise
+                    Logger.exception(
+                        f"QQBot card message to {session_info.target_id} was only partially sent; "
+                        f"returning the recorded message IDs {msg_ids}: "
+                    )
+                    break
 
         async def prepare_separate_media(elements: list[AudioElement | VideoElement]):
             media = []
@@ -728,6 +752,7 @@ class QQBotContextManager(ContextManager):
             plains: list[PlainElement] = []
             images: list[tuple[ImageElement, str]] = []
             media: list[AudioElement | VideoElement] = []
+            cards: list[dict] = []
             bot_ids = _bot_ids(session_info)
 
             for x in message.as_sendable(session_info, enable_markdown=False):
@@ -746,6 +771,8 @@ class QQBotContextManager(ContextManager):
                         images.append((x, image_path))
                 elif isinstance(x, (AudioElement, VideoElement)):
                     media.append(x)
+                elif isinstance(x, CardElement):
+                    cards.append(x.to_card())
                 elif isinstance(x, MentionElement):
                     if (
                         x.client == client_name
@@ -754,7 +781,7 @@ class QQBotContextManager(ContextManager):
                     ):
                         plains.append(PlainElement(text=f"<@{x.id}>"))
             plains = [x for x in plains if x.text]
-            if not plains and not images and not media:
+            if not plains and not images and not media and not cards:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
             msg = "\n".join(x.text for x in plains).strip()
@@ -784,7 +811,9 @@ class QQBotContextManager(ContextManager):
             async def send_plain_message() -> list[str]:
                 msg_ids = []
                 if not plains and not images:
-                    return await send_separate_media(prepared_media)
+                    await send_cards(cards, msg_ids)
+                    msg_ids.extend(await send_separate_media(prepared_media))
+                    return msg_ids
 
                 async def record(result, image: ImageElement | None = None):
                     result_ids = _message_ids(result)
@@ -834,21 +863,28 @@ class QQBotContextManager(ContextManager):
                         f"QQBot message to {session_info.target_id} was only partially sent; "
                         f"returning the recorded message IDs {msg_ids}: "
                     )
+                await send_cards(cards, msg_ids)
                 msg_ids.extend(await send_separate_media(prepared_media))
                 return msg_ids
 
-            return _PreparedMessage(target, send_plain_message, has_payload=bool(plains or images or media))
+            return _PreparedMessage(target, send_plain_message, has_payload=bool(plains or images or media or cards))
 
         async def prepare_markdown_message() -> _PreparedMessage:
             texts = []
             media: list[AudioElement | VideoElement] = []
+            cards: list[dict] = []
             bot_ids = _bot_ids(session_info)
+            converted_message = message.as_sendable(session_info)
 
-            if quote and ctx and session_info.target_from in (target_guild_prefix, target_group_prefix):
+            if (
+                quote
+                and ctx
+                and session_info.target_from in (target_guild_prefix, target_group_prefix)
+                and any(not isinstance(element, CardElement) for element in converted_message)
+            ):
                 sender_id = str(session_info.get_common_sender_id())
                 if sender_id not in bot_ids:
                     texts.append(f'<qqbot-at-user id="{sender_id}" />')
-            converted_message = message.as_sendable(session_info)
             possibly_choices = [row for x in converted_message if isinstance(x, ButtonFrameElement) for row in x.rows]
             keyboard = _build_qqbot_keyboard(possibly_choices, session_info, target)
 
@@ -929,6 +965,9 @@ class QQBotContextManager(ContextManager):
                 elif isinstance(x, (AudioElement, VideoElement)):
                     media.append(x)
                     inline_pending = False
+                elif isinstance(x, CardElement):
+                    cards.append(x.to_card())
+                    inline_pending = False
                 elif isinstance(x, MentionElement):
                     if (
                         x.client == client_name
@@ -971,7 +1010,7 @@ class QQBotContextManager(ContextManager):
             if keyboard and not texts:
                 texts.append("\u200b")
             prepared_media = await prepare_separate_media(media)
-            if not any(text.strip() for text in texts) and not prepared_media:
+            if not any(text.strip() for text in texts) and not prepared_media and not cards:
                 return _PreparedMessage(target, empty_send, has_payload=False)
 
             msg = "\n".join(texts)
@@ -990,10 +1029,11 @@ class QQBotContextManager(ContextManager):
                         cls._on_message_sent(session_info)
                     if result_ids:
                         Logger.info(f"[Bot] -> [{session_info.target_id}]: {msg}")
+                await send_cards(cards, msg_ids)
                 msg_ids.extend(await send_separate_media(prepared_media))
                 return msg_ids
 
-            return _PreparedMessage(target, send_markdown_message, has_payload=bool(texts or prepared_media))
+            return _PreparedMessage(target, send_markdown_message, has_payload=bool(texts or prepared_media or cards))
 
         # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
         # 走纯文本路径；全局配置关闭时同样如此。

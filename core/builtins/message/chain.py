@@ -26,6 +26,7 @@ from core.builtins.message.elements import (
     ImageElement,
     AudioElement,
     VideoElement,
+    CardElement,
     MentionElement,
     ActionTextElement,
     ButtonPermission,
@@ -163,6 +164,15 @@ class MessageChain:
                             return False
                         if not check_text("Embed.field.value", f.value):
                             return False
+            elif isinstance(v, CardElement):
+                if not check_text("Card.title", v.title):
+                    return False
+                if not check_text("Card.description", v.description):
+                    return False
+                if not check_text("Card.url", v.url):
+                    return False
+                if not check_text("Card.pic_url", v.pic_url):
+                    return False
             # 参数会在客户端发送阶段才代入文案，服务端的链检查必须提前覆盖
             elif isinstance(v, I18NContextElement):
                 for key, value in v.kwargs.items():
@@ -202,6 +212,7 @@ class MessageChain:
         """
         value = []
         support_embed = True
+        support_card = True
 
         if session_info:
             # 传入 MessageSession 时取出其 session_info；SessionInfo 自身没有该属性，原样返回。
@@ -209,6 +220,7 @@ class MessageChain:
             session_info = getattr(session_info, "session_info", session_info)
 
             support_embed = session_info.support_embed
+            support_card = getattr(session_info, "support_card", False)
 
         def append_parsed_elements(element_chain: MessageChain) -> None:
             inline_pending = False
@@ -251,8 +263,29 @@ class MessageChain:
                 if x.url and GlobalURLBlocklist.is_blocked(x.url):
                     x.url = None
 
+            if isinstance(x, CardElement):
+                x = deepcopy(x)
+                locale = session_info.locale if session_info else Locale(default_locale)
+                replacement = locale.t("message.url.blocked")
+                for attribute in ("title", "description"):
+                    text = getattr(x, attribute)
+                    if text:
+                        translated = locale.t_str(text)
+                        setattr(x, attribute, redact_blocklisted_urls(translated, replacement))
+                if x.url and GlobalURLBlocklist.is_blocked(x.url):
+                    x.url = None
+                if x.pic_url and GlobalURLBlocklist.is_blocked(x.pic_url):
+                    x.pic_url = None
+
             if isinstance(x, EmbedElement) and not support_embed:
                 value += x.to_message_chain(session_info)
+
+            elif isinstance(x, CardElement) and not support_card:
+                value += (
+                    MessageChain.assign(x.to_message_chain())
+                    .as_sendable(session_info, parse_message=parse_message, enable_markdown=enable_markdown)
+                    .values
+                )
 
             elif isinstance(x, MarkdownElement):
                 markdown_enabled = enable_markdown and (session_info is None or session_info.support_markdown)
@@ -877,6 +910,20 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                 if path:
                     elements.append(VideoElement.assign(path))
 
+            elif element_type == "card":
+                elements.append(
+                    CardElement.assign(
+                        title=unquote(parsed_params["title"]) if parsed_params.get("title") is not None else None,
+                        description=(
+                            unquote(parsed_params["description"])
+                            if parsed_params.get("description") is not None
+                            else None
+                        ),
+                        url=unquote(parsed_params["url"]) if parsed_params.get("url") is not None else None,
+                        pic_url=unquote(parsed_params["pic_url"]) if parsed_params.get("pic_url") is not None else None,
+                    )
+                )
+
             elif element_type == "i18n":
                 i18nkey = parsed_params.get("i18nkey")
 
@@ -941,6 +988,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                             unquote(button_reply_id) if button_reply_id is not None else None,
                             ButtonPermission.normalize(parsed_params.get("permission")),
                             int(parsed_params["click_limit"]) if parsed_params.get("click_limit") is not None else 1,
+                            convert_bool(parsed_params.get("small"), True),
                         )
                     )
                     continue
@@ -969,6 +1017,7 @@ def match_kecode(text: str, disable_joke: bool = False) -> MessageChain:
                                     button.get("reply_id"),
                                     button.get("permission"),
                                     button.get("click_limit", 1),
+                                    button.get("small", True),
                                 )
                                 for button in row
                                 if isinstance(button, dict) and "show" in button and "value" in button

@@ -248,14 +248,14 @@ async def member_joined(event: EventInfo):
                 bot_name=session.session_info.bot_name,
                 command=private_command,
             ),
-            ButtonFrame(arrange_buttons(buttons, per_row=CAPTCHA_BUTTONS_PER_ROW)),
+            ButtonFrame(arrange_buttons(buttons, per_row=CAPTCHA_BUTTONS_PER_ROW, small=False)),
         ]
     else:
         buttons = [(str(choice), f"{command} {choice}") for choice in challenge.choices]
         message = [
             Mention(event.sender_id),
             I18NContext("captcha.message.challenge", answer=challenge.answer, command=private_command),
-            ButtonFrame(arrange_buttons(buttons, per_row=CAPTCHA_BUTTONS_PER_ROW)),
+            ButtonFrame(arrange_buttons(buttons, per_row=CAPTCHA_BUTTONS_PER_ROW, small=False)),
         ]
     sent = await session.send_message(message, quote=False)
     if sent.message_id:

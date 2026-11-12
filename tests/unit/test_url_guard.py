@@ -10,8 +10,8 @@ import bots.qqbot.features as qqbot_features_module
 from bots.qqbot.features import features as qqbot_features
 from bots.qqbot.features import resolve_features
 from core.builtins.message.chain import MessageChain
-from core.builtins.message.elements import EmbedElement
-from core.builtins.message.internal import Embed, EmbedField, Url
+from core.builtins.message.elements import CardElement, EmbedElement
+from core.builtins.message.internal import Card, Embed, EmbedField, Url
 from core.builtins.session.info import SessionInfo
 from core.database.models import SenderUnionInfo
 from core.logger import Logger
@@ -239,6 +239,44 @@ async def _test_global_blocklist_redacts_plain_text_url():
         GlobalURLBlocklist.clear_cache()
 
 
+async def _test_global_blocklist_removes_card_urls():
+    try:
+        with TemporaryDirectory() as temp_dir:
+            directory = Path(temp_dir)
+            with (
+                patch.object(GlobalURLBlocklist, "directory", directory),
+                patch.object(GlobalURLBlocklist, "builtin_path", directory / "global.txt"),
+                patch.object(GlobalURLBlocklist, "user_path", directory / "user.txt"),
+            ):
+                GlobalURLBlocklist.clear_cache()
+                picture = f"{_URL}/image.png"
+                GlobalURLBlocklist.add_user_rule(_URL)
+                GlobalURLBlocklist.add_user_rule(picture)
+                session_info = _session(support_card=True)
+                out = MessageChain.assign(
+                    Card(
+                        title=f"before {_URL} after",
+                        description=f"before {picture} after",
+                        url=_URL,
+                        pic_url=picture,
+                    )
+                ).as_sendable(session_info)
+                card = out.values[0] if len(out.values) == 1 and isinstance(out.values[0], CardElement) else None
+                return (
+                    card is not None
+                    and card.url is None
+                    and card.pic_url is None
+                    and _URL not in card.title
+                    and picture not in card.description
+                    and session_info.locale.t("message.url.blocked") in card.title
+                    and session_info.locale.t("message.url.blocked") in card.description
+                )
+    except Exception:
+        return False
+    finally:
+        GlobalURLBlocklist.clear_cache()
+
+
 async def _test_global_blocklist_fails_closed_on_regex_budget_exhaustion():
     try:
         with TemporaryDirectory() as temp_dir:
@@ -336,6 +374,7 @@ async def test_url_guard(tester: Tester):
     await tester.test(_test_global_blocklist_blocks_trusted_url, "全局 URL 阻止列表覆盖可信标记测试")
     await tester.test(_test_global_blocklist_overrides_allowlist, "全局 URL 阻止列表覆盖允许列表测试")
     await tester.test(_test_global_blocklist_removes_embed_url, "全局 URL 阻止列表移除 Embed 链接测试")
+    await tester.test(_test_global_blocklist_removes_card_urls, "全局 URL 阻止列表覆盖卡片链接、图片和文案")
     await tester.test(_test_global_blocklist_redacts_plain_text_url, "全局 URL 阻止列表过滤纯文本链接测试")
     await tester.test(
         _test_global_blocklist_fails_closed_on_regex_budget_exhaustion,

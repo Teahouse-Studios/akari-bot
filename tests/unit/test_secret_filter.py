@@ -12,6 +12,7 @@ from core.builtins.message.internal import (
     Button,
     ButtonFrame,
     ButtonRows,
+    Card,
     I18NContext,
     Markdown,
     Plain,
@@ -64,6 +65,10 @@ def _leaking_chains():
         "markdown": MessageChain.assign(Markdown(f"ip {SECRET}")),
         "url": MessageChain.assign(URLElement.assign(f"https://example.com/{SECRET}")),
         "embed": MessageChain.assign(EmbedElement.assign(title="t", description=f"ip {SECRET}")),
+        "card-title": MessageChain.assign(Card(title=f"ip {SECRET}")),
+        "card-description": MessageChain.assign(Card(description=f"ip {SECRET}")),
+        "card-url": MessageChain.assign(Card(url=f"https://example.com/{SECRET}")),
+        "card-pic-url": MessageChain.assign(Card(pic_url=f"https://example.com/{SECRET}.png")),
         "i18n": MessageChain.assign(I18NContext("error.message.chain.empty", value=SECRET)),
         "i18n-nested-chain": MessageChain.assign(
             I18NContext("error.message.chain.empty", value=MessageChain.assign(f"ip {SECRET}"))
@@ -161,6 +166,47 @@ async def _test_bot_send_private_message_replaces_leaking_chains():
         return False
 
 
+async def _test_card_text_is_filtered_and_localized():
+    session_info = _make_session_info()
+    session_info.support_card = True
+    session = MessageSession(session_info)
+    blocked_word = "card-filter-fixture"
+    url = f"https://example.com/{blocked_word}"
+    sent = []
+
+    async def platform(_session_info, message, **_kwargs):
+        sent.append(message)
+        return ["id"]
+
+    with (
+        _patched_hooks(),
+        patch.dict("core.builtins.filter.badword_rules", {"card": [blocked_word]}, clear=True),
+        patch.object(PlatformAPI, "send_message", AsyncMock(side_effect=platform)),
+    ):
+        await session.send_message(
+            Card(
+                title=f"{{I18N:message.selected}} {blocked_word}",
+                description=f"{blocked_word} {{I18N:message.selected}}",
+                url=url,
+                pic_url=f"{url}.png",
+            ),
+            quote=False,
+        )
+
+    card = sent[0].values[0]
+    selected = session_info.locale.t("message.selected")
+    return (
+        blocked_word not in card.title
+        and blocked_word not in card.description
+        and selected in card.title
+        and selected in card.description
+        and "{I18N:" not in card.title
+        and "{I18N:" not in card.description
+        and card.url == url
+        and card.pic_url == f"{url}.png"
+    )
+
+
 def _test_secret_update_registers_batch():
     saved = set(Secret.data)
     try:
@@ -179,5 +225,6 @@ async def test_secret_filter(tester: Tester):
     await tester.test(_test_send_message_replaces_leaking_chains, "send_message 拦截敏感信息并保留显式放行")
     await tester.test(_test_post_message_replaces_leaking_chains, "post_message 拦截敏感信息")
     await tester.test(_test_bot_send_private_message_replaces_leaking_chains, "Bot.send_private_message 拦截敏感信息")
+    await tester.test(_test_card_text_is_filtered_and_localized, "卡片文案过滤词库并解析本地化，链接保持完整")
     await tester.test(_test_secret_update_registers_batch, "Secret.update 登记批量密钥")
     return tester

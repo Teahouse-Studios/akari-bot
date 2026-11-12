@@ -9,6 +9,7 @@ from core.builtins.message.internal import (
     Button,
     ButtonFrame,
     ButtonRows,
+    Card,
     I18NContext,
     Markdown,
     Plain,
@@ -82,6 +83,9 @@ WIKI_RENDER_MODE_KEY = "wiki_render_mode"
 WIKI_RENDER_MODE_BUTTON = "button"
 WIKI_RENDER_MODE_AUTO = "auto"
 WIKI_RENDER_MODE_OFF = "off"
+WIKI_MESSAGE_STYLE_KEY = "wiki_message_style"
+WIKI_MESSAGE_STYLE_TEXT = "text"
+WIKI_MESSAGE_STYLE_CARD = "card"
 
 
 class _WikiMessageTracker:
@@ -121,6 +125,20 @@ def _wiki_render_mode(session: Bot.MessageSession | QueryInfo) -> str:
         return WIKI_RENDER_MODE_BUTTON if session.session_info.support_button else WIKI_RENDER_MODE_AUTO
     if configured == WIKI_RENDER_MODE_BUTTON and not session.session_info.support_button:
         return WIKI_RENDER_MODE_AUTO
+    return configured
+
+
+def _wiki_message_style(session: Bot.MessageSession | QueryInfo) -> str:
+    if (
+        not isinstance(session, MessageSession)
+        or session.session_info.client_name != "QQBot"
+        or not session.session_info.support_card
+    ):
+        return WIKI_MESSAGE_STYLE_TEXT
+    target_union = session.session_info.target_union_info
+    configured = (target_union.target_data or {}).get(WIKI_MESSAGE_STYLE_KEY) if target_union else None
+    if configured not in {WIKI_MESSAGE_STYLE_TEXT, WIKI_MESSAGE_STYLE_CARD}:
+        return WIKI_MESSAGE_STYLE_TEXT
     return configured
 
 
@@ -753,12 +771,14 @@ async def _query_pages_impl(
         headers = target.headers
         prefix = target.prefix
         render_mode = _wiki_render_mode(session)
+        message_style = _wiki_message_style(session)
     elif isinstance(session, QueryInfo):
         start_wiki = session.api
         interwiki_list = {}
         headers = session.headers
         prefix = session.prefix
         render_mode = WIKI_RENDER_MODE_AUTO
+        message_style = WIKI_MESSAGE_STYLE_TEXT
     else:
         raise TypeError("Session must be Bot.MessageSession or QueryInfo.")
 
@@ -969,6 +989,8 @@ async def _query_pages_impl(
                         or r.is_disambiguation
                         or r.is_forum_topic
                     )
+                    card_mode = message_style == WIKI_MESSAGE_STYLE_CARD and render_allowed and bool(r.link)
+                    card_description = None
                     if display_before_title and display_before_title != display_title:
                         if r.before_page_property == "template" and r.page_property == "page":
                             plain_slice.append(
@@ -1027,9 +1049,21 @@ async def _query_pages_impl(
                         if isinstance(session, Bot.MessageSession) and r.is_disambiguation and r.disambiguation_blocks:
                             plain_slice.extend(_build_disambiguation_output(session, r, iw_prefix))
                         elif r.desc and not r.is_talk_page:
-                            plain_slice.append(_format_page_desc(r.desc, session))
+                            if card_mode:
+                                card_description = r.desc
+                            else:
+                                plain_slice.append(_format_page_desc(r.desc, session))
 
-                    if r.link:
+                    if card_mode:
+                        plain_slice.append(
+                            Card(
+                                title=display_title or r.title,
+                                description=card_description,
+                                url=r.link,
+                                pic_url=r.info.logo_url or None,
+                            )
+                        )
+                    elif r.link:
                         plain_slice.append(Url(r.link, trusted=True if r.info.is_allowed else None))
 
                     if r.file:

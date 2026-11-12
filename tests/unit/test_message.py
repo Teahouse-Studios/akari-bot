@@ -8,6 +8,7 @@ from core.builtins.message.elements import (
     ImageElement,
     MentionElement,
     FormattedTimeElement,
+    CardElement,
     ButtonElement,
     ButtonRows,
     ButtonFrameElement,
@@ -17,6 +18,8 @@ from core.builtins.message.internal import (
     Plain,
     Button,
     ButtonFrame,
+    Card,
+    I18NContext,
 )
 from core.tester import func_case, Tester
 
@@ -444,7 +447,7 @@ def _test_image_element_preserves_base64_format():
 
 def _test_button_element_roundtrip():
     try:
-        button = Button("帮助", "~help", reply_id="callback-123")
+        button = Button("帮助", "~help", reply_id="callback-123", small=False)
         frame = ButtonFrame(
             [
                 ButtonRows.assign([Button("文档", "https://example.com"), button]),
@@ -497,6 +500,72 @@ def _test_button_element_follows_platform_capability():
         return False
 
 
+def _test_card_element_roundtrip():
+    try:
+        card = Card(
+            title="标题",
+            description="摘要",
+            url="https://example.com?a=1&b=2",
+            pic_url="https://example.com/image.png",
+        )
+        restored_kecode = match_kecode(card.kecode()).values[0]
+        restored_chain = MessageChain.from_list(MessageChain.assign(card).to_list()).values[0]
+        return (
+            isinstance(card, CardElement)
+            and card.to_card()
+            == {
+                "type": "tuwen",
+                "content": {
+                    "title": "标题",
+                    "description": "摘要",
+                    "url": "https://example.com?a=1&b=2",
+                    "pic_url": "https://example.com/image.png",
+                },
+            }
+            and restored_kecode == card
+            and restored_chain == card
+        )
+    except Exception:
+        return False
+
+
+def _test_card_element_follows_platform_capability():
+    try:
+        from types import SimpleNamespace
+
+        from core.i18n import Locale
+
+        card = Card("标题", str(I18NContext("message.failed")), "https://example.com")
+        supported = SimpleNamespace(
+            support_embed=True,
+            support_card=True,
+            support_button=False,
+            support_action_text=False,
+            use_url_manager=False,
+            use_url_md_format=False,
+            locale=Locale("zh_cn"),
+        )
+        unsupported = SimpleNamespace(
+            support_embed=True,
+            support_card=False,
+            support_button=False,
+            support_action_text=False,
+            use_url_manager=False,
+            use_url_md_format=False,
+            locale=Locale("zh_cn"),
+        )
+        native = MessageChain.assign(card).as_sendable(supported)
+        fallback = MessageChain.assign(card).as_sendable(unsupported)
+        return (
+            native.contains(CardElement)
+            and native.values[0].description == supported.locale.t("message.failed")
+            and not fallback.contains(CardElement)
+            and fallback.to_str() == f"标题\n{supported.locale.t('message.failed')}\nhttps://example.com"
+        )
+    except Exception:
+        return False
+
+
 def _test_standalone_buttons_are_auto_arranged():
     try:
         buttons = [Button(str(index), f"~button {index}") for index in range(55)]
@@ -530,5 +599,7 @@ async def test_message_elements_extended(tester: Tester):
     await tester.test(_test_image_element_preserves_base64_format, "ImageElement.assign 保留 Base64 格式")
     await tester.test(_test_button_element_roundtrip, "Button 与 ButtonFrame 构造及序列化往返")
     await tester.test(_test_button_element_follows_platform_capability, "ButtonFrame 按平台能力保留或忽略")
+    await tester.test(_test_card_element_roundtrip, "Card 构造及序列化往返")
+    await tester.test(_test_card_element_follows_platform_capability, "Card 按平台能力保留或降级")
     await tester.test(_test_standalone_buttons_are_auto_arranged, "单个 Button 自动按 10 × 5 规整")
     return tester

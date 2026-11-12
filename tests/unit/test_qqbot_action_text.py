@@ -84,8 +84,13 @@ def _test_button_element_builds_keyboard():
         _clear_button_registry()
         keyboard = _build_qqbot_keyboard(frame.rows, session, SimpleNamespace(scope="group"))
         docs, help_button = keyboard["content"]["rows"][0]["buttons"]
+        captcha_frame = ButtonFrameElement.assign([ButtonRows.assign([Button("Captcha", "~captcha", small=False)])])
+        captcha_keyboard = _build_qqbot_keyboard(captcha_frame.rows, session, SimpleNamespace(scope="group"))
+        captcha_button = captcha_keyboard["content"]["rows"][0]["buttons"][0]
         return (
-            docs["action"]["type"] == 0
+            docs["small"] is True
+            and captcha_button["small"] is False
+            and docs["action"]["type"] == 0
             and docs["action"]["data"] == "https://example.com"
             and help_button["action"]["type"] == 1
             and "click_limit" not in help_button["action"]

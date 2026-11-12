@@ -6,7 +6,9 @@ from urllib.parse import parse_qs, quote, urlsplit
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import (
+    AudioElement,
     ButtonFrameElement,
+    CardElement,
     I18NContextElement,
     ImageElement,
     PlainElement,
@@ -23,7 +25,12 @@ from modules.wiki.inline import _parse_wiki_urls, _read_url_page, _send_url_prev
 from modules.wiki.search import search_pages
 from modules.wiki.utils.media import file_preview
 from modules.wiki.utils.wikilib import InvalidWikiError, PageInfo, WikiAPIError, WikiInfo, WikiLib, WikiStatus
-from modules.wiki.wiki import _build_section_callback, query_pages
+from modules.wiki.wiki import (
+    WIKI_MESSAGE_STYLE_CARD,
+    WIKI_MESSAGE_STYLE_TEXT,
+    _build_section_callback,
+    query_pages,
+)
 
 API = "https://example.org/w/api.php"
 ARTICLE = "https://example.org/wiki/$1"
@@ -47,17 +54,20 @@ def _page_response(**extra):
     }
 
 
-def _session(mode="off", buttons=False):
+def _session(mode="off", buttons=False, *, style=None, client_name="TEST"):
+    target_data = {"wiki_render_mode": mode}
+    if style is not None:
+        target_data["wiki_message_style"] = style
     return MessageSession(
         session_info=SessionInfo(
             target_id="TEST|Group|wiki-query-fixes",
             target_from="TEST|Group",
-            client_name="TEST",
+            client_name=client_name,
             sender_id="TEST|1",
             locale=Locale("zh_cn"),
             support_image=True,
             support_button=buttons,
-            target_union_info=SimpleNamespace(target_data={"wiki_render_mode": mode}),
+            target_union_info=SimpleNamespace(target_data=target_data),
         )
     )
 
@@ -362,6 +372,88 @@ async def _test_url_render_modes():
     return True
 
 
+async def _test_card_style_query_output():
+    target = SimpleNamespace(api_link=API, interwikis={}, headers={}, prefix=None)
+    for style, client_name, support_card, allowed, expected_card in (
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, True, True),
+        (WIKI_MESSAGE_STYLE_TEXT, "QQBot", True, True, False),
+        ("invalid", "QQBot", True, True, False),
+        (WIKI_MESSAGE_STYLE_CARD, "TEST", False, True, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", False, True, False),
+        (WIKI_MESSAGE_STYLE_CARD, "QQBot", True, False, False),
+    ):
+        session = _session(style=style, client_name=client_name)
+        session.session_info.support_card = support_card
+        session.session_info.use_url_manager = True
+        info = _info()
+        info.is_allowed = allowed
+        info.logo_url = "https://example.org/logo.png"
+        page = PageInfo(info=info, title="Target", link=ARTICLE.replace("$1", "Target"), desc="Card summary")
+        sent = []
+
+        async def finish(self, chain=None, **_kwargs):
+            sent.append(MessageChain.assign(chain))
+            raise SessionFinished
+
+        with (
+            patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target)),
+            patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
+            patch.object(WikiLib, "parse_page_info", new=AsyncMock(return_value=page)),
+            patch.object(MessageSession, "hold", new=AsyncMock()),
+            patch.object(MessageSession, "release", new=AsyncMock()),
+            patch.object(MessageSession, "finish", new=finish),
+        ):
+            try:
+                await query_pages(session, "Target")
+            except SessionFinished:
+                pass
+
+        cards = [item for item in sent[0] if isinstance(item, CardElement)]
+        if expected_card:
+            assert len(cards) == 1
+            assert cards[0].title == "Target" and cards[0].description == "Card summary"
+            assert cards[0].url == page.link and cards[0].pic_url == info.logo_url
+            assert not sent[0].contains(URLElement)
+        else:
+            assert not cards and "Card summary" in sent[0].to_str()
+            assert any(isinstance(item, URLElement) and item.original_url == page.link for item in sent[0])
+
+    session = _session(style=WIKI_MESSAGE_STYLE_CARD, client_name="QQBot")
+    session.session_info.support_card = True
+    page = PageInfo(
+        info=_info(),
+        title="File:Audio",
+        link=ARTICLE.replace("$1", "File:Audio"),
+        file="https://example.org/audio.mp3",
+    )
+    sent = []
+
+    async def send(self, chain=None, **_kwargs):
+        sent.append(MessageChain.assign(chain))
+        return SimpleNamespace(message_id=[str(len(sent))])
+
+    async def background(_session, factory, **_kwargs):
+        await factory()
+
+    with (
+        patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target)),
+        patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
+        patch.object(WikiLib, "parse_page_info", new=AsyncMock(return_value=page)),
+        patch.object(MessageSession, "hold", new=AsyncMock()),
+        patch.object(MessageSession, "release", new=AsyncMock()),
+        patch.object(MessageSession, "send_message", new=send),
+        patch("modules.wiki.wiki._start_background_with_release", new=background),
+        patch(
+            "modules.wiki.wiki.file_preview",
+            new=AsyncMock(return_value=MessageChain.assign(AudioElement.assign("preview.mp3"))),
+        ),
+    ):
+        await query_pages(session, "File:Audio")
+    assert sent[0].contains(CardElement) and sent[1].contains(AudioElement)
+    assert next(item for item in sent[0] if isinstance(item, CardElement)).pic_url != page.file
+    return True
+
+
 async def _test_search_limit_callback_and_more_link():
     for buttons in (False, True):
         session = _session(buttons=buttons)
@@ -578,6 +670,7 @@ async def test_wiki_query_fixes(tester: Tester):
         (_test_media_dispatch, "视频、SVG、未知类型和无媒体能力分派"),
         (_test_url_target_keeps_revision_and_fragment, "URL 目标保留修订号、参数及章节"),
         (_test_url_render_modes, "URL 遵守 off、button、auto 且章节无重复摘要"),
+        (_test_card_style_query_output, "Wiki 卡片样式遵守平台能力、偏好及链接策略"),
         (_test_search_limit_callback_and_more_link, "短搜索列表、网页入口与严格序号校验"),
         (_test_partial_query_failure_keeps_success, "多页查询失败不丢失成功结果"),
         (_test_search_error_is_not_empty_result, "搜索错误不会显示为未找到结果"),

@@ -31,11 +31,14 @@ AUTO_BUTTON_MAX_ROWS = 5
 def arrange_buttons(
     buttons: list[tuple[str, str]],
     per_row: int = DEFAULT_BUTTONS_PER_ROW,
+    *,
+    small: bool = True,
 ) -> list[ButtonRows]:
     """将（展示文本, 点击数据）序列整理为 ``ButtonFrame`` 所需的按钮行。
 
     :param buttons: （标签, 命令）序列。标签为按钮上展示的文本，命令为点击后发出的内容。
     :param per_row: 每行按钮数量的可读性上限。
+    :param small: 是否使用紧凑按钮样式。
     :return: 按钮行列表；输入为空时返回空列表。
     """
     if not buttons:
@@ -59,7 +62,7 @@ def arrange_buttons(
         size = base + 1 if index < extra else base
         row = buttons[start : start + size]
         start += size
-        rows.append(ButtonRows.assign([ButtonElement.assign(show, value) for show, value in row]))
+        rows.append(ButtonRows.assign([ButtonElement.assign(show, value, small=small) for show, value in row]))
     return rows
 
 

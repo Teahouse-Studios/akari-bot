@@ -25,6 +25,8 @@ I18NContext = i18n_context = I18NContextElement.assign
 
 Mention = mention = MentionElement.assign
 
+Card = card = CardElement.assign
+
 Raw = raw = RawElement.assign
 
 ActionText = action_text = ActionTextElement.assign
@@ -44,6 +46,7 @@ __all__ = [
     "FormattedTime",
     "I18NContext",
     "Mention",
+    "Card",
     "Raw",
     "ActionText",
     "Button",
@@ -60,6 +63,7 @@ __all__ = [
     "formatted_time",
     "i18n_context",
     "mention",
+    "card",
     "raw",
     "action_text",
     "button",
