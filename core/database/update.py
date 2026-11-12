@@ -249,6 +249,19 @@ async def update_database_to_v6(conn):
         await conn.execute_query(f"ALTER TABLE {quote_ident(table)} DROP COLUMN {quote_ident(column)};")
 
 
+async def update_database_to_v7(conn):
+    """将数据库升级至 v7：为场景绑定表补充主动推送优先级。
+
+    :param conn: 数据库连接。
+    """
+    if await has_column(conn, "target_union_bind", "push_priority"):
+        return
+    await conn.execute_query(
+        f"ALTER TABLE {quote_ident('target_union_bind')} "
+        f"ADD COLUMN {quote_ident('push_priority')} INT NOT NULL DEFAULT 0;"
+    )
+
+
 async def update_database():
     database_list = fetch_module_db()
     await Tortoise.init(db_url=get_db_link(), modules={"models": ["core.database.models"] + database_list})
@@ -350,4 +363,11 @@ async def update_database():
 
             await query_dbver.delete()
             await DBVersion.create(version=6)
+        if db_version < 7:
+            query_dbver = await DBVersion.first()
+
+            await update_database_to_v7(conn)
+
+            await query_dbver.delete()
+            await DBVersion.create(version=7)
     await Tortoise.close_connections()

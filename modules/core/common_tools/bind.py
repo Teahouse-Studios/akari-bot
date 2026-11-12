@@ -34,6 +34,9 @@ from core.utils.union_merge import (
 HANDSHAKE_EXPIRED = 30  # 通道握手超时（秒）
 HANDSHAKE_TOKEN_LENGTH = 20
 
+PUSH_PRIORITY_MIN = 0
+PUSH_PRIORITY_MAX = 100
+
 # 自动配对为多个机器人共处同一场景的情形预留，默认关闭。命令是否注册在导入时即已确定，
 # 因此取一份快照，改动配置须重启机器人方能生效。
 ENABLE_BIND_AUTO = CoreConfig.enable_bind_auto
@@ -111,12 +114,19 @@ async def _channel_lines(msg: Bot.MessageSession) -> list:
         return [I18NContext("core.message.bind.channel.unknown")]
     channel_id = msg.session_info.target_channel_id
 
-    channels = await TargetUnionBind.list_channels(union_id)
-    siblings = [target_id for target_id, cid in channels.items() if cid == channel_id]
+    siblings = [row for row in await TargetUnionBind.list_push_order(union_id) if row[1] == channel_id]
     return [
         I18NContext("core.message.bind.channel.info", channel=channel_id),
         I18NContext("core.message.bind.channel.info.shared", count=len(siblings)),
-        *id_lines(siblings),
+        *[
+            I18NContext(
+                "core.message.bind.channel.info.entry",
+                id=target_id,
+                priority=priority,
+                disable_joke=True,
+            )
+            for target_id, _, priority in siblings
+        ],
         *channel_hint_lines(msg),
     ]
 
@@ -371,6 +381,32 @@ async def _(msg: Bot.MessageSession):
         await msg.finish(I18NContext("core.message.bind.channel.unknown"))
     await msg.session_info.refresh_info()
     await msg.finish(I18NContext("core.message.bind.channel.reset.success", channel=channel_id))
+
+
+@b.command(
+    "channel priority set <priority> {{I18N:core.help.bind.channel.priority.set}}",
+    required_admin=True,
+)
+async def _set_channel_priority(msg: Bot.MessageSession, priority: int):
+    if not msg.session_info.target_union_id:
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
+
+    if not PUSH_PRIORITY_MIN <= priority <= PUSH_PRIORITY_MAX:
+        await msg.finish(I18NContext("core.message.bind.channel.priority.invalid"))
+
+    if not await TargetUnionBind.set_push_priority(msg.session_info.target_id, priority):
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
+    await msg.finish(I18NContext("core.message.bind.channel.priority.set.success", priority=priority))
+
+
+@b.command("channel priority reset {{I18N:core.help.bind.channel.priority.reset}}", required_admin=True)
+async def _reset_channel_priority(msg: Bot.MessageSession):
+    if not msg.session_info.target_union_id:
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
+
+    if not await TargetUnionBind.set_push_priority(msg.session_info.target_id, 0):
+        await msg.finish(I18NContext("core.message.bind.channel.unknown"))
+    await msg.finish(I18NContext("core.message.bind.channel.priority.reset.success"))
 
 
 async def _start_handshake(msg: Bot.MessageSession) -> None:

@@ -225,19 +225,27 @@ class Bot:
         """将待推送的会话按「场景组 + 消息通道」归拢。
 
         :param session_list: 待推送的会话列表
-        :return: 分组后的会话列表，每组内部保持原有顺序
+        :return: 分组后的会话列表，每组内部按推送优先级排列
         """
         channel_maps: dict[str, dict[str, int]] = {}
+        order_maps: dict[str, dict[str, int]] = {}
         groups: dict[tuple[str, Any], list[FetchedSessionInfo]] = {}
 
         for session_ in session_list:
             union_id = session_.target_union_id
             if union_id and union_id not in channel_maps:
-                channel_maps[union_id] = await TargetUnionBind.list_channels(union_id)
+                rows = await TargetUnionBind.list_push_order(union_id)
+                channel_maps[union_id] = {target_id: channel_id for target_id, channel_id, _ in rows}
+                order_maps[union_id] = {target_id: index for index, (target_id, _, _) in enumerate(rows)}
             channel_id = channel_maps.get(union_id, {}).get(session_.target_id) if union_id else None
             # 查不到通道号即表示该场景没有绑定行，按独立场景处理，不与其它场景归为一组。
             key = (union_id, channel_id) if union_id and channel_id else ("", session_.target_id)
             groups.setdefault(key, []).append(session_)
+
+        # 分组顺序沿用 session_list，组内顺序决定队首与回退顺序，须与绑定行的排列一致。
+        for (union_id, _), hops in groups.items():
+            order = order_maps.get(union_id, {})
+            hops.sort(key=lambda hop: order.get(hop.target_id, 0))
 
         return list(groups.values())
 

@@ -229,6 +229,36 @@ async def _test_lxns_v6_migration_replaces_friend_code_with_oauth_columns():
         await database_update.Tortoise.generate_schemas(safe=True)
 
 
+async def _test_push_priority_v7_migration_adds_column():
+    conn = database_update.Tortoise.get_connection("default")
+    table = "target_union_bind"
+    # 先还原成升级前的表结构：没有推送优先级列，且带一行旧数据。
+    await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')
+    await conn.execute_query(f"""
+        CREATE TABLE "{table}" (
+            "target_id" VARCHAR(512) PRIMARY KEY,
+            "union_id" VARCHAR(512) NOT NULL,
+            "bound_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "channel_id" INT NOT NULL DEFAULT 1
+        );
+    """)
+    await conn.execute_query(
+        f'INSERT INTO "{table}" ("target_id", "union_id") VALUES (\'V7TEST|Group|1\', \'target|v7\');'
+    )
+
+    try:
+        with patch.object(database_update, "db_type", "sqlite"):
+            await database_update.update_database_to_v7(conn)
+            await database_update.update_database_to_v7(conn)
+
+        columns = {row["name"] for row in await conn.execute_query_dict(f'PRAGMA table_info("{table}");')}
+        rows = await conn.execute_query_dict(f'SELECT * FROM "{table}";')
+        return "push_priority" in columns and len(rows) == 1 and rows[0]["push_priority"] == 0
+    finally:
+        await conn.execute_query(f'DROP TABLE IF EXISTS "{table}";')
+        await database_update.Tortoise.generate_schemas(safe=True)
+
+
 @func_case
 async def test_database_update(tester: Tester):
     await tester.test(_test_wiki_url_rules_are_migrated_idempotently, "Wiki URL 规则幂等迁入全局名单")
@@ -248,5 +278,9 @@ async def test_database_update(tester: Tester):
     await tester.test(
         _test_lxns_v6_migration_replaces_friend_code_with_oauth_columns,
         "落雪绑定 v6 补充 OAuth 列并删除旧好友码列",
+    )
+    await tester.test(
+        _test_push_priority_v7_migration_adds_column,
+        "场景绑定 v7 补充推送优先级列并保留旧数据",
     )
     return tester

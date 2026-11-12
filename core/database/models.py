@@ -317,12 +317,14 @@ class TargetUnionBind(UnionBind):
 
     :param target_id: 场景 ID。
     :param channel_id: 所属消息通道号，同组内同号的场景被视为同一个现实场景。
+    :param push_priority: 主动推送优先级，数值越大越优先。
     """
 
     id_field = "target_id"
 
     target_id = fields.CharField(max_length=512, primary_key=True)
     channel_id = fields.IntField(default=1)
+    push_priority = fields.IntField(default=0)
 
     class Meta:
         table = "target_union_bind"
@@ -345,6 +347,30 @@ class TargetUnionBind(UnionBind):
         """
         binds = await cls.filter(union_id=union_id).values_list("target_id", "channel_id")
         return dict(binds)
+
+    @classmethod
+    async def list_push_order(cls, union_id: str) -> list[tuple[str, int, int]]:
+        """取该 union 下各场景按主动推送顺序排列的绑定行。
+
+        :param union_id: 场景 union ID。
+        :return: ``(场景 ID, 消息通道号, 推送优先级)`` 列表，顺序即推送顺序。
+        """
+        rows = await (
+            cls.filter(union_id=union_id)
+            .order_by("-push_priority", "bound_at", "target_id")
+            .values_list("target_id", "channel_id", "push_priority")
+        )
+        return list(rows)
+
+    @classmethod
+    async def set_push_priority(cls, target_id: str, priority: int) -> bool:
+        """设置单个场景的主动推送优先级。
+
+        :param target_id: 场景 ID。
+        :param priority: 优先级，数值越大越优先。
+        :return: 是否命中了绑定行。
+        """
+        return bool(await cls.filter(target_id=target_id).update(push_priority=priority))
 
 
 def new_union_id(scope: str) -> str:

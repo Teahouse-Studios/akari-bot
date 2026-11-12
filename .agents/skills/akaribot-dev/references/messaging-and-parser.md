@@ -537,8 +537,12 @@ parser 主干只保留解析与派发，**策略行为一律挂在 `HookPoint` �
 
 - 编号在组内从 1 开始逐个递增（`TargetUnionBind.next_channel_id()`），**默认各占一号，也就是默认谁也不跟谁去重**。
   取用当前会话的通道号直接读 `session_info.target_channel_id`，不要去翻模型内部。
+- 同通道内主动推送的先后由 `TargetUnionBind.push_priority` 决定（数值越大越优先，同分按 `bound_at`、`target_id` 升序），
+  `group_sessions_by_channel()` 按 `list_push_order()` 的次序排列组内会话，从而决定队首与 `next_hops` 的回退顺序。
+  优先级按 `target_id` 存储，选路不读平台名；入站命令去重不读它，只影响主动推送。
 - 用户侧由 `~bind channel` 一组命令管理，`~bind channel auto` 会让两个小可用一对口令互认，
-  自动合并场景组并统一通道号。
+  自动合并场景组并统一通道号；`~bind channel priority set <priority>`（0-100）与
+  `~bind channel priority reset` 调整本场景的推送优先级。
 - **命令去重**：`modules/core/hooks/routing.py` 订阅 `CHANNEL_CLAIM`，以模块 runtime 状态做抢占式认领。
   跨平台的消息 ID 无法互通，判定“同一条消息”靠“纯文本 hash 一致 + 收到时间相差不超过
   `CHANNEL_DEDUP_WINDOW`（10 秒）”。查表与写入之间不能有 `await`，靠单线程事件循环保证原子性。

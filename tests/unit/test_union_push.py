@@ -29,13 +29,15 @@ async def _push(union_id: str, message, alive: dict | None = None) -> list[tuple
     return calls
 
 
-async def _bind(prefix: str, *targets: tuple[str, int]) -> str:
+async def _bind(prefix: str, *targets: tuple[str, int], priority: dict[str, int] | None = None) -> str:
     head_client, head_channel = targets[0]
     union = await TargetUnionInfo.resolve_union(f"{head_client}|Group|{prefix}")
     for client, _ in targets[1:]:
         await union.bind_id(f"{client}|Group|{prefix}")
     for client, channel in targets:
         await TargetUnionBind.filter(target_id=f"{client}|Group|{prefix}").update(channel_id=channel)
+    for client, value in (priority or {}).items():
+        await TargetUnionBind.set_push_priority(f"{client}|Group|{prefix}", value)
     return union.union_id
 
 
@@ -48,6 +50,59 @@ async def _test_dedups_within_channel():
         # 队首承担推送，同通道的其余会话降为发送失败时的下一跳
         session = calls[0][0]
         return session.target_id == "UPUSHA|Group|dedup" and session.next_hops == ["UPUSHB|Group|dedup"]
+
+    except Exception:
+        return False
+
+
+async def _test_higher_priority_wins():
+    try:
+        union_id = await _bind("priority-win", ("UPUSHA", 1), ("UPUSHB", 1), priority={"UPUSHB": 10})
+        calls = await _push(union_id, Plain("x"))
+        session = calls[0][0]
+        return session.target_id == "UPUSHB|Group|priority-win" and session.next_hops == ["UPUSHA|Group|priority-win"]
+
+    except Exception:
+        return False
+
+
+async def _test_equal_priority_keeps_binding_order():
+    try:
+        # 先绑定的 UPUSHB 场景 ID 在字典序上更大，同分时仍应先发送。
+        union_id = await _bind("priority-tie", ("UPUSHB", 1), ("UPUSHA", 1))
+        calls = await _push(union_id, Plain("x"))
+        return calls[0][0].target_id == "UPUSHB|Group|priority-tie"
+
+    except Exception:
+        return False
+
+
+async def _test_offline_priority_falls_back():
+    try:
+        union_id = await _bind("priority-offline", ("UPUSHA", 1), ("UPUSHB", 1), priority={"UPUSHB": 10})
+        alive = {"UPUSHA": {"target_prefix_list": ["UPUSHA"]}}
+        calls = await _push(union_id, Plain("x"), alive=alive)
+        return len(calls) == 1 and calls[0][0].target_id == "UPUSHA|Group|priority-offline"
+
+    except Exception:
+        return False
+
+
+async def _test_three_hops_follow_priority():
+    try:
+        union_id = await _bind(
+            "priority-hops",
+            ("UPUSHA", 1),
+            ("UPUSHB", 1),
+            ("UPUSHC", 1),
+            priority={"UPUSHB": 5, "UPUSHC": 10},
+        )
+        calls = await _push(union_id, Plain("x"))
+        session = calls[0][0]
+        return session.target_id == "UPUSHC|Group|priority-hops" and session.next_hops == [
+            "UPUSHB|Group|priority-hops",
+            "UPUSHA|Group|priority-hops",
+        ]
 
     except Exception:
         return False
@@ -132,6 +187,10 @@ async def _test_report_targets_dedup():
 async def test_union_push(tester: Tester):
     """core.builtins.bot: 按消息通道去重的组内推送测试"""
     await tester.test(_test_dedups_within_channel, "同通道去重测试")
+    await tester.test(_test_higher_priority_wins, "高优先级抢占队首测试")
+    await tester.test(_test_equal_priority_keeps_binding_order, "同优先级按绑定顺序选队首测试")
+    await tester.test(_test_offline_priority_falls_back, "高优先级掉线时顺延测试")
+    await tester.test(_test_three_hops_follow_priority, "多候选回退顺序按优先级排列测试")
     await tester.test(_test_skips_offline_channel, "掉线通道跳过测试")
     await tester.test(_test_message_factory_receives_session, "消息工厂取到队首测试")
     await tester.test(_test_message_factory_may_skip, "消息工厂跳过发送测试")

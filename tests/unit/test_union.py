@@ -716,6 +716,34 @@ async def _test_merge_union_renumbers_channels():
         return False
 
 
+async def _test_merge_union_keeps_push_priority():
+    try:
+        first = await TargetUnionInfo.resolve_union("UNIONTEST|Group|priority-mix1")
+        second = await TargetUnionInfo.resolve_union("UNIONTEST|Group|priority-mix2")
+        await TargetUnionBind.set_push_priority("UNIONTEST|Group|priority-mix2", 7)
+
+        merged = await first.merge_union(second)
+        row = await TargetUnionBind.get(target_id="UNIONTEST|Group|priority-mix2")
+        return row.union_id == merged.union_id and row.push_priority == 7
+
+    except Exception:
+        return False
+
+
+async def _test_reassign_channel_keeps_push_priority():
+    try:
+        union = await TargetUnionInfo.resolve_union("UNIONTEST|Group|priority-rechannel")
+        await union.bind_id("UNIONTEST|Group|priority-rechannel-2")
+        await TargetUnionBind.set_push_priority("UNIONTEST|Group|priority-rechannel-2", 7)
+
+        channel = await TargetUnionInfo.reassign_channel("UNIONTEST|Group|priority-rechannel-2", 1)
+        row = await TargetUnionBind.get(target_id="UNIONTEST|Group|priority-rechannel-2")
+        return channel == 1 and row.push_priority == 7
+
+    except Exception:
+        return False
+
+
 async def _test_unbind_id_splits_account():
     try:
         union = await SenderUnionInfo.resolve_union("UNIONTEST|unbind|1")
@@ -1318,6 +1346,8 @@ async def test_union(tester: Tester):
     await tester.test(_test_merge_target_union_moves_module_rows, "merge_union 场景模块表改挂测试")
     await tester.test(_test_channel_id_concurrent_bind_is_unique, "消息通道并发分配测试")
     await tester.test(_test_merge_union_renumbers_channels, "消息通道合并重新编号测试")
+    await tester.test(_test_merge_union_keeps_push_priority, "合并保留推送优先级测试")
+    await tester.test(_test_reassign_channel_keeps_push_priority, "变更消息通道保留推送优先级测试")
     await tester.test(_test_reassign_channel_clears_peer_bots_atomically, "消息通道变更原子清理互认测试")
     await tester.test(_test_reassign_channel_rolls_back_peer_cleanup_failure, "消息通道变更失败回滚测试")
     await tester.test(_test_unify_channels_moves_complete_equivalence_class, "消息通道整体并合测试")
