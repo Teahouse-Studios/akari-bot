@@ -126,7 +126,9 @@ def _test_parse_offset():
         and parse_offset("+0:00") == timedelta()
         and parse_offset("8:00") == timedelta(hours=8)
         and parse_offset("+9") == timedelta(hours=9)
-        and parse_offset("invalid") == timedelta()
+        and parse_offset("invalid") is None
+        and parse_offset("invalid", fallback=True) == timedelta()
+        and parse_offset("+15:00") is None
     )
 
 

@@ -63,6 +63,11 @@ async def _(msg: Bot.MessageSession):
 
 @setup.command("timeoffset <offset> {{I18N:core.help.setup.timeoffset}}", required_admin=True)
 async def _(msg: Bot.MessageSession, offset: str):
+    if offset.strip().lower() == "reset":
+        await msg.session_info.target_union_info.edit_target_data("timezone_offset", None)
+        msg.session_info._tz_offset = None
+        msg.session_info.timezone_offset = None
+        await msg.finish(I18NContext("core.message.setup.timeoffset.reset"))
     parsed = parse_offset(offset)
     if parsed is None:
         await msg.finish(I18NContext("core.message.setup.timeoffset.invalid"))
@@ -109,6 +114,11 @@ async def _(msg: Bot.MessageSession):
 
 @setup.command("timezone <offset> {{I18N:core.help.setup.timezone}}")
 async def _(msg: Bot.MessageSession, offset: str):
+    if offset.strip().lower() == "reset":
+        await msg.session_info.sender_union_info.edit_sender_data("timezone_offset", None)
+        msg.session_info._display_tz_offset = None
+        msg.session_info.display_timezone_offset = None
+        await msg.finish(I18NContext("core.message.setup.timezone.reset"))
     parsed = parse_offset(offset)
     if parsed is None:
         await msg.finish(I18NContext("core.message.setup.timezone.invalid"))

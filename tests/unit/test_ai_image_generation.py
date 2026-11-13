@@ -316,8 +316,8 @@ async def _test_ask_llm_returns_accumulated_image_cost():
 
     session_info = SimpleNamespace(
         locale=Locale("zh_cn"),
-        tz=timezone.utc,
-        tz_label="+0",
+        display_tz=timezone.utc,
+        display_tz_label="+0",
         sender_union_info=SimpleNamespace(sender_data={}),
         support_markdown=False,
         support_markdown_extension=False,

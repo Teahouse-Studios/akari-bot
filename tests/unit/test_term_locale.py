@@ -15,7 +15,7 @@ from core.i18n import Locale, audit_terms
 from core.logger import Logger
 from core.tester import func_case, Tester
 
-# 该键的文案为「查看当前{TERM:target}的消息通道。」
+# 该键的文案为「查看当前{TERM:target}的消息通道与主动推送优先级。」
 TERM_DOC_KEY = "core.help.bind.channel"
 
 EXPECTED_CANDIDATES = (
@@ -94,7 +94,7 @@ def _test_candidate_chain_building():
 
 def _test_platform_wording():
     for target_from, is_private, expected in EXPECTED_WORDING:
-        if _wording(target_from, is_private) != f"查看当前{expected}的消息通道。":
+        if _wording(target_from, is_private) != f"查看当前{expected}的消息通道与主动推送优先级。":
             return False
     return True
 
@@ -104,7 +104,7 @@ def _test_unscoped_locale_falls_back():
     return (
         unscoped.term_scoped is False
         and unscoped.term_candidates is None
-        and unscoped.t(TERM_DOC_KEY) == "查看当前场景的消息通道。"
+        and unscoped.t(TERM_DOC_KEY) == "查看当前场景的消息通道与主动推送优先级。"
     )
 
 
@@ -135,7 +135,7 @@ async def _test_scope_survives_serialization():
     return (
         raw["locale"]["term_candidates"] == ["qq.group", "qq"]
         and restored_locale.term_scoped is True
-        and restored_locale.t(TERM_DOC_KEY) == "查看当前群聊的消息通道。"
+        and restored_locale.t(TERM_DOC_KEY) == "查看当前群聊的消息通道与主动推送优先级。"
     )
 
 
@@ -156,7 +156,7 @@ async def _test_derive_private_session_refreshes_terms():
     return (
         private_session.is_private is True
         and private_session.locale.term_candidates == ("qq.private", "private", "qq")
-        and private_session.locale.t(TERM_DOC_KEY) == "查看当前私聊的消息通道。"
+        and private_session.locale.t(TERM_DOC_KEY) == "查看当前私聊的消息通道与主动推送优先级。"
     )
 
 
