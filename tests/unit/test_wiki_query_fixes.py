@@ -132,7 +132,9 @@ async def _test_language_url_without_interwiki_mapping():
             return _page_response(
                 langlinks=[{"lang": "en", "url": "https://target.org/index.php?title=Different+title"}]
             )
-        return _page_response()
+        return {
+            "query": {"pages": {"23": {"pageid": 23, "title": "Different title", "fullurl": "https://target.org/23"}}}
+        }
 
     with (
         patch.object(WikiLib, "get_json", new=get_json),
@@ -140,7 +142,7 @@ async def _test_language_url_without_interwiki_mapping():
         patch.object(WikiLib, "check_wiki_available", new=AsyncMock(return_value=WikiStatus(True, target_info, ""))),
     ):
         result = await source.parse_page_info("Target", lang="en")
-    assert result.info.api == target_info.api
+    assert result.info.api == target_info.api and result.id == 23
     assert calls[1][1]["titles"] == "Different title"
     return True
 
@@ -424,7 +426,7 @@ async def _test_card_style_query_output():
         if expected_card:
             assert len(cards) == 1
             assert cards[0].title == "Target" and cards[0].description == description
-            assert cards[0].url == page.link and cards[0].pic_url == info.logo_url
+            assert cards[0].url == page.link and cards[0].pic_url is None
             assert not sent[0].contains(URLElement)
         else:
             assert not cards
@@ -465,6 +467,68 @@ async def _test_card_style_query_output():
         await query_pages(session, "File:Audio")
     assert not sent[0].contains(CardElement) and sent[1].contains(AudioElement)
     assert any(isinstance(item, URLElement) and item.original_url == page.link for item in sent[0])
+    return True
+
+
+async def _test_card_page_images():
+    target = SimpleNamespace(api_link=API, interwikis={}, headers={}, prefix=None)
+    for image_state in ("thumbnail", "missing", "unsupported", "error", "revision", "diff"):
+        session = _session(style=WIKI_MESSAGE_STYLE_CARD, client_name="QQBot")
+        session.session_info.support_card = True
+        info = WikiInfo(
+            api="https://target.org/api.php",
+            realurl="https://target.org",
+            extensions=[] if image_state == "unsupported" else ["PageImages"],
+            is_allowed=True,
+        )
+        page = PageInfo(
+            info=info,
+            title="prefix:Target",
+            id=23,
+            link="https://target.org/?curid=23",
+            desc="Card summary",
+            revision_id=42 if image_state == "revision" else None,
+            diff_data={"fromrevid": 41, "torevid": 42} if image_state == "diff" else None,
+        )
+        sent = []
+
+        async def get_json(wiki, **query):
+            if image_state == "error":
+                raise WikiAPIError("badvalue")
+            if image_state == "missing" or query.get("prop") != "pageimages" or query.get("piprop") != "thumbnail":
+                return {"query": {"pages": {"23": {"pageid": 23}}}}
+            return {
+                "query": {
+                    "pages": {
+                        str(query["pageids"]): {
+                            "thumbnail": {
+                                "source": f"{wiki.wiki_info.realurl}/{query['pithumbsize']}px-{query['pageids']}.png"
+                            }
+                        }
+                    }
+                }
+            }
+
+        async def finish(self, chain=None, **_kwargs):
+            sent.append(MessageChain.assign(chain))
+            raise SessionFinished
+
+        with (
+            patch("modules.wiki.wiki.WikiTargetInfo.get_by_target_id", new=AsyncMock(return_value=target)),
+            patch("modules.wiki.wiki.finish_if_wiki_blocked", new=AsyncMock()),
+            patch.object(WikiLib, "parse_page_info", new=AsyncMock(return_value=page)),
+            patch.object(WikiLib, "get_json", new=get_json),
+            patch.object(MessageSession, "hold", new=AsyncMock()),
+            patch.object(MessageSession, "release", new=AsyncMock()),
+            patch.object(MessageSession, "finish", new=finish),
+        ):
+            try:
+                await query_pages(session, "prefix:Target")
+            except SessionFinished:
+                pass
+        card = next(item for item in sent[0] if isinstance(item, CardElement))
+        assert card.description == page.desc and card.url == page.link
+        assert card.pic_url == ("https://target.org/100px-23.png" if image_state == "thumbnail" else None)
     return True
 
 
@@ -685,6 +749,7 @@ async def test_wiki_query_fixes(tester: Tester):
         (_test_url_target_keeps_revision_and_fragment, "URL 目标保留修订号、参数及章节"),
         (_test_url_render_modes, "URL 遵守 off、button、auto 且章节无重复摘要"),
         (_test_card_style_query_output, "Wiki 卡片样式遵守平台能力、偏好及链接策略"),
+        (_test_card_page_images, "卡片使用最终页面的 100px 代表图，缺图、查询失败及历史内容使用无图卡片"),
         (_test_search_limit_callback_and_more_link, "短搜索列表、网页入口与严格序号校验"),
         (_test_partial_query_failure_keeps_success, "多页查询失败不丢失成功结果"),
         (_test_search_error_is_not_empty_result, "搜索错误不会显示为未找到结果"),

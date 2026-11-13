@@ -1061,12 +1061,17 @@ async def _query_pages_impl(
                                 plain_slice.append(_format_page_desc(r.desc, session))
 
                     if card_mode and card_description and card_description.strip():
+                        page_image_url = None
+                        if not r.revision_id and not r.diff_data:
+                            image_wiki = WikiLib(r.info.api, headers)
+                            image_wiki.wiki_info = r.info
+                            page_image_url = await image_wiki.get_page_image(r.id)
                         plain_slice.append(
                             Card(
                                 title=display_title or r.title,
                                 description=card_description,
                                 url=r.link,
-                                pic_url=r.info.logo_url or None,
+                                pic_url=page_image_url,
                             )
                         )
                     elif r.link:

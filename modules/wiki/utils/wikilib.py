@@ -464,6 +464,30 @@ class WikiLib:
             raise BlockedWikiError(self.wiki_info.api)
         return await self.get_json_from_api(self.wiki_info.api, _no_login=_no_login, **kwargs)
 
+    async def get_page_image(self, pageid: int) -> str | None:
+        if pageid <= 0:
+            return None
+        try:
+            await self.fixup_wiki_info()
+            if "PageImages" not in self.wiki_info.extensions:
+                return None
+            response = await self.get_json(
+                action="query",
+                prop="pageimages",
+                pageids=pageid,
+                piprop="thumbnail",
+                pithumbsize=100,
+                pilicense="free",
+            )
+            page = response.get("query", {}).get("pages", {}).get(str(pageid), {})
+            source = page.get("thumbnail", {}).get("source")
+            return source if isinstance(source, str) and source.startswith(("https://", "http://")) else None
+        except BlockedWikiError:
+            raise
+        except Exception:
+            Logger.exception("Failed to query Wiki page image: ")
+            return None
+
     async def return_api(self, _no_login=False, _no_format=False, **kwargs) -> str:
         """return formatted api links with kwargs"""
         await self.fixup_wiki_info()
@@ -1078,6 +1102,8 @@ class WikiLib:
                                 reparse = await self.parse_page_info(rstitle, _search=True)
                             if reparse:  # if reparsed successfully, use the reparsed result
                                 page_info.before_title = page_info.title
+                                page_info.info = reparse.info
+                                page_info.id = reparse.id
                                 page_info.title = reparse.title
                                 page_info.link = reparse.link
                                 page_info.desc = reparse.desc
@@ -1382,6 +1408,7 @@ class WikiLib:
                         else:
                             # handling langlinks query result, skip normal processing
                             page_info.info = query_langlinks.info
+                            page_info.id = query_langlinks.id
                             page_info.title = query_langlinks.title
                             page_info.before_title = query_langlinks.title
                             page_info.link = query_langlinks.link
