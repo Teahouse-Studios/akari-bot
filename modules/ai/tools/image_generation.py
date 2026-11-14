@@ -18,24 +18,27 @@ if image_api:
         "type": "function",
         "function": {
             "name": "generate_image",
-            "description": "Generate a new image from a description. "
-            "Only use when the user asks to create, draw, or design an image.",
+            "description": "Create a new image from a text description. "
+            "Use it only when the user explicitly asks you to create, draw, or design an image. "
+            "To find pictures of real things, use `search_images` instead.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "prompt": {
                         "type": "string",
-                        "description": "A detailed description of the image, including subject, composition, "
-                        "style, lighting, and colors.",
+                        "description": "Description of the image. Keep every explicit requirement from the user, "
+                        "and include subject, composition, style, lighting, and colors where known.",
                     },
                     "size": {
                         "type": "string",
-                        "description": "Optional image size such as 1024x1024, 1536x1024, or 1024x1536. "
+                        "description": "Image size, such as 1024x1024, 1536x1024, or 1024x1536. "
+                        "Set it only when the user asks for a specific size or aspect ratio. "
                         "Supported values depend on the configured model.",
                     },
                     "quality": {
                         "type": "string",
-                        "description": "Optional quality preset such as low, medium, high, or auto. "
+                        "description": "Quality preset, such as low, medium, high, or auto. "
+                        "Set it only when the user asks for a specific quality. "
                         "Supported values depend on the configured model.",
                     },
                 },
@@ -47,31 +50,34 @@ if image_api:
         "type": "function",
         "function": {
             "name": "edit_image",
-            "description": "Edit an existing image from the conversation. "
-            "Only use when the user asks to modify, restyle, or change an image.",
+            "description": "Edit one or more images that already appear in this conversation. "
+            "Use it only when the user explicitly asks you to modify, restyle, or combine images.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "prompt": {
                         "type": "string",
-                        "description": "A precise description of the changes to make to the image.",
+                        "description": "The changes to make, stated precisely. "
+                        "Mention which parts of the image they affect when that is not obvious.",
                     },
                     "image_indexes": {
                         "type": "array",
-                        "description": "1-based indexes of the target images in chronological order. "
-                        "Defaults to the most recent image. Provide several indexes when the edit "
-                        "combines multiple images.",
+                        "description": "Positions of the images to edit, counting from 1 at the oldest image. "
+                        "The count covers every image in this conversation, including images produced by tools. "
+                        "Omit it to edit the most recent image. Give several positions to combine images.",
                         "items": {"type": "integer", "minimum": 1},
                         "minItems": 1,
                     },
                     "size": {
                         "type": "string",
-                        "description": "Optional output size such as 1024x1024. "
+                        "description": "Output size, such as 1024x1024. "
+                        "Set it only when the user asks for a specific size or aspect ratio. "
                         "Supported values depend on the configured model.",
                     },
                     "quality": {
                         "type": "string",
-                        "description": "Optional quality preset such as low, medium, high, or auto. "
+                        "description": "Quality preset, such as low, medium, high, or auto. "
+                        "Set it only when the user asks for a specific quality. "
                         "Supported values depend on the configured model.",
                     },
                 },

@@ -10,6 +10,14 @@ from core.constants.exceptions import InvalidTemplatePattern, InvalidCommandForm
 MAX_NEST_DEPTH = 10
 
 
+class CommandToken(str):
+    # 保留 token 之间的原始空白，末尾值参数才能还原换行
+    def __new__(cls, value: str, gap: str = " "):
+        token = super().__new__(cls, value)
+        token.gap = gap
+        return token
+
+
 class ArgumentPattern:
     """参数模式类 - 表示命令中的一个参数占位符。
 
@@ -376,6 +384,17 @@ def _find_option(argv: list[str], flag: str, allow_inline: bool = True) -> tuple
     return None
 
 
+def _join_tokens(tokens: list[str], leading_gap: bool = False) -> str:
+    if not tokens:
+        return ""
+    parts = [getattr(tokens[0], "gap", " ") or " "] if leading_gap else []
+    parts.append(str(tokens[0]))
+    for token in tokens[1:]:
+        parts.append(getattr(token, "gap", " "))
+        parts.append(str(token))
+    return "".join(parts)
+
+
 def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
     """根据给定的模板列表解析命令行参数。
 
@@ -437,7 +456,7 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                 if isinstance(a, ArgumentPattern):
                     if a.name.startswith("<"):
                         if len(argv_copy) > 0:
-                            parsed_argv[a.name] = Argument(argv_copy[0])
+                            parsed_argv[a.name] = Argument(str(argv_copy[0]))
                             del argv_copy[0]
                         else:
                             parsed_argv[a.name] = False
@@ -467,19 +486,19 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                                     if len(argv_copy) > 0:
                                         # 检查是否是最后一个参数
                                         if len(afters) == ai and len(arg.args) == subi:
-                                            # 最后的参数，消耗所有剩余的参数（用空格连接）
-                                            parsed_argv[sub_args.name] = Argument(" ".join(argv_copy))
+                                            # 最后的参数，消耗所有剩余的参数
+                                            parsed_argv[sub_args.name] = Argument(_join_tokens(argv_copy))
                                             argv_copy.clear()
                                         else:
                                             # 非最后参数，只消耗一个参数
-                                            parsed_argv[sub_args.name] = Argument(argv_copy[0])
+                                            parsed_argv[sub_args.name] = Argument(str(argv_copy[0]))
                                             del argv_copy[0]
                                     else:
                                         parsed_argv[sub_args.name] = False
 
                                 elif sub_args.name == "...":
                                     # 消耗所有剩余参数，每个参数包装为 Argument 对象
-                                    parsed_argv[sub_args.name] = [Argument(x) for x in argv_copy]
+                                    parsed_argv[sub_args.name] = [Argument(str(x)) for x in argv_copy]
                                     del argv_copy[:]
 
                                 else:
@@ -497,11 +516,11 @@ def parse_argv(argv: list[str], templates: list["Template"]) -> MatchedResult:
                         # 检查最后一个参数是否是值参数（< > 格式）
                         if isinstance(template_arguments[-1], ArgumentPattern):
                             if template_arguments[-1].name.startswith("<"):
-                                # 最后一个参数是值参数，将剩余参数追加到它（用空格连接）
+                                # 最后一个参数是值参数，将剩余参数按原始空白追加到它
                                 argv_keys = list(parsed_argv.keys())
-                                parsed_argv[argv_keys[argv_keys.index(template_arguments[-1].name)]].value += (
-                                    " " + " ".join(argv_copy)
-                                )
+                                parsed_argv[
+                                    argv_keys[argv_keys.index(template_arguments[-1].name)]
+                                ].value += _join_tokens(argv_copy, leading_gap=True)
                                 # 剩余 token 已并入上一个值参数，清空以避免重复处理
                                 argv_copy.clear()
 

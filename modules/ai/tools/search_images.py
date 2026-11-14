@@ -10,34 +10,28 @@ from core.utils.http import get_url
 
 proxy = CoreSecretConfig.proxy
 
-REFERENCE_HINT = (
+IMAGE_HINT = (
     "\n\n"
-    "If you use this content as a source in your final answer, "
-    "append a reference tag `[ref:<url>]` at the end of the cited content, "
-    "replacing `<url>` with the exact URL (`source_url`) of this source. "
-    "Only cite the source if you actually reference it."
+    "You cannot see these images directly. Use only results whose `title` and `source_url` clearly match the subject "
+    "the user asked about. If none clearly match, include no images.\n"
+    "To show an image, output `[KE:image,path=<image_url>]` with the exact `image_url` value of that result. "
+    "If your answer also uses information from an image's source page, "
+    "put `[ref:<source_url>]` immediately after the sentence it supports."
 )
 
-VERIFY_HINT = (
-    "\n\n"
-    "One more step! "
-    "Verify that the image in `thumbnail_url` matches the expectations, "
-    "then use `image_url` as the final output. "
-    "If you lack of visual ability, discard all of the above results."
-)
 
 search_images_desc = {
     "type": "function",
     "function": {
         "name": "search_images",
-        "description": "Search the web for images matching a query.",
+        "description": "Search the web for images of a subject. Returns results with a title, image URL, and source page URL.",
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Image search keywords."},
+                "query": {"type": "string", "description": "Concise keywords naming the subject to find images of."},
                 "search_results": {
                     "type": "integer",
-                    "description": "Number of image results.",
+                    "description": "Number of image results to return.",
                     "default": 5,
                     "minimum": 1,
                     "maximum": 10,
@@ -64,7 +58,6 @@ async def search_images(query: str, search_results: int = 5):
                     {
                         "title": result.get("title", ""),
                         "image_url": result.get("image", ""),
-                        "thumbnail_url": result.get("thumbnail", ""),
                         "source_url": result.get("url", ""),
                     }
                 )
@@ -89,10 +82,10 @@ async def search_images(query: str, search_results: int = 5):
         if not results:
             return "No image results found."
 
-        return orjson.dumps(results).decode("utf-8") + REFERENCE_HINT + VERIFY_HINT
+        return orjson.dumps(results).decode("utf-8") + IMAGE_HINT
     except Exception:
         traceback.print_exc()
-        return "Unable to search for images, let user contact bot owner."
+        return "Image search is unavailable. Tell the user to contact the bot owner."
 
 
 __all__ = ["search_images", "search_images_desc"]

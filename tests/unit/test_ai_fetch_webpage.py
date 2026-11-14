@@ -80,7 +80,7 @@ async def _test_webrender_skipped_for_non_public_url():
         patch.object(fetch_webpage_module, "web_render", new=render),
     ):
         result = await fetch_webpage_module.fetch_webpage(URL)
-    assert result == "Failed to fetch URL."
+    assert result == fetch_webpage_module.FETCH_FAILED_MESSAGE
     assert render.source.await_count == 0
     return True
 
@@ -93,7 +93,7 @@ async def _test_no_content_reports_message():
         patch.object(fetch_webpage_module, "web_render", new=render),
     ):
         result = await fetch_webpage_module.fetch_webpage(URL)
-    assert result == "No content extracted."
+    assert result == fetch_webpage_module.NO_CONTENT_MESSAGE
     assert render.source.await_count == 1
     return True
 

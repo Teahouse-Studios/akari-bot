@@ -8,12 +8,20 @@ from core.utils.web_render import web_render, SourceOptions
 
 MAX_LENGTH = 16384
 
+FETCH_FAILED_MESSAGE = (
+    "Unable to fetch this URL. The page may be unreachable, blocked, or on a restricted address. "
+    "Do not retry the same URL."
+)
+NO_CONTENT_MESSAGE = (
+    "The page was fetched, but it contains no readable text. It may require a login or consist mainly of media."
+)
+
 REFERENCE_HINT = (
     "\n\n"
-    "If you use this content as a source in your final answer, "
-    "append a reference tag `[ref:<url>]` at the end of the cited content, "
-    "replacing `<url>` with the exact URL of this source. "
-    "Only cite the source if you actually reference it."
+    "Citation format: if your answer uses information from this page, "
+    "put `[ref:<url>]` immediately after the sentence it supports, "
+    "replacing `<url>` with the exact `url` value above. "
+    "Cite the page only if you actually used it."
 )
 
 
@@ -21,10 +29,14 @@ fetch_webpage_desc = {
     "type": "function",
     "function": {
         "name": "fetch_webpage",
-        "description": "Fetch a webpage and return its readable text content.",
+        "description": "Fetch a web page and return its main content as plain text, without HTML, links, or images. "
+        "Use it to read a page the user linked, or to get details that a search snippet does not cover. "
+        f"Content longer than {MAX_LENGTH} characters is truncated.",
         "parameters": {
             "type": "object",
-            "properties": {"url": {"type": "string"}},
+            "properties": {
+                "url": {"type": "string", "description": "Full URL of the page, including `http://` or `https://`."}
+            },
             "required": ["url"],
         },
     },
@@ -89,15 +101,16 @@ async def fetch_webpage(url: str):
                 break
 
         if not text:
-            return "No content extracted." if fetched else "Failed to fetch URL."
+            return NO_CONTENT_MESSAGE if fetched else FETCH_FAILED_MESSAGE
 
         result = {
             "url": url,
             "content": text[:MAX_LENGTH],
+            "truncated": len(text) > MAX_LENGTH,
         }
         return orjson.dumps(result).decode("utf-8") + REFERENCE_HINT
     except Exception:
-        return "Failed to fetch URL."
+        return FETCH_FAILED_MESSAGE
 
 
 __all__ = ["fetch_webpage", "fetch_webpage_desc"]

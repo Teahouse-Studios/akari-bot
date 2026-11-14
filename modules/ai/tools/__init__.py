@@ -42,8 +42,8 @@ def _build_image_message(images: list[dict]) -> dict:
     content = [
         {
             "type": "text",
-            "text": "The following images were produced by a tool. "
-            "Include the matching [KE:image,path=...] code in your reply if the user should see an image:",
+            "text": "The images below were produced by the tool calls above. Each image follows its KE code. "
+            "To show an image to the user, copy its `[KE:image,path=...]` code exactly into your reply.",
         }
     ]
     for image in images:

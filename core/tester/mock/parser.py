@@ -88,7 +88,10 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         command = msg.trigger_msg[len(msg.session_info.prefixes[0]) :]
 
     command = command.strip()
-    command_split: list = command.split(" ")  # 切割消息
+    words = list(re.finditer(r"\S+", command))
+    command_split: list = [word.group(0) for word in words]
+    if not command_split:
+        return ""
     msg.command_original_word = command_split[0]
 
     not_alias = False
@@ -102,7 +105,7 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     alias_list = []
     for alias, _ in ModulesManager.modules_aliases.items():
         alias_words = alias.split(" ")
-        cmd_words = command.split(" ")
+        cmd_words = command_split
 
         if not not_alias:
             if cmd_words[: len(alias_words)] == alias_words:
@@ -115,12 +118,11 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
     if alias_list:
         max_alias = str(max(alias_list, key=len))
         real_name = ModulesManager.modules_aliases[max_alias]
-        command_words = command.split(" ")
-        command_words = real_name.split(" ") + command_words[len(max_alias.split(" ")) :]
-        command = " ".join(command_words)
+        alias_word_count = len(max_alias.split(" "))
+        command = real_name + command[words[alias_word_count - 1].end() :]
 
     msg.trigger_msg = command
-    return command.split(" ")[0]
+    return command.split()[0]
 
 
 async def _execute_module(msg: "Bot.MessageSession", modules, command_first_word):

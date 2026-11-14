@@ -171,9 +171,11 @@ def snake_to_camel(text: str, upper: bool = True, abbr_map: dict[str, str] | Non
 
 
 def normalize_space(text: str) -> str:
-    """删除字符串首尾的空格，以及中间多余的空格。"""
-    words = text.split()
-    return " ".join(words)
+    """压缩空白。
+    合并空格与制表符，去除各行首尾及整个字符串首尾的空白。"""
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[^\S\n]+", " ", text)
+    return "\n".join(line.strip() for line in text.split("\n")).strip()
 
 
 def truncate_text(text: str, length: int, suffix: str = "...") -> str:

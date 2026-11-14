@@ -1,6 +1,8 @@
 # Environment Variables
 *.env
 .worktrees/*
+.pre-commit-cache/*
+akari_bot_i18n/*
 
 # Runtime Lock & Process Files
 .bot.lock
@@ -10,9 +12,6 @@
 *.db
 *.db-shm
 *.db-wal
-
-# AkariBot I18N
-akari_bot_i18n/*
 
 # Python
 __pycache__/

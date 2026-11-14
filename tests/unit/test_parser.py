@@ -133,6 +133,28 @@ def _test_command_parser_preserves_backslashes():
     )
 
 
+def _test_command_parser_preserves_newlines():
+    module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
+    module.command_list.add(
+        CommandMeta(command_template=parse_template(["note <text>", "search [<text>] [-p <page>]"]))
+    )
+    parser = CommandParser(module, ["~"], module_name=module.module_name)
+
+    plain = parser.parse("parser-test note line1\nline2")[1]
+    blank_line = parser.parse("parser-test note line1\n\nline2")[1]
+    quoted = parser.parse('parser-test note "line1\nline2"')[1]
+    after_option = parser.parse("parser-test search -p 2\nline1\nline2")[1]
+
+    return (
+        plain["<text>"] == "line1\nline2"
+        and blank_line["<text>"] == "line1\n\nline2"
+        and quoted["<text>"] == "line1\nline2"
+        and after_option["<text>"] == "line1\nline2"
+        and after_option["-p"] == {"<page>": "2"}
+        and _split_command('parser-test note "line1\nline2"') == ["parser-test", "note", "line1\nline2"]
+    )
+
+
 def _test_command_parser_keeps_restricted_commands():
     module = Module.assign(module_name="parser-test", alias=None, recommend_modules=None, developers=None)
     module.command_list.add(CommandMeta(command_template=parse_template(["list"])))
@@ -338,6 +360,7 @@ async def test_parser_args(tester: Tester):
     await tester.test(_test_command_parser_option_inline_value, "命令选项内联值测试")
     await tester.test(_test_command_parser_option_missing_value, "命令选项缺少值测试")
     await tester.test(_test_command_parser_preserves_backslashes, "命令参数反斜杠保留测试")
+    await tester.test(_test_command_parser_preserves_newlines, "命令参数换行保留测试")
     await tester.test(_test_command_parser_keeps_restricted_commands, "执行期解析保留受限命令测试")
     await tester.test(_test_error_detail_markdown_format, "Markdown 错误详情代码块测试")
     await tester.test(_test_resolve_parsed_value, "命令参数取值映射测试")

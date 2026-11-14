@@ -9,24 +9,26 @@ proxy = CoreSecretConfig.proxy
 
 REFERENCE_HINT = (
     "\n\n"
-    "If you use any of the above results as a source in your final answer, "
-    "append a reference tag `[ref:<url>]` at the end of the cited content, "
-    "replacing `<url>` with the exact URL of this source. "
-    "Only cite the source if you actually reference it."
+    "Citation format: if your answer uses information from these results, "
+    "put `[ref:<url>]` immediately after the sentence it supports, "
+    "replacing `<url>` with the exact `url` value of that result, "
+    "for example `... was released in 2011.[ref:https://example.com/page]`. "
+    "Cite only results you actually used, and never cite a URL that is not in these results."
 )
+
 
 search_web_desc = {
     "type": "function",
     "function": {
         "name": "search_web",
-        "description": "Search the web for up-to-date information.",
+        "description": "Search the web and return results with a title, URL, and short snippet. Use it for recent events, time-sensitive data, or facts you are not sure about.",
         "parameters": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Search keywords."},
+                "query": {"type": "string", "description": "Concise search keywords."},
                 "search_results": {
                     "type": "integer",
-                    "description": "Number of search results.",
+                    "description": "Number of results to return.",
                     "default": 10,
                     "minimum": 1,
                     "maximum": 20,
@@ -62,7 +64,7 @@ async def search_web(query: str, search_results: int = 10):
         return orjson.dumps(results).decode("utf-8") + REFERENCE_HINT
     except Exception:
         traceback.print_exc()
-        return "Unable to use search engine, let user contact bot owner."
+        return "Web search is unavailable. Tell the user to contact the bot owner."
 
 
 __all__ = ["search_web", "search_web_desc"]

@@ -13,6 +13,7 @@ from core.utils.func import (
     unflatten_dict,
     camel_to_snake,
     snake_to_camel,
+    normalize_space,
     truncate_text,
     parse_offset,
     generate_progress_bar,
@@ -149,6 +150,15 @@ def _test_generate_progress_bar():
     )
 
 
+def _test_normalize_space():
+    return (
+        normalize_space("  ~ai   hello  ") == "~ai hello"
+        and normalize_space("~ai\tline1 \n  line2") == "~ai line1\nline2"
+        and normalize_space("~ai line1\r\n\r\nline2") == "~ai line1\n\nline2"
+        and normalize_space("\n~ai line1\n\n") == "~ai line1"
+    )
+
+
 @func_case
 async def test_func_utils(tester: Tester):
     """core.utils.func: 所有工具函数测试"""
@@ -159,6 +169,7 @@ async def test_func_utils(tester: Tester):
     await tester.test(_test_flatten_list, "flatten_list 测试")
     await tester.test(_test_flatten_dict, "flatten_dict 测试")
     await tester.test(_test_case_conversion, "camel_to_snake/snake_to_camel 测试")
+    await tester.test(_test_normalize_space, "normalize_space 保留换行测试")
     await tester.test(_test_truncate_text, "truncate_text 测试")
     await tester.test(_test_parse_offset, "parse_offset 测试")
     await tester.test(_test_generate_progress_bar, "generate_progress_bar 测试")

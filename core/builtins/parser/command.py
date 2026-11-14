@@ -10,7 +10,7 @@ from core.exports import exports
 from core.i18n import Locale
 from core.logger import Logger
 from core.types import Module
-from .args import parse_argv, Template, templates_to_str, ArgumentPattern, DescPattern
+from .args import parse_argv, Template, templates_to_str, ArgumentPattern, DescPattern, CommandToken
 
 if TYPE_CHECKING:
     from core.builtins.bot import Bot
@@ -22,20 +22,25 @@ _CN_QUOTE_PATTERN = re.compile(r"[“”]")
 _QUOTE_CHARS = ('"', "'")
 
 
-def _split_command(command: str) -> list[str]:
+def _split_command(command: str) -> list[CommandToken]:
     split_command = []
     index = 0
     length = len(command)
+    gap = ""
     while index < length:
         if command[index].isspace():
-            index += 1
+            gap_start = index
+            while index < length and command[index].isspace():
+                index += 1
+            gap += command[gap_start:index]
             continue
 
         quote = command[index]
         if quote in _QUOTE_CHARS:
             end = command.find(quote, index + 1)
             if end != -1 and (end + 1 == length or command[end + 1].isspace()):
-                split_command.append(command[index + 1 : end])
+                split_command.append(CommandToken(command[index + 1 : end], gap))
+                gap = ""
                 index = end + 1
                 continue
 
@@ -56,7 +61,8 @@ def _split_command(command: str) -> list[str]:
             token.append(command[index:end])
             index = end
 
-        split_command.append("".join(token))
+        split_command.append(CommandToken("".join(token), gap))
+        gap = ""
 
     return split_command
 

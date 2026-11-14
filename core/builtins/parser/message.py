@@ -2,6 +2,7 @@
 
 import functools
 import inspect
+import re
 import time
 from types import UnionType
 from typing import TYPE_CHECKING, Union, get_args, get_origin
@@ -391,7 +392,11 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         command = msg.trigger_msg[len(msg.session_info.prefixes[0]) :]
 
     command = command.strip()
-    command_split: list = command.split(" ")  # 切割消息为单词列表
+    # 任意空白都算词间分隔，保留每个词在原文中的位置以便还原换行
+    words = list(re.finditer(r"\S+", command))
+    command_split: list = [word.group(0) for word in words]
+    if not command_split:
+        return ""
     # 别名改写会抹去用户实际输入的首词，退役策略的白名单依赖它
     msg.command_original_word = command_split[0]
 
@@ -426,9 +431,9 @@ async def _process_command(msg: "Bot.MessageSession", modules, disable_prefix, i
         # 获取别名对应的实际模块名
         real_name = ModulesManager.modules_aliases[max_alias]
 
-        # 重构命令：实际模块名 + 别名后的剩余参数
-        command_words = real_name.split(" ") + command_split[len(max_alias.split(" ")) :]
-        command = " ".join(command_words)
+        # 只替换别名词，其后的原始文字（含换行）原样保留
+        alias_word_count = len(max_alias.split(" "))
+        command = real_name + command[words[alias_word_count - 1].end() :]
         first_word = real_name.split(" ")[0]
 
     # 更新消息的触发命令

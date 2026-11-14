@@ -15,15 +15,18 @@ if api_key:
         "type": "function",
         "function": {
             "name": "execute_python_code",
-            "description": "Executes Python code and returns the results. Supports outputting text and PNG/JPEG images. "
-            "Use only for complex calculations or user required. "
-            "Internet access is not supported.",
+            "description": "Run Python code in an isolated sandbox and return its output. "
+            "Use it for calculations that need exact results, data processing, or charts, "
+            "or when the user asks you to run code. "
+            "The sandbox has no internet access, a 10-second time limit, and keeps no state between calls. "
+            "Returns printed output, the value of the last expression, and any PNG or JPEG images "
+            "the code displays, such as charts shown with `plt.show()`.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "code": {
                         "type": "string",
-                        "description": "The Python code that needs to be executed.",
+                        "description": "A complete, self-contained Python script. Use `print()` for text results.",
                     },
                 },
                 "required": ["code"],
@@ -40,7 +43,7 @@ async def execute_python_code(code: str):
             execution = await sandbox.run_code(code, timeout=10)
 
             if execution.error:
-                return execution.error.traceback
+                return f"The code raised an error:\n{execution.error.traceback}"
 
             returns = []
             images = []
@@ -63,7 +66,7 @@ async def execute_python_code(code: str):
             result = {"returns": returns, "stdout": execution.logs.stdout + execution.logs.stderr, "images": images}
             return orjson.dumps(result).decode("utf-8")
         except TimeoutException:
-            return "Request timeout"
+            return "Execution timed out after 10 seconds. Simplify the code or reduce the workload before retrying."
         except Exception:
             traceback.print_exc()
-            return "Unable to execute Python code, let user connect bot owner."
+            return "Unable to run Python code. Tell the user to contact the bot owner."
