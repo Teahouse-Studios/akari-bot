@@ -108,10 +108,7 @@ bot.py (守护进程)
         └── FastAPI: Webhook / API
 ```
 
-**关键设计**: Bot 进程和 Server 进程通过可配置的 **Peer RPC 与信号总线**通信。完整后端可选择数据库，
-也可选择由独立 Hub 提供的 WebSocket 实时传输；两种后端不得交叉组合或自动回退。Bot 进程负责平台 SDK
-交互，Server 进程负责命令解析和业务逻辑。每个进程实例有独立 `peer_id`，同类实例共享稳定 `service`；
-Registry 租约负责发现，service anycast / 稳定路由负责分流，逐实例 signal 负责广播。
+**关键设计**: Bot 进程负责平台 SDK 交互，Server 进程负责命令解析和业务逻辑，进程间通过可配置的 **Peer RPC 与信号总线**（`database` 或独立 Hub 支撑的 `websocket` 后端）通信。每个进程实例有独立 `peer_id`，同类实例共享稳定 `service`；Registry 租约负责发现，service anycast / 稳定路由负责分流，逐实例 signal 负责广播。
 
 ### 核心分层
 
@@ -193,25 +190,14 @@ def main():
 
 ### JobQueue Peer 启动与发现
 
-Client 和 Server 在开始接收业务任务前都执行同一套屏障：
+Client 和 Server 在开始接收业务任务前执行统一的注册流程：
 
-1. 生成本次进程生命周期唯一的 `peer_id`，登记 `role / service / node_id / capabilities / metadata`；其中
-   `node_id` 依次取自 `configure_peer()` 显式参数和 `jobqueue.toml` 的 `[jobqueue].jobqueue_node_id`。正常启动
-   已由 `pre_init` 为留空值生成 UUID 并写回，因此共用配置目录的进程共享稳定的部署节点标签；绕过守护进程
-   的入口仅在配置仍为空时生成进程级临时 UUID。节点标识不得读取或推导计算机名；
-2. 启动由 `[jobqueue].jobqueue_backend` 选择的完整后端，再以 `starting` 向其权威 Registry 注册，初始化完成后
-   切换为 `ready`；数据库后端写入 `JobQueuePeersTable`，WebSocket 后端通过已鉴权连接向独立 Hub 注册；
-3. 查询 Registry 获得当前拓扑，并向其它 ready 实例逐个投递 `peer.ready`；
-4. 已在线实例用定向 `peer.welcome` 回应，新旧双方由此快速更新本地缓存；
-5. 每 15 秒续租、每 10 秒完整对账；异常退出最多约 45 秒后由租约过期识别。
+1. 生成进程生命周期唯一的 `peer_id`，登记 `role / service / node_id / capabilities / metadata`。`node_id` 依次取自 `configure_peer()` 显式参数和 `[jobqueue].jobqueue_node_id`（`pre_init` 会为留空值生成 UUID 并写回配置，使共用配置目录的进程共享稳定的节点标识）。
+2. 启动 `[jobqueue].jobqueue_backend` 指定的后端，以 `starting` 状态向 Registry 注册（数据库后端写入 `JobQueuePeersTable`，WebSocket 后端通过鉴权连接向 Hub 注册），初始化完成后切换为 `ready`。
+3. 查询 Registry 获取当前拓扑，向其余 ready 实例投递 `peer.ready`，已在线实例以定向 `peer.welcome` 回应，双方据此刷新本地缓存。实际在线状态始终以 Registry 为准并校验 `source_peer_id`。
+4. 运行期每 15 秒续租、每 10 秒完整对账；异常退出的实例约 45 秒后租约过期。
 
-`peer.ready/welcome` 是变化通知，不是在线事实本身。接收端会重新读取 Registry，并校验信号来源
-`source_peer_id` 与载荷中的 `peer_id` 一致。维护、恢复、摘流和停止信号同样必须与 Registry 当前状态
-一致，迟到信号不能覆盖更新的状态。
-
-同一 `service` 下可以登记多个同类型实例：普通 service 目标由它们竞争领取；要求场景粘性的消息使用
-Rendezvous Hash 选择实例；广播先快照目标，再生成逐实例投递记录。因此未来扩大 Client / Server 数量
-不需要改变业务 RPC 载荷。
+同一 `service` 下可登记多个同类型实例：普通 service 目标竞争领取，要求场景粘性的消息按 Rendezvous Hash 选路，广播则先快照在线目标再生成逐实例投递记录。
 
 ### 退出码约定
 
@@ -319,25 +305,9 @@ ContextManager.send_private_msg(session_info, user_id, message)
 
 ### JobQueue 信号广播与多实例边界
 
-JobQueue 信号不是对外发送的聊天消息，也不是一条供多个消费者竞争的共享记录。发送端使用
-`PeerSelector` 按 `peer_id / node_id / role / service / capability` 选择目标，并为每个 ready 实例创建
-独立逻辑投递；数据库后端会为每个目标创建单独队列行。所有投递共享一个 `correlation_id`，每个目标分别
-领取、执行和 ACK；批量发送逐项区分后端明确接受、拒绝和接受状态未知的目标，可选择只取得投递结果，
-或汇总所有目标的执行结果与错误。
+信号广播使用 `PeerSelector` 按 `peer_id / node_id / role / service / capability` 选择在线 ready 实例，为每个目标创建独立逻辑投递（共享同一个 `correlation_id`，各自独立领取、执行与 ACK）。调用方只关心投递状态时用 `.emit()`，需汇总所有目标执行结果与错误时用 `.gather()`。广播面向当前在线实例快照，不向离线实例重放；配置与模块版本等持久状态通过 version / epoch 在启动时对账。
 
-广播是在线实例快照，不提供离线重放。配置、模块版本等必须最终一致的状态应持久化 version / epoch，
-进程启动后对账，信号只用于加速刷新。
-
-JobQueue 层已为同类型多 Client / Server 预留实例发现、anycast、稳定分流、回源和摘流；外围仍需：
-
-- Scheduler leader election 或分布式去重，避免每个 Server 重复执行单例任务；
-- 模块加载和热重载的集群 epoch 与独立协调者，避免 Queue handler 等待广播 ACK 时形成维护死锁；
-- Server 进程内会话和临时状态的故障迁移或明确失效策略；
-- 同平台账号多 Client 的 SDK 入口分片、主备租约或重复事件去重；
-- 生产环境使用适合多进程竞争的数据库，并为有副作用的 handler 设计幂等键。
-
----
-
+JobQueue 已提供多实例发现、anycast、稳定分流、回源和摘流机制；详细的后端与多实例约束见 `infrastructure.md` §5.9。
 
 ---
 
@@ -439,5 +409,3 @@ akari-bot/
 ├── cache/ logs/              # 运行时产物（cache 每次启动被清空）
 └── generated_docs/           # 生成的文档
 ```
-
-> **注意**：`assets/` 存放仓库自带的静态资源（字体、模板、`config_store`），`data/` 存放运行期可写数据（`private/`、`i18n_cache/`、`filter_words/` 等）。两者职责不同，不要混用。

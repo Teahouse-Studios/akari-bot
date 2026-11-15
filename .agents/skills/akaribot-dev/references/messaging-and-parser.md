@@ -13,8 +13,6 @@
 - [TOS 与错字纠正](#125-tos-限流)
 - [自定义异常](#128-自定义异常)
 
-这是当前最大的一份参考文件。只修改 loader、配置、数据库或队列时不要读取它；对应内容在 `infrastructure.md`。只修改模块声明和业务命令时先读 `module-development.md`，仅在涉及消息、会话或 parser API 时再加载本文件。
-
 ---
 
 ### 5.1 Bot 类 (`core/builtins/bot/__init__.py`)
@@ -70,7 +68,7 @@ class Bot:
         # 触发模块钩子
 ```
 
-**导出机制**：`Bot` 通过 `core/exports.py` 的 `add_export(Bot)` 注册到全局 `exports` 对象，其他模块通过 `from core.exports import exports; Bot = exports["Bot"]` 访问，避免循环导入。需要修改注册、加载时机或导出机制时，同时读取主技能直接链接的 `infrastructure.md`。
+**导出机制**：`Bot` 通过 `core/exports.py` 的 `add_export(Bot)` 注册到全局 `exports` 对象，其他模块通过 `from core.exports import exports; Bot = exports["Bot"]` 访问，避免循环导入。
 
 ### 5.2 消息系统 (`core/builtins/message/`)
 
@@ -224,7 +222,7 @@ Button = button = ButtonElement.assign
 ButtonFrame = button_frame = ButtonFrameElement.assign
 ```
 
-> **重要**：`Plain` 等名字绑定的是 `XxxElement.assign` 这个 classmethod，**不是类**。所以 `isinstance(x, Plain)` 会直接报错，类型判断必须用 `elements.py` 里的真实类（`PlainElement` 等）。`assign` 会做参数归一化（例如 `I18NContext("key", a=1)` 把 `a=1` 收进 `kwargs` 字段），因此构造消息元素一律走别名，不要直接调类构造器。
+> `Plain` 等别名绑定的是 `XxxElement.assign` 工厂方法（做参数归一化），不是类本身；类型判断需使用 `elements.py` 中的真实类（如 `PlainElement`），构造元素使用别名。
 
 #### 消息链类型优先级
 
@@ -459,7 +457,7 @@ class Features:
     # 构造一份 Features 实例；需要基于既有实例微调时使用 attrs.evolve()
 ```
 
-平台必须用关键字参数构造 `Features` **实例**，不要通过子类覆盖默认值，也不要把 `Features` 类本身赋给 ContextManager。
+平台在 `bots/<platform>/features.py` 中用关键字参数构造 `Features(...)` 实例并赋给 `ContextManager.features`，以便 `attrs.asdict()` 序列化。
 
 ### 5.4 命令解析器 (`core/builtins/parser/`)
 
@@ -526,20 +524,16 @@ parser 主干只保留解析与派发，**策略行为一律挂在 `HookPoint` �
 | `routing.py` | `CHANNEL_CLAIM` 频道去重 |
 | `errors.py` / `telemetry.py` / `retired.py` | 错误上报、统计、退役客户端迁移 |
 
-订阅方通过返回 `results.py` 里的结果类型决定 parser 后续走向：`Continue`（放行）、`RewriteTrigger`（改写触发文本）、`Stop`（按 `StopScope` 中止）、`Handled`（已自行处理，不再走默认提示）、`RecoveryProposal`（提出纠正建议）。**改解析期行为前先判断它归属主干还是某个订阅**——直接在 `message.py` 里加分支往往是改错了地方。
+订阅方通过返回 `results.py` 里的结果类型决定 parser 后续走向：`Continue`（放行）、`RewriteTrigger`（改写触发文本）、`Stop`（按 `StopScope` 中止）、`Handled`（已自行处理，不再走默认提示）、`RecoveryProposal`（提出纠正建议）。修改解析期行为前先确认该逻辑属于 parser 主干还是对应的 hook 订阅。
 
-`_try_command_recovery()` 拿到 `RecoveryProposal` 后会 `wait_confirm` 问用户，确认期间模块可能被热重载或停用，因此会用 `use_cache=False` 重取模块表并经 `_validate_recovery_target()` 复核后才执行。
+`_try_command_recovery()` 拿到 `RecoveryProposal` 后会 `wait_confirm` 询问用户，确认期间模块可能被热重载或停用，因此会用 `use_cache=False` 重取模块表并经 `_validate_recovery_target()` 复核后才执行。
 
 #### 消息通道 (message channel)
 
-一个现实中的群里可能同时蹲着好几个小可（比如 OneBot 与 QQ 官方 bot 各一个），它们各自收到同一条消息。
-`TargetUnionBind.channel_id` 用来表达这件事：**同一个场景组内 `channel_id` 相同的场景 = 现实中的同一个场景**。
+当同一实际群聊中同时接入多个机器人实例（如 OneBot 与 QQ 官方 bot）时，`TargetUnionBind.channel_id` 用于标识同一物理场景：**同一场景组内 `channel_id` 相同的场景代表同一个现实群聊**。
 
-- 编号在组内从 1 开始逐个递增（`TargetUnionBind.next_channel_id()`），**默认各占一号，也就是默认谁也不跟谁去重**。
-  取用当前会话的通道号直接读 `session_info.target_channel_id`，不要去翻模型内部。
-- 同通道内主动推送的先后由 `TargetUnionBind.push_priority` 决定（数值越大越优先，同分按 `bound_at`、`target_id` 升序），
-  `group_sessions_by_channel()` 按 `list_push_order()` 的次序排列组内会话，从而决定队首与 `next_hops` 的回退顺序。
-  优先级按 `target_id` 存储，选路不读平台名；入站命令去重不读它，只影响主动推送。
+- 编号在组内从 1 开始递增（`TargetUnionBind.next_channel_id()`），默认各占独立通道（互不去重）。当前会话的通道号通过 `session_info.target_channel_id` 读取。
+- 同通道内主动推送的先后由 `TargetUnionBind.push_priority` 决定（数值越大越优先，同分按 `bound_at`、`target_id` 升序），`group_sessions_by_channel()` 按 `list_push_order()` 的次序排列组内会话，从而决定队首与 `next_hops` 的回退顺序。优先级按 `target_id` 存储，仅影响主动推送，不参与入站命令去重。
 - 用户侧由 `~bind channel` 一组命令管理，`~bind channel auto` 会让两个小可用一对口令互认，
   自动合并场景组并统一通道号；`~bind channel priority set <priority>`（0-100）与
   `~bind channel priority reset` 调整本场景的推送优先级。

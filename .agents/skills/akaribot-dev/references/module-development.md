@@ -12,11 +12,6 @@
 - [主动消息与状态系统](#711-主动发送消息)
 - [等待用户交互](#715-等待用户交互)
 
-修改模块配置或数据库模型时，同时读取主技能直接链接的 `infrastructure.md`。修改 `MessageSession`、消息元素或 parser 行为时，同时读取 `messaging-and-parser.md`。测试规则只以 `testing.md` 为准。
-
----
-
-
 ---
 
 ## 11. 常见开发任务速查
@@ -26,7 +21,7 @@
 1. 在 `modules/` 下创建目录
 2. 创建 `__init__.py`，使用 `module()` 注册
 3. 添加命令、正则、定时任务
-4. 可选：创建 `config.py`、`database/models.py`；有任何面向用户的文本时必须创建 `locales/zh_cn.json`，不要编辑其他语言文件
+4. 可选：创建 `config.py`、`database/models.py`；包含面向用户的文本时创建 `locales/zh_cn.json`
 
 ### 添加新命令
 
@@ -52,7 +47,7 @@ status, reload_count = await ModulesManager.reload_module("module_name")
 
 ### 获取当前时间 / 时区
 
-不要在模块中直接导入 `datetime.datetime` 或调用 `datetime.now()`、`date.today()`、`time.localtime()` 获取时间，这些写法会跟随宿主服务器时区。按用途选择入口：
+模块中按用途通过以下入口获取时间与时区（不使用跟随宿主服务器时区的 `datetime.now()`、`date.today()`、`time.localtime()`）：
 
 - **核心默认时区**（全局配置、定时任务、跨场景数据）：`from core.utils.timezone import core_now, core_today, core_tz`
 - **场景业务时区**（命令中的“今天/本周”等会影响业务判定的时间）：`msg.session_info.now()`、`msg.session_info.today()`、`msg.session_info.tz`
@@ -62,18 +57,11 @@ status, reload_count = await ModulesManager.reload_module("module_name")
 
 ---
 
-
----
-
 ## 7. 模块开发指南
 
 ### 核心原则
 
-> **国际化优先**: 模块内默认**不编写纯文本消息**，所有面向用户的文本必须使用 `I18NContext` 组件进行国际化。编写代码时只在对应模块目录下的 `locales/zh_cn.json` 添加或修改本地化节点；简体中文是基础语言。
->
-> 例外情况：仅在调试日志、内部逻辑字符串等不面向用户的场景可使用纯文本。
->
-> **翻译文件归属**：除非用户明确要求处理翻译或 Weblate 同步结果，否则**禁止创建、修改、删除或机械同步 `core/**/locales/`、`bots/**/locales/`、`modules/**/locales/` 中 `zh_cn.json` 以外的语言 JSON**，包括 `en_us.json`、`zh_tw.json`、`ja_jp.json`、`ko_kr.json` 等。其他语言由 Weblate 及其 bot 自动提交；即使现有翻译缺少新键，也只更新 `zh_cn.json`，不要复制简体中文或自行翻译补齐。`assets/config_store/<语言>/` 属于配置模板派生物，不在这条 Weblate 规则内；非 `zh_cn` 版本也不要手改，应交给配置生成自动化。
+> **国际化与语言文件**：模块内面向用户的文本统一使用 `I18NContext`，仅在调试日志或内部逻辑中使用纯文本。代码改动只维护对应模块目录下的 `locales/zh_cn.json`；其他语言文件由 Weblate 自动同步，`assets/config_store/<语言>/` 由配置生成脚本派生，均不手动修改。
 
 ### 7.1 基本结构
 
@@ -85,8 +73,8 @@ modules/my_module/
 ├── database/
 │   └── models.py        # 数据库模型（可选）
 ├── locales/             # 国际化文件（必需）
-│   ├── zh_cn.json       # 简体中文（基础语言，由代码贡献者维护）
-│   └── ...              # 其他语言由 Weblate bot 维护，不要手动改动
+│   ├── zh_cn.json       # 简体中文（基础语言）
+│   └── ...              # 其他语言（Weblate 自动维护）
 └── utils/               # 工具函数（可选）
 ```
 
@@ -283,16 +271,12 @@ timeout = AiConfig.llm_timeout
 api_key = AiConfigSecret.e2b_api_key
 ```
 
-- 模板类**不依赖模块对象**，因而是叶子模块，同包内任何文件都可以在顶层导入它；用 `Bind.Module.config()` 声明会因 `from . import <模块变量>` 造成循环导入
-- 传给 `on_module_config()` 的模块名通常须与 `module()` 声明的一致；模块主名为连字符、下划线形式作为命令别名保留时，配置表名可沿用下划线形式。其它不一致会被 `tests/unit/test_config_template.py` 拦下
-- 配置类**不会被实例化**，只是当作声明式 schema 用；不要在里面写方法或 `__init__`
-- 默认值决定类型校验，所以 `llm_timeout: float = 60` 这种要注意别写成 `int`
+- 模板类不依赖模块对象（叶子模块），包内文件可在顶层直接导入；传给 `on_module_config()` 的模块名须与 `module()` 声明一致（主名为连字符且下划线形式作为别名保留时，配置表名可沿用下划线形式）。
+- 配置类仅作为声明式 schema 使用，不被实例化，默认值决定类型校验。
 
 ### 7.7 数据库模型
 
-模块模型放在 `modules/<模块名>/database/models.py`。`core/database/__init__.py:34` 的 `fetch_module_db()` 会用 `pkgutil.iter_modules(modules.__path__)` 遍历所有模块，尝试 `find_spec("modules.<name>.database.models")`——**存在即自动注册到 Tortoise 的 `models` app，不需要手动登记**；找不到就静默跳过。
-
-表名约定：模块内定义 `table_prefix = "module_<模块名>_"`，各表用 f-string 拼。
+模块模型放在 `modules/<模块名>/database/models.py`，`core/database/__init__.py` 的 `fetch_module_db()` 会自动发现并注册到 Tortoise 的 `models` app（`database/__init__.py` 须存在，可为空文件）。表名约定在模块内定义 `table_prefix = "module_<模块名>_"`。
 
 ```python
 # modules/cytoid/database/models.py —— 真实例子
@@ -324,10 +308,9 @@ class CytoidBindInfo(DBModel):
         ...
 ```
 
-- 必须继承 `core.database.base.DBModel`（不是 `tortoise.Model`），它提供 `get_by_target_id` 等便利方法
-- 会话归属数据用 `union_id = fields.CharField(max_length=512, primary_key=True)`，并按归属声明 `union_scope = UNION_SCOPE_SENDER` 或 `UNION_SCOPE_TARGET`；不要新增 `sender_id` / `target_id` 状态列把同一用户或场景按平台割裂
-- 业务逻辑习惯写成模型上的 `@classmethod`，而不是散在命令函数里
-- `database/__init__.py` 可以是空文件，但**必须存在**，否则 `find_spec` 找不到
+- 继承 `core.database.base.DBModel`，使用其提供的 `get_by_target_id(msg)` / `get_by_sender_id(msg)` 方法（内部先将平台 ID 解析为 union，再按 `union_id` 查询或创建）。
+- 会话归属数据以 `union_id` 为主键，并按归属声明 `union_scope = UNION_SCOPE_SENDER` 或 `UNION_SCOPE_TARGET`。
+- 业务逻辑建议写为模型上的 `@classmethod`。
 
 ```python
 from modules.my_module.database.models import MyModuleData
@@ -336,8 +319,6 @@ data = await MyModuleData.get_by_target_id(msg)
 data.data["key"] = "value"
 await data.save()
 ```
-
-用户归属模型对应使用 `await MyModuleData.get_by_sender_id(msg)`。这两个方法会先把平台 ID 解析为 union，再按 `union_id` 查询或创建。
 
 ### 7.8 定时任务
 
@@ -391,12 +372,10 @@ result = await Bot.Hook.trigger("wiki.autosearch", session_info, args={"title": 
 
 #### 规则
 
-- **所有面向用户的文本必须使用 `I18NContext`**，禁止直接使用 `Plain("纯文本")`
-- **只编辑 `zh_cn.json`**；其他语言文件由 Weblate bot 维护，不得自行新增、补键、翻译或同步
-- 命令模板中的描述使用 `{{I18N:key}}` 语法
-- 模块 `desc` 参数使用 `{I18N:key}` 语法（单花括号）
-- 参数化消息使用 `string.Template` 格式的 `${param}` 占位符
-- 指代“当前会话”时使用术语占位符 `{TERM:target}`，不要写死“场景”
+- 面向用户的文本使用 `I18NContext`，仅编辑 `locales/zh_cn.json`。
+- 命令模板中的描述使用 `{{I18N:key}}` 语法（双花括号），模块 `desc` 参数使用 `{I18N:key}` 语法（单花括号）。
+- 参数化消息使用 `string.Template` 格式的 `${param}` 占位符。
+- 指代当前会话时使用术语占位符 `{TERM:target}`。
 
 #### 语言文件格式
 
@@ -457,22 +436,7 @@ async def _(msg: Bot.MessageSession):
 
 - 解析结果按平台而异：QQ 群显示“群聊”、Discord 频道显示“频道”、私聊显示“私聊”；未声明术语的平台回落到基础术语“场景”。
 - 占位符可带参数（`{TERM:target,count=3}`），参数只插值进术语自身的文本，不参与变体选择；缺参数时术语里的 `${param}` 原样保留。
-- 术语缺失时占位符原样保留在输出里，便于排障；构建期 `audit_terms()` 会把“引用了未声明的术语”并入 `errors`。
-- 术语词条集中在 `core/locales/terms/zh_cn.json`，键**省略 `term.` 前缀**：写 `"target": "场景"`、`"target.private": "私聊"`、`"target.discord": "频道"`，加载时自动补成 `term.target` 等。平台称呼差异也写在这一个文件里，不按适配器拆分——术语是词表而非平台逻辑，单一归属才能避免共用平台身份（milky 与 onebot 都是 `QQ`）时同名键被判为冲突并整体丢弃。
-- 顶层语言文件里不要再写 `term.*` 键：残留的同名副本会被术语目录覆盖，并由构建期审计报出。
-- 模块通常不需要新增术语；确有需要时在 `core/locales/terms/zh_cn.json` 追加词条即可。
-
-#### 错误示例（禁止）
-
-```python
-# ❌ 错误：使用纯文本
-await msg.finish("操作成功！")
-await msg.finish(f"你好，{name}！")
-
-# ✅ 正确：使用 I18NContext
-await msg.finish(I18NContext("my_module.message.success"))
-await msg.finish(I18NContext("my_module.message.greeting", name=name))
-```
+- 术语词条集中在 `core/locales/terms/zh_cn.json`，键名省略 `term.` 前缀（如 `"target": "场景"`、`"target.discord": "频道"`），加载时自动补全；构建期 `audit_terms()` 会校验术语引用。
 
 ### 7.11 主动发送消息
 
@@ -606,14 +570,13 @@ await msg.finish(I18NContext("my_module.message.greeting", name=reply.as_display
 answer = await msg.wait_anyone(timeout=30)
 ```
 
-> ⚠️ **超时不返回 `None`，而是 `raise WaitCancelException`。** 所以 `if next_msg:` 这种写法是没意义的——超时时根本走不到那一行。`WaitCancelException` 继承自 **`BaseException`**（见 §12.8），框架会在外层捕获并给用户发提示，模块里通常**不要**自己 catch。
->
-> 其他共同行为：
-> - 进入等待前会 `ExecutionLockList.remove(self)` + `end_typing()`，所以等待期间用户可以触发别的命令
-> - `wait_confirm` 在配置 `no_confirm` 为真时**直接返回 `no_confirm_action`**（默认 `True`），不发消息也不等待——写破坏性操作时要意识到确认可能被全局跳过
-> - `confirm_token` 要求用户**完全回复口令**才通过：字符串按原文比对，`I18NContext` 按会话语言解析占位符后比对，首尾空白均忽略。严格确认不发按钮、不挂反应提示，也不受 `no_confirm` 影响
-> - `append_instruction=True` 会自动追加平台相关的操作提示（反应 / 回复 / 文本），一般别关
-> - `message_chain` 不填就只等不发；`wait_reply` 例外，它是必填的
+> **超时与交互行为**：
+> - 超时不会返回 `None`，而是抛出继承自 `BaseException` 的 `WaitCancelException`（见 §12.8），由框架在外层捕获并向用户发送超时提示，模块内通常无需捕获。
+> - 进入等待前会自动释放 `ExecutionLockList` 并调用 `end_typing()`，等待期间用户可以触发其他命令。
+> - `wait_confirm` 在全局配置 `no_confirm` 为真时直接返回 `no_confirm_action`（默认 `True`），不发送消息也不等待。
+> - `confirm_token` 要求用户完全回复指定口令才通过（字符串按原文比对，`I18NContext` 按会话语言解析后比对，忽略首尾空白）；该模式不发送按钮或反应提示，也不受 `no_confirm` 影响。
+> - `append_instruction=True` 会自动追加平台相关的操作提示（反应 / 回复 / 文本）。
+> - `message_chain` 省略时仅等待不发消息；`wait_reply` 的 `message_chain` 为必填参数。
 
 ---
 
