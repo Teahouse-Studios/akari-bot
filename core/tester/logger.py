@@ -10,7 +10,11 @@ from core.config.core import CoreConfig
 test_log_path = Path("test_result.log")
 
 if os.path.exists(test_log_path):
-    os.unlink(test_log_path)
+    try:
+        os.unlink(test_log_path)
+    except OSError:
+        # 并发运行的测试进程可能已占用该文件；此时沿用其内容继续追加。
+        pass
 
 
 class TestLoggingLogger:

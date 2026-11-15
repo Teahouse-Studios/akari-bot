@@ -287,7 +287,7 @@ async def _test_function_entry_bounds_cancellation_cleanup():
             patch("core.tester.process.close_db", new=AsyncMock()),
             patch("core.tester.process.init_db", new=AsyncMock(return_value=True)),
             patch("core.tester.process.load_modules", new=AsyncMock()),
-            patch("core.tester.process.FUNCTION_TEST_CANCEL_TIMEOUT", 0.01),
+            patch("core.tester.tasks.CANCEL_TIMEOUT", 0.01),
         ):
             result = await asyncio.wait_for(run_function_entry(stubborn, is_ci=True, timeout=0.01), timeout=0.1)
         return result.get("timeout") is True and result.get("cleanup_pending") is True and cleanup_started.is_set()
@@ -369,12 +369,15 @@ async def _test_unit_subtest_exception_keeps_running_and_counts_once():
         patch.object(tester_module, "load_modules", new=AsyncMock()),
         patch.object(tester_module, "get_registry", return_value=[]),
         patch.object(tester_module, "run_function_entry", new=AsyncMock(return_value=res)),
-        patch.object(tester_module.glob, "glob", return_value=[str(Path("tests/unit/_fake_case.py"))]),
+        patch.object(
+            tester_module,
+            "_iter_integration_files",
+            return_value=[str(Path("tests/integration/_fake_case.py"))],
+        ),
         patch.object(tester_module.importlib.util, "spec_from_file_location", return_value=fake_spec),
         patch.object(tester_module, "junit_func_suite", func_suite),
         patch.object(tester_module, "junit_registry_suite", registry_suite),
         patch.object(tester_module, "junit_report") as junit_report,
-        patch.object(tester_module.os.path, "isdir", return_value=True),
         patch.object(tester_module.importlib.util, "module_from_spec", return_value=types.SimpleNamespace()),
     ):
         sys.modules.clear()
@@ -467,6 +470,63 @@ def _test_union_merge_logs_stay_out_of_repo_data():
     return True
 
 
+async def _plugin_cancels_orphan_tasks_after_test():
+    from core.tester.tasks import cancel_orphan_tasks, current_tasks
+
+    baseline = await current_tasks()
+    cancelled = asyncio.Event()
+
+    async def orphan():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    task = asyncio.create_task(orphan(), name="test-plugin-orphan")
+    try:
+        completed = await cancel_orphan_tasks(baseline)
+    finally:
+        if not task.done():
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+    return completed and task.cancelled() and cancelled.is_set()
+
+
+async def _plugin_async_timeout_is_failure():
+    from core.tester.pytest_plugin import TestTimeout, run_with_timeout
+
+    cancelled = asyncio.Event()
+
+    async def stuck():
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    try:
+        await run_with_timeout(stuck(), 0.01)
+    except TestTimeout:
+        return cancelled.is_set()
+    return False
+
+
+async def _plugin_timeout_error_from_test_is_not_timeout():
+    from core.tester.pytest_plugin import TestTimeout, run_with_timeout
+
+    async def inner_deadline():
+        raise TimeoutError("inner deadline")
+
+    try:
+        await run_with_timeout(inner_deadline(), 5)
+    except TestTimeout:
+        return False
+    except TimeoutError as error:
+        return str(error) == "inner deadline"
+    return False
+
+
 @func_case
 async def test_tester_framework(tester: Tester):
     """core.tester: 测试框架自身一致性测试"""
@@ -496,5 +556,8 @@ async def test_tester_framework(tester: Tester):
     await tester.test(_test_function_entry_does_not_misclassify_test_timeout, "子测试超时不冒充 runner 超时测试")
     await tester.test(_test_function_entry_init_failure_is_error, "func_case 初始化错误不可跳过测试")
     await tester.test(_test_union_merge_logs_stay_out_of_repo_data, "合并日志不落进 data/ 测试")
+    await tester.test(_plugin_cancels_orphan_tasks_after_test, "pytest 插件在用例结束后回收遗留任务测试")
+    await tester.test(_plugin_async_timeout_is_failure, "pytest 插件将异步用例超时判定为失败测试")
+    await tester.test(_plugin_timeout_error_from_test_is_not_timeout, "用例自身抛出的 TimeoutError 不算测试超时")
 
     return tester

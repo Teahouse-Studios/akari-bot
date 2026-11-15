@@ -111,7 +111,7 @@ class Tester:
         注册一个交互测试案例。
 
         :param input_: 预期输入。
-        :param expected: 预期输出，传入期望匹配器，若为 None 则手动复核。
+        :param expected: 预期输出，传入断言器，若为 None 则手动复核。
         :param note: 额外说明。
         :param timeout: 超时时间（秒），若为 None 则无超时限制。
         """

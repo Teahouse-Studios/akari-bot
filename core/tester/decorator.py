@@ -26,7 +26,10 @@ def case(
     note: str | None = None,
     timeout: float | None = None,
 ):
-    """快捷注册一个测试案例。"""
+    """在命令定义上挂一个临时案例，免去单独写集成入口。
+
+    案例由 ``tester.py`` 统一收集执行，函数本身仍是生产代码。
+    """
 
     def _decorator(fn: FunctionType):
         entry: CaseEntry = {
@@ -52,7 +55,7 @@ def get_registry() -> list[CaseEntry]:
 
 
 def func_case(fn: Callable):
-    """标记函数是否为测试函数（测试时会被调用）。"""
+    """标记函数为整合测试入口（tester.py 收集后逐个调用）。"""
     setattr(fn, "_func_case", True)
     return fn
 

@@ -17,55 +17,16 @@ from core.tester.mock.session import MockMessageSession
 from core.utils.container import ExpiringTempDict
 from .decorator import CaseEntry
 from .expectations import Expectation
+from .tasks import cancel_orphan_tasks, cancel_task
 from .timing import TIME_SCALE
 
 # 无进展看门狗随测试时限系数放大，但封顶 5 倍：慢机器上子测试可以更久，
 # 真正卡死时也不能让单个用例占用整个 CI 任务太久。
 DEFAULT_FUNCTION_TEST_TIMEOUT = 120.0 * min(TIME_SCALE, 5.0)
-FUNCTION_TEST_CANCEL_TIMEOUT = 1.0 * TIME_SCALE
 
 
 class _FunctionTestNoProgress(Exception):
     pass
-
-
-def _consume_task_result(task: asyncio.Task) -> None:
-    if task.cancelled():
-        return
-    try:
-        task.exception()
-    except asyncio.CancelledError:
-        pass
-
-
-async def _cancel_task(task: asyncio.Task) -> bool:
-    if task.done():
-        await asyncio.gather(task, return_exceptions=True)
-        return True
-    task.cancel()
-    done, _ = await asyncio.wait((task,), timeout=FUNCTION_TEST_CANCEL_TIMEOUT)
-    if task not in done:
-        task.cancel()
-        task.add_done_callback(_consume_task_result)
-        return False
-    await asyncio.gather(task, return_exceptions=True)
-    return True
-
-
-async def _cancel_orphan_tasks(baseline: set[asyncio.Task] | None = None) -> bool:
-    current = asyncio.current_task()
-    tasks = [
-        task
-        for task in asyncio.all_tasks()
-        if task is not current
-        and not task.done()
-        and not task.get_name().startswith("function-test-progress:")
-        and (baseline is None or task not in baseline)
-    ]
-    if not tasks:
-        return True
-    completed = await asyncio.gather(*(_cancel_task(task) for task in tasks))
-    return all(completed)
 
 
 def _infrastructure_error(input_, expected, message: str) -> list[dict]:
@@ -107,10 +68,9 @@ async def run_case_entry(entry: CaseEntry, is_ci: bool = False) -> list[dict]:
             pass
         return [result]
     finally:
-        # Integration cases can start queue pollers, waiters, or platform tasks.
-        # They share the event loop and in-memory database with later cases, so a
-        # detached task must not survive the database context it captured.
-        if not await _cancel_orphan_tasks(baseline_tasks):
+        # 注册表案例会启动队列轮询、等待器等后台任务，它们与后续案例共享事件循环与
+        # 内存数据库，不能带着已经失效的数据库上下文继续运行。
+        if not await cancel_orphan_tasks(baseline_tasks):
             message = "Registry test left a task that did not finish cancellation cleanup."
             Logger.error(message)
             raise RuntimeError(message)
@@ -184,9 +144,9 @@ async def run_function_entry(
                     raise _FunctionTestNoProgress
             finally:
                 if progress_task is not None and not progress_task.done():
-                    await _cancel_task(progress_task)
+                    await cancel_task(progress_task)
                 if not function_task.done():
-                    cleanup_pending = not await _cancel_task(function_task)
+                    cleanup_pending = not await cancel_task(function_task)
         if isinstance(returned, TesterClass):
             tester = returned
     except _FunctionTestNoProgress:
@@ -204,7 +164,7 @@ async def run_function_entry(
         if active_test:
             message += f" while running {active_test!r}"
         Logger.error(f"{message}.")
-        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+        cleanup_pending = not await cancel_orphan_tasks(baseline_tasks) or cleanup_pending
         return {
             "timeout": True,
             "time_cost": elapsed,
@@ -220,10 +180,10 @@ async def run_function_entry(
     except BaseException:
         error = traceback.format_exc()
         Logger.exception(f"Error running test function {fn.__name__}:")
-        cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+        cleanup_pending = not await cancel_orphan_tasks(baseline_tasks) or cleanup_pending
         return {"error": error, "cleanup_pending": cleanup_pending}
 
-    cleanup_pending = not await _cancel_orphan_tasks(baseline_tasks) or cleanup_pending
+    cleanup_pending = not await cancel_orphan_tasks(baseline_tasks) or cleanup_pending
 
     elapsed = time.perf_counter() - start
     entries = tester.get_entries()

@@ -4,7 +4,7 @@ This file provides guidance to AI agents when working with code in this reposito
 
 ## 深入文档
 
-`.agents/skills/akaribot-dev/SKILL.md` 是本项目的完整开发手册（架构详解、模块开发、平台适配器、i18n 规范等）。**本文件只记录高频命令与跨文件才能看清的架构脉络**；需要 API 细节时读那份技能文件，不要重复其内容。
+`.agents/skills/akaribot-dev/SKILL.md` 是本项目的完整开发手册（架构详解、模块开发、平台适配器、i18n 规范等）。**本文件只记录高频命令与跨文件才能看清的架构脉络**，API 细节查阅该技能文件。
 
 ## 常用命令
 
@@ -22,52 +22,39 @@ uv run python bot.py          # 等价的直接启动方式
 
 ### 测试
 
-项目使用**自研测试框架**（`core/tester/`），入口是仓库根的 `tester.py`。测试位于 `tests/unit/`（纯函数）和 `tests/integration/`（命令交互）。
-
-仓库根另有 `conftest.py` 和 `core/tester/pytest_plugin.py`，把 `@func_case` 入口接到了 pytest 上。但**这只是适配层，兼容性差**，不要依赖它：日常跑单测一律优先用 `tests/run_one.py`，遇到行为差异以 `tester.py` 为准。
-
+单元测试在 `tests/unit/`，由 pytest 运行；集成测试在 `tests/integration/`，由仓库根的 `tester.py`（自研框架 `core/tester/`）运行。
 > **不要在本地跑全量测试。** 项目单测数量很大，全量跑耗时且会拖慢迭代——那是 CI 的职责。本地只跑与改动相关的文件或入口。
 
 ```bash
-# 跑单个入口
-CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py tests/unit/test_action_text.py test_action_text_kecode
-# 省略第二个参数则跑该文件的全部入口
-CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py tests/unit/test_message.py
+uv run pytest tests/unit                        # 全部单元测试
+uv run pytest tests/unit/test_message.py -q     # 单个文件
+uv run pytest tests/unit -k markdown            # 按名字筛选
+
+CI=1 AKARI_TEST_FILTER=test_wiki_diff uv run python tester.py   # 单个集成文件
+CI=1 uv run python tester.py                                    # 全部整合测试（CI 用）
+COVERAGE=1 CI=1 uv run python tester.py                         # 附带覆盖率报告（htmlcov/index.html）
 ```
 
-该脚本会补 `sys.path`（以文件路径启动时项目根不在其中），并在收尾时 `os._exit` —— 框架加载的模块会留下未完成的后台任务，正常返回会一直挂到超时。
+全量测试由 CI 执行，本地只运行与改动相关的文件或入口。
 
-全量入口（**CI 用**，`tester.py` 会 glob `tests/**/*.py` 全跑，没有过滤参数）：
+pytest 侧：根 `conftest.py` 把 `assets/config_store/zh_cn` 铺到临时目录（`AKARI_CONFIG_PATH`）并叠加测试覆盖项，本机 `config/` 不参与测试；随后注册 `core/tester/pytest_plugin.py`。插件把 `tests/unit` 里 `@func_case` 标记的入口接管为 pytest 节点：会话开始时建库、加载模块与录制的 HTTP fixture，每个测试项开始前重建内存数据库与模块注册表，结束时回收遗留的后台任务，全程共用一个事件循环。单个测试默认超时 `120 × min(TIME_SCALE, 5)` 秒，可用 `@pytest.mark.akari_timeout(秒)` 或 `AKARI_TEST_TIMEOUT` 覆盖；测试中途需重建数据库时请求 `fresh_db` fixture。
 
-```bash
-CI=1 uv run python tester.py              # 跑全部测试；CI=1 是必需的
-COVERAGE=1 CI=1 uv run python tester.py   # 附带覆盖率报告（htmlcov/index.html）
-```
+两侧的用例写法相同：`@func_case` 标记入口，入口内用 `tester.integrate(输入, 期望)` 跑命令、`tester.test(函数, 说明)` 跑纯函数子测试。差别在于运行器：pytest 下 `tester.test` 直接以 pytest 断言失败结束（每个入口一个节点，首个失败即中止），`tester.py` 下则记录结果并在入口结束后统一汇报。
 
-- **不加 `CI=1` 会挂起**：无 `Expectation` 的用例会走 `input()` 等人工复核。`CI=1` 下这些用例转为 SKIP，并输出 `junit.xml`。
-- **测试不读 `config/`**：`tester.py` 与 `tests/run_one.py` 都会把 `assets/config_store/zh_cn` 铺到临时目录（`AKARI_CONFIG_PATH`）再叠加测试覆盖项，本机配置不参与测试。
-- **需要非默认配置值时用 `mock_config`**：`with mock_config(CoreConfig, use_emote=True):` 在进程内覆盖配置项，不读写配置文件，退出上下文即恢复。字段名必须是模板类声明过的项。
+`@case(输入, 期望)` 可直接挂在命令定义上，由 `tester.py` 收集执行，函数本身仍是生产代码。
 
-测试用例的两种写法：`@func_case` 标记的 `async def test_x(tester: Tester)`，内部用 `tester.integrate(输入, 期望)` 跑命令、`tester.test(函数)` 跑纯函数；或用 `@case(输入, 期望)` 直接装饰在 `@mod.command` 上。断言器（`Match` / `Contains` / `Regex` / `AnyOutput` / `All` / `Not` …）见 `core/tester/expectations.py`。
+- **非交互运行设 `CI=1`**：无 `Expectation` 的用例默认走 `input()` 等待人工复核；`CI=1` 下转为 SKIP 并输出 `junit.xml`。
+- **覆盖配置项用 `mock_config`**：`with mock_config(CoreConfig, use_emote=True):` 在进程内覆盖已声明的配置项，退出上下文即恢复。
+- 集成测试断言器（`Match` / `Contains` / `Regex` / `AnyOutput` / `All` / `Not` …）见 `core/tester/expectations.py`。
 
-**测试走的不是生产 `parser()`**，而是 `core/tester/mock/parser.py` 里的简化版：它用不带平台过滤的 `ModulesManager.return_modules_list()`，**不检查模块是否已启用**；`run_test_case()` 还会把测试发送者建成 superuser。所以集成测试里直接 `~wiki` 就能跑，无需先 `~module enable wiki`——但反过来，**测试通过不代表该命令在真实平台上可达**（可用平台、启用状态、权限都没被覆盖）。HTTP 请求由 `tests/fixtures/http/` 的录制回放（`tests/capture_http_fixtures.py` 负责录制）。
+集成测试使用 `core/tester/mock/parser.py` 中的简化版 `parser()`：它调用不带平台过滤的 `ModulesManager.return_modules_list()`，跳过模块启用检查，并将测试发送者设为 superuser。因此可用平台、启用状态与权限判定需单独针对相关逻辑验证。HTTP 请求由 `tests/fixtures/http/` 录制回放（`tests/capture_http_fixtures.py` 负责录制）。
 
 #### 测试编写规范
 
-测试数量是维护成本：每个用例都要随代码演进同步修改，冗余用例会拖慢 CI 并稀释真正的失败信号。**新增测试前先问“删掉它，哪个真实缺陷会漏过去”**，答不出来就不要写。
-
-- **先搜后写。** 新增前用 `grep` 查现有测试是否已覆盖同一行为；已覆盖则扩展原用例，不要另起一个。
-- **改行为就替换旧测试**，不要新旧并存；**删功能必须同时删对应测试与 `tests/fixtures/` 中不再被引用的 fixture**。
-- **只断言可观察行为**：返回值、发出的消息、持久化结果、权限与安全判定。不要断言 mock 的调用次数、私有属性与私有函数、日志原文。
-- **不要测的东西**：构造器与默认值、常量、getter/setter、标准库或第三方库的透传、仅检查“不抛异常”的冒烟用例。
-- **一个行为一个用例。** 同一行为的输入变体用同一用例内的循环或表驱动覆盖，不要每个变体注册一个 `tester.test`；一个 bug 修复只在现有测试都覆盖不到时才补回归用例，并且放进该功能原有的测试里。
-- **不写镜像用例。** 代码路径相同的对称场景（如发送者侧与目标侧、群聊与私聊、各平台各一份“缺失媒体被跳过”）只测其一；只有代码路径确实分叉时才分别覆盖。
-- **必须保留、不得为精简而删除**：安全与权限判定、数据迁移与一致性、并发与锁、以及每个功能的主路径。
-- **每个 `_test_` 函数必须被 `tester.test` 注册**，未注册的函数永远不会运行，属于死代码。
-- **按主题组织文件。** 一个功能（模块、适配器、子系统）对应一个测试文件，在其内追加；不要新建 `test_more_*` / `test_*_more` / `test_*_fixes` 之类的增量碎片文件。
-- **集成测试**（`tests/integration/`）每个命令只保留一条主路径加必要的、行为不同的错误路径；能用纯函数单测覆盖的逻辑不要放进集成测试，因为它们依赖录制的 HTTP fixture。
-- 用例描述（`tester.test` 的第二个参数）写被验证的行为，不写实现细节；测试中同样遵循“只描述当前状态”的注释约定。
-- 不要用固定 `sleep` 等待；需要超时时使用 `core.tester.timing.TIME_SCALE`。
+- 按模块、适配器或子系统组织测试文件，同一行为的输入变体用循环或表驱动归并，变更或移除功能时同步更新测试与 `tests/fixtures/`。
+- 只断言对外可观察行为（返回值、发出的消息、持久化结果、权限与安全判定），不绑定私有实现、mock 调用次数或日志原文。
+- 纯函数逻辑用单元测试覆盖；集成测试（`tests/integration/`）用于验证命令主路径与关键错误分支。
+- `_test_` 辅助函数需通过 `tester.test` 注册执行；涉及等待与超时时使用 `core.tester.timing.TIME_SCALE`。
 
 ## 架构脉络
 
@@ -99,7 +86,7 @@ COVERAGE=1 CI=1 uv run python tester.py   # 附带覆盖率报告（htmlcov/inde
 
 ### 循环导入的规避
 
-`core/exports.py` 提供全局 `exports` 字典。核心类（如 `Bot`）通过 `add_export(Bot)` 注册，被依赖方用 `from core.exports import exports; Bot = exports["Bot"]` 取回。**遇到循环导入时优先用这个机制，不要重排 import。**
+`core/exports.py` 提供全局 `exports` 字典。核心类（如 `Bot`）通过 `add_export(Bot)` 注册，被依赖方用 `from core.exports import exports; Bot = exports["Bot"]` 取回。遇到循环导入时优先使用该机制。
 
 ### 会话四件套
 
@@ -113,51 +100,36 @@ Tortoise ORM，**双连接**：`default`（可配 MySQL）+ `local`（本地 SQL
 
 ### 只描述当前状态
 
-- **文档、注释和配置说明只描述当前状态，不记录“从前如何”。** 不要写“原本是 X，现在改为 Y”“已迁移到 Z”“不再使用 W”这类对照式表述，直接陈述当下的事实与约束。
-- 变更历史由 git 承载。需要解释设计取舍时，说明当前为何如此，而不是叙述它从什么演变而来。
-- **例外**：代码中为迁移历史数据而保留的兼容逻辑（如旧配置表名、数据库版本升级路径、退役客户端的数据迁移）应当保留，并注明其适用范围。这类兼容是当前行为的一部分，不属于“记录从前”。
-- 标注某个 API 已弃用属于陈述当前状态，可以保留。
+- 文档、注释和配置说明只描述当前状态与设计取舍，不写历史对比；变更历史由 git 承载。
+- 代码中为迁移历史数据而保留的兼容逻辑（如旧配置表名、数据库版本升级路径、退役客户端的数据迁移）需保留并注明适用范围；API 弃用标注同样保留。
 
-### 注释
+### 注释与文档
 
-- **不要给自明的代码写注释。** 注释解释“为什么”，不解释“是什么”或实现细节。
-- 只有在逻辑涉及反直觉的边界情况、hack、复杂算法或特定业务规则时才写注释。
-- **单条注释一般不超过三行。** 写不下说明该抽函数或补文档，不要在代码里堆长篇说明。
-- **使用正式书面语**，不得出现口语化表达（如“这里坑爹”“先这样吧”“TODO：回头再说”）、语气词、感叹号或调侃。
-- 不要给非公开 API 的模块、类、函数加 docstring。
-
-### 文档
-
-- 文档面向技术用户与维护者，不面向初学者或照教程操作的人。
-- 只覆盖功能概述、基本使用步骤和接口实现。
-- 不要逐步讲解内部工作原理或技术细节。
+- 只在逻辑涉及反直觉的边界情况、hack、复杂算法或特定业务规则时写注释，解释“为什么”而非实现细节；单条一般不超过三行，使用正式书面语。非公开 API 不加 docstring。
+- 文档面向技术用户与维护者，覆盖功能概述、基本使用步骤和接口实现。
 
 ### i18n 与本地化
 
-- **i18n 强制**：模块内**禁止**对用户输出纯文本，一律 `I18NContext("key", **参数)`，并只在 `modules/<模块>/locales/zh_cn.json` 建节点（zh_cn 是必需的基础语言）。仅调试日志等不面向用户的场景可用纯文本。
-- **本地化文本只写简体中文**，不要提供其他语言的翻译。
-- **禁止改其他语言文件**：除非用户明确要求处理翻译或 Weblate 同步结果，不得创建、修改、删除或补齐 `core/**/locales/`、`bots/**/locales/`、`modules/**/locales/` 中 `zh_cn.json` 以外的语言 JSON。其他语言由 Weblate bot 自动提交，即使缺少新键也不要复制简体中文或自行翻译。`assets/config_store/<语言>/` 是配置模板派生物，非 `zh_cn` 版本也不要手改，应交给自动化生成。
-- **新增配置字段必须补注释**：配置项在模板类里声明（`core/builtins/config/decorator.py` 的 `@on_base_config` / `@on_config` / `@on_bot_config` / `@on_module_config`），同时要在**模板所属组件**的 `zh_cn.json` 里加 `config.comments.<表名>.<字段名>`——核心写 `core/locales/`，平台写 `bots/<平台>/locales/`，模块写 `modules/<模块>/locales/`。表名随装饰器而定（`config` / `secret` / `bot_<平台>` / `module_<模块>`，`secret=True` 时带 `_secret` 后缀）；`@on_base_config()` 的表外顶层键没有表名这一层。
-- **配置项注释视作文档**：只描述该项的用途，不描述技术细节。
+- 模块面向用户的文案统一使用 `I18NContext("key", **参数)`，只在对应组件的 `locales/zh_cn.json` 新增或修改节点（简体中文）。调试日志等非用户文案可用纯文本。
+- 其他语言的 `locales/*.json` 由 Weblate 自动同步，`assets/config_store/<语言>/` 由配置模板派生，均无需手动修改。
+- 新增配置字段时，在模板所属组件的 `zh_cn.json` 添加 `config.comments.<表名>.<字段名>`（核心写 `core/locales/`，平台写 `bots/<平台>/locales/`，模块写 `modules/<模块>/locales/`），注释只描述用途。表名随装饰器而定（`config` / `secret` / `bot_<平台>` / `module_<模块>`，`secret=True` 时带 `_secret` 后缀）；`@on_base_config()` 的表外顶层键无表名层级。
 
 ### 版本控制
 
-- **不要擅自 commit。** 所有改动都留在未提交的工作区，交由用户自行检视与提交。
-- 除非用户明确授权自动提交，否则不执行 `git commit`；`git add`、`git push`、`git reset`、`git checkout -- <file>` 等会改动暂存区、历史或丢弃工作区内容的操作同样需要用户授权。
-- 授权仅对当次请求有效，不要据此推定后续改动也可以自动提交。
-- 分支：新功能 `dev/` 前缀，修 bug `fix/` 前缀，命名用英文。
+- 改动留在工作区，仅在用户明确授权时执行 `git commit` 等版本控制写操作。
+- 分支：新功能 `dev/` 前缀，修 bug `fix/` 前缀，英文命名。
 
 ### 其他
 
 - Ruff：行宽 120、双引号，忽略 E402/F405/F403/E741/E721。
-- 中文排版：中英文之间加空格、全角标点、称呼用户用“你”、机器人自称用“机器人”而非“我”、第三人称用“它”。
+- 中文排版：中英文之间加空格、全角标点、称呼用户用“你”、机器人自称用“机器人”、第三人称用“它”。
 - 默认命令前缀 `~` / `～`。
-- **获取时间统一走 `core.utils.timezone` 或 `SessionInfo.now()` / `today()`**，不要在业务代码中直接使用 `datetime.datetime.now()`、`date.today()`、`time.localtime()`；用户展示用 `msg.format_time()` / `FormattedTime`。
+- 获取时间统一走 `core.utils.timezone` 或 `SessionInfo.now()` / `today()`，用户展示用 `msg.format_time()` / `FormattedTime`。
 
 ## 陷阱
 
 - **Windows 下输出中文乱码**：`bot.py` / `tester.py` 里的 `os.environ.setdefault("PYTHONIOENCODING", "UTF-8")` 在解释器启动后才执行，来不及生效。在启动命令前显式加 `PYTHONIOENCODING=UTF-8`（`start.bat` 用 `chcp 65001` 加显式赋值达到同样目的）。
 - **`.bot.lock` 单实例锁**：`bot.py` 用文件锁拒绝第二个实例，报 `Another instance is already running`。调试时确认没有残留进程占着锁。
-- `pre_init()` 每次启动会 **`rmtree` 整个 `cache/` 目录**，别往里放需要留存的东西。
-- **配置只在可写进程中补写**：`pre_init()` 与 `core/scripts/config_generate.py` 可写，之后守护进程会置位 `AKARI_CONFIG_READONLY=1` 再 spawn 子进程，bot 与 server 一律只读。所以**新增配置项后必须重启机器人**，否则子进程读到该键会抛 `ConfigOperationError`。
-- **按目录名找文件容易扑空**：parser 在 `core/builtins/parser/`，模块加载器是 `core/loader.py` 这个文件，测试框架在 `core/tester/`；配置系统实作在 `core/builtins/config/`，配置模板在 `core/config/`；`cooldown` / `game` / `dirty_check` / `web_render` 等通用设施在 `core/utils/`，TOS 处理在 `modules/core/hooks/tos.py`。
+- `pre_init()` 每次启动会清空整个 `cache/` 目录。
+- **配置只在可写进程中补写**：`pre_init()` 与 `core/scripts/config_generate.py` 可写，之后守护进程置位 `AKARI_CONFIG_READONLY=1` 再 spawn 子进程，bot 与 server 只读。新增配置项后需重启机器人使配置补写生效。
+- **常用目录位置**：parser 在 `core/builtins/parser/`，模块加载器是 `core/loader.py`，测试框架在 `core/tester/`；配置系统实现在 `core/builtins/config/`，配置模板在 `core/config/`；`cooldown` / `game` / `dirty_check` / `web_render` 等通用设施在 `core/utils/`，TOS 处理在 `modules/core/hooks/tos.py`。

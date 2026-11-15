@@ -110,12 +110,11 @@ Homepage = "https://github.com/Teahouse-Studios/akari-bot"
 Issues = "https://github.com/Teahouse-Studios/akari-bot/issues"
 
 [dependency-groups]
-dev = ["ruff>=0.15.1", "pytest>=9.0.2", "pytest-asyncio>=1.3.0"]
+dev = ["ruff>=0.15.1", "pytest>=9.0.2"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests/unit"]
+markers = ["akari_timeout: 覆盖单个测试的超时秒数"]
 filterwarnings = ["ignore:cannot collect test class:pytest.PytestCollectionWarning"]
 
 [tool.ruff]

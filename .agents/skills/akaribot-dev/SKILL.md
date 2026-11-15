@@ -15,7 +15,7 @@ description: AkariBot 项目开发指南。涵盖核心框架、消息与会话�
 - 平台能力使用 `Features(...)` 实例声明并赋给 `ContextManager.features`。
 - `SessionInfo` 会跨进程传输，字段需可序列化；模块代码运行在 server 进程，平台 SDK 操作通过 JobQueue / `ContextManager` 在 bot 进程执行。
 - 遇到循环导入时使用 `core.exports` 导出机制。
-- 日常单测使用 `tests/run_one.py` 按文件或入口运行，全量测试（`tester.py`）交由 CI 执行；自动化运行需设置 `CI=1`。
+- 单元测试用 pytest 运行（`uv run pytest tests/unit`），集成测试由 `tester.py` 运行（自动化 `CI=1`）；全量测试交由 CI 执行。
 - 文档、注释和配置说明只描述当前状态，不写历史对比；为数据迁移保留的兼容逻辑与 API 弃用标注除外。
 - 只在涉及边界情况、复杂算法或特定业务规则时写注释，解释“为什么”，单条一般不超过三行，使用正式书面语；非公开 API 不加 docstring。
 - 修改留在工作区，仅在用户明确授权时执行 `git commit` 等版本控制写操作。新功能分支用 `dev/`，修复分支用 `fix/`，英文命名。
@@ -29,7 +29,7 @@ description: AkariBot 项目开发指南。涵盖核心框架、消息与会话�
 | 修改 loader、component、配置、数据库或队列 | [infrastructure.md](references/infrastructure.md) | 模块加载、注册、配置模板、union 数据、双连接、JobQueue、exports、热重载 |
 | 新建或修改命令模块 | [module-development.md](references/module-development.md) | module/command/regex、权限、配置、数据库、i18n、定时任务、hook、交互等待 |
 | 新建或修改平台适配器 | [platform-adapters.md](references/platform-adapters.md) | info、Features、bot 入口、ContextManager、私信和平台能力 |
-| 编写、运行或诊断测试 | [testing.md](references/testing.md) | `@func_case`、`@case`、Expectation、mock parser、fixture、单测命令 |
+| 编写、运行或诊断测试 | [testing.md](references/testing.md) | pytest 单测、`@func_case` / `@case` 集成测试、Expectation、mock parser、fixture、运行命令 |
 | 依赖、格式化、分支或文字排版 | [workflow-and-style.md](references/workflow-and-style.md) | Ruff、pre-commit、依赖、分支、中文排版、导入和注释约定 |
 
 ## 组合读取建议
@@ -47,8 +47,9 @@ uv sync
 uv run ruff format .
 uv run ruff check .
 
-CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py <测试文件> [入口函数]
-CI=1 uv run python tester.py
+uv run pytest tests/unit
+CI=1 AKARI_TEST_FILTER=<集成文件名子串> uv run python tester.py
+CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py <集成测试文件> [入口函数]
 COVERAGE=1 CI=1 uv run python tester.py
 ```
 

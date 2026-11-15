@@ -1,39 +1,22 @@
-"""临时的单测运行脚本，仅用于开发期跑单个测试入口。"""
+"""开发期脚本：跑单个整合测试入口。"""
 
 import asyncio
-import atexit
 import importlib.util
 import os
-import shutil
 import sys
-import tempfile
 import traceback
 from pathlib import Path
 
-# union 合并日志目录，须与 core.constants.path.UNION_MERGE_LOGS_PATH_ENV 一致。
-# 单入口运行同样会走到真实的合并流程，不重定向就会在 data/ 里留下合成的日志
-# （与 tester.py 的引导一致）；已显式设置的值优先，需要留存日志时可自行指定。
-TEST_UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
-_test_union_merge_logs_path = Path(tempfile.mkdtemp(prefix="akari_test_union_merge_logs_"))
-os.environ.setdefault(TEST_UNION_MERGE_LOGS_PATH_ENV, str(_test_union_merge_logs_path))
-
-
-def _cleanup_test_union_merge_logs() -> None:
-    shutil.rmtree(_test_union_merge_logs_path, ignore_errors=True)
-
-
-atexit.register(_cleanup_test_union_merge_logs)
-
-# 以文件路径直接启动时，sys.path 首位是 tests/ 而非项目根，须先补上才能 import core
+# 以文件路径直接启动时，sys.path 首位是 tests/ 而非项目根，须先补上
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# 导入 tester 即完成测试配置铺设，须早于任何 core.* 导入（说明见 core/constants/path.py）
-from tester import test_config_path  # noqa: E402,F401
+# 导入即完成测试环境铺设，须早于任何 core.* 导入（说明见 core/constants/path.py）
+from tester import cleanup_test_environment  # noqa: E402,F401
 
-from core.tester.mock.database import init_db, close_db
-from core.tester.mock.loader import load_modules
-from core.tester.mock.random import Random
-from core.tester.process import run_function_entry
+from core.tester.mock.database import close_db, init_db  # noqa: E402
+from core.tester.mock.loader import load_modules  # noqa: E402
+from core.tester.mock.random import Random  # noqa: E402
+from core.tester.process import run_function_entry  # noqa: E402
 
 
 async def main(path: str, entry: str) -> int:
@@ -92,8 +75,7 @@ if __name__ == "__main__":
         traceback.print_exc()
         code = 1
     # 框架加载的模块会留下未完成的后台任务，正常返回会挂起，故强制退出
-    _cleanup_test_union_merge_logs()
-    shutil.rmtree(test_config_path, ignore_errors=True)
+    cleanup_test_environment()
     sys.stdout.flush()
     sys.stderr.flush()
     os._exit(code)

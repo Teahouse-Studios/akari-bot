@@ -17,7 +17,7 @@ def _searchable_texts(result: dict) -> tuple[str, ...]:
 
 
 class Expectation:
-    """所有期望匹配器的基类。"""
+    """所有断言器的基类。"""
 
     async def match(self, result: dict) -> bool:
         raise NotImplementedError
@@ -38,9 +38,9 @@ class Expectation:
 
 class All(Expectation):
     """
-    满足所有期望匹配器。
+    满足所有断言器。
 
-    :param expects: 期望匹配器
+    :param expects: 断言器
     """
 
     def __init__(self, *expects: Expectation):
@@ -58,9 +58,9 @@ class All(Expectation):
 
 class Any(Expectation):
     """
-    满足任意期望匹配器。
+    满足任意断言器。
 
-    :param expects: 期望匹配器
+    :param expects: 断言器
     """
 
     def __init__(self, *expects: Expectation):
@@ -78,9 +78,9 @@ class Any(Expectation):
 
 class Not(Expectation):
     """
-    不允许满足某一期望匹配器。
+    不允许满足某一断言器。
 
-    :param expect: 期望匹配器
+    :param expect: 断言器
     """
 
     def __init__(self, expect: Expectation):
@@ -476,25 +476,6 @@ class Raise(Expectation):
         return f"Raise({self.exc_type.__name__})"
 
 
-class Predicate(Expectation):
-    """
-    自定义期望匹配器。
-
-    :param func: 自定义函数
-    """
-
-    def __init__(self, func: Callable):
-        self.func = func
-
-    async def match(self, result):
-        if asyncio.iscoroutinefunction(self.func):
-            return bool(await self.func(result))
-        return bool(self.func(result))
-
-    def __str__(self):
-        return f"Predicate({self.func.__name__})"
-
-
 class AnyOutput(Expectation):
     """是否有任意输出（非空）。"""
 
@@ -643,3 +624,22 @@ class ActionContains(Expectation):
 
     def __str__(self):
         return f"ActionContains({self.text!r}, case_sensitive={self.case_sensitive})"
+
+
+class Predicate(Expectation):
+    """
+    自定义断言器。
+
+    :param func: 自定义函数
+    """
+
+    def __init__(self, func: Callable):
+        self.func = func
+
+    async def match(self, result):
+        if asyncio.iscoroutinefunction(self.func):
+            return bool(await self.func(result))
+        return bool(self.func(result))
+
+    def __str__(self):
+        return f"Predicate({self.func.__name__})"

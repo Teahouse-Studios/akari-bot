@@ -1,5 +1,6 @@
 """Bot.send_direct_message_to_union_target 单元测试 - 按消息通道去重的组内推送。"""
 
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 from core.alive import Alive
@@ -70,6 +71,10 @@ async def _test_equal_priority_keeps_binding_order():
     try:
         # 先绑定的 UPUSHB 场景 ID 在字典序上更大，同分时仍应先发送。
         union_id = await _bind("priority-tie", ("UPUSHB", 1), ("UPUSHA", 1))
+        # 绑定时间由时钟写入，粗粒度时钟上两行会落在同一微秒；按绑定顺序显式落值。
+        base = datetime(2024, 1, 1, tzinfo=UTC)
+        for index, target in enumerate(("UPUSHB|Group|priority-tie", "UPUSHA|Group|priority-tie")):
+            await TargetUnionBind.filter(target_id=target).update(bound_at=base + timedelta(seconds=index))
         calls = await _push(union_id, Plain("x"))
         return calls[0][0].target_id == "UPUSHB|Group|priority-tie"
 

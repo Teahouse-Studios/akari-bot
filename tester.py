@@ -6,10 +6,13 @@ import atexit
 import os
 import shutil
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
 
 import tomlkit
 
+# 引导代码不能放进 core 包：core.tester 等包的 __init__ 会导入配置模板，
+# 而模板在导入期就读取配置项，此时临时配置尚未铺设。
 TEST_CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"  # 须与 core.constants.path.CONFIG_PATH_ENV 一致
 TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
 
@@ -26,6 +29,18 @@ TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
 ]
 
 
+@dataclass(frozen=True)
+class TestEnvironment:
+    """本次测试运行实际使用的落盘路径。"""
+
+    config_path: Path
+    union_merge_logs_path: Path
+
+
+_environment: TestEnvironment | None = None
+_created_paths: list[Path] = []
+
+
 def _install_test_config() -> Path:
     path = Path(tempfile.mkdtemp(prefix="akari_test_config_"))
     if TEST_CONFIG_TEMPLATE_PATH.is_dir():
@@ -40,16 +55,8 @@ def _install_test_config() -> Path:
         file_path.write_text(tomlkit.dumps(document), encoding="utf-8")
 
     os.environ[TEST_CONFIG_PATH_ENV] = str(path)
-    atexit.register(lambda: shutil.rmtree(path, ignore_errors=True))
+    _created_paths.append(path)
     return path
-
-
-test_config_path = _install_test_config()
-
-# 测试配置铺设完成后立即加载：此后导入的模板与 core.builtins.utils 都要读取配置项。
-from core.builtins.config.bootstrap import bootstrap_config  # noqa: E402
-
-bootstrap_config()
 
 
 def _install_test_union_merge_logs() -> Path:
@@ -59,11 +66,34 @@ def _install_test_union_merge_logs() -> Path:
 
     path = Path(tempfile.mkdtemp(prefix="akari_test_union_merge_logs_"))
     os.environ[TEST_UNION_MERGE_LOGS_PATH_ENV] = str(path)
-    atexit.register(lambda: shutil.rmtree(path, ignore_errors=True))
+    _created_paths.append(path)
     return path
 
 
-test_union_merge_logs_path = _install_test_union_merge_logs()
+def prepare_test_environment() -> TestEnvironment:
+    """铺设测试环境并加载配置，重复调用返回同一份路径。"""
+    global _environment
+    if _environment is not None:
+        return _environment
+
+    config_path = _install_test_config()
+    union_merge_logs_path = _install_test_union_merge_logs()
+    atexit.register(cleanup_test_environment)
+
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
+    _environment = TestEnvironment(config_path=config_path, union_merge_logs_path=union_merge_logs_path)
+    return _environment
+
+
+def cleanup_test_environment() -> None:
+    """删除本次运行创建的临时目录；由环境变量显式指定的目录保留。"""
+    while _created_paths:
+        shutil.rmtree(_created_paths.pop(), ignore_errors=True)
+
+
+test_environment = prepare_test_environment()
 
 import asyncio
 import glob
@@ -80,8 +110,8 @@ from core.builtins.utils import confirm_command
 from core.constants import ascii_art, cache_path, tests_path
 from core.tester.decorator import CaseEntry, get_registry
 from core.tester.expectations import Expectation
-from core.tester.logger import TestLoggingLogger
 from core.tester.junit import JUnitReport, JUnitTestSuite, JUnitTestCase
+from core.tester.logger import TestLoggingLogger
 from core.tester.mock.database import close_db, get_last_init_error, init_db
 from core.tester.mock.loader import load_modules
 from core.tester.mock.random import Random
@@ -97,6 +127,9 @@ os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 IS_CI = os.environ.get("CI", "0") == "1"
 ENABLE_COVERAGE = os.environ.get("COVERAGE", "0") == "1"
 MAX_CONCURRENT = 1
+# 本机只跑部分整合测试时，用路径子串筛选
+TEST_FILTER_ENV = "AKARI_TEST_FILTER"
+INTEGRATION_TESTS_PATH = tests_path / "integration"
 
 _coverage_instance = None
 if ENABLE_COVERAGE:
@@ -156,6 +189,18 @@ async def _run_func_test(fn: FunctionType, path: str) -> FuncTestResult:
     return {"fn": fn, "path": path, "res": res}
 
 
+def _iter_integration_files() -> list[str]:
+    """列出待运行的整合测试文件，AKARI_TEST_FILTER 可按路径子串筛选。"""
+    pattern = str(INTEGRATION_TESTS_PATH / "**" / "*.py")
+    files = [
+        path for path in sorted(glob.glob(pattern, recursive=True)) if not os.path.basename(path).startswith(("_", "."))
+    ]
+    selector = os.environ.get(TEST_FILTER_ENV, "").strip().replace("\\", "/")
+    if selector:
+        files = [path for path in files if selector in path.replace("\\", "/")]
+    return files
+
+
 async def main(inspect_module=inspect):
     Logger.trace("main() START")
 
@@ -188,7 +233,6 @@ async def main(inspect_module=inspect):
     registry = get_registry()
     Logger.trace(f"main() registry has {len(registry)} entries")
 
-    test_number = 0
     total = 0
     passed = 0
     failed = 0
@@ -299,29 +343,26 @@ async def main(inspect_module=inspect):
                     junit_testcase.skipped = "Manual review required (unavailable in CI)"
                     junit_registry_suite.add_testcase(junit_testcase)
                     continue
-                else:
-                    Logger.trace(
-                        f"main() MANUAL REVIEW required for TEST{test_number} - this will HANG in non-CI mode!"
-                    )
-                    try:
-                        Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                        check = input()
-                        if check in confirm_command:
-                            Logger.success("RESULT: PASS")
-                            passed += 1
-                        else:
-                            Logger.error("RESULT: FAIL")
-                            failed += 1
-                            junit_testcase.failure = (
-                                "Manual review failed",
-                                f"Expected: {expected}\nActual: {fmted_output}",
-                            )
-                            junit_registry_suite.add_testcase(junit_testcase)
-                            continue
-                    except (EOFError, KeyboardInterrupt):
-                        print("")
-                        Logger.warning("Interrupted by user.")
-                        os._exit(1)
+                Logger.trace(f"main() MANUAL REVIEW required for TEST{test_number} - this will HANG in non-CI mode!")
+                try:
+                    Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                    check = input()
+                    if check in confirm_command:
+                        Logger.success("RESULT: PASS")
+                        passed += 1
+                    else:
+                        Logger.error("RESULT: FAIL")
+                        failed += 1
+                        junit_testcase.failure = (
+                            "Manual review failed",
+                            f"Expected: {expected}\nActual: {fmted_output}",
+                        )
+                        junit_registry_suite.add_testcase(junit_testcase)
+                        continue
+                except (EOFError, KeyboardInterrupt):
+                    print("")
+                    Logger.warning("Interrupted by user.")
+                    os._exit(1)
 
             junit_registry_suite.add_testcase(junit_testcase)
 
@@ -331,10 +372,11 @@ async def main(inspect_module=inspect):
         Logger.info("-" * 60)
 
     Logger.trace("main() starting func tests discovery")
-    if os.path.isdir(tests_path):
-        pyfiles = sorted(glob.glob(os.path.join(tests_path, "**", "*.py"), recursive=True))
+    func_tasks: list[tuple[FunctionType, str]] = []
+    func_results: list[FuncTestResult] = []
+    if INTEGRATION_TESTS_PATH.is_dir():
+        pyfiles = _iter_integration_files()
         Logger.trace(f"main() found {len(pyfiles)} test files")
-        func_tasks: list[tuple[FunctionType, str]] = []
 
         for path in pyfiles:
             name = os.path.splitext(os.path.basename(path))[0]
@@ -601,7 +643,7 @@ async def main(inspect_module=inspect):
         Logger.info(f"TIME COST: {total_test_cost:.06f}s")
         Logger.info("=" * 60)
     else:
-        Logger.warning("No tests registered. Use `core.tester.case` or `core.tester.test_case` to register tests.")
+        Logger.warning("No tests registered. Use `core.tester.func_case` to register integration tests.")
 
     if IS_CI:
         try:
@@ -617,8 +659,7 @@ async def main(inspect_module=inspect):
 
     if force_exit:
         Logger.error("Forcing tester shutdown because a timed-out task is still running.")
-        shutil.rmtree(test_config_path, ignore_errors=True)
-        shutil.rmtree(test_union_merge_logs_path, ignore_errors=True)
+        cleanup_test_environment()
         sys.stdout.flush()
         sys.stderr.flush()
         os._exit(1)

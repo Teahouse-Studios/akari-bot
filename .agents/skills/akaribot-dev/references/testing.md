@@ -14,28 +14,39 @@
 
 ### 9.1 测试框架
 
-AkariBot 使用内置测试框架，实现在 `core/tester/`，入口是仓库根的 `tester.py`。仓库根的 `conftest.py` 与 `core/tester/pytest_plugin.py` 仅作 pytest 适配层，日常单测统一使用 `tests/run_one.py`（见 §9.5），**不要在本地跑全量测试**，全量测试由 CI 执行。
-
-测试文件放在 `tests/` 下，`tester.py` 用 `tests/**/*.py` 递归收集：
+单元测试在 `tests/unit/`，由 pytest 运行；集成测试在 `tests/integration/`，由仓库根的 `tester.py` 运行。两者共用 `core/tester/` 下的测试设施（mock、断言器、JUnit 输出）。全量测试由 CI 执行。
 
 ```
 tests/
-├── unit/           # 纯函数单元测试
-├── integration/    # 走完整命令链路的集成测试
+├── unit/           # pytest 单元测试（纯函数）
+├── integration/    # @func_case 集成测试（走完整命令链路）
 ├── fixtures/       # HTTP 响应等录制的 fixture
 ├── helpers/        # RPC worker 等测试辅助进程
-├── run_one.py      # 跑单个测试文件 / 入口
+├── run_one.py      # 跑单个集成入口
 └── capture_http_fixtures.py   # 录制 HTTP fixture 的工具脚本
 ```
 
-有两种写法。
-
-**写法一：`@func_case` + `Tester`**（`tests/` 下的主流写法）
-
-一个被 `@func_case` 标记的 async 函数就是一个测试用例，接收 `tester: Tester`。现有用例通常在末尾 `return tester`；框架也会从传入的 tester 收集结果，因此省略返回仍可运行，但新用例保持该惯例更清晰：
+**两侧的用例写法相同**：用 `@func_case` 标记入口，入口接收 `tester: Tester`，入口内用 `tester.test` 跑纯函数子测试、用 `tester.integrate` 跑命令。差别只在运行器：`tests/unit/` 由 pytest 运行，`tests/integration/` 由 `tester.py` 运行。
 
 ```python
-from core.tester import func_case, Tester, Contains, Empty
+from core.tester import func_case, Tester, Contains
+
+
+def _test_iter_splits_surrounding_text():
+    return len(list(iter_at_code("hi <AT:QQ|123> bye"))) == 3
+
+
+@func_case
+async def test_atcode(tester: Tester):
+    """AT 码解析与渲染测试"""
+    await tester.test(_test_iter_splits_surrounding_text, "AT 码与文本交替切分")
+    return tester
+```
+
+pytest 下每个 `@func_case` 入口是一个测试节点，`tester.test` 内部以 pytest 断言失败结束（`AssertionError` 带上说明或原始异常），因此入口内首个失败即中止；`tester.py` 下则记录每条子测试结果并在入口结束后统一汇报，失败不中断后续子测试。
+
+```python
+from core.tester import func_case, Tester, Contains
 
 
 @func_case
@@ -53,10 +64,10 @@ async def integrate(self, input_, expected=None, note=None, timeout=None)
 # expected 传 Expectation；为 None 时框架转为人工复核
 
 async def test(self, func, note=None)
-# 纯函数测试：func 返回真值即通过，支持同步/异步
+# 集成入口内的纯函数子测试：func 返回真值即通过，支持同步/异步
 ```
 
-**写法二：`@case` 装饰器**（把用例直接挂在命令定义上）
+临时验证一条命令时不必另写入口：用 `@case` 把案例直接挂在命令定义上，`tester.py` 会一并收集执行。
 
 ```python
 from core.tester import case, Match
@@ -67,6 +78,8 @@ from core.tester import case, Match
 async def _(msg: Bot.MessageSession, word: str):
     await msg.finish(f"{word} is {msg.parsed_msg['<word>']}")
 ```
+
+`@case` 的参数与 `tester.integrate` 一致（输入、期望、说明、超时）；被装饰的函数仍是生产代码，案例只在测试运行期生效。
 
 ### 9.2 断言类型
 
@@ -100,7 +113,11 @@ async def _(msg: Bot.MessageSession, word: str):
 
 ### 9.3 测试环境的真实行为
 
-测试使用 `core/tester/mock/parser.py` 中的简化版 `parser()`，与生产环境有两个主要差异：
+两个 runner 共用同一套环境铺设：配置从 `assets/config_store/zh_cn` 复制到临时目录（`AKARI_CONFIG_PATH`）并叠加测试覆盖项，不读取仓库的 `config/`；union 合并日志写入临时目录（`AKARI_UNION_MERGE_LOGS_PATH`）并在结束时清理（已显式设置该环境变量时保留）。根 `conftest.py`、`tester.py` 与 `tests/run_one.py` 在导入 `core.*` 前通过 `tester.py` 的 `prepare_test_environment()` 完成铺设。
+
+pytest 侧由 `core/tester/pytest_plugin.py` 在会话开始时建库、加载模块、语言包与录制的 HTTP 响应；全程只有一个事件循环。每个测试项开始前重建内存数据库并调用 `ModulesManager.refresh()`（模块注册表与 hook 订阅是进程级状态），结束时取消它遗留的后台任务。单个测试默认超时 `120 × min(TIME_SCALE, 5)` 秒，可用 `@pytest.mark.akari_timeout(秒)` 或环境变量 `AKARI_TEST_TIMEOUT` 覆盖，超时会取消该测试并判为失败；需要测试中途重建数据库时请求 `fresh_db` fixture。
+
+集成测试使用 `core/tester/mock/parser.py` 中的简化版 `parser()`，与生产环境有两个主要差异：
 
 1. 使用不带平台过滤参数的 `ModulesManager.return_modules_list()`，且不检查模块是否已启用，集成测试可直接发送命令而无需先 `~module enable <模块>`。
 2. `run_test_case()` 将测试发送者设为 superuser，mock 权限检查默认通过。
@@ -121,33 +138,36 @@ with mock_config(CoreConfig, use_emote=True, enable_petal=False):
 
 也可以写成 `with tester.mock_config(...)`。字段名须是该模板类已声明的配置项，支持嵌套使用。
 
-测试引导会将落盘目录重定向到临时路径：配置从 `assets/config_store/zh_cn` 复制到临时目录（`AKARI_CONFIG_PATH`）并叠加测试覆盖项，不读取仓库的 `config/`；`tester.py` 在铺设完成后调用 `bootstrap_config()` 加载配置，晚于此的模板导入才能取到配置项。union 合并日志写入临时目录（`AKARI_UNION_MERGE_LOGS_PATH`）并在结束时清理（若已显式设置该环境变量则保留）。
-
 ### 9.4 测试规范
 
-- 优先使用 `Contains()` 等具体断言校验关键输出，少用宽泛的 `AnyOutput()`。
+- 单元测试用 `assert` 断言可观察的返回值；集成测试优先使用 `Contains()` 等具体断言校验关键输出，少用宽泛的 `AnyOutput()`。
 - 断言对外可观察行为，不绑定私有属性、内部调用次数或提示文案的完整措辞；结构化返回值优先做必需字段的子集断言。
 - 涉及外部网络的模块使用 `tests/capture_http_fixtures.py` 录制 fixture，在测试中离线回放。
 
 ### 9.5 运行测试
 
-**运行单个测试文件或入口**：使用 `tests/run_one.py`。第二个参数是入口函数名；省略时运行该文件中所有以 `test_` 开头的入口。脚本会自动补充 `sys.path` 并在结束时调用 `os._exit`。
+**单元测试**（pytest）：
 
 ```bash
-CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py tests/unit/test_action_text.py test_action_text_kecode
-CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py tests/unit/test_message.py
+uv run pytest tests/unit                       # 全部
+uv run pytest tests/unit/test_message.py -q     # 单个文件
+uv run pytest tests/unit -k markdown            # 按名字筛选
 ```
 
-**全量测试（CI 使用）**：
+CI 下设 `AKARI_TEST_TIME_SCALE=10` 放宽超时；Windows 或 Git Bash 下若输出乱码，在命令前显式设置 `PYTHONIOENCODING=UTF-8`。
+
+**集成测试**（`tester.py`）：`AKARI_TEST_FILTER` 可按路径子串筛选单个文件；`tests/run_one.py` 可跑单个入口（第二个参数是入口函数名，省略时跑该文件中所有以 `test_` 开头的入口，脚本会补充 `sys.path` 并在结束时调用 `os._exit`）。
 
 ```bash
-CI=1 uv run python tester.py              # 跑全部测试
+CI=1 AKARI_TEST_FILTER=test_wiki_diff uv run python tester.py
+CI=1 PYTHONIOENCODING=UTF-8 uv run --no-sync python tests/run_one.py tests/integration/test_features_command.py
+CI=1 uv run python tester.py              # 跑全部集成测试并输出 junit.xml
 COVERAGE=1 CI=1 uv run python tester.py   # 附带覆盖率报告（htmlcov/index.html）
 ```
 
-自动化运行需设置 `CI=1`：非 CI 模式下，无 `expected` 的用例或交互输入耗尽时会调用 `input()` 等待人工输入；CI 模式会跳过人工复核项并输出 `junit.xml`。`MAX_CONCURRENT`（`tester.py`，值为 `1`）限制 `@case` 用例的并发，`@func_case` 按顺序执行。
+非交互运行集成测试需设 `CI=1`：非 CI 模式下，无 `expected` 的用例或交互输入耗尽时会调用 `input()` 等待人工输入；CI 模式会跳过人工复核项。
 
-CI 环境默认设置 `AKARI_TEST_TIME_SCALE=10` 放宽超时；Windows 或 Git Bash 下若输出乱码，在命令前显式设置 `PYTHONIOENCODING=UTF-8`。CI 工作流见 `.github/workflows/run-builtin-tester.yml`。
+CI 工作流见 `.github/workflows/run-builtin-tester.yml`：先跑 `pytest tests/unit`（输出 `junit-unit.xml`），再跑 `tester.py`（输出 `junit.xml`），两份报告一并上送。
 
 ---
 

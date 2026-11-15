@@ -7,6 +7,10 @@ from pathlib import Path
 
 
 async def main(database_path: str, role: str) -> None:
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
+
     from tortoise import Tortoise
 
     from core.queue.base import JobQueueBase

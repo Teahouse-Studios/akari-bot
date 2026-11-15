@@ -122,8 +122,9 @@ akari_test_union_merge_logs_*
 !tester.py
 
 # CI Test Report
-junit.xml
+junit*.xml
 test_result.log
+.pytest_cache/
 
 # ==========
 # Legacy

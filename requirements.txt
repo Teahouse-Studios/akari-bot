@@ -157,7 +157,7 @@ distlib==0.4.4
     # via virtualenv
 distro==1.9.0
     # via google-genai
-dnspython==2.9.0
+dnspython==2.9.2
     # via mcstatus
 dockerfile-parse==2.0.1
     # via e2b
@@ -463,8 +463,6 @@ pyparsing==3.3.2
 pypika-tortoise==0.6.3
     # via tortoise-orm
 pytest==9.1.1
-    # via pytest-asyncio
-pytest-asyncio==1.4.0
 python-dateutil==2.9.0.post0
     # via
     #   botocore
@@ -596,7 +594,6 @@ typing-extensions==4.15.0
     #   pydantic
     #   pydantic-core
     #   pyee
-    #   pytest-asyncio
     #   referencing
     #   satori-python-core
     #   starlette

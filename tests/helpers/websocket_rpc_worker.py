@@ -7,6 +7,10 @@ from pathlib import Path
 
 
 async def main(url: str, role: str, token: str) -> None:
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
+
     from core.queue.base import JobQueueBase
     from core.queue.errors import RpcRemoteError
     from core.queue.peer import PeerSelector
