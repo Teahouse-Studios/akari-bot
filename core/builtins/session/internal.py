@@ -137,6 +137,10 @@ class MessageSession:
     # 释放等待结果所持有的平台 context。
     _execution_state: ExecutionState = field(factory=ExecutionState, repr=False, eq=False)
     _execution_state_owner: bool = field(default=True, repr=False, eq=False)
+    # 当前会话在这次 parser 执行中获得过的 lease token。等待结果会话与根命令
+    # 共享 ExecutionState，必须凭 token 区分“自己取得的租约”和“共享状态里
+    # 属于其它会话的租约”，否则会把别人的锁当成自己的释放掉。
+    _execution_lock_token: str | None = field(default=None, repr=False, eq=False)
 
     def _share_execution_state(self, result: "MessageSession") -> None:
         result._execution_state = ExecutionLockList.state(self)

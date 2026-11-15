@@ -325,9 +325,12 @@ async def parser(msg: "Bot.MessageSession"):
         finally:
             # wait_* 的回复会话会共享根命令的 ExecutionState，但没有最终
             # 清理所有权。它仍可在 continuation 内主动 sleep／wait，从而
-            # 释放和重获同一 lease；这里只能由原始 parser 释放最终 lease，
-            if getattr(msg, "_execution_state_owner", True):
+            # 释放和重获同一 lease；本次 parser 实际取得过 lease 时必须由
+            # 自己释放，根 parser 结束时则兜底清理共享状态上的遗留 token。
+            if getattr(msg, "_execution_lock_token", None) is not None:
                 ExecutionLockList.remove(msg)
+            elif getattr(msg, "_execution_state_owner", True):
+                ExecutionLockList.remove(msg, force=True)
             await _dispatch_stage(HookPoint.FINISHED, msg)
 
 

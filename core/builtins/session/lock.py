@@ -95,7 +95,7 @@ class ExecutionLockList:
     @classmethod
     def _owns_active_lease(cls, msg: "MessageSession") -> bool:
         token = cls.state(msg).lock_token
-        return isinstance(token, str) and token in cls._list
+        return isinstance(token, str) and token in cls._list and token == getattr(msg, "_execution_lock_token", None)
 
     @classmethod
     def _conflicts(cls, keys: set[str]) -> bool:
@@ -150,6 +150,7 @@ class ExecutionLockList:
         state = cls.state(msg)
         token = uuid.uuid4().hex
         state.lock_token = token
+        msg._execution_lock_token = token
         cls._list[token] = frozenset(keys)
         cls._acquired_at[token] = time.monotonic()
         cls._bind_owner_task(state)
@@ -196,9 +197,14 @@ class ExecutionLockList:
         if cls._owns_active_lease(msg):
             return False
 
-        # 服务器重载或测试可能清空 lease 表却留下执行域 token。
-        # 它已不代表所有权，必须丢弃后重新获取。
-        cls.state(msg).lock_token = None
+        state = cls.state(msg)
+        # 服务器重载或测试可能清空 lease 表却留下执行域 token。共享状态里
+        # 属于其它会话的 token 不能在这里清掉，否则会把对方仍在持有的锁
+        # 从索引中断开。
+        if isinstance(state.lock_token, str) and (
+            state.lock_token == getattr(msg, "_execution_lock_token", None) or state.lock_token not in cls._list
+        ):
+            state.lock_token = None
 
         while True:
             cls._sweep()
@@ -281,17 +287,36 @@ class ExecutionLockList:
         cls._sweep()
         if cls._owns_active_lease(msg):
             return
-        cls.state(msg).lock_token = None
+        state = cls.state(msg)
+        if isinstance(state.lock_token, str) and (
+            state.lock_token == getattr(msg, "_execution_lock_token", None) or state.lock_token not in cls._list
+        ):
+            state.lock_token = None
         keys = cls._local_keys(msg)
         if keys and not cls._conflicts(keys):
             cls._install(msg, keys)
 
     @classmethod
-    def remove(cls, msg: "MessageSession") -> bool:
-        """只释放当前会话自己持有的 lease。"""
+    def remove(cls, msg: "MessageSession", *, force: bool = False) -> bool:
+        """只释放当前会话自己持有的 lease。
+
+        :param force: 根 parser 结束时可清理同一 ExecutionState 上由等待结果
+            会话遗留的 lease；普通调用只释放本会话实际取得的 token。
+        """
         state = cls.state(msg)
         token = state.lock_token
+        owned_token = getattr(msg, "_execution_lock_token", None)
+        if token is None:
+            msg._execution_lock_token = None
+            return False
+        if not force and token != owned_token:
+            return False
+        if force and state.lock_owner_task is not None and state.lock_owner_task is not asyncio.current_task():
+            # 根 parser 只兜底清理仍绑定在自己 Task 上的遗留 token，不能
+            # 抢走已由其它长生命周期 Task 接管的 lease。
+            return False
         state.lock_token = None
+        msg._execution_lock_token = None
         return isinstance(token, str) and cls._drop(token)
 
     @classmethod
@@ -312,7 +337,7 @@ class ExecutionLockList:
     def count(cls, *, exclude: "MessageSession | None" = None) -> int:
         """返回活跃命令 lease 数，可排除调用命令自身。"""
         cls._sweep()
-        excluded_token = cls.state(exclude).lock_token if exclude is not None else None
+        excluded_token = getattr(exclude, "_execution_lock_token", None) if exclude is not None else None
         return sum(token != excluded_token for token in cls._list)
 
 

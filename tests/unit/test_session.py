@@ -804,6 +804,54 @@ async def _test_cross_user_wait_result_keeps_root_lock_subject():
         SessionTaskManager._task_list.clear()
 
 
+async def _test_wait_result_unknown_command_cleans_up_shared_lease():
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.parser.message import parser
+    from core.builtins.session.internal import MessageSession
+
+    class WaitSession(MessageSession):
+        async def hold(self):
+            return None
+
+        async def release(self):
+            return None
+
+        async def end_typing(self):
+            return None
+
+    async def make(text: str):
+        return WaitSession(
+            await SessionInfo.assign(
+                target_id="TEST|Group|wait-result-unknown-command",
+                target_from="TEST|Group",
+                client_name="TEST",
+                sender_id="TEST|wait-result-unknown-command",
+                sender_from="TEST",
+                messages=MessageChain.assign(text),
+            )
+        )
+
+    owner = await make("")
+    incoming = await make("~zzzzzzzzzzzzzzzz")
+    ExecutionLockList._list.clear()
+    ExecutionLockList._acquired_at.clear()
+    ExecutionLockList._reservations.clear()
+    try:
+        owner._share_execution_state(incoming)
+        if not await ExecutionLockList.acquire(owner):
+            return False
+        ExecutionLockList.remove(owner)
+        await parser(incoming)
+        return not ExecutionLockList._list and ExecutionLockList.state(owner).lock_token is None
+    finally:
+        ExecutionLockList.remove(owner)
+        ExecutionLockList.remove(incoming)
+        ExecutionLockList._list.clear()
+        ExecutionLockList._acquired_at.clear()
+        ExecutionLockList._reservations.clear()
+        SessionTaskManager._task_list.clear()
+
+
 async def _test_wait_result_context_release_retries_once():
     from core.builtins.session.internal import MessageSession
 
@@ -3059,6 +3107,7 @@ async def test_execution_lock(tester: Tester):
     await tester.test(_test_partial_overlap_merge_reservations_do_not_deadlock, "部分重叠 merge reservation 仲裁测试")
     await tester.test(_test_active_sender_leases_are_barriered_before_merge, "活跃 Sender Union 合并 barrier 测试")
     await tester.test(_test_cross_user_wait_result_keeps_root_lock_subject, "跨用户等待结果保持原锁主体测试")
+    await tester.test(_test_wait_result_unknown_command_cleans_up_shared_lease, "等待结果未知命令清理共享 lease 测试")
     await tester.test(_test_sleep_waits_for_competing_lease_before_resuming, "sleep continuation 等待重获测试")
     await tester.test(_test_cancelled_sleep_reacquire_keeps_competing_lease, "取消 sleep 重获不破坏竞争 lease")
 
