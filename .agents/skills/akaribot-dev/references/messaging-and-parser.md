@@ -592,18 +592,16 @@ ctx_manager.release_context(session_info)
 ### 12.4 执行锁（防并发）
 
 ```python
-# 自动管理，同一用户的命令串行执行。锁的粒度是 sender_id（不是 target_id）
+# 自动管理，同一用户的命令串行执行；锁的粒度以 sender_id 为准
 class ExecutionLockList:
-    _list = set()  # 存储正在执行的 sender_id
+    _list = {}  # token -> 该 lease 覆盖的身份键
 
-    @staticmethod
-    def add(msg)            # 加锁
-    @staticmethod
-    def remove(msg)         # 解锁
-    @staticmethod
-    def check(msg) -> bool  # 检查是否锁定
-    @staticmethod
-    def get() -> set        # 取全部锁定用户（调试用）
+    async def acquire(msg, *, wait=False) -> bool  # 取得 lease；wait 为真时等待冲突 lease 释放
+    def remove(msg) -> bool                        # 只释放自己持有的 lease
+    async def is_locked(msg) -> bool               # 按数据库最新绑定集检查冲突
+    def check(msg) -> bool                         # 无 I/O 的兼容检查
+    def get() -> set                               # 取全部锁定身份键（调试用）
+    def count(*, exclude=None) -> int              # 活跃 lease 数
 ```
 
 也可通过 `Bot.ExecutionLockList` 访问。锁是**进程内内存**，server 进程崩溃重启后自动清空。

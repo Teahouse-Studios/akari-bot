@@ -1,13 +1,17 @@
 """执行锁模块 - 用于管理消息执行锁，防止同一用户的多个命令并发执行。"""
 
 import asyncio
+import time
 import uuid
 from typing import TYPE_CHECKING
 
 from core.exports import add_export
+from core.logger import Logger
 
 if TYPE_CHECKING:
     from core.builtins.session.internal import MessageSession
+
+LOCK_TIMEOUT = 15 * 60
 
 
 class ExecutionState:
@@ -37,6 +41,8 @@ class ExecutionLockList:
     # token -> 该 lease 覆盖的 Union／物理账号键。保留 ``_list`` 名称以兼容
     # 运行时调试和旧测试中的 clear()。
     _list: dict[str, frozenset[str]] = {}
+    # token -> 取得 lease 时的单调时钟时间戳，供超时回收判定。
+    _acquired_at: dict[str, float] = {}
     # 正在扩展身份域的 merge reservation。单独记录 token，才能区分“必须等待
     # 结束的普通命令”和“另一个也在等待扩域的合并命令”，避免后者互相等待。
     _reservations: set[str] = set()
@@ -96,11 +102,56 @@ class ExecutionLockList:
         return any(keys.intersection(lease_keys) for lease_keys in cls._list.values())
 
     @classmethod
+    def _drop(cls, token: str) -> bool:
+        removed = cls._list.pop(token, None) is not None
+        cls._acquired_at.pop(token, None)
+        cls._reservations.discard(token)
+        if removed:
+            cls._notify_changed()
+        return removed
+
+    @classmethod
+    def _sweep(cls) -> None:
+        if not cls._acquired_at:
+            return
+        now = time.monotonic()
+        for token, acquired_at in tuple(cls._acquired_at.items()):
+            if token not in cls._list:
+                cls._acquired_at.pop(token, None)
+                continue
+            if now - acquired_at < LOCK_TIMEOUT:
+                continue
+            Logger.warning(
+                f"Execution lock for {sorted(cls._list.get(token, ()))} held over {LOCK_TIMEOUT}s, released automatically."
+            )
+            cls._drop(token)
+
+    @classmethod
+    def _next_expiry_delay(cls) -> float | None:
+        if not cls._acquired_at:
+            return None
+        now = time.monotonic()
+        return max(0.0, min(LOCK_TIMEOUT - (now - acquired_at) for acquired_at in cls._acquired_at.values()))
+
+    @classmethod
+    async def _wait_for_change(cls) -> None:
+        changed = cls._changed
+        delay = cls._next_expiry_delay()
+        if delay is None:
+            await changed.wait()
+            return
+        try:
+            await asyncio.wait_for(changed.wait(), timeout=delay)
+        except TimeoutError:
+            pass
+
+    @classmethod
     def _install(cls, msg: "MessageSession", keys: set[str]) -> None:
         state = cls.state(msg)
         token = uuid.uuid4().hex
         state.lock_token = token
         cls._list[token] = frozenset(keys)
+        cls._acquired_at[token] = time.monotonic()
         cls._bind_owner_task(state)
 
     @classmethod
@@ -124,11 +175,8 @@ class ExecutionLockList:
         state.lock_owner_task = None
         token = state.lock_token
         state.lock_token = None
-        removed = isinstance(token, str) and cls._list.pop(token, None) is not None
         if isinstance(token, str):
-            cls._reservations.discard(token)
-        if removed:
-            cls._notify_changed()
+            cls._drop(token)
 
     @classmethod
     def _notify_changed(cls) -> None:
@@ -153,6 +201,7 @@ class ExecutionLockList:
         cls.state(msg).lock_token = None
 
         while True:
+            cls._sweep()
             keys = await cls._current_keys(msg)
             # _current_keys() 的数据库查询会让出执行权；其间同一执行域的另一协程
             # （被等待任务消费的回复会话）可能已把 token 装上。必须在判定冲突前
@@ -168,12 +217,12 @@ class ExecutionLockList:
             if not wait:
                 return False
 
-            changed = cls._changed
-            await changed.wait()
+            await cls._wait_for_change()
 
     @classmethod
     async def is_locked(cls, msg: "MessageSession") -> bool:
         """按当前 Union 绑定集检查会话是否与现有 lease 冲突。"""
+        cls._sweep()
         if cls._owns_active_lease(msg):
             return True
         return cls._conflicts(await cls._current_keys(msg))
@@ -202,10 +251,15 @@ class ExecutionLockList:
             return False
         cls._reservations.add(token)
         cls._list[token] = reservation
-        while any(other_token != token and reservation.intersection(other) for other_token, other in cls._list.items()):
-            changed = cls._changed
-            await changed.wait()
-        return True
+        while True:
+            cls._sweep()
+            if token not in cls._list:
+                return False
+            if not any(
+                other_token != token and reservation.intersection(other) for other_token, other in cls._list.items()
+            ):
+                return True
+            await cls._wait_for_change()
 
     @classmethod
     async def refresh(cls, msg: "MessageSession") -> bool:
@@ -224,6 +278,7 @@ class ExecutionLockList:
     @classmethod
     def add(cls, msg: "MessageSession") -> None:
         """兼容无 I/O 的旧调用点，仅使用会话已有的 Union 和物理 ID。"""
+        cls._sweep()
         if cls._owns_active_lease(msg):
             return
         cls.state(msg).lock_token = None
@@ -237,17 +292,12 @@ class ExecutionLockList:
         state = cls.state(msg)
         token = state.lock_token
         state.lock_token = None
-        removed = isinstance(token, str) and cls._list.pop(token, None) is not None
-        if isinstance(token, str):
-            cls._reservations.discard(token)
-        if removed:
-            cls._notify_changed()
-            return True
-        return False
+        return isinstance(token, str) and cls._drop(token)
 
     @classmethod
     def check(cls, msg: "MessageSession") -> bool:
         """无 I/O 的兼容检查；生产 parser 应使用 :meth:`is_locked`。"""
+        cls._sweep()
         if cls._owns_active_lease(msg):
             return True
         return cls._conflicts(cls._local_keys(msg))
@@ -255,11 +305,13 @@ class ExecutionLockList:
     @classmethod
     def get(cls) -> set[str]:
         """返回所有活跃 lease 覆盖的身份键，用于调试和管理命令。"""
+        cls._sweep()
         return {key for lease_keys in cls._list.values() for key in lease_keys}
 
     @classmethod
     def count(cls, *, exclude: "MessageSession | None" = None) -> int:
         """返回活跃命令 lease 数，可排除调用命令自身。"""
+        cls._sweep()
         excluded_token = cls.state(exclude).lock_token if exclude is not None else None
         return sum(token != excluded_token for token in cls._list)
 

@@ -1,6 +1,7 @@
 """core.builtins.session 会话系统单元测试。"""
 
 import asyncio
+import time
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -246,6 +247,71 @@ async def _test_lock_add_remove():
         return True
     except Exception:
         return False
+
+
+async def _make_lock_contenders(sender_id: str):
+    first = MockMessageSession("~test")
+    await first.async_init("~test")
+    first.session_info = await first.session_info.__class__.assign(
+        target_id="TEST|Console|0",
+        client_name="TEST",
+        target_from="TEST",
+        sender_id=sender_id,
+        sender_from="TEST",
+        sender_name="TEST",
+    )
+    second = MockMessageSession("~test")
+    second.session_info = await first.session_info.__class__.assign(
+        target_id="TEST|Console|0",
+        client_name="TEST",
+        target_from="TEST",
+        sender_id=sender_id,
+        sender_from="TEST",
+        sender_name="TEST2",
+    )
+    return first, second
+
+
+async def _test_lock_expires_after_timeout():
+    from core.builtins.session.lock import LOCK_TIMEOUT
+
+    owner, contender = await _make_lock_contenders("TEST|lock-timeout")
+    ExecutionLockList._list.clear()
+    ExecutionLockList._acquired_at.clear()
+    ExecutionLockList._reservations.clear()
+    try:
+        if not await ExecutionLockList.acquire(owner):
+            return False
+        if await ExecutionLockList.acquire(contender):
+            return False
+        token = ExecutionLockList.state(owner).lock_token
+        # 回拨取得时间以模拟已持有满 LOCK_TIMEOUT，无需真实等待。
+        ExecutionLockList._acquired_at[token] = time.monotonic() - LOCK_TIMEOUT - 1
+        return await ExecutionLockList.acquire(contender)
+    finally:
+        ExecutionLockList.remove(contender)
+        ExecutionLockList.remove(owner)
+        ExecutionLockList._list.clear()
+        ExecutionLockList._acquired_at.clear()
+        ExecutionLockList._reservations.clear()
+
+
+async def _test_waiting_acquire_wakes_on_lease_expiry():
+    owner, contender = await _make_lock_contenders("TEST|lock-timeout-wait")
+    ExecutionLockList._list.clear()
+    ExecutionLockList._acquired_at.clear()
+    ExecutionLockList._reservations.clear()
+    try:
+        with patch("core.builtins.session.lock.LOCK_TIMEOUT", 0.05 * TIME_SCALE):
+            if not await ExecutionLockList.acquire(owner):
+                return False
+            return await asyncio.wait_for(ExecutionLockList.acquire(contender, wait=True), timeout=1 * TIME_SCALE)
+    finally:
+        ExecutionLockList.remove(contender)
+        ExecutionLockList.remove(owner)
+        ExecutionLockList._list.clear()
+        ExecutionLockList._acquired_at.clear()
+        ExecutionLockList._reservations.clear()
 
 
 async def _test_lock_shared_by_bound_identities():
@@ -2978,6 +3044,8 @@ async def test_features(tester: Tester):
 async def test_execution_lock(tester: Tester):
     """core.builtins.session.lock: ExecutionLockList 测试"""
     await tester.test(_test_lock_add_remove, "ExecutionLockList 添加和移除测试")
+    await tester.test(_test_lock_expires_after_timeout, "ExecutionLockList 持有超时自动解除测试")
+    await tester.test(_test_waiting_acquire_wakes_on_lease_expiry, "等待中的命令在锁超时后解除阻塞测试")
     await tester.test(_test_lock_shared_by_bound_identities, "ExecutionLockList 绑定身份共享测试")
     await tester.test(_test_lock_non_owner_cannot_release, "ExecutionLockList 非所有者不能释放测试")
     await tester.test(_test_old_owner_cannot_release_reacquired_lock, "ExecutionLockList 旧所有者幂等释放测试")
