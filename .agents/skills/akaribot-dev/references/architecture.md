@@ -324,6 +324,7 @@ akari-bot/
 ├── core/                     # 核心框架
 │   ├── builtins/
 │   │   ├── bot/              # Bot 类
+│   │   ├── config/           # 配置系统实作（CFGManager、模板装饰器、bootstrap、迁移）
 │   │   ├── message/          # 消息系统
 │   │   │   ├── chain.py      # MessageChain / I18NMessageChain / PlatformMessageChain
 │   │   │   ├── elements.py   # 消息元素类（XxxElement）
@@ -353,7 +354,7 @@ akari-bot/
 │   ├── module_runtime.py     # 模块 runtime generation 管理
 │   ├── types/                # Module / Command / Message 类型定义
 │   ├── constants/            # 路径、版本、默认值、异常
-│   ├── config/               # 配置系统（模板装饰器 + CFGManager）
+│   ├── config/               # 配置模板（BaseConfig、template/、network 派生设置）
 │   ├── database/             # 数据库系统（models.py / local.py / base.py）
 │   ├── queue/                # JobQueue：Peer RPC、信号总线、可切后端
 │   ├── server/               # Server 进程入口与生命周期

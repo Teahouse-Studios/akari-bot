@@ -4,7 +4,7 @@ import re
 import traceback
 from typing import TYPE_CHECKING
 
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.constants.exceptions import InvalidCommandFormatError
 from core.exports import exports
 from core.i18n import Locale

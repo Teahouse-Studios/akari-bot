@@ -73,9 +73,9 @@ def module(
 @my_mod.config(cls=None, secret=False)             # 注册模块配置（已弃用，改用 on_module_config，见 §5.7）
 ```
 
-### 5.7 配置系统 (`core/config/`)
+### 5.7 配置系统 (`core/builtins/config/`)
 
-基于 TOML 的配置系统，支持热重载，核心管理类为 `CFGManager`（`core/config/__init__.py:48`）。
+基于 TOML 的配置系统，支持热重载。模板位于 `core/config/`（`base.py` 与 `template/`），实作位于 `core/builtins/config/`：核心管理类 `CFGManager` 在 `manager.py`，其下由 `store.py` 承担文件读写、跨进程锁与 mtime 热重载，`generator.py` 承担 i18n 注释与缺失键补写，`decorator.py` 承担模板声明与 `ConfigMeta` 元类，`interface.py` 定义 `ConfigSource` 存取接口，`bootstrap.py` 是唯一的初始化入口。
 
 #### 模板声明与读取
 
@@ -87,15 +87,15 @@ def module(
 class AiocqhttpConfig:
     qq_typing_emoji: int = 181
 
-# 取值：bots/onebot/context.py —— 每次属性访问都走 CFGManager.get()，支持热重载
+# 取值：bots/onebot/context.py —— 每次属性访问都经 ConfigSource 取值（默认 CFGManager），支持热重载
 from bots.onebot.config import AiocqhttpConfig
 
 qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
 ```
 
-模板类由 `ConfigMeta` 元类接管属性访问（`core/config/decorator.py`），每次读取配置文件中的当前值；访问未声明字段会抛出 `AttributeError`。
+模板类由 `ConfigMeta` 元类接管属性访问（`core/builtins/config/decorator.py`），每次读取配置文件中的当前值；访问未声明字段会抛出 `AttributeError`。模板声明时即补写缺失键，其余初始化动作由 `bootstrap_config()` 完成。
 
-四个声明入口均位于 `core/config/decorator.py`：
+四个声明入口均位于 `core/builtins/config/decorator.py`：
 
 | 场景 | 写法 | 落在哪 | 模板类 |
 |---|---|---|---|
@@ -105,23 +105,25 @@ qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
 | 平台配置 | `@on_bot_config("onebot")` / `@on_bot_config("onebot", secret=True)` | `[bot_onebot]` / `[bot_onebot_secret]` | `AiocqhttpConfig` 等 |
 | 模块配置 | `@on_module_config("dice")` / `@on_module_config("dice", secret=True)` | `[module_dice]` / `[module_dice_secret]` | `DiceConfig` 等 |
 
-命名约束（由 `tests/unit/test_config_template.py` 校验）：
+命名约束（由 `tests/unit/test_config_scan.py` 校验）：
 
 - `on_bot_config("<平台名>")` 的平台名须与 `bots/` 下的目录名一致，守护进程按 `bot_<目录名>` 查找 `enable` 开关。
 - `on_module_config("<模块名>")` 的模块名须与包内 `module()` 声明一致（主名为连字符且下划线形式作为别名保留时，配置表名可沿用下划线形式）。模块配置统一使用 `on_module_config`，避免 `Bind.Module.config()` 反向导入模块对象引发循环依赖。
 
-核心配置模板按领域分布在 `core/config/`：表外顶层键（如 `default_locale`、`config_version`）位于 `base.py` 的 `BaseConfig`，通用核心项位于 `core.py`，JobQueue、S3 与 WebRender 分别位于 `jobqueue.py`、`s3.py` 和 `webrender.py` 并对应各自的 TOML 文件。调用时直接从所属领域模块导入。
+核心配置模板按领域分布在 `core/config/template/`：表外顶层键（如 `default_locale`、`config_version`）位于 `base.py` 的 `BaseConfig`，通用核心项位于 `template/core.py`，JobQueue、S3、SMTP 与 WebRender 分别位于 `template/jobqueue.py`、`template/s3.py`、`template/smtp.py` 和 `template/webrender.py` 并对应各自的 TOML 文件。调用时直接从所属领域模块导入。
 
 #### 配置初始化与只读约束
 
-`bot.py` 的 `pre_init()` 调用 `core.config.scan.scan_config_templates()` 导入全部配置模板并补全缺失键。随后守护进程设置 `AKARI_CONFIG_READONLY=1` 再启动子进程，**bot 与 server 子进程均为只读**（避免 multiprocessing spawn 重复导入时多进程并发写配置）：
+导入 `core.builtins.config` 不读写配置文件，也不执行版本迁移。初始化统一走 `core.builtins.config.bootstrap.bootstrap_config()`：非只读进程先导入 `core.builtins.config.update` 执行迁移，随后 `CFGManager.load()`。`scan_config_templates()` 会自行调用它，其余入口须显式调用——`bot.py` 的 `pre_init()`、`run_bot()`、`go()`、`server_go()`、`jobqueue_hub_go()`，以及 `tester.py` 与 `core/scripts/config_generate.py`。未初始化就读取配置会抛 `ConfigNotInitializedError`。
+
+`bot.py` 的 `pre_init()` 调用 `core.builtins.config.scan.scan_config_templates()` 导入全部配置模板（导入时补写缺失键）并修复 i18n 注释。随后守护进程设置 `AKARI_CONFIG_READONLY=1` 再启动子进程，**bot 与 server 子进程均为只读**（避免 multiprocessing spawn 重复导入时多进程并发写配置）。子进程内 `bootstrap_config()` 只加载、不迁移。
 
 | 方法 | 只读进程中的行为 |
 |---|---|
 | `CFGManager.write()` / `delete()` / `save()` | 抛 `ConfigOperationError` |
 | `CFGManager.get()` 读到缺失的键 | 尝试回写默认值时抛 `ConfigOperationError`；无默认值时返回 `None` |
 | `CFGManager.load()` / `watch()` | 正常，热重载不受影响 |
-| 配置模板导入 | `__config_fields__` 正常登记，不补写配置文件 |
+| 配置模板导入 | `__config_fields__` 正常登记，跳过缺失键补写 |
 
 新增配置项后需重启机器人使 `pre_init()` 补齐配置键。运行期确需修改配置时（如交互式编辑命令、启动期密钥自举），使用显式写接口：
 
@@ -132,11 +134,11 @@ CFGManager.edit_delete("some_key", "module_wiki")
 
 #### Config() 门面函数与 URL 格式化
 
-`Config()` 仅用于键名在运行时动态确定的场景（不能传 `default` 或 `table_name`）。需要对模板取到的地址补全协议头与尾部斜杠时，使用 `core.config.format_url()`：
+`Config()` 用于键名在运行时动态确定的场景；已声明类型的配置项直接读模板类属性。需要对模板取到的地址补全协议头与尾部斜杠时，使用 `core.utils.func.format_url()`：
 
 ```python
-from core.config import format_url
 from core.config.webrender import WebRenderConfig
+from core.utils.func import format_url
 
 remote_web_render_url = format_url(WebRenderConfig.remote_web_render_url)
 ```

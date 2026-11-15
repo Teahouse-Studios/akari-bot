@@ -5,7 +5,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-from core.config import CFGManager
+from core.builtins.config import CFGManager
 from core.constants.exceptions import ConfigOperationError
 from core.tester import func_case, Tester
 
@@ -24,9 +24,6 @@ db_path = "sqlite://database/save.db"
 @contextmanager
 def _temp_config(readonly: bool):
     original_path = CFGManager.config_path
-    original_values = CFGManager.values
-    original_tss = CFGManager._tss
-    original_file_list = CFGManager.config_file_list
     original_readonly = CFGManager.readonly
 
     tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_readonly_"))
@@ -37,20 +34,17 @@ def _temp_config(readonly: bool):
         yield tmp
     finally:
         CFGManager.readonly = original_readonly
-        CFGManager.config_path = original_path
-        CFGManager.values = original_values
-        CFGManager._tss = original_tss
-        CFGManager.config_file_list = original_file_list
+        CFGManager.switch_config_path(original_path)
         shutil.rmtree(tmp, ignore_errors=True)
 
 
 def _test_readonly_write_raises():
     with _temp_config(readonly=True):
-        before = CFGManager.values["config"]["config"].get("debug")
+        before = CFGManager.document("config")["config"].get("debug")
         try:
             CFGManager.write("debug", True, bool, False, "config")
         except ConfigOperationError:
-            return CFGManager.values["config"]["config"].get("debug") == before
+            return CFGManager.document("config")["config"].get("debug") == before
         return False
 
 
@@ -59,7 +53,7 @@ def _test_readonly_delete_raises():
         try:
             CFGManager.delete("debug", "config")
         except ConfigOperationError:
-            return "debug" in CFGManager.values["config"]["config"]
+            return "debug" in CFGManager.document("config")["config"]
         return False
 
 
@@ -91,7 +85,7 @@ def _test_readonly_load_still_works():
         path = tmp / "config.toml"
         path.write_text(path.read_text(encoding="utf-8").replace("debug = false", "debug = true"), encoding="utf-8")
         CFGManager.load()
-        return CFGManager.values["config"]["config"]["debug"] is True
+        return CFGManager.document("config")["config"]["debug"] is True
 
 
 def _test_edit_write_succeeds_in_readonly():
@@ -125,7 +119,7 @@ def _test_writable_process_can_write():
 
 
 def _test_readonly_template_registers_without_writing():
-    from core.config.decorator import on_config
+    from core.builtins.config.decorator import on_config
 
     with _temp_config(readonly=True) as tmp:
         before = (tmp / "config.toml").read_text(encoding="utf-8")

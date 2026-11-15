@@ -6,7 +6,7 @@ import traceback
 
 from loguru import logger
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import logs_path
 
 logs_path.mkdir(parents=True, exist_ok=True)

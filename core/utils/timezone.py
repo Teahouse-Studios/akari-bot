@@ -2,7 +2,7 @@
 
 from datetime import date, datetime, timedelta, timezone as dt_timezone, tzinfo
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.utils.func import format_offset, parse_offset
 

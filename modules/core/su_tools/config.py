@@ -5,7 +5,7 @@ import orjson
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.config import CFGManager
+from core.builtins.config import CFGManager
 from core.logger import Logger
 from core.types import Param
 from core.utils.func import is_float, is_int

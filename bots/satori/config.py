@@ -1,4 +1,4 @@
-from core.config.decorator import on_bot_config
+from core.builtins.config.decorator import on_bot_config
 
 
 @on_bot_config("satori")

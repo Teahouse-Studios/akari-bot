@@ -1,7 +1,7 @@
 from decimal import Decimal, ROUND_UP
 
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from .config import AiConfig
 
 cost_to_petal = Decimal(str(max(0, AiConfig.ai_cost_to_petal)))

@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from core.builtins.message.elements import ButtonFrameElement, ImageElement, MarkdownElement, PlainElement, URLElement
 from core.builtins.utils import command_prefix
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.i18n import Locale
 from core.tester import Contains, Tester, func_case
 from modules.core.common_tools.about import (

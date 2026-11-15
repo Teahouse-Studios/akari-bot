@@ -1,7 +1,7 @@
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from core.config.base import CoreSecretConfig
+from core.config import CoreSecretConfig
 from core.constants import database_path
 
 SQLITE_CONNECTION_DEFAULTS = {

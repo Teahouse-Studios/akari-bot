@@ -197,6 +197,21 @@ def truncate_text(text: str, length: int, suffix: str = "...") -> str:
     return text
 
 
+def format_url(v: Any | None) -> Any | None:
+    """将地址补全为可直接请求的 URL。
+
+    :param v: 配置项的原始值。
+    :return: 补全后的 URL。
+    """
+    if not v:
+        return v
+    if not re.match(r"^[a-zA-Z][a-zA-Z\d+\-.]*://", v):
+        v = "http://" + v
+    if v[-1] != "/":
+        v += "/"
+    return v
+
+
 def parse_offset(value: Any, fallback: bool = False) -> timedelta | None:
     """解析 UTC 偏移量。"""
     invalid = timedelta() if fallback else None

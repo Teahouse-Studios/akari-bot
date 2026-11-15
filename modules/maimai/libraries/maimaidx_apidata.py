@@ -26,7 +26,7 @@ from .lxns_apidata import (
 )
 from .source import GAME_MAIMAI, SOURCE_LXNS, pick_source
 from ..database.models import DivingProberBindInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 total_list = TotalList()
 

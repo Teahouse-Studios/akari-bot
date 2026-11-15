@@ -18,7 +18,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.builtins.session.internal import MessageSession
 from core.builtins.types import MessageElement
-from core.config.base import CoreConfig, CoreSecretConfig
+from core.config.core import CoreConfig, CoreSecretConfig
 from core.config.network import proxy, ssl_verify
 from core.database.local import DirtyWordCache
 from core.logger import Logger

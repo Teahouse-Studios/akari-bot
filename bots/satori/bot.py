@@ -31,7 +31,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.database.models import (
     SenderUnionInfo,
     TargetUnionBind,

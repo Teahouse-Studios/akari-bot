@@ -11,7 +11,7 @@ from rapidfuzz import process
 from core.builtins.parser.args import ArgumentPattern, Template as argsTemplate, templates_to_str
 from core.builtins.parser.hooks import HookPoint, RecoveryProposal
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger

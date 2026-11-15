@@ -1,5 +1,5 @@
 from core.builtins.session.features import Features
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 use_url_manager = CoreConfig.enable_urlmanager
 dirty_word_check = CoreConfig.enable_dirty_check

@@ -16,7 +16,7 @@ from core.builtins.session.event_types import EventName
 from core.builtins.session.features import Features
 from core.builtins.session.terms import build_term_candidates
 from core.builtins.utils import command_prefix
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.database.models import TargetUnionInfo, SenderUnionInfo
 from core.i18n import Locale
 from core.logger import Logger

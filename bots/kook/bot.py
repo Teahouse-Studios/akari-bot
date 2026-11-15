@@ -14,7 +14,7 @@ from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_init
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 Bot.register_bot(client_name=client_name)
 

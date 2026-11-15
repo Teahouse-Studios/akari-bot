@@ -137,7 +137,7 @@ Tortoise ORM，**双连接**：`default`（可配 MySQL）+ `local`（本地 SQL
 - **i18n 强制**：模块内**禁止**对用户输出纯文本，一律 `I18NContext("key", **参数)`，并只在 `modules/<模块>/locales/zh_cn.json` 建节点（zh_cn 是必需的基础语言）。仅调试日志等不面向用户的场景可用纯文本。
 - **本地化文本只写简体中文**，不要提供其他语言的翻译。
 - **禁止改其他语言文件**：除非用户明确要求处理翻译或 Weblate 同步结果，不得创建、修改、删除或补齐 `core/**/locales/`、`bots/**/locales/`、`modules/**/locales/` 中 `zh_cn.json` 以外的语言 JSON。其他语言由 Weblate bot 自动提交，即使缺少新键也不要复制简体中文或自行翻译。`assets/config_store/<语言>/` 是配置模板派生物，非 `zh_cn` 版本也不要手改，应交给自动化生成。
-- **新增配置字段必须补注释**：配置项在模板类里声明（`core/config/decorator.py` 的 `@on_base_config` / `@on_config` / `@on_bot_config` / `@on_module_config`），同时要在**模板所属组件**的 `zh_cn.json` 里加 `config.comments.<表名>.<字段名>`——核心写 `core/locales/`，平台写 `bots/<平台>/locales/`，模块写 `modules/<模块>/locales/`。表名随装饰器而定（`config` / `secret` / `bot_<平台>` / `module_<模块>`，`secret=True` 时带 `_secret` 后缀）；`@on_base_config()` 的表外顶层键没有表名这一层。
+- **新增配置字段必须补注释**：配置项在模板类里声明（`core/builtins/config/decorator.py` 的 `@on_base_config` / `@on_config` / `@on_bot_config` / `@on_module_config`），同时要在**模板所属组件**的 `zh_cn.json` 里加 `config.comments.<表名>.<字段名>`——核心写 `core/locales/`，平台写 `bots/<平台>/locales/`，模块写 `modules/<模块>/locales/`。表名随装饰器而定（`config` / `secret` / `bot_<平台>` / `module_<模块>`，`secret=True` 时带 `_secret` 后缀）；`@on_base_config()` 的表外顶层键没有表名这一层。
 - **配置项注释视作文档**：只描述该项的用途，不描述技术细节。
 
 ### 版本控制
@@ -159,5 +159,5 @@ Tortoise ORM，**双连接**：`default`（可配 MySQL）+ `local`（本地 SQL
 - **Windows 下输出中文乱码**：`bot.py` / `tester.py` 里的 `os.environ.setdefault("PYTHONIOENCODING", "UTF-8")` 在解释器启动后才执行，来不及生效。在启动命令前显式加 `PYTHONIOENCODING=UTF-8`（`start.bat` 用 `chcp 65001` 加显式赋值达到同样目的）。
 - **`.bot.lock` 单实例锁**：`bot.py` 用文件锁拒绝第二个实例，报 `Another instance is already running`。调试时确认没有残留进程占着锁。
 - `pre_init()` 每次启动会 **`rmtree` 整个 `cache/` 目录**，别往里放需要留存的东西。
-- **配置只在 `pre_init()` 里补写**：之后守护进程会置位 `AKARI_CONFIG_READONLY=1` 再 spawn 子进程，bot 与 server 一律只读。所以**新增配置项后必须重启机器人**，否则子进程读到该键会抛 `ConfigOperationError`。
-- **按目录名找文件容易扑空**：parser 在 `core/builtins/parser/`，模块加载器是 `core/loader.py` 这个文件，测试框架在 `core/tester/`；`cooldown` / `game` / `dirty_check` / `web_render` 等通用设施在 `core/utils/`，TOS 处理在 `modules/core/hooks/tos.py`。
+- **配置只在可写进程中补写**：`pre_init()` 与 `core/scripts/config_generate.py` 可写，之后守护进程会置位 `AKARI_CONFIG_READONLY=1` 再 spawn 子进程，bot 与 server 一律只读。所以**新增配置项后必须重启机器人**，否则子进程读到该键会抛 `ConfigOperationError`。
+- **按目录名找文件容易扑空**：parser 在 `core/builtins/parser/`，模块加载器是 `core/loader.py` 这个文件，测试框架在 `core/tester/`；配置系统实作在 `core/builtins/config/`，配置模板在 `core/config/`；`cooldown` / `game` / `dirty_check` / `web_render` 等通用设施在 `core/utils/`，TOS 处理在 `modules/core/hooks/tos.py`。

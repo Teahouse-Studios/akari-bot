@@ -9,7 +9,7 @@ from core.builtins.converter import converter
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain, I18NContext
 from core.builtins.session.info import SessionInfo
-from core.config import CFGManager
+from core.builtins.config import CFGManager
 from core.constants import assets_path, Info, PrivateData, Secret
 from core.database import init_db
 from core.loader import load_modules, ModulesManager
@@ -81,16 +81,13 @@ async def init_async(start_scheduler=True, send_prompt=True) -> None:
 
 
 async def load_secret():
-    for x in CFGManager.values:
-        for y in CFGManager.values[x].keys():
-            if y == "secret" or y.endswith("_secret"):
-                for z in CFGManager.values[x][y].keys():
-                    w = CFGManager.values[x][y].get(z)
-                    if not str(w).startswith("<Replace me"):
-                        if isinstance(w, str):
-                            Secret.add(w)
-                        elif isinstance(w, list):
-                            Secret.update(w)
+    for value in CFGManager.iter_secret_values():
+        if str(value).startswith("<Replace me"):
+            continue
+        if isinstance(value, str):
+            Secret.add(value)
+        elif isinstance(value, list):
+            Secret.update(value)
 
 
 async def _wait_for_client_online(

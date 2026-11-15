@@ -6,7 +6,7 @@ from email.utils import format_datetime
 from typing import Awaitable, Callable
 
 from core.builtins.message.chain import Chainable, MessageChain
-from core.config.base import BaseConfig, CoreConfig, SMTPConfig, SMTPSecretConfig
+from core.config import BaseConfig, CoreConfig, SMTPConfig, SMTPSecretConfig
 from core.constants.path import assets_path
 from core.exports import exports
 from core.i18n import Locale, safe_strftime

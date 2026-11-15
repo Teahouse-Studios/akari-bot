@@ -10,8 +10,7 @@ CONFIG_PATH_ENV = "AKARI_CONFIG_PATH"
 
 # 配置只读模式的环境变量名。守护进程在 spawn bot 与 server 子进程前置位，
 # pre-init 进程则清除此标记，以保证配置迁移与缺失项补全只发生在该进程中。
-# 该常量必须位于不依赖 core.config 的模块：若为取得常量而提前导入 core.config，
-# 其导入期版本迁移会在 i18n 快照初始化之前执行。
+# 该常量须位于不依赖 core.config 的模块，使引导代码能在导入配置系统之前取得它。
 CONFIG_READONLY_ENV = "AKARI_CONFIG_READONLY"
 
 # union 合并日志目录的环境变量名。测试引导据此把测试合成的合并记录写进临时目录，

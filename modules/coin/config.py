@@ -1,4 +1,4 @@
-from core.config.decorator import on_module_config
+from core.builtins.config.decorator import on_module_config
 
 
 @on_module_config("coin")

@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Callable
 
 from core.builtins.session.info import EventInfo
-from core.config import CFGManager
+from core.builtins.config import CFGManager
 from core.constants import PrivateData, all_locales_path, lang_list
 from core.database import activate_db_reload, close_prepared_db_reload, close_previous_db_context, prepare_db_reload
 from core.database.base import DBModel

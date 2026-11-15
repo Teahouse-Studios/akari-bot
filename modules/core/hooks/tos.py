@@ -11,7 +11,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.builtins.parser.hooks import Handled, HookPoint, Stop, StopScope
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.exceptions import AbuseWarning, SendMessageFailed, SessionFinished, WaitCancelException
 from core.loader import ModulesManager
 from core.logger import Logger

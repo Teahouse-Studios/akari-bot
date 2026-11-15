@@ -2,7 +2,7 @@ from core.alive import Alive
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import SenderUnionInfo
 from core.utils.petal import sign_get_petal, cost_petal
 from core.utils.bud import claim_bud, create_bud, find_bud, release_buds

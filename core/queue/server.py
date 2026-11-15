@@ -18,7 +18,7 @@ from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.utils import command_prefix
 from core.constants import Info
 from core.constants.path import assets_path
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.exports import exports, add_export
 from core.i18n import Locale
 from core.loader import ModulesManager

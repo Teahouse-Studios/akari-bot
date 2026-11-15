@@ -7,7 +7,7 @@ from core.builtins.message.internal import ButtonFrame, I18NContext, Image, Ment
 from core.builtins.session.info import EventInfo
 from core.builtins.utils import command_prefix
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import assets_path
 from core.database.models import SenderUnionInfo, TargetUnionInfo, union_mutation
 from core.logger import Logger

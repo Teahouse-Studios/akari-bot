@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from apscheduler.triggers.interval import IntervalTrigger
 
 import core.loader as loader_module
-from core.config import CFGManager
+from core.builtins.config import CFGManager
 from core.constants import PrivateData
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager

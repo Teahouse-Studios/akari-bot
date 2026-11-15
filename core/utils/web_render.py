@@ -12,10 +12,10 @@ from akari_bot_webrender.functions.options import (
     ReplaceElementScreenshotOptions,
 )
 
-from core.config import format_url
 from core.config.webrender import WebRenderConfig
 from core.constants.path import logs_path
 from core.logger import Logger
+from core.utils.func import format_url
 
 enable_web_render = WebRenderConfig.enable
 remote_web_render_url = format_url(WebRenderConfig.remote_web_render_url)

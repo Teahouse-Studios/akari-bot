@@ -26,6 +26,10 @@ class ConfigValueError(Exception):
     pass
 
 
+class ConfigNotInitializedError(Exception):
+    pass
+
+
 class ExternalException(Exception):
     pass
 

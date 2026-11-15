@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import ModuleStatus
 from core.loader import ModulesManager
 from core.scheduler import IntervalTrigger, Scheduler, SchedulerLifecycle

@@ -8,7 +8,7 @@ from tortoise.transactions import in_transaction
 from core.builtins.bot import Bot
 from core.builtins.message.elements import I18NContextElement
 from core.builtins.message.internal import I18NContext
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import SenderUnionInfo, StoredData
 from core.logger import Logger
 from core.utils.random import Random

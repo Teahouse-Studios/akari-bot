@@ -3,7 +3,7 @@
 from unittest.mock import patch
 
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester

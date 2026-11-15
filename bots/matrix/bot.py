@@ -17,7 +17,7 @@ from core.builtins.message.internal import Plain, Image, Audio, Video
 from core.builtins.session.info import SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.queue.contracts import ServerAPI
 

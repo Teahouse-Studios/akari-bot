@@ -15,7 +15,7 @@ import httpx
 from aiofile import async_open
 from tenacity import retry, wait_fixed, stop_after_attempt
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.config.network import proxy, ssl_verify
 from core.constants.exceptions import ExternalException
 from core.constants.path import cache_path

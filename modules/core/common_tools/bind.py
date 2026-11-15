@@ -2,7 +2,7 @@ import asyncio
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext, Plain
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.component import module
 from core.database.models import (
     UNION_SCOPE_SENDER,

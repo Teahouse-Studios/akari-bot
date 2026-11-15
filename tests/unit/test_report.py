@@ -3,7 +3,7 @@
 from email.utils import parsedate_to_datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from core.config.base import BaseConfig, CoreConfig, SMTPConfig, SMTPSecretConfig
+from core.config import BaseConfig, CoreConfig, SMTPConfig, SMTPSecretConfig
 from core.i18n import Locale
 from core.smtp import send_email, send_report
 from core.tester import Tester, func_case

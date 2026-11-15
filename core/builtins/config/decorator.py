@@ -5,8 +5,7 @@ import inspect
 from types import UnionType
 from typing import Any, Literal, TypeVar, get_args
 
-from core.exports import add_export
-from . import CFGManager, ALLOWED_TYPES
+from core.builtins.config.interface import ALLOWED_TYPES, get_source
 
 T = TypeVar("T")
 
@@ -17,10 +16,10 @@ class ConfigMeta(type):
         if field is None:
             # 未声明的名称照常报错：键名书写有误时立即抛出异常，而非静默返回默认值
             raise AttributeError(f"{cls.__name__} has no config field {name!r}")
-        return CFGManager.get(**field)
+        return get_source().get(**field)
 
 
-def _process_class(
+def process_config_class(
     cls: type[T],
     table_name,
     secret=False,
@@ -53,7 +52,7 @@ def _process_class(
                 f"Standalone comments for config field {field_name!r} must be a tuple of non-empty i18n keys."
             )
 
-    # 各字段传给 CFGManager.get() 的完整参数，既供元类读取配置值，也供 __init__ 取默认值
+    # 各字段传给配置来源 get() 的完整参数，既供元类读取配置值，也供 __init__ 取默认值
     config_fields: dict[str, dict[str, Any]] = {}
 
     def __init__(self, **kwargs):
@@ -74,55 +73,28 @@ def _process_class(
         fields_str = ", ".join(f"{name}={getattr(self, name)!r}" for name in cls_annotations)
         return f"{cls.__name__}({fields_str})"
 
-    def __generate_config_file():
-        for attr_name, attr_type in cls_annotations.items():
-            if not attr_name.startswith("__"):
-                # 仅有类型标注而无赋值，表示该项必填且无默认值：此处取 None 交由下游处理，
-                # 生成时将填入 <Replace me with ...> 占位符，在用户填写之前读取该项一律返回 None
-                __attr = getattr(cls, attr_name, None)
-                __attr_type = attr_type
+    for attr_name, attr_type in cls_annotations.items():
+        if not attr_name.startswith("__"):
+            # 仅有类型标注而无赋值，表示该项必填且无默认值：此处取 None 交由下游处理，
+            # 生成时将填入 <Replace me with ...> 占位符，在用户填写之前读取该项一律返回 None
+            __attr = getattr(cls, attr_name, None)
+            __attr_type = attr_type
 
-                # 含不受支持成员的联合类型（如 str | None）一律置空，下游据此填入通用占位符
-                if __attr_type not in ALLOWED_TYPES and (
-                    isinstance(__attr_type, UnionType) and any(k not in ALLOWED_TYPES for k in get_args(__attr_type))
-                ):
-                    __attr_type = None
+            # 含不受支持成员的联合类型（如 str | None）一律置空，下游据此填入通用占位符
+            if __attr_type not in ALLOWED_TYPES and (
+                isinstance(__attr_type, UnionType) and any(k not in ALLOWED_TYPES for k in get_args(__attr_type))
+            ):
+                __attr_type = None
 
-                # 登记该字段传给 CFGManager.get() 的参数，供元类在属性访问时按此取值
-                config_fields[attr_name] = {
-                    "q": attr_name,
-                    "default": __attr,
-                    "cfg_type": get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,
-                    "secret": secret,
-                    "table_name": table_name,
-                    "standalone_comment_keys": standalone_comments.get(attr_name, ()),
-                }
-
-                # 只读进程不补写配置文件：生成统一在 bot.py 的 pre_init() 中完成，
-                # 以免每个子进程重新导入模板时重复补写同一批配置项。
-                # 字段登记仍须执行，否则模板类属性无法读取。
-                if CFGManager.readonly:
-                    continue
-
-                # 检查配置项是否已存在于目标表中，不存在时才补写
-                # 注意不可用 attr_name 与 CFGManager.values 比较：后者的键为配置文件名而非配置项键名，
-                # 二者不存在交集，该判据将恒为真，使每个属性都触发一次全量重写
-                if not CFGManager.has(attr_name, secret, table_name):
-                    CFGManager.get(
-                        attr_name,
-                        __attr if __attr != "" else None,  # 默认值：使用类属性值或None
-                        # 须传入已规整的 __attr_type：含不受支持成员的联合类型（如 str | None）在上方已被置空，
-                        # 此处若回退为原始的 attr_type，下游将取得不具有 __name__ 的 UnionType 而报错
-                        get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,
-                        secret,
-                        table_name,
-                        _generate=True,  # 生成模式标志
-                        standalone_comment_keys=standalone_comments.get(attr_name, ()),
-                    )
-                    CFGManager.save()
-
-    # 执行配置文件生成，为该类创建配置项，同时填充 config_fields
-    __generate_config_file()
+            # 登记该字段传给配置来源 get() 的参数，供元类在属性访问时按此取值
+            config_fields[attr_name] = {
+                "q": attr_name,
+                "default": __attr,
+                "cfg_type": get_args(__attr_type) if isinstance(__attr_type, UnionType) else __attr_type,
+                "secret": secret,
+                "table_name": table_name,
+                "standalone_comment_keys": standalone_comments.get(attr_name, ()),
+            }
 
     # 以 ConfigMeta 为元类重建该类。元类无法在类创建后更换，只能另建一个同名类。
     namespace = {
@@ -138,6 +110,11 @@ def _process_class(
     new_cls = ConfigMeta(cls.__name__, cls.__bases__, namespace)
     new_cls.__module__ = cls.__module__
     new_cls.__qualname__ = cls.__qualname__
+    # 缺失键在声明处补写：模板导入后可能立即有业务模块读取其属性，
+    # 若等扫描阶段再补写，先到的读取会以默认值占用该键，占位符便不再生成。
+    from core.builtins.config.generator import ensure_fields
+
+    ensure_fields(new_cls)
     return new_cls
 
 
@@ -170,7 +147,7 @@ def on_config(
         :return: 处理后的类，具有自动生成的配置管理功能
         """
         __type = table_type + "_" if table_type != "" else table_type
-        return _process_class(cls, __type + table_name, secret, standalone_comments)
+        return process_config_class(cls, __type + table_name, secret, standalone_comments)
 
     return wrap
 
@@ -185,8 +162,8 @@ def on_base_config():
         # 表名传 None：这类键不属于 [config]，也不属于任何其它表。
         # 补写路径不支持在表外新建键，键不存在时将被写入 [config] 表。该情形不会出现：
         # 这些键由 core/scripts/config_generate.py 在建立配置文件时写入，
-        # 并由 core/config/update.py 的版本迁移保证存在，二者均先于模板的处理执行。
-        return _process_class(cls, None, False)
+        # 并由 core/builtins/config/update.py 的版本迁移保证存在，二者均先于模板的处理执行。
+        return process_config_class(cls, None, False)
 
     return wrap
 
@@ -224,4 +201,11 @@ def on_module_config(
     return on_config(module_name, "module", secret, standalone_comments)
 
 
-add_export(_process_class)
+__all__ = [
+    "ConfigMeta",
+    "on_base_config",
+    "on_bot_config",
+    "on_config",
+    "on_module_config",
+    "process_config_class",
+]

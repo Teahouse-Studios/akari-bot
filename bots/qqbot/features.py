@@ -4,7 +4,7 @@ from attr import evolve
 
 from bots.qqbot.config import QQBotConfig
 from core.builtins.session.features import Features
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 if TYPE_CHECKING:
     from core.builtins.session.info import SessionInfo

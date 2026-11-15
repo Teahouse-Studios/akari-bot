@@ -7,7 +7,7 @@ from core.builtins.message.elements import ActionTextElement, PlainElement
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import command_prefix
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester

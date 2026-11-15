@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from core.builtins.parser.hooks import HookPoint
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.info import Info
 from core.database.models import AnalyticsData
 from core.logger import Logger

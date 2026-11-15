@@ -5,7 +5,7 @@ import orjson
 from ddgs import DDGS
 from filetype import filetype
 
-from core.config.base import CoreSecretConfig
+from core.config import CoreSecretConfig
 from core.utils.http import get_url
 
 proxy = CoreSecretConfig.proxy

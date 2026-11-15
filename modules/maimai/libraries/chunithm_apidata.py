@@ -30,7 +30,7 @@ from .lxns_oauth import (
 )
 from .lxns_oauth import request_player_data as request_lxns_data
 from ..database.models import DivingProberBindInfo, LxnsProberBindInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 DF_CHUNITHM_RECORDS_URL = "https://www.diving-fish.com/api/chunithmprober/player/records"
 DF_CHUNITHM_QUERY_URL = "https://www.diving-fish.com/api/chunithmprober/query/player"

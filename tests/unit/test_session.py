@@ -2989,7 +2989,7 @@ async def _test_wait_confirm_strict_rejects_confirm_word():
 
 
 async def _test_wait_confirm_strict_ignores_no_confirm_config():
-    from core.config.base import CoreConfig
+    from core.config.core import CoreConfig
     from core.constants import WaitCancelException
 
     SessionTaskManager._task_list.clear()

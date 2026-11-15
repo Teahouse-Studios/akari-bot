@@ -3,7 +3,7 @@ import shutil
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import I18NContext
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.component import module
 from core.constants.path import cache_path
 from core.scheduler import CronTrigger

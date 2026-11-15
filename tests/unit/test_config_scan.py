@@ -13,8 +13,8 @@ from pathlib import Path
 from unittest.mock import patch
 from uuid import UUID
 
-from core.config import CFGManager
-from core.config.scan import scan_config_templates
+from core.builtins.config import CFGManager
+from core.builtins.config.scan import scan_config_templates
 from core.constants.version import config_version
 from core.tester import func_case, Tester
 
@@ -34,9 +34,6 @@ db_path = "sqlite://database/save.db"
 @contextmanager
 def _temp_config():
     original_path = CFGManager.config_path
-    original_values = CFGManager.values
-    original_tss = CFGManager._tss
-    original_file_list = CFGManager.config_file_list
     original_readonly = CFGManager.readonly
 
     tmp = Path(tempfile.mkdtemp(prefix="akari_cfg_scan_"))
@@ -47,15 +44,12 @@ def _temp_config():
         yield tmp
     finally:
         CFGManager.readonly = original_readonly
-        CFGManager.config_path = original_path
-        CFGManager.values = original_values
-        CFGManager._tss = original_tss
-        CFGManager.config_file_list = original_file_list
+        CFGManager.switch_config_path(original_path)
         shutil.rmtree(tmp, ignore_errors=True)
 
 
 def _test_core_templates_are_grouped_into_domain_files():
-    from core.config.base import (
+    from core.config import (
         CoreConfig as CompatibleCoreConfig,
         JobQueueConfig as CompatibleJobQueueConfig,
         S3Config as CompatibleS3Config,
@@ -107,7 +101,10 @@ def _test_fresh_process_generates_all_grouped_core_templates():
                     "from core.i18n import build_locale_snapshot, connect_locale_snapshot; "
                     "build_locale_snapshot(list(lang_list.keys()), all_locales_path, 'akari-bot'); "
                     "connect_locale_snapshot('akari-bot'); "
-                    "from core.config.scan import scan_config_templates; "
+                    # 配置须先加载，模板导入时才可读取配置项
+                    "from core.builtins.config.bootstrap import bootstrap_config; "
+                    "bootstrap_config(); "
+                    "from core.builtins.config.scan import scan_config_templates; "
                     "from core.config.jobqueue import bootstrap_jobqueue_config; "
                     "failed = scan_config_templates(); "
                     "bootstrap_jobqueue_config() if not failed else None; "
@@ -162,7 +159,7 @@ def _test_fresh_process_generates_all_grouped_core_templates():
 def _test_scan_covers_all_directories_with_config_templates():
     import bots
     import modules
-    from core.config.scan import iter_config_template_modules
+    from core.builtins.config.scan import iter_config_template_modules
 
     listed = set(iter_config_template_modules())
     expected = set()
@@ -192,10 +189,10 @@ def _test_fresh_process_generates_bot_adapter_config():
                     "from core.i18n import build_locale_snapshot, connect_locale_snapshot; "
                     "build_locale_snapshot(list(lang_list.keys()), all_locales_path, 'akari-bot'); "
                     "connect_locale_snapshot('akari-bot'); "
-                    "from core.config.scan import scan_config_templates; "
+                    "from core.builtins.config.scan import scan_config_templates; "
                     "failed = scan_config_templates(); "
                     # 与守护进程 spawn 出的平台进程一致：模板导入完毕后一律只读
-                    "from core.config import CFGManager; "
+                    "from core.builtins.config import CFGManager; "
                     "CFGManager.readonly = True; "
                     "from bots.milky.config import MilkyConfig, MilkySecretConfig; "
                     "print('MILKY', failed, MilkyConfig.enable, MilkyConfig.qq_host, "
@@ -254,9 +251,9 @@ def _test_jobqueue_bootstrap_persists_missing_values_once():
 
 
 def _test_scan_writes_template_fields():
-    from core.config.decorator import on_config
+    from core.builtins.config.decorator import on_config
 
-    # 已被 tester 导入的模板不会再次执行 _process_class，故以此处声明的模板验证补写行为
+    # 模板声明时即补写缺失键；已被 tester 导入的模板不会再次处理，故以此处声明的模板验证
     with _temp_config() as tmp:
 
         @on_config("config")
@@ -269,7 +266,7 @@ def _test_scan_writes_template_fields():
 
 
 def _test_standalone_comment_declaration_is_validated():
-    from core.config.decorator import on_config
+    from core.builtins.config.decorator import on_config
 
     with _temp_config():
         try:
@@ -357,11 +354,13 @@ def _test_legacy_slower_schedule_migrates_to_multiplier():
                 (
                     # 迁移后的 3 秒提示停顿不属于持久化行为；仅在隔离进程中跳过。
                     "from unittest.mock import patch\n"
+                    "from core.builtins.config.bootstrap import bootstrap_config\n"
                     "with patch('time.sleep'):\n"
-                    "    from core.config import CFGManager\n"
-                    "print(CFGManager.values['config']['config_version']); "
-                    "print(CFGManager.values['config']['config']['schedule_interval_multiplier']); "
-                    "print('slower_schedule' in CFGManager.values['config']['config'])"
+                    "    bootstrap_config()\n"
+                    "from core.builtins.config import CFGManager\n"
+                    "print(CFGManager.document('config')['config_version']); "
+                    "print(CFGManager.document('config')['config']['schedule_interval_multiplier']); "
+                    "print('slower_schedule' in CFGManager.document('config')['config'])"
                 ),
             ],
             cwd=Path(__file__).resolve().parents[2],
@@ -380,7 +379,7 @@ def _test_legacy_slower_schedule_migrates_to_multiplier():
 
 @func_case
 async def test_config_scan(tester: Tester):
-    """core.config.scan: 配置模板扫描测试"""
+    """core.builtins.config.scan: 配置模板扫描测试"""
     await tester.test(_test_core_templates_are_grouped_into_domain_files, "核心配置模板独立文件与兼容导入测试")
     await tester.test(_test_fresh_process_generates_all_grouped_core_templates, "全新进程生成领域模板测试")
     await tester.test(_test_scan_covers_all_directories_with_config_templates, "平台与模块模板枚举一致性测试")

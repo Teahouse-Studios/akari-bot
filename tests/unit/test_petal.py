@@ -3,7 +3,7 @@
 import time
 from datetime import datetime, timedelta
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.tester import func_case, Tester, mock_config
 from core.tester.mock.factory import TestDataFactory
 from core.tester.mock.session import MockMessageSession

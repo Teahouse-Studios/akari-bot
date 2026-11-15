@@ -19,7 +19,7 @@ from apscheduler.triggers.cron import CronTrigger as APSchedulerCronTrigger
 from apscheduler.triggers.date import DateTrigger as APSchedulerDateTrigger
 from apscheduler.triggers.interval import IntervalTrigger as APSchedulerIntervalTrigger
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.module_runtime import ModuleRuntimeManager
 from core.utils.timezone import core_tz
 

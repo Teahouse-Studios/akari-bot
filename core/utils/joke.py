@@ -1,4 +1,4 @@
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.utils.http import url_pattern
 from core.utils.random import Random

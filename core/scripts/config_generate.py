@@ -49,7 +49,7 @@ def generate_config(dir_path: Path, language: str):
         f.close()
 
     # 导入配置管理器
-    from core.config import CFGManager
+    from core.builtins.config import CFGManager
 
     # 切换配置管理器的路径到指定目录
     CFGManager.switch_config_path(dir_path)
@@ -57,6 +57,8 @@ def generate_config(dir_path: Path, language: str):
 
     # 导入核心配置模块，触发其配置生成
     import core.config.base  # noqa
+
+    CFGManager.save()
 
     # 导入所有机器人包
     import bots

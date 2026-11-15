@@ -22,7 +22,7 @@ from core.builtins.session.lock import ExecutionLockList, ExecutionState
 from core.builtins.session.tasks import SessionTaskManager
 from core.builtins.types import MessageElement
 from core.builtins.utils import confirm_command
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.constants import SessionContextUnavailable, SessionFinished, WaitCancelException
 from core.exports import add_export
 from core.logger import Logger

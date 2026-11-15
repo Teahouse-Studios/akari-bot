@@ -46,6 +46,11 @@ def _install_test_config() -> Path:
 
 test_config_path = _install_test_config()
 
+# 测试配置铺设完成后立即加载：此后导入的模板与 core.builtins.utils 都要读取配置项。
+from core.builtins.config.bootstrap import bootstrap_config  # noqa: E402
+
+bootstrap_config()
+
 
 def _install_test_union_merge_logs() -> Path:
     configured = os.environ.get(TEST_UNION_MERGE_LOGS_PATH_ENV)

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.exceptions import SendMessageFailed, SessionFinished, WaitCancelException
 from core.database.models import SenderUnionInfo
 from core.tester import Tester, func_case, mock_config
@@ -93,7 +93,7 @@ async def _test_tos_report_delegates_to_send_report():
 
 async def _test_tos_report_email_takes_priority():
     from core.builtins.bot import Bot
-    from core.config.base import SMTPConfig
+    from core.config.smtp import SMTPConfig
     from modules.core.hooks.tos import tos_report
 
     direct_sender = AsyncMock()

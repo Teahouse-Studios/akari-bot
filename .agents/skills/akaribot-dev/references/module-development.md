@@ -249,7 +249,7 @@ async def _(msg):
 
 ```python
 # modules/ai/config.py —— 真实例子
-from core.config.decorator import on_module_config
+from core.builtins.config.decorator import on_module_config
 
 @on_module_config("ai")
 class AiConfig:

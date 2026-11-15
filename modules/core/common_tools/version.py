@@ -1,7 +1,7 @@
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext, Url
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.utils.bash import run_sys_command
 from modules.core.common_tools.about import about
 from modules.core.common_tools.version_utils import get_version_display

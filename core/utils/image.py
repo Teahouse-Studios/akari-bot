@@ -10,7 +10,7 @@ from jinja2 import FileSystemLoader, Environment
 
 from core.builtins.message.chain import MessageChain, MessageNodes
 from core.builtins.message.elements import PlainElement, ImageElement, EmbedElement
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import templates_path
 from core.logger import Logger
 from core.utils.cache import random_cache_path

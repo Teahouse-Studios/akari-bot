@@ -8,7 +8,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.session.bot_state import BotState
 from core.builtins.session.internal import MessageSession, I18NContext, normalize_confirm_token
 from core.builtins.utils import confirm_command
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.exceptions import SessionFinished
 from core.utils.button import bind_callback_reply_ids
 

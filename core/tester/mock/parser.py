@@ -7,7 +7,7 @@ from core.builtins.parser.hooks import HookPoint, dispatch_parser_hook
 from core.builtins.parser.message import _build_command_kwargs, _confirm_long_regex_message
 from core.builtins.session.tasks import SessionTaskManager
 from core.constants.exceptions import SessionFinished
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.exports import exports
 from core.loader import ModulesManager
 from core.logger import Logger

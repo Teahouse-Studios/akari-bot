@@ -6,7 +6,7 @@ from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.scheduler import IntervalTrigger
 from core.utils.http import get_url

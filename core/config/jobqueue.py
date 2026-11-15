@@ -2,8 +2,8 @@
 
 from uuid import uuid4
 
-from core.config import CFGManager
-from core.config.decorator import on_config
+from core.builtins.config import CFGManager
+from core.builtins.config.decorator import on_config
 
 
 @on_config(

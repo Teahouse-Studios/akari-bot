@@ -11,7 +11,7 @@ from core.builtins.message.chain import MessageChain, match_kecode
 from core.builtins.message.internal import Image, I18NContext, Markdown, Plain
 from core.builtins.parser.hooks import HookPoint
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.exceptions import (
     AbuseWarning,
     ExternalException,

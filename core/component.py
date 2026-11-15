@@ -9,7 +9,7 @@ from apscheduler.triggers.date import DateTrigger
 
 from core.builtins.parser.args import parse_template
 from core.builtins.types import MessageElement
-from core.config.decorator import _process_class
+from core.builtins.config.decorator import process_config_class
 from core.constants.exceptions import InvalidTemplatePattern
 from core.loader import ModulesManager
 from core.module_runtime import ModuleRuntimeManager, RuntimeResource
@@ -335,7 +335,7 @@ class Bind:
             """声明模块的配置模板。
 
             .. deprecated::
-                请改用 :func:`core.config.decorator.on_module_config`。
+                请改用 :func:`core.builtins.config.decorator.on_module_config`。
                 本方法要求配置模板反向导入模块对象（``from . import <模块变量>``），
                 同包内任何文件在顶层读取该模板都会与包的初始化互相等待而形成循环导入。
 
@@ -344,7 +344,7 @@ class Bind:
             """
 
             def wrap(cls):
-                return _process_class(cls, "module_" + self.module_name, secret=secret)
+                return process_config_class(cls, "module_" + self.module_name, secret=secret)
 
             if cls is None:
                 return wrap

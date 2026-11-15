@@ -6,7 +6,7 @@ from core.builtins.message.elements import ButtonRows
 from core.builtins.message.internal import ActionText, Button, ButtonFrame, I18NContext, Image, Markdown, Plain, Url
 from core.builtins.utils import command_prefix
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.func import is_int

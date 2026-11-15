@@ -7,7 +7,7 @@ import random as pyrandom
 import secrets
 from typing import MutableSequence, Sequence, TypeVar
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 INF = 2**53
 T = TypeVar("T")

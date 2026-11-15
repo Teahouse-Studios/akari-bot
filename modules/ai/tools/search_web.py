@@ -3,7 +3,7 @@ import traceback
 import orjson
 from ddgs import DDGS
 
-from core.config.base import CoreSecretConfig
+from core.config import CoreSecretConfig
 
 proxy = CoreSecretConfig.proxy
 

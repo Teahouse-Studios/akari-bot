@@ -12,7 +12,7 @@ from core.builtins.session.info import EventInfo, SessionInfo, FetchedSessionInf
 from core.builtins.session.internal import MessageSession, FetchedMessageSession, normalize_outgoing_chain
 from core.builtins.session.lock import ExecutionLockList
 from core.builtins.temp import *
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.info import Info
 from core.constants.path import PrivateData, data_path
 from core.database.models import (

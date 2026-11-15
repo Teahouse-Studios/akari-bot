@@ -3,7 +3,7 @@ import re
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import (
     UNION_SCOPE_SENDER,
     UNION_SCOPE_TARGET,

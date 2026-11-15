@@ -5,7 +5,8 @@ from pathlib import Path
 
 from loguru import logger
 
-from core.config import CFGManager
+from core.builtins.config import CFGManager
+from core.builtins.config.bootstrap import bootstrap_config
 
 
 def iter_config_template_modules() -> list[str]:
@@ -42,6 +43,7 @@ def scan_config_templates() -> list[str]:
 
     :return: 加载失败的配置模板模块名列表，空列表表示全部成功。
     """
+    bootstrap_config()
     failed = []
     for module_name in iter_config_template_modules():
         try:

@@ -11,7 +11,7 @@ from core.builtins.message.internal import ActionText
 from core.builtins.parser.hooks import HookPoint
 from core.builtins.session.lock import ExecutionLockList
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import SenderUnionInfo
 from core.loader import ModulesManager
 from core.logger import Logger

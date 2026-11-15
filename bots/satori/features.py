@@ -1,5 +1,5 @@
 from core.builtins.session.features import Features
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 
 features = Features(
     support_image=True,

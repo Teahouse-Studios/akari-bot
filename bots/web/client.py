@@ -13,7 +13,7 @@ from bots.web.config import WebConfig, WebSecretConfig
 from bots.web.info import *
 from bots.web.password_state import watch_password_state
 from core.client.init import client_cleanup, client_init
-from core.config import CFGManager
+from core.builtins.config import CFGManager
 from core.constants.path import assets_path, data_path
 from core.database.models import SenderUnionInfo
 from core.logger import Logger

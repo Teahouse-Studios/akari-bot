@@ -54,8 +54,8 @@ EXPECTED_WORDING = (
 
 # 无会话上下文的 Locale 构造点：这些出口渲染的不是会话文案，或另有语言来源。
 NON_SESSION_LOCALE_FILES = {
-    "core/config/__init__.py": "配置模板注释",
-    "core/config/update.py": "配置注释补写",
+    "core/builtins/config/generator.py": "配置注释生成",
+    "core/builtins/config/update.py": "配置注释补写",
     "core/queue/server.py": "WebUI 帮助文档",
     "core/scripts/config_generate.py": "配置模板生成",
     "core/smtp.py": "邮件上报",

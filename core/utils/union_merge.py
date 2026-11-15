@@ -6,7 +6,7 @@ import orjson
 
 from core.builtins.bot import Bot
 from core.builtins.message.internal import ActionText, I18NContext, Plain
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants import WaitCancelException
 from core.constants.path import union_merge_logs_path
 from core.database.models import (

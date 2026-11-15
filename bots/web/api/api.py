@@ -13,7 +13,7 @@ from tortoise.expressions import Q
 from bots.web.client import app, limiter, enable_https, get_client_ip
 from bots.web.config import WebConfig
 from core.builtins.utils import command_prefix
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.constants import config_filename
 from core.constants.path import config_path
 from core.database.models import (

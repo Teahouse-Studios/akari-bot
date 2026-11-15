@@ -3,10 +3,10 @@ from typing import Any
 from fastapi import HTTPException, Request
 
 from bots.web.client import app, limiter, get_client_ip
-from core.config import format_url
 from core.config.webrender import WebRenderConfig
 from core.logger import Logger
 from core.queue.contracts import ServerAPI
+from core.utils.func import format_url
 from .auth import verify_jwt
 
 WEB_RENDER_ACTIONS = ("start", "stop", "restart")

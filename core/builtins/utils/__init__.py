@@ -1,6 +1,6 @@
 """内置工具模块 - 提供命令前缀和确认词等系统级配置。"""
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.default import (
     confirm_command_default,
     command_prefix_default,

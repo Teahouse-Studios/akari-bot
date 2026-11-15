@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 import core.utils.html2text as html2text
 from core.builtins.message.internal import I18NContext, Url
 from core.builtins.session.internal import MessageSession
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.constants.exceptions import AbuseWarning, NoReportException
 from core.utils.dirty_check import check
 from core.i18n import Locale

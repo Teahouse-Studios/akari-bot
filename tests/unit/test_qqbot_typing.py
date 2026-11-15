@@ -12,7 +12,7 @@ from bots.qqbot.info import target_c2c_prefix, target_group_prefix
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.elements import I18NContextElement, ImageElement, PlainElement
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.tester import func_case, Tester, mock_config
 

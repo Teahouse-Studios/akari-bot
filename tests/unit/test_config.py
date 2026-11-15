@@ -1,73 +1,80 @@
 """core.config 配置系统单元测试。"""
 
-from unittest.mock import patch, MagicMock
+from typing import Any
 
-from core.config import CFGManager, Config
-from core.config.base import CoreConfig, CoreSecretConfig
+from core.builtins.config import Config, use_source
+from core.config.core import CoreConfig, CoreSecretConfig
 from core.tester import func_case, Tester, mock_config
 
 
-def _test_config_passthrough():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = "test_value"
-    import core.config as config_module
+class _StubSource:
+    """只记录取值参数的配置来源替身。"""
 
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("key", "default")
-        return result == "test_value"
+    readonly = False
+
+    def __init__(self, value: Any):
+        self.value = value
+        self.queries: list[tuple] = []
+
+    def has(self, q: str, secret: bool = False, table_name: str | None = None) -> bool:
+        return False
+
+    def get(
+        self,
+        q: str,
+        default: Any = None,
+        cfg_type: type | tuple | None = None,
+        secret: bool = False,
+        table_name: str | None = None,
+        _global: bool = False,
+        _generate: bool = False,
+        standalone_comment_keys: tuple[str, ...] = (),
+    ) -> Any:
+        self.queries.append((q, default, cfg_type, secret, table_name))
+        return self.value
+
+    def write(self, *args: Any, **kwargs: Any) -> None:
+        raise AssertionError("Config() must not write.")
+
+    def delete(self, q: str, table_name: str | None = None) -> bool:
+        return False
+
+
+def _test_config_passthrough():
+    with use_source(_StubSource("test_value")):
+        return Config("key", "default") == "test_value"
 
 
 def _test_config_get_called_with_args():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = "v"
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        config_module.Config("mykey", "mydefault", cfg_type=str, secret=True, table_name="module_test")
-        args, kwargs = mock_cfg.get.call_args
-        return (
-            args[0] == "mykey"
-            and args[1] == "mydefault"
-            and args[3] is True  # secret
-            and args[4] == "module_test"  # table_name
-        )
+    source = _StubSource("v")
+    with use_source(source):
+        Config("mykey", "mydefault", cfg_type=str, secret=True, table_name="module_test")
+        q, default, cfg_type, secret, table_name = source.queries[0]
+    return (
+        q == "mykey" and default == "mydefault" and cfg_type is str and secret is True and table_name == "module_test"
+    )
 
 
 def _test_config_get_url_branch():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = "example.com/path"
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("api_url", get_url=True)
-        return result.startswith("http://") and result.endswith("/")
+    with use_source(_StubSource("example.com/path")):
+        return Config("api_url", get_url=True) == "http://example.com/path/"
 
 
 def _test_config_get_url_no_slash():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = "https://example.com/path"
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("api_url", get_url=True)
-        return result == "https://example.com/path/"
+    with use_source(_StubSource("https://example.com/path")):
+        return Config("api_url", get_url=True) == "https://example.com/path/"
 
 
 def _test_config_get_url_none():
-    mock_cfg = MagicMock()
-    mock_cfg.get.return_value = None
-    import core.config as config_module
-
-    with patch.object(config_module, "CFGManager", mock_cfg):
-        result = config_module.Config("url", get_url=True)
-        return result is None
+    with use_source(_StubSource(None)):
+        return Config("url", get_url=True) is None
 
 
 def _test_mock_config_overrides_and_restores():
     original = CoreConfig.enable_petal
     with mock_config(CoreConfig, enable_petal=not original):
         attribute = CoreConfig.enable_petal
-        direct = CFGManager.get("enable_petal", table_name="config")
+        direct = Config("enable_petal", table_name="config")
     return attribute is (not original) and direct is (not original) and CoreConfig.enable_petal is original
 
 

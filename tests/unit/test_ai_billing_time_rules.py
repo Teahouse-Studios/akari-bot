@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.tester import func_case, Tester, mock_config
 from modules.ai import setting
 

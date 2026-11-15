@@ -109,10 +109,10 @@ async def _(msg: Bot.MessageSession, word: str):
 
 其他环境替身位于 `core/tester/mock/`：`database`（内存库）、`loader`（模块加载）、`random`（固定随机种子）、`fixtures`（HTTP 响应回放）、`config`（配置项覆盖）。
 
-需要让某个配置项取非默认值时用 `mock_config`，它在进程内替换配置读取，退出上下文即恢复原值：
+需要让某个配置项取非默认值时用 `mock_config`，它在进程内以叠加来源的方式替换配置读取（底层是 `core.builtins.config.interface.use_source()`），退出上下文即恢复原值：
 
 ```python
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.tester import mock_config
 
 with mock_config(CoreConfig, use_emote=True, enable_petal=False):
@@ -121,7 +121,7 @@ with mock_config(CoreConfig, use_emote=True, enable_petal=False):
 
 也可以写成 `with tester.mock_config(...)`。字段名须是该模板类已声明的配置项，支持嵌套使用。
 
-测试引导会将落盘目录重定向到临时路径：配置从 `assets/config_store/zh_cn` 复制到临时目录（`AKARI_CONFIG_PATH`）并叠加测试覆盖项，不读取仓库的 `config/`；union 合并日志写入临时目录（`AKARI_UNION_MERGE_LOGS_PATH`）并在结束时清理（若已显式设置该环境变量则保留）。
+测试引导会将落盘目录重定向到临时路径：配置从 `assets/config_store/zh_cn` 复制到临时目录（`AKARI_CONFIG_PATH`）并叠加测试覆盖项，不读取仓库的 `config/`；`tester.py` 在铺设完成后调用 `bootstrap_config()` 加载配置，晚于此的模板导入才能取到配置项。union 合并日志写入临时目录（`AKARI_UNION_MERGE_LOGS_PATH`）并在结束时清理（若已显式设置该环境变量则保留）。
 
 ### 9.4 测试规范
 

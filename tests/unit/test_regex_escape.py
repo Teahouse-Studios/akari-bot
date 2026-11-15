@@ -6,7 +6,7 @@ from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import Plain
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.tester import func_case, Tester
 
 

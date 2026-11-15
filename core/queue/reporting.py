@@ -1,6 +1,6 @@
 """Submit configured error reports without waiting on a reverse RPC."""
 
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.smtp import email_report_enabled
 

@@ -10,7 +10,7 @@ from core.builtins.session.features import Features
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.utils import command_prefix
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.exceptions import SessionFinished
 from core.database.models import SenderUnionInfo, TargetUnionInfo
 from core.queue.errors import RpcRemoteError

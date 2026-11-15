@@ -19,7 +19,7 @@ from core.builtins.session.info import SessionInfo
 from core.builtins.temp import Temp
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from core.config.base import BaseConfig, CoreConfig
+from core.config import BaseConfig, CoreConfig
 from core.constants.default import confirm_command_default
 from core.database.models import SenderUnionInfo, TargetUnionInfo, UnfriendlyActionRecords
 from core.i18n import Locale

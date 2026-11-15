@@ -130,11 +130,17 @@ def pre_init():
 
     Logger.info("Generating config...")
 
+    # 配置模板的导入会补写缺失键，而模板属性读取需要已加载的配置，
+    # 故须先加载并执行版本迁移。
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
+
     # CoreConfig 的导入须留在函数内：multiprocessing 以 spawn / forkserver 启动子进程时
-    # 会以 __mp_main__ 重新导入主模块，置于顶层将使每个子进程再次触发配置模板的生成。
+    # 会以 __mp_main__ 重新导入主模块，置于顶层将使每个子进程再次触发配置模板的登记。
     from core.config.core import CoreConfig
     from core.config.jobqueue import bootstrap_jobqueue_config, JobQueueConfig
-    from core.config.scan import scan_config_templates
+    from core.builtins.config.scan import scan_config_templates
     from core.constants.version import database_version
     from core.database import close_db, init_db
     from core.database.link import db_type
@@ -222,9 +228,12 @@ def multiprocess_run_until_complete(func):
 
 
 def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+    from core.builtins.config.bootstrap import bootstrap_config
     from core.constants import Info
     from core.logger import Logger
 
+    # 平台配置模板在导入期即读取配置项，子进程须先完成加载。
+    bootstrap_config()
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
@@ -244,6 +253,9 @@ def server_go(
     hub_pid: int | None = None,
 ):
     # Server 依赖树（尤其 WebRender）只应由 Server 子进程加载，守护进程不需要保留一份。
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
     from core.server.run import run_async
 
     run_async(subprocess, binary_mode, stop_event, daemon_pid, hub_pid)
@@ -251,6 +263,9 @@ def server_go(
 
 def jobqueue_hub_go(stop_event, ready_event):
     """在独立子进程中运行内置 WebSocket JobQueue Hub。"""
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
     from core.queue.websocket import run_websocket_hub_process
 
     run_websocket_hub_process(stop_event, ready_event)
@@ -267,8 +282,11 @@ async def run_bot():
     os.environ[CONFIG_READONLY_ENV] = "1"
     os.environ["AKARI_BOT_I18N_CACHE_DIR"] = AKARI_BOT_I18N_CACHE_DIR
 
-    # CONFIG_READONLY_ENV 必须先于 core.config 的首次导入置位；后者会在导入期执行配置版本迁移。
-    from core.config import CFGManager
+    # CONFIG_READONLY_ENV 须先于配置加载置位：子进程据此跳过版本迁移。
+    from core.builtins.config.bootstrap import bootstrap_config
+
+    bootstrap_config()
+    from core.builtins.config import CFGManager
     from core.config.jobqueue import JobQueueConfig
 
     mp = multiprocessing.get_context("spawn" if sys.platform in ["win32", "darwin"] else "forkserver")
@@ -336,15 +354,15 @@ async def run_bot():
     bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
     disabled_bots.clear()
 
-    for t in CFGManager.values:
+    for t in CFGManager.iter_tables():
         if t.startswith("bot_") and not t.endswith("_secret") and t[4:] in bots_list:
-            if "enable" in CFGManager.values[t][t]:
-                if not CFGManager.values[t][t]["enable"]:
-                    disabled_bots.append(t[4:])
-                    Logger.warning(f"Bot {t[4:]} is disabled in config, skip to launch.")
-            else:
+            enable = CFGManager.bot_enable(t[4:])
+            if enable is None:
                 Logger.warning(f'Bot {t[4:]} cannot found config "enable".')
                 disabled_bots.append(t[4:])
+            elif not enable:
+                disabled_bots.append(t[4:])
+                Logger.warning(f"Bot {t[4:]} is disabled in config, skip to launch.")
 
     for bl in bots_list:
         if bl in disabled_bots:

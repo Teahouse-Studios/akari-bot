@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from PIL import Image as PILImage
 
 from core.config.network import proxy, ssl_verify
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from core.utils.http import private_ip_check
 from core.utils.url_audit import evaluate_url_policy

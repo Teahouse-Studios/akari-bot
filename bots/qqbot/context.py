@@ -50,7 +50,7 @@ from core.builtins.session.context import ContextManager
 from core.builtins.session.bot_state import BotState
 from core.builtins.session.features import Features
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import assets_path
 from core.logger import Logger
 from core.utils.button_runtime import register_button_rows

@@ -11,7 +11,7 @@ from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext,
 from core.builtins.parser.command import CommandParser
 from core.builtins.utils import command_prefix
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import templates_path
 from core.loader import ModulesManager
 from core.logger import Logger

@@ -11,7 +11,7 @@ from core.builtins.parser.message import parser
 from core.builtins.session.info import SessionInfo
 from core.builtins.session.internal import MessageSession
 from core.builtins.session.tasks import SessionTaskManager
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import TargetUnionBind, TargetUnionInfo
 from core.loader import ModulesManager
 from core.queue.contracts import PlatformAPI

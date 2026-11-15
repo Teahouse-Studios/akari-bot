@@ -5,7 +5,7 @@ from core.builtins.message.elements import ActionTextElement
 from core.builtins.message.internal import ActionText, ButtonFrame, I18NContext, Plain
 from core.builtins.utils import command_prefix
 from core.component import module
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.i18n import Locale
 from core.utils.button import arrange_buttons
 from core.utils.timezone import format_offset, parse_offset

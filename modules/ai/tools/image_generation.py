@@ -5,7 +5,7 @@ import orjson
 from openai import AsyncOpenAI
 
 from core.builtins.message.internal import ImageElement
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.logger import Logger
 from ..setting import get_image_cost, image_api
 from .context import ToolContext

@@ -4,7 +4,7 @@ from akari_bot_i18n.i18n import build_locale_snapshot
 from core.builtins.bot import Bot
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import ActionText, I18NContext, Plain, Url
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants import all_locales_path, lang_list, weblate_lang_codes
 from core.i18n import Locale, get_available_locales
 from core.utils.http import get_url

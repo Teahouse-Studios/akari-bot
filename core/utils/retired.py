@@ -3,7 +3,7 @@ from datetime import datetime, UTC
 from pathlib import Path
 
 from core.builtins.message.internal import ActionText, I18NContext, Plain
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.constants.path import retired_path
 from core.database.models import StoredData, TargetUnionBind
 from core.exports import exports

@@ -21,7 +21,7 @@ from core.builtins.message.internal import Plain, Image, Audio, Video, Raw
 from core.builtins.session.info import EventInfo, SessionInfo
 from core.builtins.utils import command_prefix
 from core.client.init import client_cleanup, client_init
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.config.network import proxy, ssl_verify
 from core.constants.default import confirm_command_default
 from core.logger import Logger

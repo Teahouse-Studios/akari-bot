@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from core.builtins.converter import converter
 from core.builtins.session.info import SessionInfo
-from core.config.base import CoreConfig
+from core.config.core import CoreConfig
 from core.database.models import TargetUnionInfo
 from core.logger import Logger
 from core.tester import func_case, Tester, mock_config
