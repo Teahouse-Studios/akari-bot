@@ -227,13 +227,25 @@ def multiprocess_run_until_complete(func):
         sys.exit(exitcode)
 
 
-def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+def bootstrap_readonly_child():
+    """以只读模式加载配置，供 pre_init 之后启动的子进程使用。
+
+    forkserver 进程于 pre_init 启动时创建，此时只读标记已被清除，其后派生的子进程沿用该快照，
+    无法经环境变量继承只读状态，故在此显式置位。须在导入任何配置模板（含 core.logger）之前调用。
+    """
+    os.environ[CONFIG_READONLY_ENV] = "1"
+    from core.builtins.config import CFGManager
     from core.builtins.config.bootstrap import bootstrap_config
+
+    CFGManager.readonly = True
+    bootstrap_config()
+
+
+def go(bot_name: str, subprocess: bool = False, binary_mode: bool = False):
+    bootstrap_readonly_child()
     from core.constants import Info
     from core.logger import Logger
 
-    # 平台配置模板在导入期即读取配置项，子进程须先完成加载。
-    bootstrap_config()
     Logger.info(f"[{bot_name}] Here we go!")
     Info.subprocess = subprocess
     Info.binary_mode = binary_mode
@@ -252,10 +264,8 @@ def server_go(
     daemon_pid: int | None = None,
     hub_pid: int | None = None,
 ):
+    bootstrap_readonly_child()
     # Server 依赖树（尤其 WebRender）只应由 Server 子进程加载，守护进程不需要保留一份。
-    from core.builtins.config.bootstrap import bootstrap_config
-
-    bootstrap_config()
     from core.server.run import run_async
 
     run_async(subprocess, binary_mode, stop_event, daemon_pid, hub_pid)
@@ -263,9 +273,7 @@ def server_go(
 
 def jobqueue_hub_go(stop_event, ready_event):
     """在独立子进程中运行内置 WebSocket JobQueue Hub。"""
-    from core.builtins.config.bootstrap import bootstrap_config
-
-    bootstrap_config()
+    bootstrap_readonly_child()
     from core.queue.websocket import run_websocket_hub_process
 
     run_websocket_hub_process(stop_event, ready_event)
