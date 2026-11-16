@@ -21,6 +21,11 @@ TEST_CONFIG_TEMPLATE_PATH = Path("assets/config_store/zh_cn")
 # 留在 data/ 里只会随每次测试运行越积越多。
 TEST_UNION_MERGE_LOGS_PATH_ENV = "AKARI_UNION_MERGE_LOGS_PATH"
 
+# 语言快照缓存目录。用例会导入 bot，而守护进程在导入期把该变量 setdefault 到
+# data/i18n_cache；测试进程须先固定为自有的临时目录，否则框架启动时发布的快照
+# 与之后的读取方（包括 spawn 出的子进程）会落在不同位置。
+TEST_I18N_CACHE_DIR_ENV = "AKARI_BOT_I18N_CACHE_DIR"
+
 TEST_CONFIG_OVERRIDES: list[tuple[str, str, str, object]] = [
     ("config.toml", "config", "enable_petal", True),
     # 通用测试进程不启动守护进程所管理的 WebSocket Hub。数据库后端
@@ -35,6 +40,7 @@ class TestEnvironment:
 
     config_path: Path
     union_merge_logs_path: Path
+    i18n_cache_path: Path
 
 
 _environment: TestEnvironment | None = None
@@ -70,6 +76,17 @@ def _install_test_union_merge_logs() -> Path:
     return path
 
 
+def _install_test_i18n_cache() -> Path:
+    configured = os.environ.get(TEST_I18N_CACHE_DIR_ENV)
+    if configured:
+        return Path(configured)
+
+    path = Path(tempfile.mkdtemp(prefix="akari_test_i18n_cache_"))
+    os.environ[TEST_I18N_CACHE_DIR_ENV] = str(path)
+    _created_paths.append(path)
+    return path
+
+
 def prepare_test_environment() -> TestEnvironment:
     """铺设测试环境并加载配置，重复调用返回同一份路径。"""
     global _environment
@@ -78,12 +95,17 @@ def prepare_test_environment() -> TestEnvironment:
 
     config_path = _install_test_config()
     union_merge_logs_path = _install_test_union_merge_logs()
+    i18n_cache_path = _install_test_i18n_cache()
     atexit.register(cleanup_test_environment)
 
     from core.builtins.config.bootstrap import bootstrap_config
 
     bootstrap_config()
-    _environment = TestEnvironment(config_path=config_path, union_merge_logs_path=union_merge_logs_path)
+    _environment = TestEnvironment(
+        config_path=config_path,
+        union_merge_logs_path=union_merge_logs_path,
+        i18n_cache_path=i18n_cache_path,
+    )
     return _environment
 
 
