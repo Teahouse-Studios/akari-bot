@@ -59,7 +59,6 @@
             --brand-bg-start: #2a1f29;
             --brand-bg-end: #211d2e;
             --brand-dot: rgba(245, 172, 217, .07);
-            --sticker-border: #3a2d3a;
             --chip-bg: rgba(0, 0, 0, .25);
             {% else %}
             --type-base-bg: #ffe0cc;
@@ -77,7 +76,6 @@
             --brand-bg-start: #fff4fa;
             --brand-bg-end: #f6eeff;
             --brand-dot: rgba(243, 154, 205, .16);
-            --sticker-border: #ffffff;
             --chip-bg: rgba(255, 255, 255, .85);
             {% endif %}
             {% set module_type = "base" if module.base else ("subscription" if module.rss else "external") %}
@@ -109,18 +107,10 @@
 
         .botbox h2 {
             display: inline-flex;
-            align-items: center;
             margin: 4px 0 2px 4px;
-            padding: .2em 1em .25em;
-            font-size: 1.3em;
+            font-size: 1.6em;
             font-weight: bolder;
-            letter-spacing: .08em;
-            color: #ffffff;
-            text-shadow: 1px 1px 0 rgba(150, 50, 120, .3);
-            background: linear-gradient(100deg, var(--brand-pink), var(--brand-lilac));
-            border: 3px solid var(--sticker-border);
-            border-radius: 999px;
-            box-shadow: 4px 4px 0 var(--brand-pink-soft);
+            color: var(--brand-ink);
         }
 
         .botbox hr {
@@ -161,7 +151,7 @@
 
         .help-module-name {
             margin: 0;
-            font-size: 1.6em;
+            font-size: 1.3em;
             font-family: 'Consolas', 'Noto Sans Mono', 'Courier New', Courier, monospace;
             font-weight: bolder;
             line-height: 1.2;

@@ -56,7 +56,6 @@
             --brand-bg-start: #2a1f29;
             --brand-bg-end: #211d2e;
             --brand-dot: rgba(245, 172, 217, .07);
-            --sticker-border: #3a2d3a;
             --chip-bg: rgba(0, 0, 0, .25);
             {% else %}
             --type-base-bg: #ffe0cc;
@@ -75,7 +74,6 @@
             --brand-bg-start: #fff4fa;
             --brand-bg-end: #f6eeff;
             --brand-dot: rgba(243, 154, 205, .16);
-            --sticker-border: #ffffff;
             --chip-bg: rgba(255, 255, 255, .85);
             {% endif %}
             --heart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 22'%3E%3Cpath d='M12 22C5 16 0 12 0 6.5A6.5 6.5 0 0 1 12 3a6.5 6.5 0 0 1 12 3.5C24 12 19 16 12 22Z'/%3E%3C/svg%3E");
@@ -105,18 +103,10 @@
 
         .botbox h2 {
             display: inline-flex;
-            align-items: center;
             margin: 4px 0 2px 4px;
-            padding: .2em 1em .25em;
-            font-size: 1.3em;
+            font-size: 1.6em;
             font-weight: bolder;
-            letter-spacing: .08em;
-            color: #ffffff;
-            text-shadow: 1px 1px 0 rgba(150, 50, 120, .3);
-            background: linear-gradient(100deg, var(--brand-pink), var(--brand-lilac));
-            border: 3px solid var(--sticker-border);
-            border-radius: 999px;
-            box-shadow: 4px 4px 0 var(--brand-pink-soft);
+            color: var(--brand-ink);
         }
 
         .botbox hr {
@@ -202,7 +192,6 @@
             line-height: 1.4;
             background-color: transparent;
             box-shadow: 0 0 0 1px rgba(0, 0, 0, .12), 3px 3px 0 1px rgba(0, 0, 0, .08);
-            box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent), 3px 3px 0 1px color-mix(in srgb, currentColor 14%, transparent);
         }
 
         .base {
