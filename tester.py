@@ -148,7 +148,6 @@ os.environ.setdefault("PYTHONPATH", str(Path(".").resolve()))
 
 IS_CI = os.environ.get("CI", "0") == "1"
 ENABLE_COVERAGE = os.environ.get("COVERAGE", "0") == "1"
-MAX_CONCURRENT = 1
 # 本机只跑部分整合测试时，用路径子串筛选
 TEST_FILTER_ENV = "AKARI_TEST_FILTER"
 INTEGRATION_TESTS_PATH = tests_path / "integration"
@@ -181,21 +180,140 @@ junit_registry_suite = JUnitTestSuite("Registry Tests")
 junit_func_suite = JUnitTestSuite("Function Tests")
 
 
-async def _run_registry_entry(semaphore: asyncio.Semaphore, entry: CaseEntry, test_number: int) -> dict:
-    Logger.trace(f"_run_registry_entry START: TEST{test_number}")
-    async with semaphore:
-        Logger.trace(f"_run_registry_entry ACQUIRED semaphore: TEST{test_number}")
-        fn = entry["func"]
-        note = entry.get("note") or (fn.__doc__ if fn.__doc__ else None)
-        file_loc = f"{entry.get('file')}:{entry.get('line')}"
-        Logger.info(f"TEST{test_number}: {fn.__name__} ({file_loc})")
-        if fn.__doc__:
-            Logger.info(f"DOC: {fn.__doc__}")
+@dataclass
+class RegistryTestStats:
+    total: int = 0
+    passed: int = 0
+    failed: int = 0
+    time_cost: float = 0.0
 
-        Logger.trace(f"_run_registry_entry run_case_entry: TEST{test_number}")
-        results = await run_case_entry(entry, IS_CI)
-        Logger.trace(f"_run_registry_entry DONE: TEST{test_number}")
-        return {"test_number": test_number, "results": results, "note": note}
+
+async def _run_registry_entry(entry: CaseEntry, test_number: int) -> dict:
+    Logger.trace(f"_run_registry_entry START: TEST{test_number}")
+    fn = entry["func"]
+    note = entry.get("note") or (fn.__doc__ if fn.__doc__ else None)
+    results = await run_case_entry(entry, IS_CI)
+    Logger.trace(f"_run_registry_entry DONE: TEST{test_number}")
+    return {"test_number": test_number, "results": results, "note": note}
+
+
+async def _report_registry_case(
+    entry: CaseEntry, reg_result: dict | Exception, test_number: int, stats: RegistryTestStats
+) -> None:
+    fn = entry["func"]
+    file_loc = f"{entry.get('file')}:{entry.get('line')}"
+
+    Logger.info(f"TEST{test_number}: {fn.__name__} ({file_loc})")
+    if fn.__doc__:
+        Logger.info(f"DOC: {fn.__doc__}")
+    Logger.info("-" * 60)
+
+    if isinstance(reg_result, Exception):
+        Logger.error(f"Error during test execution: {reg_result}")
+        stats.failed += 1
+        stats.total += 1
+        junit_testcase = JUnitTestCase(name=f"TEST{test_number}_runner", classname=f"RegistryTest.{test_number}")
+        junit_testcase.error = ("Test runner error", repr(reg_result))
+        junit_registry_suite.add_testcase(junit_testcase)
+        return
+    if not isinstance(reg_result, dict):
+        stats.failed += 1
+        stats.total += 1
+        junit_testcase = JUnitTestCase(
+            name=f"TEST{test_number}_invalid_result", classname=f"RegistryTest.{test_number}"
+        )
+        junit_testcase.error = ("Invalid test result", repr(reg_result))
+        junit_registry_suite.add_testcase(junit_testcase)
+        return
+
+    note = reg_result.get("note")
+    results = reg_result.get("results", [])
+    for r in results:
+        stats.total += 1
+        inp = r.get("input")
+        tcost = r.get("time_cost", 0.0)
+        test_case_name = f"TEST{test_number}_{stats.total}"
+        junit_testcase = JUnitTestCase(
+            name=test_case_name, classname=f"RegistryTest.{test_number}", time=tcost if tcost else 0.0
+        )
+
+        if "timeout" in r:
+            Logger.error(f"INPUT: {inp}")
+            if note:
+                Logger.error(f"NOTE: {note}")
+            Logger.error("RESULT: FAIL (timeout)")
+            stats.failed += 1
+            junit_testcase.failure = (
+                "Test timeout",
+                f"Test exceeded timeout limit\nInput: {inp}\nNote: {note or 'N/A'}",
+            )
+            junit_registry_suite.add_testcase(junit_testcase)
+            continue
+
+        if "traceback" in r:
+            Logger.error(f"INPUT: {inp}")
+            if note:
+                Logger.error(f"NOTE: {note}")
+            Logger.error("ERROR during execution:")
+            Logger.error(r.get("traceback"))
+            stats.failed += 1
+            junit_testcase.error = ("Test execution error", r.get("traceback", "Unknown error"))
+            junit_registry_suite.add_testcase(junit_testcase)
+            continue
+
+        action = r.get("action", [])
+        fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
+        expected = r.get("expected")
+        Logger.info(f"INPUT: {inp}")
+        if note:
+            Logger.info(f"NOTE: {note}")
+        Logger.info(f"OUTPUT:\n{fmted_output}")
+
+        if isinstance(expected, Expectation):
+            Logger.info(f"EXPECT: {expected}")
+            match = await expected.match(r)
+            if match:
+                Logger.success("RESULT: PASS")
+                stats.passed += 1
+            elif match is False:
+                Logger.error("RESULT: FAIL")
+                stats.failed += 1
+                junit_testcase.failure = ("Assertion failed", f"Expected: {expected}\nActual: {fmted_output}")
+                junit_registry_suite.add_testcase(junit_testcase)
+                continue
+        else:
+            if IS_CI:
+                Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
+                junit_testcase.skipped = "Manual review required (unavailable in CI)"
+                junit_registry_suite.add_testcase(junit_testcase)
+                continue
+            try:
+                Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                check = input()
+                if check in confirm_command:
+                    Logger.success("RESULT: PASS")
+                    stats.passed += 1
+                else:
+                    Logger.error("RESULT: FAIL")
+                    stats.failed += 1
+                    junit_testcase.failure = (
+                        "Manual review failed",
+                        f"Expected: {expected}\nActual: {fmted_output}",
+                    )
+                    junit_registry_suite.add_testcase(junit_testcase)
+                    continue
+            except (EOFError, KeyboardInterrupt):
+                print("")
+                Logger.warning("Interrupted by user.")
+                os._exit(1)
+
+        junit_registry_suite.add_testcase(junit_testcase)
+
+        if tcost is not None:
+            Logger.info(f"TIME COST: {tcost:.06f}s")
+            stats.time_cost += tcost
+
+    Logger.info("-" * 60)
 
 
 class FuncTestResult(TypedDict):
@@ -204,11 +322,200 @@ class FuncTestResult(TypedDict):
     res: dict
 
 
+@dataclass
+class FuncTestStats:
+    total: int = 0
+    passed: int = 0
+    failed: int = 0
+    time_cost: float = 0.0
+
+
 async def _run_func_test(fn: FunctionType, path: str) -> FuncTestResult:
     Logger.trace(f"_run_func_test START: {fn.__name__} ({path})")
     res = await run_function_entry(fn, IS_CI)
     Logger.trace(f"_run_func_test DONE: {fn.__name__}")
     return {"fn": fn, "path": path, "res": res}
+
+
+def _report_func_test(func_result: FuncTestResult, test_number: int, stats: FuncTestStats) -> None:
+    fn = func_result["fn"]
+    path = func_result["path"]
+    res = func_result.get("res", {})
+
+    Logger.info(f"TEST{test_number}: {fn.__name__} ({path})")
+    if fn.__doc__:
+        Logger.info(f"DOC: {fn.__doc__}")
+
+    Logger.info("-" * 60)
+
+    if res.get("skipped"):
+        junit_testcase = JUnitTestCase(
+            name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+        )
+        junit_testcase.skipped = "Test skipped"
+        junit_func_suite.add_testcase(junit_testcase)
+        stats.total += 1
+        return
+    if res.get("timeout"):
+        stats.failed += 1
+        stats.total += 1
+        timeout_limit = res.get("timeout_limit")
+        active_test = res.get("active_test")
+        completed_tests = res.get("completed_tests", 0)
+        detail = f"No progress for {timeout_limit} seconds after {completed_tests} completed subtests"
+        if active_test:
+            detail += f"\nActive subtest: {active_test}"
+        if res.get("cleanup_pending"):
+            detail += "\nCancellation cleanup exceeded its deadline"
+        Logger.error(detail)
+        junit_testcase = JUnitTestCase(
+            name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+        )
+        junit_testcase.failure = ("Function test timeout", detail)
+        junit_func_suite.add_testcase(junit_testcase)
+        return
+    if res.get("error"):
+        stats.failed += 1
+        stats.total += 1
+        junit_testcase = JUnitTestCase(
+            name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+        )
+        junit_testcase.error = ("Test error", res.get("error", "Unknown error"))
+        junit_func_suite.add_testcase(junit_testcase)
+        return
+
+    entries = res["entries"]
+    if not entries:
+        Logger.warning(f"No inputs registered in func test {fn.__name__}; skipping.")
+        junit_testcase = JUnitTestCase(
+            name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+        )
+        junit_testcase.skipped = "No inputs registered"
+        junit_func_suite.add_testcase(junit_testcase)
+        stats.total += 1
+        return
+
+    results = res["results"]
+    subtest_number = 0
+    func_pass = True
+    func_error_msgs: list[str] = []
+    for r in results:
+        type_ = r.get("type")
+        note = r.get("note")
+        inp = r.get("input")
+
+        if "timeout" in r:
+            if type_ == "integration":
+                Logger.error(f"INPUT: {inp}")
+            if note:
+                Logger.error(f"NOTE: {note}")
+            Logger.error("RESULT: FAIL (timeout)")
+            func_pass = False
+            if type_ == "integration":
+                func_error_msgs.append(f"Test timeout for input: {inp}")
+            else:
+                func_error_msgs.append("Test timeout")
+            break
+
+        if "traceback" in r:
+            if type_ == "integration":
+                Logger.error(f"INPUT: {inp}")
+            if note:
+                Logger.error(f"NOTE: {note}")
+            Logger.error("ERROR during execution:")
+            Logger.error(r.get("traceback"))
+            func_pass = False
+            func_error_msgs.append(r.get("traceback", "Unknown error"))
+            if type_ == "integration":
+                break
+            Logger.error("RESULT: FAIL (exception)")
+            continue
+
+        expected = r.get("expected")
+        action = r.get("action", [])
+        fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
+
+        if type_ == "integration":
+            Logger.info(f"INPUT: {inp}")
+        if note:
+            Logger.info(f"NOTE: {note}")
+        if type_ == "integration":
+            Logger.info(f"OUTPUT:\n{fmted_output}")
+        if expected is not None:
+            Logger.info(f"EXPECT: {expected}")
+
+        if r.get("match"):
+            Logger.success("RESULT: PASS")
+            continue
+        if expected is None:
+            if IS_CI:
+                Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
+                continue
+            try:
+                Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
+                check = input()
+                if check in confirm_command:
+                    Logger.success("RESULT: PASS")
+                    continue
+                func_pass = False
+                func_error_msgs.append(f"Manual review failed for input: {inp}")
+            except (EOFError, KeyboardInterrupt):
+                print("")
+                Logger.warning("Interrupted by user.")
+                os._exit(1)
+        else:
+            Logger.error("RESULT: FAIL")
+            func_pass = False
+            func_error_msgs.append(f"Expected: {expected}\nActual: {fmted_output}")
+        break
+
+    func_error_msg = "\n".join(func_error_msgs)
+    if func_pass:
+        Logger.success(f"FUNC ({fn.__name__}) RESULT: PASS")
+        stats.passed += 1
+        junit_testcase = JUnitTestCase(
+            name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+        )
+    else:
+        Logger.error(f"FUNC ({fn.__name__}) RESULT: FAIL")
+        stats.failed += 1
+        junit_testcase = JUnitTestCase(
+            name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
+        )
+        junit_testcase.failure = ("Function test failed", func_error_msg)
+
+    junit_func_suite.add_testcase(junit_testcase)
+
+    for failed_result in results:
+        if failed_result.get("match"):
+            continue
+        if "traceback" not in failed_result:
+            continue
+        subtest_number += 1
+        subtest_name = failed_result.get("note") or getattr(
+            failed_result.get("expected"), "__name__", str(failed_result.get("expected"))
+        )
+        junit_subtest = JUnitTestCase(
+            name=f"{fn.__name__}::{subtest_name}",
+            classname=f"FunctionTest.{test_number}.{subtest_number}",
+            time=res.get("time_cost", 0.0),
+        )
+        if failed_result.get("type") == "integration":
+            junit_subtest.error = ("Test execution error", failed_result.get("traceback", "Unknown error"))
+        else:
+            junit_subtest.failure = (
+                f"Subtest raised {failed_result.get('exception_type', 'Exception')}",
+                failed_result.get("traceback", "Unknown error"),
+            )
+        junit_func_suite.add_testcase(junit_subtest)
+
+    tcost = res.get("time_cost")
+    if tcost is not None:
+        Logger.info(f"TIME COST: {tcost:.06f}s")
+        stats.time_cost += tcost
+
+    stats.total += 1
+    Logger.info("-" * 60)
 
 
 def _iter_integration_files() -> list[str]:
@@ -261,141 +568,20 @@ async def main(inspect_module=inspect):
     total_test_cost = 0.0
     force_exit = False
 
-    semaphore = asyncio.Semaphore(MAX_CONCURRENT)
-    registry_tasks = []
-
-    Logger.trace("main() creating registry tasks")
+    registry_stats = RegistryTestStats()
     for idx, entry in enumerate(registry, 1):
-        task = _run_registry_entry(semaphore, entry, idx)
-        registry_tasks.append(task)
-
-    Logger.trace(f"main() gathering {len(registry_tasks)} registry tasks")
-    registry_results = await asyncio.gather(*registry_tasks, return_exceptions=True)
-    Logger.trace(f"main() registry tasks completed, got {len(registry_results)} results")
-
-    for registry_index, reg_result in enumerate(registry_results, 1):
-        if isinstance(reg_result, Exception):
-            Logger.error(f"Error during test execution: {reg_result}")
-            Logger.trace(f"main() EXCEPTION in registry result: {reg_result}")
-            failed += 1
-            total += 1
-            junit_testcase = JUnitTestCase(
-                name=f"TEST{registry_index}_runner", classname=f"RegistryTest.{registry_index}"
-            )
-            junit_testcase.error = ("Test runner error", repr(reg_result))
-            junit_registry_suite.add_testcase(junit_testcase)
-            continue
-
-        if not isinstance(reg_result, dict):
-            Logger.trace(f"main() non-dict result: {type(reg_result)}")
-            failed += 1
-            total += 1
-            junit_testcase = JUnitTestCase(
-                name=f"TEST{registry_index}_invalid_result", classname=f"RegistryTest.{registry_index}"
-            )
-            junit_testcase.error = ("Invalid test result", repr(reg_result))
-            junit_registry_suite.add_testcase(junit_testcase)
-            continue
-
-        Logger.info("-" * 60)
-
-        test_number = reg_result.get("test_number")
-        note = reg_result.get("note")
-        results = reg_result.get("results", [])
-        Logger.trace(f"main() processing TEST{test_number} with {len(results)} results")
-
-        for r in results:
-            total += 1
-            inp = r.get("input")
-            tcost = r.get("time_cost", 0.0)
-            test_case_name = f"TEST{test_number}_{total}"
-            junit_testcase = JUnitTestCase(
-                name=test_case_name, classname=f"RegistryTest.{test_number}", time=tcost if tcost else 0.0
-            )
-
-            if "timeout" in r:
-                Logger.error(f"INPUT: {inp}")
-                if note:
-                    Logger.error(f"NOTE: {note}")
-                Logger.error("RESULT: FAIL (timeout)")
-                failed += 1
-                junit_testcase.failure = (
-                    "Test timeout",
-                    f"Test exceeded timeout limit\nInput: {inp}\nNote: {note or 'N/A'}",
-                )
-                junit_registry_suite.add_testcase(junit_testcase)
-                continue
-
-            if "traceback" in r:
-                Logger.error(f"INPUT: {inp}")
-                if note:
-                    Logger.error(f"NOTE: {note}")
-                Logger.error("ERROR during execution:")
-                Logger.error(r.get("traceback"))
-                failed += 1
-                junit_testcase.error = ("Test execution error", r.get("traceback", "Unknown error"))
-                junit_registry_suite.add_testcase(junit_testcase)
-                continue
-
-            action = r.get("action", [])
-            fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
-            expected = r.get("expected")
-            Logger.info(f"INPUT: {inp}")
-            if note:
-                Logger.info(f"NOTE: {note}")
-            Logger.info(f"OUTPUT:\n{fmted_output}")
-
-            if isinstance(expected, Expectation):
-                Logger.info(f"EXPECT: {expected}")
-                Logger.trace(f"main() matching expectation for TEST{test_number}")
-                match = await expected.match(r)
-                Logger.trace(f"main() match result: {match}")
-                if match:
-                    Logger.success("RESULT: PASS")
-                    passed += 1
-                elif match is False:
-                    Logger.error("RESULT: FAIL")
-                    failed += 1
-                    junit_testcase.failure = ("Assertion failed", f"Expected: {expected}\nActual: {fmted_output}")
-                    junit_registry_suite.add_testcase(junit_testcase)
-                    continue
-            else:
-                if IS_CI:
-                    Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
-                    junit_testcase.skipped = "Manual review required (unavailable in CI)"
-                    junit_registry_suite.add_testcase(junit_testcase)
-                    continue
-                Logger.trace(f"main() MANUAL REVIEW required for TEST{test_number} - this will HANG in non-CI mode!")
-                try:
-                    Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                    check = input()
-                    if check in confirm_command:
-                        Logger.success("RESULT: PASS")
-                        passed += 1
-                    else:
-                        Logger.error("RESULT: FAIL")
-                        failed += 1
-                        junit_testcase.failure = (
-                            "Manual review failed",
-                            f"Expected: {expected}\nActual: {fmted_output}",
-                        )
-                        junit_registry_suite.add_testcase(junit_testcase)
-                        continue
-                except (EOFError, KeyboardInterrupt):
-                    print("")
-                    Logger.warning("Interrupted by user.")
-                    os._exit(1)
-
-            junit_registry_suite.add_testcase(junit_testcase)
-
-            if tcost is not None:
-                Logger.info(f"TIME COST: {tcost:.06f}s")
-                total_test_cost += tcost
-        Logger.info("-" * 60)
+        try:
+            reg_result = await _run_registry_entry(entry, idx)
+        except Exception as e:
+            reg_result = e
+        await _report_registry_case(entry, reg_result, idx, registry_stats)
+    total += registry_stats.total
+    passed += registry_stats.passed
+    failed += registry_stats.failed
+    total_test_cost += registry_stats.time_cost
 
     Logger.trace("main() starting func tests discovery")
     func_tasks: list[tuple[FunctionType, str]] = []
-    func_results: list[FuncTestResult] = []
     if INTEGRATION_TESTS_PATH.is_dir():
         pyfiles = _iter_integration_files()
         Logger.trace(f"main() found {len(pyfiles)} test files")
@@ -435,226 +621,26 @@ async def main(inspect_module=inspect):
                 func_tasks.append((fn, path))
 
         Logger.trace(f"main() running {len(func_tasks)} func tests sequentially")
-        func_results = []
-        for fn, path in func_tasks:
+        func_stats = FuncTestStats()
+        for idx, (fn, path) in enumerate(func_tasks, 1):
             Logger.trace(f"main() about to run func test: {fn.__name__}")
             try:
-                result = await _run_func_test(fn, path)
-                func_results.append(result)
-                if result["res"].get("cleanup_pending"):
-                    force_exit = True
-                    Logger.error(f"Stopping after {fn.__name__}: timed-out task did not finish cancellation cleanup.")
-                    break
+                func_result = await _run_func_test(fn, path)
             except Exception as e:
                 Logger.error(f"main() EXCEPTION running func test {fn.__name__}: {e}")
-                func_results.append({"fn": fn, "path": path, "res": {"error": repr(e)}})
+                func_result = {"fn": fn, "path": path, "res": {"error": repr(e)}}
+            # 每个入口跑完立即汇报，长跑时不必等全部用例结束才有输出。
+            _report_func_test(func_result, len(registry) + idx, func_stats)
             Logger.trace(f"main() finished func test: {fn.__name__}")
-        Logger.trace(f"main() all func tests completed, got {len(func_results)} results")
-
-        for idx, func_result in enumerate(func_results):
-            Logger.trace(f"main() processing func result {idx}/{len(func_results)}")
-            if not isinstance(func_result, dict):
-                Logger.trace(f"main() non-dict func result at index {idx}")
-                failed += 1
-                total += 1
-                junit_testcase = JUnitTestCase(name=f"invalid_result_{idx}", classname="FunctionTest")
-                junit_testcase.error = ("Invalid function test result", repr(func_result))
-                junit_func_suite.add_testcase(junit_testcase)
-                continue
-
-            fn = func_result["fn"]
-            path = func_result["path"]
-            res = func_result.get("res", {})
-
-            test_number = len(registry) + idx + 1
-
-            Logger.info(f"TEST{test_number}: {fn.__name__} ({path})")
-            if fn.__doc__:
-                Logger.info(f"DOC: {fn.__doc__}")
-
-            Logger.info("-" * 60)
-
-            if res.get("skipped"):
-                Logger.trace(f"main() func test {fn.__name__} skipped")
-                junit_testcase = JUnitTestCase(
-                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
-                )
-                junit_testcase.skipped = "Test skipped"
-                junit_func_suite.add_testcase(junit_testcase)
-                total += 1
-                continue
-            if res.get("timeout"):
-                Logger.trace(f"main() func test {fn.__name__} timed out")
-                failed += 1
-                total += 1
-                timeout_limit = res.get("timeout_limit")
-                active_test = res.get("active_test")
-                completed_tests = res.get("completed_tests", 0)
-                detail = f"No progress for {timeout_limit} seconds after {completed_tests} completed subtests"
-                if active_test:
-                    detail += f"\nActive subtest: {active_test}"
-                if res.get("cleanup_pending"):
-                    detail += "\nCancellation cleanup exceeded its deadline"
-                Logger.error(detail)
-                junit_testcase = JUnitTestCase(
-                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
-                )
-                junit_testcase.failure = ("Function test timeout", detail)
-                junit_func_suite.add_testcase(junit_testcase)
-                continue
-            if res.get("error"):
-                Logger.trace(f"main() func test {fn.__name__} has error")
-                failed += 1
-                total += 1
-                junit_testcase = JUnitTestCase(
-                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
-                )
-                junit_testcase.error = ("Test error", res.get("error", "Unknown error"))
-                junit_func_suite.add_testcase(junit_testcase)
-                continue
-
-            entries = res["entries"]
-            if not entries:
-                Logger.warning(f"No inputs registered in func test {fn.__name__}; skipping.")
-                Logger.trace(f"main() func test {fn.__name__} has no entries")
-                junit_testcase = JUnitTestCase(
-                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
-                )
-                junit_testcase.skipped = "No inputs registered"
-                junit_func_suite.add_testcase(junit_testcase)
-                total += 1
-                continue
-
-            results = res["results"]
-            Logger.trace(f"main() processing func test {fn.__name__} with {len(results)} results")
-
-            subtest_number = 0
-            func_pass = True
-            func_error_msgs: list[str] = []
-            for r_idx, r in enumerate(results):
-                Logger.trace(f"main() processing result {r_idx}/{len(results)} for {fn.__name__}")
-                type_ = r.get("type")
-                note = r.get("note")
-                inp = r.get("input")
-
-                if "timeout" in r:
-                    if type_ == "integration":
-                        Logger.error(f"INPUT: {inp}")
-                    if note:
-                        Logger.error(f"NOTE: {note}")
-                    Logger.error("RESULT: FAIL (timeout)")
-                    func_pass = False
-                    if type_ == "integration":
-                        func_error_msgs.append(f"Test timeout for input: {inp}")
-                    else:
-                        func_error_msgs.append("Test timeout")
-                    break
-
-                if "traceback" in r:
-                    if type_ == "integration":
-                        Logger.error(f"INPUT: {inp}")
-                    if note:
-                        Logger.error(f"NOTE: {note}")
-                    Logger.error("ERROR during execution:")
-                    Logger.error(r.get("traceback"))
-                    func_pass = False
-                    func_error_msgs.append(r.get("traceback", "Unknown error"))
-                    if type_ == "integration":
-                        break
-                    Logger.error("RESULT: FAIL (exception)")
-                    continue
-
-                expected = r.get("expected")
-                action = r.get("action", [])
-                fmted_output = "\n".join(action) if action else "[NO OUTPUT]"
-
-                Logger.trace(f"main() checking result: expected={expected}, match={r.get('match')}")
-                if type_ == "integration":
-                    Logger.info(f"INPUT: {inp}")
-                if note:
-                    Logger.info(f"NOTE: {note}")
-                if type_ == "integration":
-                    Logger.info(f"OUTPUT:\n{fmted_output}")
-
-                if expected is not None:
-                    Logger.info(f"EXPECT: {expected}")
-
-                if r.get("match"):
-                    Logger.trace("main() match is truthy, PASS")
-                    Logger.success("RESULT: PASS")
-                    continue
-                Logger.trace("main() match is falsy or None, checking expected...")
-                if expected is None:
-                    if IS_CI:
-                        Logger.info("RESULT: SKIP (expects manual review, unavailable in CI)")
-                        continue
-                    Logger.trace(f"main() MANUAL REVIEW required for func test {fn.__name__} - this will HANG!")
-                    try:
-                        Logger.warning("REVIEW: Did the output meet expectations? [y/N]")
-                        check = input()
-                        if check in confirm_command:
-                            Logger.success("RESULT: PASS")
-                            continue
-                        func_pass = False
-                        func_error_msgs.append(f"Manual review failed for input: {inp}")
-                    except (EOFError, KeyboardInterrupt):
-                        print("")
-                        Logger.warning("Interrupted by user.")
-                        os._exit(1)
-                else:
-                    Logger.error("RESULT: FAIL")
-                    func_pass = False
-                    func_error_msgs.append(f"Expected: {expected}\nActual: {fmted_output}")
+            if func_result["res"].get("cleanup_pending"):
+                force_exit = True
+                Logger.error(f"Stopping after {fn.__name__}: timed-out task did not finish cancellation cleanup.")
                 break
-
-            func_error_msg = "\n".join(func_error_msgs)
-            if func_pass:
-                Logger.success(f"FUNC ({fn.__name__}) RESULT: PASS")
-                passed += 1
-                junit_testcase = JUnitTestCase(
-                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
-                )
-            else:
-                Logger.error(f"FUNC ({fn.__name__}) RESULT: FAIL")
-                failed += 1
-                junit_testcase = JUnitTestCase(
-                    name=fn.__name__, classname=f"FunctionTest.{test_number}", time=res.get("time_cost", 0.0)
-                )
-                junit_testcase.failure = ("Function test failed", func_error_msg)
-
-            junit_func_suite.add_testcase(junit_testcase)
-
-            for failed_result in results:
-                if failed_result.get("match"):
-                    continue
-                if "traceback" not in failed_result:
-                    continue
-                subtest_number += 1
-                subtest_name = failed_result.get("note") or getattr(
-                    failed_result.get("expected"), "__name__", str(failed_result.get("expected"))
-                )
-                junit_subtest = JUnitTestCase(
-                    name=f"{fn.__name__}::{subtest_name}",
-                    classname=f"FunctionTest.{test_number}.{subtest_number}",
-                    time=res.get("time_cost", 0.0),
-                )
-                if failed_result.get("type") == "integration":
-                    junit_subtest.error = ("Test execution error", failed_result.get("traceback", "Unknown error"))
-                else:
-                    junit_subtest.failure = (
-                        f"Subtest raised {failed_result.get('exception_type', 'Exception')}",
-                        failed_result.get("traceback", "Unknown error"),
-                    )
-                junit_func_suite.add_testcase(junit_subtest)
-
-            tcost = res.get("time_cost")
-            if tcost is not None:
-                Logger.info(f"TIME COST: {tcost:.06f}s")
-                total_test_cost += tcost
-
-            total += 1
-            Logger.info("-" * 60)
-
+        passed += func_stats.passed
+        failed += func_stats.failed
+        total += func_stats.total
+        total_test_cost += func_stats.time_cost
+        Logger.trace(f"main() all func tests completed, counted {func_stats.total} entries")
     Logger.trace("main() all tests processed")
     if total > 0:
         Logger.info(f"TOTAL: {total}")

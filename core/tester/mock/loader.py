@@ -6,6 +6,18 @@ from core.i18n import build_locale_snapshot, connect_locale_snapshot
 from core.loader import ModulesManager
 from core.logger import Logger
 
+_locale_snapshot_errors: list[str] | None = None
+
+
+def _load_locale_snapshot() -> list[str]:
+    # 语言包快照在同一进程内只会建置一次：重建要重新哈希全部语料（实测约 0.23 秒），
+    # 是每个入口固定成本的主要来源。连接仍逐次重设，用例才能从干净的翻译状态开始。
+    global _locale_snapshot_errors
+    if _locale_snapshot_errors is None:
+        _locale_snapshot_errors = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
+    connect_locale_snapshot("akari-bot")
+    return _locale_snapshot_errors
+
 
 def apply_monkey_patch(module, monkey_patches: dict[str, object] | None):
     if not monkey_patches:
@@ -26,11 +38,10 @@ async def load_modules(show_logs=True, monkey_patches: dict[str, object] | None 
     set_default_peer(JobQueueServer)
 
     err_prompt = []
-    locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
+    locale_loaded_err = _load_locale_snapshot()
     if locale_loaded_err:
         err_prompt.append("I18N loaded failed:")
         err_prompt.append("\n".join(locale_loaded_err))
-    connect_locale_snapshot("akari-bot")
 
     # Load HTTP fixtures if available
     if load_fixtures:

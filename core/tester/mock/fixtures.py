@@ -84,8 +84,13 @@ def save_fixture(
     return filepath
 
 
+_registered_dirs: dict[Path, int] = {}
+
+
 def load_http_fixtures(fixture_dir: Path | None = None) -> int:
     """从 fixture 目录加载所有 mock 响应到 HTTPMock。
+
+    同一目录只会注册一次，重复调用只重设回放策略。
 
     :param fixture_dir: fixture 目录路径，默认为 tests/fixtures/http/
     :returns: 加载的 fixture 数量
@@ -95,6 +100,16 @@ def load_http_fixtures(fixture_dir: Path | None = None) -> int:
 
     if not fixture_dir.exists():
         return 0
+
+    # 默认禁止回落到真实网络：未录制的 URL 会带着重试与超时（默认 3 次 × 20 秒）
+    # 拖慢用例，并让结果随外部服务状态漂移。录制新语料时以环境变量放行。
+    # 每次调用都重设策略，使中途停用 mock 的用例不会波及后续入口。
+    HTTPMock.enable(strict=os.environ.get("AKARI_TEST_ALLOW_LIVE_HTTP") != "1")
+
+    resolved_dir = fixture_dir.resolve()
+    # 语料在同一进程内不变；重复注册只会让比对清单随入口数量膨胀。
+    if resolved_dir in _registered_dirs:
+        return _registered_dirs[resolved_dir]
 
     count = 0
     for filepath in fixture_dir.glob("*.json"):
@@ -144,9 +159,7 @@ def load_http_fixtures(fixture_dir: Path | None = None) -> int:
         except Exception:
             continue
 
-    # 默认禁止回落到真实网络：未录制的 URL 会带着重试与超时（默认 3 次 × 20 秒）
-    # 拖慢用例，并让结果随外部服务状态漂移。录制新语料时以环境变量放行。
-    HTTPMock.enable(strict=os.environ.get("AKARI_TEST_ALLOW_LIVE_HTTP") != "1")
+    _registered_dirs[resolved_dir] = count
     return count
 
 
