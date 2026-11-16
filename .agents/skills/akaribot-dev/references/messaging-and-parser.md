@@ -592,6 +592,7 @@ class ExecutionLockList:
 
     async def acquire(msg, *, wait=False) -> bool  # 取得 lease；wait 为真时等待冲突 lease 释放
     def remove(msg) -> bool                        # 只释放自己持有的 lease
+    def release(msg) -> bool                       # 等待前释放本次执行的 lease
     async def is_locked(msg) -> bool               # 按数据库最新绑定集检查冲突
     def check(msg) -> bool                         # 无 I/O 的兼容检查
     def get() -> set                               # 取全部锁定身份键（调试用）

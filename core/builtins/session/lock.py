@@ -320,6 +320,20 @@ class ExecutionLockList:
         return isinstance(token, str) and cls._drop(token)
 
     @classmethod
+    def release(cls, msg: "MessageSession") -> bool:
+        """等待前释放本次执行持有的 lease。"""
+        if cls.remove(msg):
+            return True
+        state = cls.state(msg)
+        token = state.lock_token
+        if not isinstance(token, str) or token not in cls._list:
+            return False
+        # 同一 ExecutionState 上的 lease 都属于本次执行，参与者可直接释放；
+        # 其它执行域的状态里不会出现本次执行的 token。
+        state.lock_token = None
+        return cls._drop(token)
+
+    @classmethod
     def check(cls, msg: "MessageSession") -> bool:
         """无 I/O 的兼容检查；生产 parser 应使用 :meth:`is_locked`。"""
         cls._sweep()

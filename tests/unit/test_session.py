@@ -804,6 +804,87 @@ async def _test_cross_user_wait_result_keeps_root_lock_subject():
         SessionTaskManager._task_list.clear()
 
 
+async def _test_wait_result_session_releases_shared_lease():
+    from core.builtins.session.internal import MessageSession
+
+    class WaitSession(MessageSession):
+        async def send_message(self, *args, **kwargs):
+            return type("Sent", (), {"message_id": ["nested-wait-prompt"]})()
+
+        async def hold(self):
+            return None
+
+        async def release(self):
+            return None
+
+        async def end_typing(self):
+            return None
+
+    async def make(reply_id=None):
+        return WaitSession(
+            await SessionInfo.assign(
+                target_id="TEST|Group|nested-wait-lease",
+                target_from="TEST|Group",
+                client_name="TEST",
+                sender_id="TEST|nested-wait-owner",
+                sender_from="TEST",
+                reply_id=reply_id,
+                features=Features(support_quote=True),
+            )
+        )
+
+    owner = await make()
+    responder = await make()
+    contender = await make()
+    reply = await make("nested-wait-prompt")
+    SessionTaskManager._task_list.clear()
+    ExecutionLockList._list.clear()
+    ExecutionLockList._acquired_at.clear()
+    ExecutionLockList._reservations.clear()
+    first_wait = None
+    second_wait = None
+    try:
+        if not await ExecutionLockList.acquire(owner):
+            return False
+        first_wait = asyncio.create_task(owner.wait_next_message(timeout=1 * TIME_SCALE))
+        if not await _wait_until(lambda: bool(SessionTaskManager.get()) and not ExecutionLockList.check(owner)):
+            return False
+        if not await SessionTaskManager.check(responder):
+            return False
+        result = await asyncio.wait_for(first_wait, timeout=0.5 * TIME_SCALE)
+        if not ExecutionLockList.check(owner):
+            return False
+        # continuation 在等待结果会话上再次等待时，必须释放根命令持有的同一 lease，
+        # 否则等待期间的并发命令会被误判为“命令正在执行中”。
+        second_wait = asyncio.create_task(result.wait_reply("prompt", timeout=1 * TIME_SCALE))
+        if not await _wait_until(lambda: bool(SessionTaskManager.get())):
+            return False
+        if ExecutionLockList.check(owner):
+            return False
+        released = await ExecutionLockList.acquire(contender)
+        ExecutionLockList.remove(contender)
+        if not released:
+            return False
+        if not await SessionTaskManager.check(reply):
+            return False
+        second_result = await asyncio.wait_for(second_wait, timeout=0.5 * TIME_SCALE)
+        return second_result is reply and ExecutionLockList.check(owner)
+    finally:
+        for task in (second_wait, first_wait):
+            if task and not task.done():
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+        ExecutionLockList.remove(owner)
+        ExecutionLockList.remove(contender)
+        ExecutionLockList._list.clear()
+        ExecutionLockList._acquired_at.clear()
+        ExecutionLockList._reservations.clear()
+        SessionTaskManager._task_list.clear()
+
+
 async def _test_wait_result_unknown_command_cleans_up_shared_lease():
     from core.builtins.message.chain import MessageChain
     from core.builtins.parser.message import parser
@@ -3107,6 +3188,10 @@ async def test_execution_lock(tester: Tester):
     await tester.test(_test_partial_overlap_merge_reservations_do_not_deadlock, "部分重叠 merge reservation 仲裁测试")
     await tester.test(_test_active_sender_leases_are_barriered_before_merge, "活跃 Sender Union 合并 barrier 测试")
     await tester.test(_test_cross_user_wait_result_keeps_root_lock_subject, "跨用户等待结果保持原锁主体测试")
+    await tester.test(
+        _test_wait_result_session_releases_shared_lease,
+        "等待结果会话再次等待时释放共享 lease 测试",
+    )
     await tester.test(_test_wait_result_unknown_command_cleans_up_shared_lease, "等待结果未知命令清理共享 lease 测试")
     await tester.test(_test_sleep_waits_for_competing_lease_before_resuming, "sleep continuation 等待重获测试")
     await tester.test(_test_cancelled_sleep_reacquire_keeps_competing_lease, "取消 sleep 重获不破坏竞争 lease")

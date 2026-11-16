@@ -713,7 +713,7 @@ class MessageSession:
         strict_mode = confirm_token is not None
         if CoreConfig.no_confirm and not strict_mode:
             return no_confirm_action
-        released_lease = ExecutionLockList.remove(self) if release_execution_lock else False
+        released_lease = ExecutionLockList.release(self) if release_execution_lock else False
         async with self._typing_paused():
             if message_chain:
                 chain = get_message_chain(self.session_info, message_chain)
@@ -793,7 +793,7 @@ class MessageSession:
         :raises WaitCancelException: 如果超时或出错
         """
         send = None
-        released_lease = ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.release(self)
         async with self._typing_paused():
             flag = asyncio.Event()
             SessionTaskManager.add_task(self, flag, timeout=timeout, task_type="wait_next", allow_fallthrough=True)
@@ -839,7 +839,7 @@ class MessageSession:
         :raises WaitCancelException: 如果超时或出错
         """
         send = None
-        released_lease = ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.release(self)
         async with self._typing_paused():
             flag = asyncio.Event()
             SessionTaskManager.add_task(
@@ -899,7 +899,7 @@ class MessageSession:
                 return await self.wait_anyone(chain, False, delete, timeout)
             return await self.wait_next_message(chain, False, delete, timeout, False)
 
-        released_lease = ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.release(self)
         async with self._typing_paused():
             chain = get_message_chain(self.session_info, message_chain)
             if append_instruction and isinstance(chain, MessageChain):
@@ -937,7 +937,7 @@ class MessageSession:
 
         :param s: 暂停时长（秒）
         """
-        released_lease = ExecutionLockList.remove(self)
+        released_lease = ExecutionLockList.release(self)
         await asyncio.sleep(s)
         if released_lease and not await ExecutionLockList.acquire(self, wait=True):
             raise WaitCancelException
