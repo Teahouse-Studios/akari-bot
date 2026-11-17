@@ -4,7 +4,14 @@ from core.builtins.message.internal import I18NContext, Url
 from core.config.core import CoreConfig
 from core.utils.bash import run_sys_command
 from modules.core.common_tools.about import about
-from modules.core.common_tools.version_utils import get_version_display
+
+
+def get_version_display() -> str | None:
+    """返回面向用户展示的版本号；未知版本时返回 None。"""
+    if not Bot.Info.version:
+        return None
+    version = str(Bot.Info.version)
+    return version[4:11] if version.startswith("git:") else version
 
 
 @about.command("version {{I18N:core.help.about.version}}")

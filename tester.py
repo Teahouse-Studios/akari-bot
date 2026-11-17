@@ -1,4 +1,4 @@
-from core.version import check_python_version  # skipcq
+from core.environment import check_python_version  # skipcq
 
 check_python_version()  # noqa
 
