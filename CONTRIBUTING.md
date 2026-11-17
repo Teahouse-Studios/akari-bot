@@ -104,7 +104,7 @@ Python 环境是必要的，注意最低版本要求（见 [README](/README.md)�
 
 本项目使用 [uv](https://docs.astral.sh/uv) 管理依赖。在安装后使用以下命令安装依赖：
 ```
-uv sync
+uv sync --all-extras
 ```
 如果你需要安装新依赖，请使用以下命令：
 ```
@@ -292,7 +292,7 @@ Recommended IDEs: [PyCharm](https://www.jetbrains.com/pycharm) or [VS Code](http
 This project uses [uv](https://docs.astral.sh/uv) to manage dependencies. After installing uv, run:
 
 ```bash
-uv sync
+uv sync --all-extras
 ```
 
 To add a new dependency:

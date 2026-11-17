@@ -1,8 +1,6 @@
 """i18n 文案与调用点的参数一致性测试。"""
 
-import glob
 import json
-import os
 import re
 
 from core.logger import Logger
@@ -48,8 +46,15 @@ def _iter_call_args(source: str, key: str):
 
 
 def _collect_cmd_keys() -> set[str]:
+    from core.constants import base_locales_path
+    from core.plugin import iter_module_packages
+
+    paths = [base_locales_path / "zh_cn.json"]
+    paths += [package.locales_path / "zh_cn.json" for package in iter_module_packages()]
     keys = set()
-    for path in glob.glob("modules/*/locales/zh_cn.json") + [os.path.join("core", "locales", "zh_cn.json")]:
+    for path in paths:
+        if not path.is_file():
+            continue
         with open(path, encoding="utf-8") as f:
             for key, value in json.load(f).items():
                 if "${cmd}" in value:
@@ -58,10 +63,13 @@ def _collect_cmd_keys() -> set[str]:
 
 
 def _collect_sources() -> dict[str, str]:
+    from core.plugin import iter_source_files
+
     sources = {}
-    for path in glob.glob("modules/**/*.py", recursive=True) + glob.glob("core/**/*.py", recursive=True):
-        with open(path, encoding="utf-8") as f:
-            sources[path.replace("\\", "/")] = f.read()
+    for logical_path, path in iter_source_files():
+        if not logical_path.startswith(("core/", "modules/")):
+            continue
+        sources[logical_path] = path.read_text(encoding="utf-8")
     return sources
 
 
@@ -86,17 +94,15 @@ def _test_every_call_passes_cmd():
 
 
 def _test_indirect_keys_have_provider():
-    try:
-        with open(INDIRECT_PROVIDER, encoding="utf-8") as f:
-            provider = f.read()
-    except OSError:
+    sources = _collect_sources()
+    provider = sources.get(INDIRECT_PROVIDER)
+    if provider is None:
         Logger.error(f"{INDIRECT_PROVIDER} is unreadable; point INDIRECT_PROVIDER at where issue_code() now lives")
         return False
     if "cmd=ActionText(" not in provider:
         Logger.error(f"{INDIRECT_PROVIDER} no longer builds cmd=ActionText(); the whitelist would mask real omissions")
         return False
     # 白名单中的键须确实作为 prompt_key 流向该函数，而非无人问津
-    sources = _collect_sources()
     for key in KNOWN_INDIRECT_KEYS:
         if not any(f'"{key}"' in source for source in sources.values()):
             Logger.error(f"Whitelisted key {key} is referenced nowhere; drop it from KNOWN_INDIRECT_KEYS")

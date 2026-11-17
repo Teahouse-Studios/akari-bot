@@ -10,6 +10,68 @@ resolution-markers = [
     "python_full_version < '3.14' and sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[manifest]
+members = [
+    "akari-bot",
+    "akari-bot-adapter-discord",
+    "akari-bot-adapter-kook",
+    "akari-bot-adapter-matrix",
+    "akari-bot-adapter-milky",
+    "akari-bot-adapter-onebot",
+    "akari-bot-adapter-qqbot",
+    "akari-bot-adapter-satori",
+    "akari-bot-adapter-telegram",
+    "akari-bot-adapter-web",
+    "akari-bot-core",
+    "akari-bot-module-ai",
+    "akari-bot-module-arcaea",
+    "akari-bot-module-arcaea-rss",
+    "akari-bot-module-bilibili",
+    "akari-bot-module-bugtracker",
+    "akari-bot-module-captcha",
+    "akari-bot-module-chemical-code",
+    "akari-bot-module-coin",
+    "akari-bot-module-color",
+    "akari-bot-module-convert",
+    "akari-bot-module-core",
+    "akari-bot-module-cytoid",
+    "akari-bot-module-dice",
+    "akari-bot-module-emojimix",
+    "akari-bot-module-exchange-rate",
+    "akari-bot-module-github",
+    "akari-bot-module-hitokoto",
+    "akari-bot-module-idlist",
+    "akari-bot-module-image",
+    "akari-bot-module-ip",
+    "akari-bot-module-langconv",
+    "akari-bot-module-maimai",
+    "akari-bot-module-mcmod",
+    "akari-bot-module-mcplayer",
+    "akari-bot-module-mcserver",
+    "akari-bot-module-mcv",
+    "akari-bot-module-mcv-rss",
+    "akari-bot-module-minecraft-news",
+    "akari-bot-module-mkey",
+    "akari-bot-module-mod-dl",
+    "akari-bot-module-mojang-status",
+    "akari-bot-module-nbnhhsh",
+    "akari-bot-module-ncmusic",
+    "akari-bot-module-nintendo-err",
+    "akari-bot-module-oba",
+    "akari-bot-module-phigros",
+    "akari-bot-module-random",
+    "akari-bot-module-threedsdb",
+    "akari-bot-module-tweet",
+    "akari-bot-module-twenty-four",
+    "akari-bot-module-weekly",
+    "akari-bot-module-weekly-rss",
+    "akari-bot-module-whois",
+    "akari-bot-module-wiki",
+    "akari-bot-module-wikilog",
+    "akari-bot-module-wolframalpha",
+    "akari-bot-module-wordle",
+]
+
 [[package]]
 name = "aiocqhttp"
 version = "1.4.4"
@@ -249,170 +311,473 @@ name = "akari-bot"
 version = "5.1.3"
 source = { virtual = "." }
 dependencies = [
-    { name = "aiocqhttp" },
-    { name = "aiofile" },
-    { name = "aiogram" },
-    { name = "akari-bot-i18n" },
-    { name = "akari-bot-webrender" },
-    { name = "akari-bot-webui" },
-    { name = "anthropic" },
-    { name = "apscheduler" },
-    { name = "argon2-cffi" },
-    { name = "attrs" },
-    { name = "beautifulsoup4" },
-    { name = "boto3" },
-    { name = "cattrs" },
-    { name = "coverage" },
-    { name = "cryptography" },
-    { name = "ddgs" },
-    { name = "defusedxml" },
-    { name = "deprecated" },
-    { name = "e2b-code-interpreter" },
-    { name = "emoji" },
-    { name = "fastapi" },
-    { name = "feedparser" },
-    { name = "ff3" },
-    { name = "ffmpy" },
-    { name = "filetype" },
-    { name = "google-genai" },
-    { name = "google-play-scraper" },
-    { name = "gql" },
-    { name = "httpx" },
-    { name = "httpx-ws" },
-    { name = "jinja2" },
-    { name = "khl-py" },
-    { name = "langconv" },
-    { name = "loguru" },
-    { name = "matplotlib" },
-    { name = "matrix-nio" },
-    { name = "mcstatus" },
-    { name = "milky-python-sdk" },
-    { name = "numpy" },
-    { name = "openai" },
-    { name = "orjson" },
-    { name = "pandas" },
-    { name = "pillow" },
-    { name = "pint" },
-    { name = "pre-commit" },
-    { name = "psutil" },
-    { name = "py-cord" },
-    { name = "py-cpuinfo" },
-    { name = "pycryptodome" },
-    { name = "pyjwt", extra = ["crypto"] },
-    { name = "pyotp" },
-    { name = "python-dotenv" },
-    { name = "python-multipart" },
-    { name = "python-whois" },
-    { name = "pywin32", marker = "sys_platform == 'win32'" },
-    { name = "pyyaml" },
-    { name = "qq-botpy-sdk" },
-    { name = "qrcode" },
-    { name = "rapidfuzz" },
-    { name = "rdkit" },
-    { name = "regex" },
-    { name = "satori-python-client" },
-    { name = "simpleeval" },
-    { name = "slowapi" },
-    { name = "tabulate" },
-    { name = "tenacity" },
-    { name = "tomlkit" },
-    { name = "tortoise-orm", extra = ["asyncmy"] },
-    { name = "trafilatura" },
-    { name = "urllib3" },
-    { name = "uvicorn", extra = ["standard"] },
-    { name = "webcolors" },
-    { name = "wikitextparser" },
-    { name = "wolframalpha" },
+    { name = "akari-bot-core" },
+]
+
+[package.optional-dependencies]
+bots-discord = [
+    { name = "akari-bot-adapter-discord" },
+]
+bots-kook = [
+    { name = "akari-bot-adapter-kook" },
+]
+bots-matrix = [
+    { name = "akari-bot-adapter-matrix" },
+]
+bots-milky = [
+    { name = "akari-bot-adapter-milky" },
+]
+bots-onebot = [
+    { name = "akari-bot-adapter-onebot" },
+]
+bots-qqbot = [
+    { name = "akari-bot-adapter-qqbot" },
+]
+bots-satori = [
+    { name = "akari-bot-adapter-satori" },
+]
+bots-telegram = [
+    { name = "akari-bot-adapter-telegram" },
+]
+bots-web = [
+    { name = "akari-bot-adapter-web" },
+]
+modules-ai = [
+    { name = "akari-bot-module-ai" },
+]
+modules-arcaea = [
+    { name = "akari-bot-module-arcaea" },
+]
+modules-arcaea-rss = [
+    { name = "akari-bot-module-arcaea-rss" },
+]
+modules-bilibili = [
+    { name = "akari-bot-module-bilibili" },
+]
+modules-bugtracker = [
+    { name = "akari-bot-module-bugtracker" },
+]
+modules-captcha = [
+    { name = "akari-bot-module-captcha" },
+]
+modules-chemical-code = [
+    { name = "akari-bot-module-chemical-code" },
+]
+modules-coin = [
+    { name = "akari-bot-module-coin" },
+]
+modules-color = [
+    { name = "akari-bot-module-color" },
+]
+modules-convert = [
+    { name = "akari-bot-module-convert" },
+]
+modules-core = [
+    { name = "akari-bot-module-core" },
+]
+modules-cytoid = [
+    { name = "akari-bot-module-cytoid" },
+]
+modules-dice = [
+    { name = "akari-bot-module-dice" },
+]
+modules-emojimix = [
+    { name = "akari-bot-module-emojimix" },
+]
+modules-exchange-rate = [
+    { name = "akari-bot-module-exchange-rate" },
+]
+modules-github = [
+    { name = "akari-bot-module-github" },
+]
+modules-hitokoto = [
+    { name = "akari-bot-module-hitokoto" },
+]
+modules-idlist = [
+    { name = "akari-bot-module-idlist" },
+]
+modules-image = [
+    { name = "akari-bot-module-image" },
+]
+modules-ip = [
+    { name = "akari-bot-module-ip" },
+]
+modules-langconv = [
+    { name = "akari-bot-module-langconv" },
+]
+modules-maimai = [
+    { name = "akari-bot-module-maimai" },
+]
+modules-mcmod = [
+    { name = "akari-bot-module-mcmod" },
+]
+modules-mcplayer = [
+    { name = "akari-bot-module-mcplayer" },
+]
+modules-mcserver = [
+    { name = "akari-bot-module-mcserver" },
+]
+modules-mcv = [
+    { name = "akari-bot-module-mcv" },
+]
+modules-mcv-rss = [
+    { name = "akari-bot-module-mcv-rss" },
+]
+modules-minecraft-news = [
+    { name = "akari-bot-module-minecraft-news" },
+]
+modules-mkey = [
+    { name = "akari-bot-module-mkey" },
+]
+modules-mod-dl = [
+    { name = "akari-bot-module-mod-dl" },
+]
+modules-mojang-status = [
+    { name = "akari-bot-module-mojang-status" },
+]
+modules-nbnhhsh = [
+    { name = "akari-bot-module-nbnhhsh" },
+]
+modules-ncmusic = [
+    { name = "akari-bot-module-ncmusic" },
+]
+modules-nintendo-err = [
+    { name = "akari-bot-module-nintendo-err" },
+]
+modules-oba = [
+    { name = "akari-bot-module-oba" },
+]
+modules-phigros = [
+    { name = "akari-bot-module-phigros" },
+]
+modules-random = [
+    { name = "akari-bot-module-random" },
+]
+modules-threedsdb = [
+    { name = "akari-bot-module-threedsdb" },
+]
+modules-tweet = [
+    { name = "akari-bot-module-tweet" },
+]
+modules-twenty-four = [
+    { name = "akari-bot-module-twenty-four" },
+]
+modules-weekly = [
+    { name = "akari-bot-module-weekly" },
+]
+modules-weekly-rss = [
+    { name = "akari-bot-module-weekly-rss" },
+]
+modules-whois = [
+    { name = "akari-bot-module-whois" },
+]
+modules-wiki = [
+    { name = "akari-bot-module-wiki" },
+]
+modules-wikilog = [
+    { name = "akari-bot-module-wikilog" },
+]
+modules-wolframalpha = [
+    { name = "akari-bot-module-wolframalpha" },
+]
+modules-wordle = [
+    { name = "akari-bot-module-wordle" },
 ]
 
 [package.dev-dependencies]
 dev = [
+    { name = "coverage" },
+    { name = "pre-commit" },
     { name = "pytest" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "akari-bot-adapter-discord", marker = "extra == 'bots-discord'", editable = "packages/akari-bot-adapter-discord" },
+    { name = "akari-bot-adapter-kook", marker = "extra == 'bots-kook'", editable = "packages/akari-bot-adapter-kook" },
+    { name = "akari-bot-adapter-matrix", marker = "extra == 'bots-matrix'", editable = "packages/akari-bot-adapter-matrix" },
+    { name = "akari-bot-adapter-milky", marker = "extra == 'bots-milky'", editable = "packages/akari-bot-adapter-milky" },
+    { name = "akari-bot-adapter-onebot", marker = "extra == 'bots-onebot'", editable = "packages/akari-bot-adapter-onebot" },
+    { name = "akari-bot-adapter-qqbot", marker = "extra == 'bots-qqbot'", editable = "packages/akari-bot-adapter-qqbot" },
+    { name = "akari-bot-adapter-satori", marker = "extra == 'bots-satori'", editable = "packages/akari-bot-adapter-satori" },
+    { name = "akari-bot-adapter-telegram", marker = "extra == 'bots-telegram'", editable = "packages/akari-bot-adapter-telegram" },
+    { name = "akari-bot-adapter-web", marker = "extra == 'bots-web'", editable = "packages/akari-bot-adapter-web" },
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "akari-bot-module-ai", marker = "extra == 'modules-ai'", editable = "packages/akari-bot-module-ai" },
+    { name = "akari-bot-module-arcaea", marker = "extra == 'modules-arcaea'", editable = "packages/akari-bot-module-arcaea" },
+    { name = "akari-bot-module-arcaea-rss", marker = "extra == 'modules-arcaea-rss'", editable = "packages/akari-bot-module-arcaea_rss" },
+    { name = "akari-bot-module-bilibili", marker = "extra == 'modules-bilibili'", editable = "packages/akari-bot-module-bilibili" },
+    { name = "akari-bot-module-bugtracker", marker = "extra == 'modules-bugtracker'", editable = "packages/akari-bot-module-bugtracker" },
+    { name = "akari-bot-module-captcha", marker = "extra == 'modules-captcha'", editable = "packages/akari-bot-module-captcha" },
+    { name = "akari-bot-module-chemical-code", marker = "extra == 'modules-chemical-code'", editable = "packages/akari-bot-module-chemical_code" },
+    { name = "akari-bot-module-coin", marker = "extra == 'modules-coin'", editable = "packages/akari-bot-module-coin" },
+    { name = "akari-bot-module-color", marker = "extra == 'modules-color'", editable = "packages/akari-bot-module-color" },
+    { name = "akari-bot-module-convert", marker = "extra == 'modules-convert'", editable = "packages/akari-bot-module-convert" },
+    { name = "akari-bot-module-core", marker = "extra == 'modules-core'", editable = "packages/akari-bot-module-core" },
+    { name = "akari-bot-module-cytoid", marker = "extra == 'modules-cytoid'", editable = "packages/akari-bot-module-cytoid" },
+    { name = "akari-bot-module-dice", marker = "extra == 'modules-dice'", editable = "packages/akari-bot-module-dice" },
+    { name = "akari-bot-module-emojimix", marker = "extra == 'modules-emojimix'", editable = "packages/akari-bot-module-emojimix" },
+    { name = "akari-bot-module-exchange-rate", marker = "extra == 'modules-exchange-rate'", editable = "packages/akari-bot-module-exchange_rate" },
+    { name = "akari-bot-module-github", marker = "extra == 'modules-github'", editable = "packages/akari-bot-module-github" },
+    { name = "akari-bot-module-hitokoto", marker = "extra == 'modules-hitokoto'", editable = "packages/akari-bot-module-hitokoto" },
+    { name = "akari-bot-module-idlist", marker = "extra == 'modules-idlist'", editable = "packages/akari-bot-module-idlist" },
+    { name = "akari-bot-module-image", marker = "extra == 'modules-image'", editable = "packages/akari-bot-module-image" },
+    { name = "akari-bot-module-ip", marker = "extra == 'modules-ip'", editable = "packages/akari-bot-module-ip" },
+    { name = "akari-bot-module-langconv", marker = "extra == 'modules-langconv'", editable = "packages/akari-bot-module-langconv" },
+    { name = "akari-bot-module-maimai", marker = "extra == 'modules-maimai'", editable = "packages/akari-bot-module-maimai" },
+    { name = "akari-bot-module-mcmod", marker = "extra == 'modules-mcmod'", editable = "packages/akari-bot-module-mcmod" },
+    { name = "akari-bot-module-mcplayer", marker = "extra == 'modules-mcplayer'", editable = "packages/akari-bot-module-mcplayer" },
+    { name = "akari-bot-module-mcserver", marker = "extra == 'modules-mcserver'", editable = "packages/akari-bot-module-mcserver" },
+    { name = "akari-bot-module-mcv", marker = "extra == 'modules-mcv'", editable = "packages/akari-bot-module-mcv" },
+    { name = "akari-bot-module-mcv-rss", marker = "extra == 'modules-mcv-rss'", editable = "packages/akari-bot-module-mcv_rss" },
+    { name = "akari-bot-module-minecraft-news", marker = "extra == 'modules-minecraft-news'", editable = "packages/akari-bot-module-minecraft_news" },
+    { name = "akari-bot-module-mkey", marker = "extra == 'modules-mkey'", editable = "packages/akari-bot-module-mkey" },
+    { name = "akari-bot-module-mod-dl", marker = "extra == 'modules-mod-dl'", editable = "packages/akari-bot-module-mod_dl" },
+    { name = "akari-bot-module-mojang-status", marker = "extra == 'modules-mojang-status'", editable = "packages/akari-bot-module-mojang_status" },
+    { name = "akari-bot-module-nbnhhsh", marker = "extra == 'modules-nbnhhsh'", editable = "packages/akari-bot-module-nbnhhsh" },
+    { name = "akari-bot-module-ncmusic", marker = "extra == 'modules-ncmusic'", editable = "packages/akari-bot-module-ncmusic" },
+    { name = "akari-bot-module-nintendo-err", marker = "extra == 'modules-nintendo-err'", editable = "packages/akari-bot-module-nintendo_err" },
+    { name = "akari-bot-module-oba", marker = "extra == 'modules-oba'", editable = "packages/akari-bot-module-oba" },
+    { name = "akari-bot-module-phigros", marker = "extra == 'modules-phigros'", editable = "packages/akari-bot-module-phigros" },
+    { name = "akari-bot-module-random", marker = "extra == 'modules-random'", editable = "packages/akari-bot-module-random" },
+    { name = "akari-bot-module-threedsdb", marker = "extra == 'modules-threedsdb'", editable = "packages/akari-bot-module-threedsdb" },
+    { name = "akari-bot-module-tweet", marker = "extra == 'modules-tweet'", editable = "packages/akari-bot-module-tweet" },
+    { name = "akari-bot-module-twenty-four", marker = "extra == 'modules-twenty-four'", editable = "packages/akari-bot-module-twenty_four" },
+    { name = "akari-bot-module-weekly", marker = "extra == 'modules-weekly'", editable = "packages/akari-bot-module-weekly" },
+    { name = "akari-bot-module-weekly-rss", marker = "extra == 'modules-weekly-rss'", editable = "packages/akari-bot-module-weekly_rss" },
+    { name = "akari-bot-module-whois", marker = "extra == 'modules-whois'", editable = "packages/akari-bot-module-whois" },
+    { name = "akari-bot-module-wiki", marker = "extra == 'modules-wiki'", editable = "packages/akari-bot-module-wiki" },
+    { name = "akari-bot-module-wikilog", marker = "extra == 'modules-wikilog'", editable = "packages/akari-bot-module-wikilog" },
+    { name = "akari-bot-module-wolframalpha", marker = "extra == 'modules-wolframalpha'", editable = "packages/akari-bot-module-wolframalpha" },
+    { name = "akari-bot-module-wordle", marker = "extra == 'modules-wordle'", editable = "packages/akari-bot-module-wordle" },
+]
+provides-extras = ["bots-discord", "bots-kook", "bots-matrix", "bots-milky", "bots-onebot", "bots-qqbot", "bots-satori", "bots-telegram", "bots-web", "modules-ai", "modules-arcaea", "modules-arcaea-rss", "modules-bilibili", "modules-bugtracker", "modules-captcha", "modules-chemical-code", "modules-coin", "modules-color", "modules-convert", "modules-core", "modules-cytoid", "modules-dice", "modules-emojimix", "modules-exchange-rate", "modules-github", "modules-hitokoto", "modules-idlist", "modules-image", "modules-ip", "modules-langconv", "modules-maimai", "modules-mcmod", "modules-mcplayer", "modules-mcserver", "modules-mcv", "modules-mcv-rss", "modules-minecraft-news", "modules-mkey", "modules-mod-dl", "modules-mojang-status", "modules-nbnhhsh", "modules-ncmusic", "modules-nintendo-err", "modules-oba", "modules-phigros", "modules-random", "modules-threedsdb", "modules-tweet", "modules-twenty-four", "modules-weekly", "modules-weekly-rss", "modules-whois", "modules-wiki", "modules-wikilog", "modules-wolframalpha", "modules-wordle"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "coverage", specifier = ">=7.9.1,<8.0.0" },
+    { name = "pre-commit", specifier = ">=4.0.0,<5.0.0" },
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "ruff", specifier = ">=0.15.1" },
+]
+
+[[package]]
+name = "akari-bot-adapter-discord"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-discord" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "py-cord" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "py-cord", specifier = ">=2.7.2" },
+]
+
+[[package]]
+name = "akari-bot-adapter-kook"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-kook" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "khl-py" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "khl-py", specifier = ">=0.3.16,<1.0.0" },
+]
+
+[[package]]
+name = "akari-bot-adapter-matrix"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-matrix" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "matrix-nio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" },
+]
+
+[[package]]
+name = "akari-bot-adapter-milky"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-milky" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "milky-python-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "milky-python-sdk", specifier = ">=0.4.2" },
+]
+
+[[package]]
+name = "akari-bot-adapter-onebot"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-onebot" }
+dependencies = [
+    { name = "aiocqhttp" },
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [
     { name = "aiocqhttp", specifier = ">=1.4.3,<2.0.0" },
-    { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+]
+
+[[package]]
+name = "akari-bot-adapter-qqbot"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-qqbot" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "boto3" },
+    { name = "qq-botpy-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "boto3", specifier = ">=1.35.0,<2.0.0" },
+    { name = "qq-botpy-sdk", specifier = "==2.3.0" },
+]
+
+[[package]]
+name = "akari-bot-adapter-satori"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-satori" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "satori-python-client" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "satori-python-client", specifier = ">=1.3.11" },
+]
+
+[[package]]
+name = "akari-bot-adapter-telegram"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-telegram" }
+dependencies = [
+    { name = "aiogram" },
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [
     { name = "aiogram", specifier = "==3.31.0" },
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+]
+
+[[package]]
+name = "akari-bot-adapter-web"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-adapter-web" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "akari-bot-webui" },
+    { name = "argon2-cffi" },
+    { name = "cryptography" },
+    { name = "py-cpuinfo" },
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "pyotp" },
+    { name = "python-multipart" },
+    { name = "slowapi" },
+    { name = "urllib3" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "akari-bot-webui", specifier = "==0.6.4" },
+    { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
+    { name = "cryptography", specifier = ">=50.0.0,<50.1.0" },
+    { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
+    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0,<3.0.0" },
+    { name = "pyotp", specifier = ">=2.9.0,<3.0.0" },
+    { name = "python-multipart", specifier = ">=0.0.22,<1.0.0" },
+    { name = "slowapi", specifier = ">=0.1.9,<1.0.0" },
+    { name = "urllib3", specifier = ">=2.6.3" },
+]
+
+[[package]]
+name = "akari-bot-core"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-core" }
+dependencies = [
+    { name = "aiofile" },
+    { name = "akari-bot-i18n" },
+    { name = "akari-bot-webrender" },
+    { name = "apscheduler" },
+    { name = "attrs" },
+    { name = "cattrs" },
+    { name = "defusedxml" },
+    { name = "deprecated" },
+    { name = "fastapi" },
+    { name = "ff3" },
+    { name = "filetype" },
+    { name = "httpx" },
+    { name = "httpx-ws" },
+    { name = "jinja2" },
+    { name = "loguru" },
+    { name = "orjson" },
+    { name = "pillow" },
+    { name = "psutil" },
+    { name = "python-dotenv" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "rapidfuzz" },
+    { name = "regex" },
+    { name = "tabulate" },
+    { name = "tenacity" },
+    { name = "tomlkit" },
+    { name = "tortoise-orm", extra = ["asyncmy"] },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiofile", specifier = ">=3.8.1,<4.0.0" },
     { name = "akari-bot-i18n", specifier = "==0.2.2" },
     { name = "akari-bot-webrender", specifier = "==0.7.4" },
-    { name = "akari-bot-webui", specifier = "==0.6.4" },
-    { name = "anthropic", specifier = ">=1.5.0" },
     { name = "apscheduler", specifier = ">=3.9.1.post0,<4.0.0.0" },
-    { name = "argon2-cffi", specifier = ">=25.0.0,<26.0.0" },
     { name = "attrs", specifier = ">=26.1.0" },
-    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
-    { name = "boto3", specifier = ">=1.35.0,<2.0.0" },
     { name = "cattrs", specifier = ">=26.1.0,<26.2.0" },
-    { name = "coverage", specifier = ">=7.9.1,<8.0.0" },
-    { name = "cryptography", specifier = ">=50.0.0,<50.1.0" },
-    { name = "ddgs", specifier = ">=9.14.2" },
     { name = "defusedxml", specifier = ">=0.7.1" },
     { name = "deprecated", specifier = ">=1.2.18,<2.0.0" },
-    { name = "e2b-code-interpreter", specifier = ">=2.6.2" },
-    { name = "emoji", specifier = ">=2.12.1,<3.0.0" },
     { name = "fastapi", specifier = ">=0.120.0,<1.0.0" },
-    { name = "feedparser", specifier = ">=6.0.10,<7.0.0" },
     { name = "ff3", specifier = ">=1.0.2,<2.0.0" },
-    { name = "ffmpy", specifier = ">=1.0.0,<2.0.0" },
     { name = "filetype", specifier = ">=1.2.0,<2.0.0" },
-    { name = "google-genai", specifier = ">=2.33.0" },
-    { name = "google-play-scraper", specifier = ">=1.2.2,<2.0.0" },
-    { name = "gql", specifier = ">=4.0.0,<5.0.0" },
     { name = "httpx", specifier = ">=0.28.1,<1.0.0" },
     { name = "httpx-ws", specifier = ">=0.9.0,<1.0.0" },
     { name = "jinja2", specifier = ">=3.1.6,<4.0.0" },
-    { name = "khl-py", specifier = ">=0.3.16,<1.0.0" },
-    { name = "langconv", specifier = "==0.4.0" },
     { name = "loguru", specifier = ">=0.7.0,<1.0.0" },
-    { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
-    { name = "matrix-nio", specifier = ">=0.25.0,<1.0.0" },
-    { name = "mcstatus", specifier = ">=14.1.0,<14.2.0" },
-    { name = "milky-python-sdk", specifier = ">=0.4.2" },
-    { name = "numpy", specifier = "<2.5.5" },
-    { name = "openai", specifier = ">=3.6.0,<3.7.0" },
     { name = "orjson", specifier = ">=3.10.9,<4.0.0" },
-    { name = "pandas", specifier = ">=3.0.0,<4.0.0" },
     { name = "pillow", specifier = ">=13.0.0,<13.1.0" },
-    { name = "pint", specifier = ">=0.25.0,<1.0.0" },
-    { name = "pre-commit", specifier = ">=4.0.0,<5.0.0" },
     { name = "psutil", specifier = ">=7.0.0,<8.0.0" },
-    { name = "py-cord", specifier = ">=2.7.2" },
-    { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
-    { name = "pycryptodome", specifier = ">=3.18.0,<4.0.0" },
-    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0,<3.0.0" },
-    { name = "pyotp", specifier = ">=2.9.0,<3.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.1,<2.0.0" },
-    { name = "python-multipart", specifier = ">=0.0.22,<1.0.0" },
-    { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = ">=312,<313" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "qq-botpy-sdk", specifier = "==2.3.0" },
-    { name = "qrcode", specifier = ">=8.2,<9.0.0" },
     { name = "rapidfuzz", specifier = ">=3.14.5" },
-    { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
     { name = "regex", specifier = ">=2026.5.9,<2027.0.0" },
-    { name = "satori-python-client", specifier = ">=1.3.11" },
-    { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
-    { name = "slowapi", specifier = ">=0.1.9,<1.0.0" },
     { name = "tabulate", specifier = ">=0.9.0,<1.0.0" },
     { name = "tenacity", specifier = ">=9.0.0,<10.0.0" },
     { name = "tomlkit", specifier = ">=0.14.0,<1.0.0" },
     { name = "tortoise-orm", extras = ["asyncmy"], specifier = ">=1.1.2,<1.2.0" },
-    { name = "trafilatura", specifier = ">=2.0.0" },
-    { name = "urllib3", specifier = ">=2.6.3" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.38.0,<1.0.0" },
-    { name = "webcolors", specifier = ">=25.0.0,<26.0.0" },
-    { name = "wikitextparser", specifier = ">=1.0.3" },
-    { name = "wolframalpha", specifier = ">=5.0.0,<6.0.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "ruff", specifier = ">=0.15.1" },
 ]
 
 [[package]]
@@ -426,6 +791,647 @@ sdist = { url = "https://files.pythonhosted.org/packages/26/08/096fa180184ced5a9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b1/83/09dd567f9458805c160db4072a6c9d4c159269405d9bc4fd8f4ccb631a9b/akari_bot_i18n-0.2.2-py3-none-any.whl", hash = "sha256:fe3cd97395ab27b04a3a4f3ab4d61a3c5e64c54b4a28d9c176b5c432affba9df", size = 39709, upload-time = "2026-10-16T07:51:04.428Z" },
 ]
+
+[[package]]
+name = "akari-bot-module-ai"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-ai" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "anthropic" },
+    { name = "ddgs" },
+    { name = "e2b-code-interpreter" },
+    { name = "google-genai" },
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "openai" },
+    { name = "pandas" },
+    { name = "pyyaml" },
+    { name = "trafilatura" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "anthropic", specifier = ">=1.5.0" },
+    { name = "ddgs", specifier = ">=9.14.2" },
+    { name = "e2b-code-interpreter", specifier = ">=2.6.2" },
+    { name = "google-genai", specifier = ">=2.33.0" },
+    { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
+    { name = "numpy", specifier = "<2.5.5" },
+    { name = "openai", specifier = ">=3.6.0,<3.7.0" },
+    { name = "pandas", specifier = ">=3.0.0,<4.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "trafilatura", specifier = ">=2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-arcaea"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-arcaea" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-arcaea-rss"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-arcaea_rss" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-bilibili"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-bilibili" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-bugtracker"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-bugtracker" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-captcha"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-captcha" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-chemical-code"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-chemical_code" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "rdkit" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "rdkit", specifier = ">=2026.3.1,<2026.4.0" },
+]
+
+[[package]]
+name = "akari-bot-module-coin"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-coin" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-color"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-color" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "numpy" },
+    { name = "webcolors" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "numpy", specifier = "<2.5.5" },
+    { name = "webcolors", specifier = ">=25.0.0,<26.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-convert"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-convert" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "pint" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "pint", specifier = ">=0.25.0,<1.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-core"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-core" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "matplotlib" },
+    { name = "py-cpuinfo" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "matplotlib", specifier = ">=3.6.3,<4.0.0" },
+    { name = "py-cpuinfo", specifier = ">=9.0.0,<10.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-cytoid"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-cytoid" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "gql" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "gql", specifier = ">=4.0.0,<5.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-dice"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-dice" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "numpy" },
+    { name = "simpleeval" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "numpy", specifier = "<2.5.5" },
+    { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-emojimix"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-emojimix" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "emoji" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "emoji", specifier = ">=2.12.1,<3.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-exchange-rate"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-exchange_rate" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-github"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-github" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-hitokoto"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-hitokoto" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "langconv" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "langconv", specifier = "==0.4.0" },
+]
+
+[[package]]
+name = "akari-bot-module-idlist"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-idlist" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-image"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-image" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-ip"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-ip" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-langconv"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-langconv" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "langconv" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "langconv", specifier = "==0.4.0" },
+]
+
+[[package]]
+name = "akari-bot-module-maimai"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-maimai" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "langconv" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "langconv", specifier = "==0.4.0" },
+]
+
+[[package]]
+name = "akari-bot-module-mcmod"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mcmod" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "beautifulsoup4" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-mcplayer"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mcplayer" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-mcserver"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mcserver" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "mcstatus" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "mcstatus", specifier = ">=14.1.0,<14.2.0" },
+]
+
+[[package]]
+name = "akari-bot-module-mcv"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mcv" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "google-play-scraper" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "google-play-scraper", specifier = ">=1.2.2,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-mcv-rss"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mcv_rss" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "beautifulsoup4" },
+    { name = "google-play-scraper" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+    { name = "google-play-scraper", specifier = ">=1.2.2,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-minecraft-news"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-minecraft_news" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-mkey"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mkey" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "pycryptodome" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "pycryptodome", specifier = ">=3.18.0,<4.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-mod-dl"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mod_dl" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-mojang-status"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-mojang_status" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-nbnhhsh"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-nbnhhsh" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-ncmusic"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-ncmusic" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-nintendo-err"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-nintendo_err" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-oba"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-oba" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-phigros"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-phigros" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "pycryptodome" },
+    { name = "qrcode" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "pycryptodome", specifier = ">=3.18.0,<4.0.0" },
+    { name = "qrcode", specifier = ">=8.2,<9.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-random"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-random" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-threedsdb"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-threedsdb" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-tweet"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-tweet" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-twenty-four"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-twenty_four" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "simpleeval" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "simpleeval", specifier = ">=1.0.0,<2.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-weekly"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-weekly" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "beautifulsoup4" },
+    { name = "feedparser" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+    { name = "feedparser", specifier = ">=6.0.10,<7.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-weekly-rss"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-weekly_rss" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "beautifulsoup4" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-whois"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-whois" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "python-whois" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "python-whois", specifier = ">=0.9.0,<1.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-wiki"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-wiki" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "beautifulsoup4" },
+    { name = "wikitextparser" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "beautifulsoup4", specifier = ">=4.11.1,<5.0.0" },
+    { name = "wikitextparser", specifier = ">=1.0.3" },
+]
+
+[[package]]
+name = "akari-bot-module-wikilog"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-wikilog" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
+
+[[package]]
+name = "akari-bot-module-wolframalpha"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-wolframalpha" }
+dependencies = [
+    { name = "akari-bot-core" },
+    { name = "wolframalpha" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "akari-bot-core", editable = "packages/akari-bot-core" },
+    { name = "wolframalpha", specifier = ">=5.0.0,<6.0.0" },
+]
+
+[[package]]
+name = "akari-bot-module-wordle"
+version = "5.1.3"
+source = { editable = "packages/akari-bot-module-wordle" }
+dependencies = [
+    { name = "akari-bot-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "akari-bot-core", editable = "packages/akari-bot-core" }]
 
 [[package]]
 name = "akari-bot-webrender"
@@ -1304,15 +2310,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a2/48/34d34f7b38ad7a56b475d5a32bf7f12e768a9b1ad582eb546df646c196cb/ff3-1.0.3.tar.gz", hash = "sha256:88e37be28d26fa498bb9dc0f911923f0f2f26c02a1a6d1efb84ac5ebd66ae4af", size = 22847, upload-time = "2026-01-26T01:14:07.746Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/22/9e/3bc5e61d624a9b81db3b7063370057abffa314970e9cba95eab4ce283375/ff3-1.0.3-py3-none-any.whl", hash = "sha256:e747e344e6da8a97400bba3a55acc0e54202225a23f95af0f0b5ffb4fc9ed26d", size = 20936, upload-time = "2026-01-26T01:14:06.358Z" },
-]
-
-[[package]]
-name = "ffmpy"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7d/d2/1c4c582d71bcc65c76fa69fab85de6257d50fdf6fd4a2317c53917e9a581/ffmpy-1.0.0.tar.gz", hash = "sha256:b12932e95435c8820f1cd041024402765f821971e4bae753b327fc02a6e12f8b", size = 5101, upload-time = "2025-11-11T06:24:23.856Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/55/56/dd3669eccebb6d8ac81e624542ebd53fe6f08e1b8f2f8d50aeb7e3b83f99/ffmpy-1.0.0-py3-none-any.whl", hash = "sha256:5640e5f0fd03fb6236d0e119b16ccf6522db1c826fdf35dcb87087b60fd7504f", size = 5614, upload-time = "2025-11-11T06:24:22.818Z" },
 ]
 
 [[package]]

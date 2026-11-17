@@ -47,12 +47,13 @@
 使用 **uv** 管理依赖：
 
 ```bash
-uv sync                    # 安装依赖
+uv sync --all-extras       # 安装依赖（含全部平台适配器与模块的 extra）
+uv sync --extra <extra>    # 只安装某个 extra 的依赖
 uv add <package>           # 添加新依赖
 uv lock                    # 锁定依赖
 ```
 
-依赖在 `pyproject.toml` 中按功能分组管理，新增依赖需移至对应注释分组下并按字母排序。
+根 `pyproject.toml` 的 `dependencies` 只依赖 `akari-bot-core`；平台适配器与模块的依赖声明在 `packages/` 下各自的成员清单里，根项目按 `bots-<平台>`、`modules-<模块>` 的 extra 聚合。成员源码位于 `packages/<成员>/src/<导入路径>`，并以 entry point 注册到 `akari.bots` / `akari.modules`。改动依赖时同步成员清单与 extra，`tools/check_deps.py` 会校验一致性。
 
 ### 核心依赖
 
@@ -317,78 +318,66 @@ JobQueue 已提供多实例发现、anycast、稳定分流、回源和摘流机�
 akari-bot/
 ├── bot.py                    # 入口点
 ├── conftest.py               # pytest 适配层的根级 conftest
-├── pyproject.toml            # 项目配置和依赖
+├── pyproject.toml            # workspace 根：依赖 akari-bot-core，按 extra 聚合各成员
 ├── requirements.txt          # 导出的依赖列表
 ├── uv.lock                   # 依赖锁文件
 │
-├── core/                     # 核心框架
-│   ├── builtins/
-│   │   ├── bot/              # Bot 类
-│   │   ├── config/           # 配置系统实作（CFGManager、模板装饰器、bootstrap、迁移）
-│   │   ├── message/          # 消息系统
-│   │   │   ├── chain.py      # MessageChain / I18NMessageChain / PlatformMessageChain
-│   │   │   ├── elements.py   # 消息元素类（XxxElement）
-│   │   │   └── internal.py   # 便捷别名（.assign 工厂）
-│   │   ├── session/          # 会话系统
-│   │   │   ├── context.py    # ContextManager
-│   │   │   ├── features.py   # Features
-│   │   │   ├── info.py       # SessionInfo / FetchedSessionInfo / EventInfo
-│   │   │   ├── internal.py   # MessageSession / FinishedSession
-│   │   │   ├── bot_state.py  # BotState
-│   │   │   ├── event_types.py
-│   │   │   ├── lock.py       # ExecutionLockList
-│   │   │   └── tasks.py      # SessionTaskManager
-│   │   ├── parser/           # 命令解析
-│   │   │   ├── args.py       # 模板解析
-│   │   │   ├── command.py    # CommandParser
-│   │   │   ├── message.py    # parser() 主函数
-│   │   │   └── hooks/        # parser 入口 hook（点位、分发、结果类型）
-│   │   ├── hooks/            # 具名模块 hook 的分发与执行
-│   │   ├── filter/           # 出站内容过滤
-│   │   ├── converter/        # cattrs 序列化钩子
-│   │   ├── temp/             # 运行时临时数据（Temp）
-│   │   ├── types/            # 内置类型
-│   │   └── utils/            # 内置工具
-│   ├── component.py          # module() 注册函数
-│   ├── loader.py             # ModulesManager
-│   ├── module_runtime.py     # 模块 runtime generation 管理
-│   ├── types/                # Module / Command / Message 类型定义
-│   ├── constants/            # 路径、版本、默认值、异常
-│   ├── config/               # 配置模板（BaseConfig、template/、network 派生设置）
-│   ├── database/             # 数据库系统（models.py / local.py / base.py）
-│   ├── queue/                # JobQueue：Peer RPC、信号总线、可切后端
-│   ├── server/               # Server 进程入口与生命周期
-│   ├── client/               # 客户端侧公共逻辑
-│   ├── tester/               # 测试框架（含 mock/ 与 pytest_plugin.py）
-│   ├── scripts/              # 配置生成、数据库转换等一次性脚本
-│   ├── locales/              # 核心自身的 i18n
-│   ├── scheduler.py          # 调度器
-│   ├── logger.py             # 日志
-│   ├── alive.py              # 存活检测
-│   ├── exports.py            # 导出系统
-│   ├── i18n.py               # 国际化
-│   ├── smtp.py               # 邮件发送
-│   ├── version.py            # 版本信息
-│   └── utils/                # 工具函数（cooldown / game / dirty_check / web_render / petal …）
-│
-├── bots/                     # 平台适配器
-│   ├── onebot/               # QQ (OneBot)
-│   ├── milky/                # QQ (Milky)
-│   ├── qqbot/                # QQ (官方)
-│   ├── discord/              # Discord
-│   ├── telegram/             # Telegram
-│   ├── kook/                 # KOOK
-│   ├── matrix/               # Matrix
-│   └── web/                  # Web
-│
-├── modules/                  # 命令模块
-│   ├── core/                 # 核心模块（help, module, alias, prefix 等）
+├── packages/                 # 每个成员一个可安装发行版，源码在 <成员>/src/<导入路径>
+│   ├── akari-bot-core/src/core/          # 核心框架（导入名 core）
+│   │   ├── builtins/
+│   │   │   ├── bot/          # Bot 类
+│   │   │   ├── config/       # 配置系统实作（CFGManager、模板装饰器、bootstrap、迁移）
+│   │   │   ├── message/      # 消息系统
+│   │   │   │   ├── chain.py  # MessageChain / I18NMessageChain / PlatformMessageChain
+│   │   │   │   ├── elements.py   # 消息元素类（XxxElement）
+│   │   │   │   └── internal.py   # 便捷别名（.assign 工厂）
+│   │   │   ├── session/      # 会话系统
+│   │   │   │   ├── context.py    # ContextManager
+│   │   │   │   ├── features.py   # Features
+│   │   │   │   ├── info.py       # SessionInfo / FetchedSessionInfo / EventInfo
+│   │   │   │   ├── internal.py   # MessageSession / FinishedSession
+│   │   │   │   ├── bot_state.py  # BotState
+│   │   │   │   ├── event_types.py
+│   │   │   │   ├── lock.py       # ExecutionLockList
+│   │   │   │   └── tasks.py      # SessionTaskManager
+│   │   │   ├── parser/       # 命令解析
+│   │   │   │   ├── args.py   # 模板解析与分词
+│   │   │   │   ├── command.py    # CommandParser
+│   │   │   │   ├── message.py    # parser() 主函数
+│   │   │   │   └── hooks/    # parser 入口 hook（点位、分发、结果类型）
+│   │   │   ├── hooks/        # 具名模块 hook 的分发与执行
+│   │   │   ├── filter/       # 出站内容过滤
+│   │   │   ├── converter/    # cattrs 序列化钩子
+│   │   │   ├── temp/         # 运行时临时数据（Temp）
+│   │   │   ├── types/        # 内置类型
+│   │   │   └── utils/        # 内置工具
+│   │   ├── component.py      # module() 注册函数
+│   │   ├── loader.py         # ModulesManager
+│   │   ├── plugin.py         # 插件注册表（entry point + 命名空间包回退）
+│   │   ├── module_runtime.py # 模块 runtime generation 管理
+│   │   ├── types/            # Module / Command / Message 类型定义
+│   │   ├── constants/        # 路径、版本、默认值、异常
+│   │   ├── config/           # 配置模板（BaseConfig、template/、network 派生设置）
+│   │   ├── database/         # 数据库系统（models.py / local.py / base.py）
+│   │   ├── queue/            # JobQueue：Peer RPC、信号总线、可切后端
+│   │   ├── server/           # Server 进程入口与生命周期
+│   │   ├── client/           # 客户端侧公共逻辑
+│   │   ├── tester/           # 测试框架（含 mock/ 与 pytest_plugin.py）
+│   │   ├── scripts/          # 配置生成、数据库转换等一次性脚本
+│   │   ├── locales/          # 核心自身的 i18n
+│   │   ├── scheduler.py      # 调度器
+│   │   ├── logger.py         # 日志
+│   │   ├── alive.py          # 存活检测
+│   │   ├── exports.py        # 导出系统
+│   │   ├── i18n.py           # 国际化
+│   │   ├── smtp.py           # 邮件发送
+│   │   └── utils/            # 工具函数（cooldown / game / dirty_check / web_render / petal …）
+│   │
+│   ├── akari-bot-module-core/src/modules/core/   # 核心模块（help, module, alias, prefix 等）
 │   │   └── hooks/            # parser 入口 hook 的订阅实现（policies/tos/typo/routing…）
-│   ├── wiki/                 # MediaWiki 查询
-│   ├── arcaea/               # Arcaea 查询
-│   ├── maimai/               # maimai 查询
-│   ├── dice/                 # 骰子
-│   └── ...                   # 更多模块
+│   ├── akari-bot-adapter-<平台>/src/bots/<平台>/      # 平台适配器（onebot / milky / qqbot /
+│   │                                                  # discord / telegram / kook / matrix / web）
+│   └── akari-bot-module-<模块>/src/modules/<模块>/    # 命令模块（wiki, arcaea, maimai, dice …）
 │
 ├── config/                   # 配置文件目录
 │   ├── config.toml           # 主配置
@@ -405,7 +394,9 @@ akari-bot/
 │   ├── fixtures/             # HTTP fixture
 │   └── run_one.py            # 单个测试入口的运行脚本
 ├── tester.py                 # 测试入口
-├── tools/                    # 辅助脚本
+├── tools/                    # 仓库级检查脚本
+│   ├── check_layers.py       # 依赖分层检查（基线在 layers_baseline.json）
+│   └── check_deps.py         # 成员清单、entry point 与 extra 一致性检查
 ├── example/                  # 示例
 ├── cache/ logs/              # 运行时产物（cache 每次启动被清空）
 └── generated_docs/           # 生成的文档

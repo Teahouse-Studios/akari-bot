@@ -1,0 +1,22 @@
+{
+  "core/scripts/convert_database.py": [
+    "modules.cytoid.database.models",
+    "modules.maimai.database.models",
+    "modules.phigros.database.models",
+    "modules.wiki.database.models",
+    "modules.wikilog.database.models"
+  ],
+  "modules/weekly/__init__.py": [
+    "modules.wiki.utils.screenshot_image",
+    "modules.wiki.utils.wikilib"
+  ],
+  "modules/weekly_rss/__init__.py": [
+    "modules.weekly"
+  ],
+  "modules/wikilog/__init__.py": [
+    "modules.wiki.config",
+    "modules.wiki.utils.ab",
+    "modules.wiki.utils.rc",
+    "modules.wiki.utils.wikilib"
+  ]
+}

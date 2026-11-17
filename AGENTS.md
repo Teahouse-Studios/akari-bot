@@ -9,15 +9,18 @@ This file provides guidance to AI agents when working with code in this reposito
 ## 常用命令
 
 ```bash
-uv sync                       # 安装依赖
-uv add <包名> && uv lock       # 新增依赖（需移到 pyproject.toml 对应注释分组内并按字母序排列）
+uv sync --all-extras           # 安装依赖（平台适配器与模块的依赖按 packages/ 下的成员清单分组）
+uv sync --extra modules-ai     # 只安装某个模块所需的依赖
+uv add <包名> && uv lock       # 新增依赖（写入对应 packages/ 成员清单与根 pyproject 的 extra）
 pre-commit install            # 安装 hook（自动跑 ruff check --fix / ruff format / uv export）
 
 uv run ruff format .          # 格式化
 uv run ruff check .           # 静态检查
+uv run python tools/check_layers.py   # 依赖分层检查
+uv run python tools/check_deps.py     # 成员清单与根项目依赖一致性检查
 
 ./start                       # 启动机器人（Windows 用 start.bat）
-uv run python bot.py          # 等价的直接启动方式
+uv run --all-extras python bot.py   # 等价的直接启动方式
 ```
 
 ### 测试
@@ -80,9 +83,17 @@ pytest 侧：根 `conftest.py` 把 `assets/config_store/zh_cn` 铺到临时目�
 
 ### 模块注册
 
-`core/component.py` 的 `module()` 返回 `Bind.Module`，其上挂 `.command()` / `.regex()` / `.schedule()` / `.hook()` / `.handle()` / `.config()` 装饰器。`core/loader.py` 的 `ModulesManager` 用 `pkgutil` 扫 `modules/`，导入时 `__init__.py` 里的 `module()` 调用完成注册，之后从数据库恢复启用状态。支持 `reload_module()` 热重载。
+`core/component.py` 的 `module()` 返回 `Bind.Module`，其上挂 `.command()` / `.regex()` / `.schedule()` / `.hook()` / `.handle()` / `.config()` 装饰器。`core/loader.py` 的 `ModulesManager` 从 `core/plugin.py` 的注册表取模块包（entry point 优先，未安装时回退为扫描 `modules` 命名空间包），导入时 `__init__.py` 里的 `module()` 调用完成注册，之后从数据库恢复启用状态。支持 `reload_module()` 热重载。
 
 命令模板语法：`<必需参数>`、`[-flag <可选参数>]`、`...`（变长）、`{{I18N:key}}`（帮助描述）。参数落在 `msg.parsed_msg` 字典里。
+
+### 依赖分层与 workspace 成员
+
+仓库是 uv workspace，也是 monorepo：`packages/` 下每个平台适配器与模块各是一个可安装的发行版，源码位于 `packages/<成员>/src/<导入路径>`（`akari-bot-core` → `core`、`akari-bot-adapter-<平台>` → `bots.<平台>`、`akari-bot-module-<模块>` → `modules.<模块>`）。成员各自声明依赖并以 entry point 注册（`akari.bots` / `akari.modules`），根 `pyproject.toml` 的 `dependencies` 只依赖 `akari-bot-core`，再按 `bots-<平台>`、`modules-<模块>` 的 extra 聚合各成员。全量安装用 `uv sync --all-extras`，子集安装用 `uv sync --extra <名称>`。
+
+运转期发现集中在 `core/plugin.py`：entry point 优先，未安装时回退扫描 `bots` / `modules` 命名空间包，因此插件可以来自仓库外的独立发行版。locale、配置模板与模块数据表都从注册表项推导路径，不再按目录硬编码。
+
+依赖方向由 `tools/check_layers.py` 强制：`core` 不得依赖插件，`bots/*` 不得依赖 `modules/*`，`modules/*` 只能使用 core 公开 API 且不得依赖平台 SDK（白名单在脚本内），`tools/layers_baseline.json` 记录待清理的既有越界，只允许缩减。`tools/check_deps.py` 校验成员清单、entry point 与根项目 extra 的一致性。两者都在 CI 的测试任务中执行。
 
 ### 循环导入的规避
 
@@ -131,5 +142,5 @@ Tortoise ORM，**双连接**：`default`（可配 MySQL）+ `local`（本地 SQL
 - **Windows 下输出中文乱码**：`bot.py` / `tester.py` 里的 `os.environ.setdefault("PYTHONIOENCODING", "UTF-8")` 在解释器启动后才执行，来不及生效。在启动命令前显式加 `PYTHONIOENCODING=UTF-8`（`start.bat` 用 `chcp 65001` 加显式赋值达到同样目的）。
 - **`.bot.lock` 单实例锁**：`bot.py` 用文件锁拒绝第二个实例，报 `Another instance is already running`。调试时确认没有残留进程占着锁。
 - `pre_init()` 每次启动会清空整个 `cache/` 目录。
-- **配置只在可写进程中补写**：`pre_init()` 与 `core/scripts/config_generate.py` 可写，之后守护进程置位 `AKARI_CONFIG_READONLY=1` 再 spawn 子进程，bot 与 server 只读。新增配置项后需重启机器人使配置补写生效。
-- **常用目录位置**：parser 在 `core/builtins/parser/`，模块加载器是 `core/loader.py`，测试框架在 `core/tester/`；配置系统实现在 `core/builtins/config/`，配置模板在 `core/config/`；`cooldown` / `game` / `dirty_check` / `web_render` 等通用设施在 `core/utils/`，TOS 处理在 `modules/core/hooks/tos.py`。
+- **配置只在可写进程中补写**：`pre_init()` 与 `core.scripts.config_generate` 可写，之后守护进程置位 `AKARI_CONFIG_READONLY=1` 再 spawn 子进程，bot 与 server 只读。新增配置项后需重启机器人使配置补写生效。
+- **常用目录位置**：导入名为准，物理路径统一为 `packages/<成员>/src/<导入路径>`。parser 在 `core/builtins/parser/`，模块加载器是 `core/loader.py`，测试框架在 `core/tester/`；配置系统实现在 `core/builtins/config/`，配置模板在 `core/config/`；`cooldown` / `game` / `dirty_check` / `web_render` 等通用设施在 `core/utils/`，TOS 处理在 `modules/core/hooks/tos.py`。

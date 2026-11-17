@@ -1,0 +1,29 @@
+[project]
+name = "akari-bot-module-ai"
+version = "5.1.3"
+requires-python = ">=3.12.0,<4.0.0"
+dependencies = [
+    "akari-bot-core",
+    "anthropic>=1.5.0",
+    "ddgs>=9.14.2",
+    "e2b-code-interpreter>=2.6.2",
+    "google-genai>=2.33.0",
+    "matplotlib>=3.6.3,<4.0.0",
+    "numpy<2.5.5",
+    "openai>=3.6.0,<3.7.0",
+    "pandas>=3.0.0,<4.0.0",
+    "pyyaml>=6.0.3",
+    "trafilatura>=2.0.0",
+]
+
+[project.entry-points."akari.modules"]
+ai = "modules.ai"
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "modules.ai"
+module-root = "src"
+namespace = true

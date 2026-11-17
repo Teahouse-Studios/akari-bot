@@ -114,7 +114,7 @@ qq_typing_emoji = str(AiocqhttpConfig.qq_typing_emoji)
 
 #### 配置初始化与只读约束
 
-导入 `core.builtins.config` 不读写配置文件，也不执行版本迁移。初始化统一走 `core.builtins.config.bootstrap.bootstrap_config()`：非只读进程先导入 `core.builtins.config.update` 执行迁移，随后 `CFGManager.load()`。`scan_config_templates()` 会自行调用它，其余入口须显式调用——`bot.py` 的 `pre_init()`、`run_bot()`、`go()`、`server_go()`、`jobqueue_hub_go()`，以及 `tester.py` 与 `core/scripts/config_generate.py`。未初始化就读取配置会抛 `ConfigNotInitializedError`。
+导入 `core.builtins.config` 不读写配置文件，也不执行版本迁移。初始化统一走 `core.builtins.config.bootstrap.bootstrap_config()`：非只读进程先导入 `core.builtins.config.update` 执行迁移，随后 `CFGManager.load()`。`scan_config_templates()` 会自行调用它，其余入口须显式调用——`bot.py` 的 `pre_init()`、`run_bot()`、`go()`、`server_go()`、`jobqueue_hub_go()`，以及 `tester.py` 与 `core.scripts.config_generate`。未初始化就读取配置会抛 `ConfigNotInitializedError`。
 
 `bot.py` 的 `pre_init()` 调用 `core.builtins.config.scan.scan_config_templates()` 导入全部配置模板（导入时补写缺失键）并修复 i18n 注释。随后守护进程设置 `AKARI_CONFIG_READONLY=1` 再启动子进程，**bot 与 server 子进程均为只读**（避免 multiprocessing spawn 重复导入时多进程并发写配置）。子进程内 `bootstrap_config()` 只加载、不迁移。
 

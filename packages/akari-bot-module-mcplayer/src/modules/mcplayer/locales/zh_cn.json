@@ -1,0 +1,5 @@
+{
+    "mcplayer.help": "通过玩家名或玩家 UUID 获取玩家信息。",
+    "mcplayer.help.desc": "从 Mojang API 获取 Minecraft：Java 版的玩家信息。",
+    "mcplayer.message.not_found": "未找到 ${player} 的信息。"
+}

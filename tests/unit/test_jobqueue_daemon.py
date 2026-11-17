@@ -86,10 +86,10 @@ class _FakeContext:
         return process
 
 
-class _FakeBotsPath:
+class _FakeBotPackages:
     @staticmethod
-    def iterdir():
-        return iter((SimpleNamespace(name="test-platform", is_dir=lambda: True),))
+    def __call__():
+        return [SimpleNamespace(name="test-platform")]
 
 
 async def _run_daemon_once(*, backend: str, mode: str, hub_ready: bool = True):
@@ -103,7 +103,7 @@ async def _run_daemon_once(*, backend: str, mode: str, hub_ready: bool = True):
     try:
         with (
             patch.object(daemon.multiprocessing, "get_context", return_value=context),
-            patch.object(daemon, "bots_path", _FakeBotsPath()),
+            patch("core.plugin.iter_bot_packages", _FakeBotPackages()),
             mock_config(
                 JobQueueConfig,
                 jobqueue_backend=backend,

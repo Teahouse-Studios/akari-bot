@@ -36,6 +36,7 @@ output/*
 /data/union_merge_logs/*
 
 # Private Data
+/data/modules/*
 /data/private*
 /data/config_store_bak
 

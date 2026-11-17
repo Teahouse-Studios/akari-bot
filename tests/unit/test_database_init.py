@@ -48,16 +48,16 @@ def _test_sqlite_explicit_fields_are_preserved():
 
 
 def _test_module_database_discovery_distinguishes_missing_dependency():
-    module = SimpleNamespace(name="__test_database_discovery")
+    module = SimpleNamespace(package="modules.__test_database_discovery")
     with (
-        patch.object(database.pkgutil, "iter_modules", return_value=[module]),
+        patch.object(database, "iter_module_packages", return_value=[module]),
         patch.object(database.importlib.util, "find_spec", return_value=None),
     ):
         missing_models_ignored = database.fetch_module_db() == []
 
     dependency_error = ModuleNotFoundError("No module named 'database_driver'", name="database_driver")
     with (
-        patch.object(database.pkgutil, "iter_modules", return_value=[module]),
+        patch.object(database, "iter_module_packages", return_value=[module]),
         patch.object(database.importlib.util, "find_spec", side_effect=dependency_error),
     ):
         try:

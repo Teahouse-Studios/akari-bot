@@ -97,9 +97,9 @@ def _test_fresh_process_generates_all_grouped_core_templates():
                 sys.executable,
                 "-c",
                 (
-                    "from core.constants import all_locales_path, lang_list; "
+                    "from core.constants import collect_locale_paths, lang_list; "
                     "from core.i18n import build_locale_snapshot, connect_locale_snapshot; "
-                    "build_locale_snapshot(list(lang_list.keys()), all_locales_path, 'akari-bot'); "
+                    "build_locale_snapshot(list(lang_list.keys()), collect_locale_paths(), 'akari-bot'); "
                     "connect_locale_snapshot('akari-bot'); "
                     # 配置须先加载，模板导入时才可读取配置项
                     "from core.builtins.config.bootstrap import bootstrap_config; "
@@ -128,7 +128,15 @@ def _test_fresh_process_generates_all_grouped_core_templates():
         with (tmp / "webrender.toml").open("rb") as webrender_file:
             webrender_values = tomllib.load(webrender_file)
         jobqueue_text = (tmp / "jobqueue.toml").read_text(encoding="utf-8")
-        locale_path = Path(__file__).resolve().parents[2] / "core" / "locales" / "zh_cn.json"
+        locale_path = (
+            Path(__file__).resolve().parents[2]
+            / "packages"
+            / "akari-bot-core"
+            / "src"
+            / "core"
+            / "locales"
+            / "zh_cn.json"
+        )
         locale = json.loads(locale_path.read_text(encoding="utf-8"))
         comment_keys = JobQueueConfig.__config_fields__["jobqueue_backend"]["standalone_comment_keys"]
         jobqueue_lines = jobqueue_text.splitlines()
@@ -157,19 +165,18 @@ def _test_fresh_process_generates_all_grouped_core_templates():
 
 
 def _test_scan_covers_all_directories_with_config_templates():
-    import bots
-    import modules
     from core.builtins.config.scan import iter_config_template_modules
+    from core.plugin import iter_bot_packages, iter_module_packages
 
     listed = set(iter_config_template_modules())
-    expected = set()
-    for package in (bots, modules):
-        package_path = Path(package.__path__[0])
-        for entry in package_path.iterdir():
-            if entry.is_dir() and not entry.name.startswith((".", "_")) and (entry / "config.py").is_file():
-                expected.add(f"{package.__name__}.{entry.name}.config")
-    # bots/milky 曾因缺少 __init__.py 而不被 pkgutil.iter_modules 收录，配置因而从未生成
-    return bool(expected) and expected <= listed and "bots.milky.config" in listed
+    packages = (*iter_bot_packages(), *iter_module_packages())
+    expected = {f"{package.package}.config" for package in packages if (package.path / "config.py").is_file()}
+    return (
+        "core.config.base" in listed
+        and bool(expected)
+        and expected | {"core.config.base"} == listed
+        and {"bots.milky.config", "modules.wiki.config", "modules.ai.config"} <= listed
+    )
 
 
 def _test_fresh_process_generates_bot_adapter_config():
@@ -185,9 +192,9 @@ def _test_fresh_process_generates_bot_adapter_config():
                 sys.executable,
                 "-c",
                 (
-                    "from core.constants import all_locales_path, lang_list; "
+                    "from core.constants import collect_locale_paths, lang_list; "
                     "from core.i18n import build_locale_snapshot, connect_locale_snapshot; "
-                    "build_locale_snapshot(list(lang_list.keys()), all_locales_path, 'akari-bot'); "
+                    "build_locale_snapshot(list(lang_list.keys()), collect_locale_paths(), 'akari-bot'); "
                     "connect_locale_snapshot('akari-bot'); "
                     "from core.builtins.config.scan import scan_config_templates; "
                     "failed = scan_config_templates(); "

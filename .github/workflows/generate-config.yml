@@ -36,7 +36,7 @@ jobs:
       - name: Generate config files
         shell: bash
         run: |
-          uv run python core/scripts/config_generate.py
+          uv run python -m core.scripts.config_generate
 
       - name: Commit and push changes
         shell: bash

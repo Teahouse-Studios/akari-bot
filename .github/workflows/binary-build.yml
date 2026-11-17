@@ -33,10 +33,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          uv export --no-hashes --output-file=requirements.txt
+          uv export --no-hashes --all-extras --no-emit-workspace --output-file=requirements.txt
           uv pip sync requirements.txt --system
-          uv run playwright install --with-deps chromium
-          uv run python core/scripts/config_generate.py
+          uv run --all-extras playwright install --with-deps chromium
+          uv run --all-extras python -m core.scripts.config_generate
 
       - name: Build Wrapper Executable
         uses: Nuitka/Nuitka-Action@main
@@ -45,7 +45,7 @@ jobs:
           script-name: bot.py
           mode: onefile
           output-dir: wrapper-build
-          include-plugin-directory: |
+          include-package: |
             modules
             bots
           include-package-data: |

@@ -34,7 +34,7 @@ def _patched(base: Path):
         patch.object(storage, "assets_path", base / "assets"),
         patch.object(storage, "data_path", base / "data"),
         patch.object(storage, "cache_path", base / "cache"),
-        patch.object(storage, "modules_path", base / "modules"),
+        patch.object(storage, "_module_paths", lambda: {name: base / "modules" / name for name in ("alpha", "beta")}),
         patch.object(storage, "_module_names", lambda: ["alpha", "beta"]),
         patch.object(storage, "verify_jwt", lambda request: None),
         patch.object(storage, "get_client_ip", lambda request: "test"),

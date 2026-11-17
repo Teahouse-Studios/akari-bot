@@ -1,0 +1,20 @@
+[project]
+name = "akari-bot-module-langconv"
+version = "5.1.3"
+requires-python = ">=3.12.0,<4.0.0"
+dependencies = [
+    "akari-bot-core",
+    "langconv==0.4.0",
+]
+
+[project.entry-points."akari.modules"]
+langconv = "modules.langconv"
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "modules.langconv"
+module-root = "src"
+namespace = true

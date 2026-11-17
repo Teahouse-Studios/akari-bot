@@ -25,7 +25,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen
+COPY packages ./packages
+RUN uv sync --frozen --all-extras
 
 ADD . .
 CMD ["python", "./bot.py"]

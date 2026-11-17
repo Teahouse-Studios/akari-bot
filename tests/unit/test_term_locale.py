@@ -169,11 +169,12 @@ def _test_locale_files_pass_term_audit():
 
 def _test_term_keys_live_in_terms_directory():
     """术语词条只应出现在 `locales/terms/` 下；顶层残留副本会被术语目录覆盖并报审计条目。"""
+    from core.constants import collect_locale_paths
+
     root = Path(__file__).resolve().parents[2]
     offenders = []
-    patterns = ("core/locales/*.json", "bots/*/locales/*.json", "modules/*/locales/*.json")
-    for pattern in patterns:
-        for path in sorted(root.glob(pattern)):
+    for locales_dir in collect_locale_paths():
+        for path in sorted(Path(locales_dir).glob("*.json")):
             data = json.loads(path.read_text(encoding="utf-8"))
             stale = [key for key in data if key.startswith("term.")]
             if stale:
@@ -184,26 +185,27 @@ def _test_term_keys_live_in_terms_directory():
 
 
 def _scan_unscoped_locale_sites() -> list[str]:
-    root = Path(__file__).resolve().parents[2]
+    from core.plugin import iter_source_files
+
     offenders = []
-    for base in ("core", "modules"):
-        for path in sorted((root / base).rglob("*.py")):
-            relative = path.relative_to(root).as_posix()
-            if relative in NON_SESSION_LOCALE_FILES:
+    for relative, path in iter_source_files():
+        if not relative.startswith(("core/", "modules/")):
+            continue
+        if relative in NON_SESSION_LOCALE_FILES:
+            continue
+        source = path.read_text(encoding="utf-8")
+        lines = source.splitlines()
+        snippets = FALLBACK_LOCALE_SNIPPETS.get(relative, ())
+        # 按语法树而非物理行判定，避免多行调用与注释里的字样造成误报。
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name) or node.func.id != "Locale":
                 continue
-            source = path.read_text(encoding="utf-8")
-            lines = source.splitlines()
-            snippets = FALLBACK_LOCALE_SNIPPETS.get(relative, ())
-            # 按语法树而非物理行判定，避免多行调用与注释里的字样造成误报。
-            for node in ast.walk(ast.parse(source)):
-                if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name) or node.func.id != "Locale":
-                    continue
-                if any(keyword.arg == "term_candidates" for keyword in node.keywords):
-                    continue
-                line = lines[node.lineno - 1]
-                if any(snippet in line for snippet in snippets):
-                    continue
-                offenders.append(f"{relative}:{node.lineno}: {line.strip()}")
+            if any(keyword.arg == "term_candidates" for keyword in node.keywords):
+                continue
+            line = lines[node.lineno - 1]
+            if any(snippet in line for snippet in snippets):
+                continue
+            offenders.append(f"{relative}:{node.lineno}: {line.strip()}")
     return offenders
 
 

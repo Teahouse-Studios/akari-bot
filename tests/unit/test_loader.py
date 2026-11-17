@@ -956,11 +956,11 @@ async def _test_initial_load_rolls_back_partial_registration():
         with TemporaryDirectory() as temp_dir:
             with (
                 patch.object(
-                    loader_module.pkgutil,
-                    "iter_modules",
+                    loader_module,
+                    "iter_module_packages",
                     return_value=[
-                        SimpleNamespace(name="__test_loader_initial_broken"),
-                        SimpleNamespace(name="__test_loader_initial_optional"),
+                        SimpleNamespace(package="modules.__test_loader_initial_broken"),
+                        SimpleNamespace(package="modules.__test_loader_initial_optional"),
                     ],
                 ),
                 patch.object(loader_module.importlib, "import_module", side_effect=import_module),

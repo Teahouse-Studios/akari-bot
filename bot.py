@@ -20,7 +20,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
-from core.constants import CONFIG_READONLY_ENV, ascii_art, bots_path, logs_path  # skipcq
+from core.constants import CONFIG_READONLY_ENV, ascii_art, logs_path  # skipcq
 
 
 AKARI_BOT_I18N_CACHE_DIR = str(Path("./data/i18n_cache/").resolve())
@@ -115,7 +115,7 @@ def pre_init():
     Logger.info("Akaribot is launching...")
     from tortoise import run_async
 
-    from core.constants import all_locales_path, cache_path, lang_list
+    from core.constants import cache_path, collect_locale_paths, lang_list
     from core.i18n import build_locale_snapshot, connect_locale_snapshot
 
     if cache_path.exists():
@@ -123,7 +123,7 @@ def pre_init():
     cache_path.mkdir(parents=True, exist_ok=True)
 
     Logger.info("Loading i18n...")
-    locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), all_locales_path, "akari-bot")
+    locale_loaded_err = build_locale_snapshot(list(lang_list.keys()), collect_locale_paths(), "akari-bot")
     connect_locale_snapshot("akari-bot")
     if locale_loaded_err:
         Logger.warning(f"I18N loaded with errors: {locale_loaded_err}")
@@ -359,7 +359,9 @@ async def run_bot():
         p.start()
         processes.append(p)
 
-    bots_list = [p.name for p in bots_path.iterdir() if p.is_dir() and not p.name.startswith("_")]
+    from core.plugin import iter_bot_packages
+
+    bots_list = [package.name for package in iter_bot_packages()]
     disabled_bots.clear()
 
     for t in CFGManager.iter_tables():

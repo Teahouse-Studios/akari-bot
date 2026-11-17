@@ -43,9 +43,12 @@ description: AkariBot 项目开发指南。涵盖核心框架、消息与会话�
 ## 高频命令
 
 ```bash
-uv sync
+uv sync --all-extras
 uv run ruff format .
 uv run ruff check .
+
+uv run python tools/check_layers.py
+uv run python tools/check_deps.py
 
 uv run pytest tests/unit
 CI=1 AKARI_TEST_FILTER=<集成文件名子串> uv run python tester.py

@@ -1,0 +1,308 @@
+from copy import deepcopy
+
+from core.builtins.bot import Bot
+from core.builtins.message.internal import I18NContext, Plain
+from core.builtins.parser.command import CommandParser
+from core.component import module
+from core.constants.exceptions import InvalidHelpDocTypeError
+from core.database.models import ModuleStatus
+from core.loader import ModulesManager
+from core.logger import Logger
+from modules.core.common_tools.help import check_context_admin, modules_list_help
+
+# 模块受限成因到提示文案的映射，键取自 Module.unsupported_reason() 的返回值。
+UNSUPPORTED_PROMPTS = {
+    "rss": "core.message.module.enable.unsupported_rss",
+    "regex": "core.message.module.enable.unsupported_regex",
+    "event": "core.message.module.enable.unsupported_event",
+}
+
+# 机器人平台权限到中文名称的映射；未登记的权限直接回退为字段名，避免误报为其他能力。
+BOT_PERMISSION_PROMPTS = {
+    "can_read_all_messages": "core.message.module.bot_permission.read_all_messages",
+    "can_send_messages": "core.message.module.bot_permission.send_messages",
+    "can_send_proactive_messages": "core.message.module.bot_permission.send_proactive_messages",
+    "can_manage_messages": "core.message.module.bot_permission.manage_messages",
+    "can_manage_members": "core.message.module.bot_permission.manage_members",
+    "can_restrict_members": "core.message.module.bot_permission.restrict_members",
+    "can_react": "core.message.module.bot_permission.react",
+}
+
+
+def format_bot_permissions(msg: Bot.MessageSession, permissions: list[str]) -> str:
+    locale = msg.session_info.locale
+    return locale.t("message.delimiter").join(
+        locale.t(
+            BOT_PERMISSION_PROMPTS.get(permission, "core.message.module.bot_permission.unknown"),
+            permission=permission.removeprefix("permissions."),
+        )
+        for permission in permissions
+    )
+
+
+m = module(
+    "module",
+    base=True,
+    alias={
+        "enable": "module enable",
+        "disable": "module disable",
+        "load": "module load",
+        "reload": "module reload",
+        "unload": "module unload",
+    },
+    doc=True,
+)
+
+
+@m.command(
+    [
+        "reload <module> ... {{I18N:core.help.module.reload}}",
+        "load <module> ... {{I18N:core.help.module.load}}",
+        "unload <module> ... {{I18N:core.help.module.unload}}",
+    ],
+    required_superuser=True,
+)
+@m.command(
+    "list [--legacy] [--img] {{I18N:core.help.module.list}}",
+    options_desc={
+        "--legacy": "{I18N:help.option.legacy}",
+        "--img": "{I18N:help.option.img}",
+    },
+)
+@m.command(
+    [
+        "enable <module>... {{I18N:core.help.module.enable}}",
+        "enable all {{I18N:core.help.module.enable_all}}",
+        "disable <module>... {{I18N:core.help.module.disable}}",
+        "disable all {{I18N:core.help.module.disable_all}}",
+    ],
+    required_admin=True,
+)
+async def _(msg: Bot.MessageSession, img: bool = False, legacy: bool = False):
+    if msg.parsed_msg.get("list", False):
+        force_image = img
+        await modules_list_help(msg, legacy, force_image)
+    await config_modules(msg)
+
+
+async def config_modules(msg: Bot.MessageSession):
+    is_superuser = msg.check_super_user()
+    alias = ModulesManager.modules_aliases
+    modules_ = ModulesManager.return_modules_list(
+        target_from=msg.session_info.target_from, client_name=msg.session_info.client_name
+    )
+    enabled_modules_list = deepcopy(msg.session_info.enabled_modules or [])
+    wait_config = [msg.parsed_msg.get("<module>")] + msg.parsed_msg.get("...", [])
+    wait_config_list = []
+    for module_ in wait_config:
+        if module_ not in wait_config_list:
+            if module_ in alias:
+                wait_config_list.append(alias[module_].split()[0])
+            elif not module_:
+                continue
+            else:
+                wait_config_list.append(module_.split()[0])
+    msglist = []
+    recommend_modules_list = []
+    recommend_modules_help_doc_list = []
+    if msg.parsed_msg.get("enable", False):
+        bot_state = None
+        bot_state_checked = False
+
+        async def get_missing_bot_permissions(module_) -> list[str]:
+            nonlocal bot_state, bot_state_checked
+            if not module_.bot_permissions_for_enable():
+                return []
+            if not bot_state_checked:
+                bot_state_checked = True
+                try:
+                    bot_state = await msg.check_bot_state()
+                except Exception:
+                    # 状态查询失败不能把暂时的 RPC 或网络问题误报为机器人无权限；
+                    # 只有平台明确返回 False 才会阻止开启，查询失败仍按既有能力声明处理。
+                    Logger.exception(
+                        f"Failed to check bot state before enabling modules in {msg.session_info.target_id}: "
+                    )
+            return module_.unsupported_bot_permissions(bot_state)
+
+        enable_list = []
+        if msg.parsed_msg.get("all", False):
+            for function in modules_:
+                if function[0] == "_":
+                    continue
+                if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
+                    continue
+                if modules_[function].unsupported_reason(msg.session_info):
+                    continue
+                if await get_missing_bot_permissions(modules_[function]):
+                    continue
+                enable_list.append(function)
+        else:
+            for module_ in wait_config_list:
+                if module_ not in modules_:
+                    msglist.append(I18NContext("core.message.module.enable.not_found", module=module_))
+                else:
+                    if not modules_[module_]._db_load:
+                        msglist.append(I18NContext("parser.module.unloaded", module=module_))
+                    elif modules_[module_].required_superuser and not is_superuser:
+                        msglist.append(I18NContext("parser.superuser.permission.denied"))
+                    elif (
+                        modules_[module_].base
+                        or modules_[module_].required_superuser
+                        or not msg.session_info.require_enable_modules
+                    ):
+                        msglist.append(I18NContext("core.message.module.enable.already", module=module_))
+                    elif reason := modules_[module_].unsupported_reason(msg.session_info):
+                        msglist.append(I18NContext(UNSUPPORTED_PROMPTS[reason]))
+                    elif missing := await get_missing_bot_permissions(modules_[module_]):
+                        msglist.append(
+                            I18NContext(
+                                "core.message.module.enable.unsupported_bot_permissions",
+                                permissions=format_bot_permissions(msg, missing),
+                            )
+                        )
+                    else:
+                        enable_list.append(module_)
+                        recommend = modules_[module_].recommend_modules
+                        if recommend:
+                            for r in recommend:
+                                if r not in enable_list and r not in enabled_modules_list:
+                                    recommend_modules_list.append(r)
+        if enable_list and await msg.session_info.target_union_info.config_module(enable_list, True):
+            for x in enable_list:
+                if x in enabled_modules_list:
+                    msglist.append(I18NContext("core.message.module.enable.already", module=x))
+                else:
+                    msglist.append(I18NContext("core.message.module.enable.success", module=x))
+                    if modules_[x].event:
+                        msglist.append(I18NContext("core.message.module.enable.event_permissions"))
+                    support_lang = modules_[x].support_languages
+                    if support_lang:
+                        if msg.session_info.locale.locale not in support_lang:
+                            msglist.append(I18NContext("core.message.module.unsupported_language", module=x))
+        if recommend_modules_list:
+            is_admin = is_superuser or await check_context_admin(msg)
+            for m in recommend_modules_list:
+                try:
+                    recommend_modules_help_doc_list.append(I18NContext("core.message.module.recommends.help", module=m))
+
+                    if modules_[m].desc:
+                        recommend_modules_help_doc_list.append(Plain(msg.session_info.locale.t_str(modules_[m].desc)))
+                    hdoc = CommandParser(
+                        modules_[m],
+                        msg=msg,
+                        module_name=modules_[m].module_name,
+                        command_prefixes=msg.session_info.prefixes,
+                        is_superuser=is_superuser,
+                        is_admin=is_admin,
+                    ).return_formatted_help_doc()
+                    if hdoc:
+                        recommend_modules_help_doc_list.append(Plain(hdoc))
+                except InvalidHelpDocTypeError:
+                    pass
+    elif msg.parsed_msg.get("disable", False):
+        disable_list = []
+        if msg.parsed_msg.get("all", False):
+            for function in modules_:
+                if function[0] == "_":
+                    continue
+                if modules_[function].base or modules_[function].hidden or modules_[function].required_superuser:
+                    continue
+                disable_list.append(function)
+        else:
+            for module_ in wait_config_list:
+                if module_ not in modules_:
+                    msglist.append(I18NContext("core.message.module.disable.not_found", module=module_))
+                else:
+                    if not modules_[module_]._db_load:
+                        msglist.append(I18NContext("parser.module.unloaded", module=module_))
+                    elif modules_[module_].required_superuser and not is_superuser:
+                        msglist.append(I18NContext("parser.superuser.permission.denied"))
+                    elif modules_[module_].base:
+                        msglist.append(I18NContext("core.message.module.disable.base", module=module_))
+                    elif modules_[module_].required_superuser or not msg.session_info.require_enable_modules:
+                        msglist.append(I18NContext("core.message.module.disable.failed", module=module_))
+                    else:
+                        disable_list.append(module_)
+
+        if await msg.session_info.target_union_info.config_module(disable_list, False):
+            for x in disable_list:
+                if x not in enabled_modules_list:
+                    msglist.append(I18NContext("core.message.module.disable.already", module=x))
+                else:
+                    msglist.append(I18NContext("core.message.module.disable.success", module=x))
+    elif msg.parsed_msg.get("reload", False):
+
+        async def module_reload(module, extra_modules):
+            status, reload_count = await ModulesManager.reload_module(module)
+            if not status:
+                return I18NContext("core.message.module.reload.failed")
+            if reload_count > 1:
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.with", reload_count=reload_count - 1))
+                )
+            if reload_count == 1:
+                return Plain(
+                    str(I18NContext("core.message.module.reload.success", module=module))
+                    + ("\n" if len(extra_modules) != 0 else "")
+                    + "\n".join(extra_modules)
+                    + "\n"
+                    + str(I18NContext("core.message.module.reload.no_more"))
+                )
+
+        for module_ in wait_config_list:
+            if module_ not in modules_:
+                msglist.append(I18NContext("core.message.module.reload.not_found", module=module_))
+            else:
+                extra_reload_modules = ModulesManager.search_related_module(module_, False)
+                if extra_reload_modules:
+                    if not await msg.wait_confirm(
+                        I18NContext("core.message.module.reload.confirm", modules="\n".join(extra_reload_modules)),
+                        append_instruction=False,
+                    ):
+                        await msg.finish()
+                msglist.append(await module_reload(module_, extra_reload_modules))
+    elif msg.parsed_msg.get("load", False):
+        for module_ in wait_config_list:
+            if module_ not in await ModuleStatus.get_unloaded_modules():
+                msglist.append(I18NContext("core.message.module.load.not_found"))
+                continue
+            if await ModulesManager.load_module(module_):
+                msglist.append(I18NContext("core.message.module.load.success", module=module_))
+            else:
+                msglist.append(I18NContext("core.message.module.load.failed"))
+
+    elif msg.parsed_msg.get("unload", False):
+        for module_ in wait_config_list:
+            if module_ not in await ModuleStatus.get_loaded_modules():
+                msglist.append(I18NContext("core.message.module.unload.not_found"))
+                continue
+            if modules_[module_].base:
+                msglist.append(I18NContext("core.message.module.unload.base", module=module_))
+                continue
+            if await ModulesManager.unload_module(module_):
+                msglist.append(I18NContext("core.message.module.unload.success", module=module_))
+
+    if msglist:
+        if not recommend_modules_help_doc_list:
+            await msg.finish(msglist)
+        else:
+            await msg.send_message(msglist)
+    if recommend_modules_help_doc_list:
+        if await msg.wait_confirm(
+            [I18NContext("core.message.module.recommends", modules="\n".join(recommend_modules_list))]
+            + recommend_modules_help_doc_list
+        ):
+            if await msg.session_info.target_union_info.config_module(recommend_modules_list, True):
+                msglist = []
+                for x in recommend_modules_list:
+                    msglist.append(I18NContext("core.message.module.enable.success", module=x))
+                await msg.finish(msglist)
+        else:
+            await msg.finish()
+    else:
+        return

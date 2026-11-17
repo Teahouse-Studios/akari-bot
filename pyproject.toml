@@ -15,102 +15,135 @@ license-files = ["LICENSE", "**/LICENSE"]
 readme = "README.md"
 requires-python = ">=3.12.0,<4.0.0"
 dependencies = [
-    # akari-bot-service
-    "akari-bot-i18n==0.2.2",
-    "akari-bot-webrender==0.7.4",
-    "akari-bot-webui==0.6.4",
-    # lib
-    "coverage>=7.9.1,<8.0.0",
-    "cryptography>=50.0.0,<50.1.0",
-    "deprecated>=1.2.18,<2.0.0",
-    "pre-commit>=4.0.0,<5.0.0",
-    "pycryptodome>=3.18.0,<4.0.0",
-    "python-dotenv>=1.2.1,<2.0.0",
-    "python-multipart>=0.0.22,<1.0.0",
-    "pywin32>=312,<313; platform_system == 'Windows'",
-    # bots
-    "aiocqhttp>=1.4.3,<2.0.0",
-    "aiogram==3.31.0",
-    "argon2-cffi>=25.0.0,<26.0.0",
-    "fastapi>=0.120.0,<1.0.0",
-    "ffmpy>=1.0.0,<2.0.0",
-    "khl-py>=0.3.16,<1.0.0",
-    "matrix-nio>=0.25.0,<1.0.0",
-    "milky-python-sdk>=0.4.2",
-    "py-cord>=2.7.2",
-    "pyjwt[crypto]>=2.8.0,<3.0.0",
-    "pyotp>=2.9.0,<3.0.0",
-    "qq-botpy-sdk==2.3.0",
-    "satori-python-client>=1.3.11",
-    "slowapi>=0.1.9,<1.0.0",
-    "urllib3>=2.6.3",
-    "uvicorn[standard]>=0.38.0,<1.0.0",
-    # core
-    "cattrs>=26.1.0,<26.2.0",
-    "filetype>=1.2.0,<2.0.0",
-    "orjson>=3.10.9,<4.0.0",
-    "Pillow>=13.0.0,<13.1.0",
-    "rapidfuzz>=3.14.5",
-    "tenacity>=9.0.0,<10.0.0",
-    # core.config
-    "tomlkit>=0.14.0,<1.0.0",
-    # core.database
-    "tortoise-orm[asyncmy]>=1.1.2,<1.2.0",
-    # core.http
-    "aiofile>=3.8.1,<4.0.0",
-    "attrs>=26.1.0",
-    "httpx>=0.28.1,<1.0.0",
-    "httpx-ws>=0.9.0,<1.0.0",
-    "jinja2>=3.1.6,<4.0.0",
-    # core.logger
-    "loguru>=0.7.0,<1.0.0",
-    # core.tester
-    "defusedxml>=0.7.1",
-    # core.utils
-    "boto3>=1.35.0,<2.0.0",
-    "ff3>=1.0.2,<2.0.0",
-    "psutil>=7.0.0,<8.0.0",
-    "regex>=2026.5.9,<2027.0.0",
-    "tabulate>=0.9.0,<1.0.0",
-    # core.scheduler
-    "APScheduler>=3.9.1-post.0,<4.0.0.0",
-    # modules.core
-    "matplotlib>=3.6.3,<4.0.0",
-    "py-cpuinfo>=9.0.0,<10.0.0",
-    # modules
-    "anthropic>=1.5.0",
-    "beautifulsoup4>=4.11.1,<5.0.0",
-    "ddgs>=9.14.2",
-    "e2b-code-interpreter>=2.6.2",
-    "emoji>=2.12.1,<3.0.0",
-    "feedparser>=6.0.10,<7.0.0",
-    "google-genai>=2.33.0",
-    "google-play-scraper>=1.2.2,<2.0.0",
-    "gql>=4.0.0,<5.0.0",
-    "mcstatus>=14.1.0,<14.2.0",
-    "numpy<2.5.5",
-    "openai>=3.6.0,<3.7.0",
-    "pandas>=3.0.0,<4.0.0",
-    "pint>=0.25.0,<1.0.0",
-    "python-whois>=0.9.0,<1.0.0",
-    "qrcode>=8.2,<9.0.0",
-    "pyyaml>=6.0.3",
-    "rdkit>=2026.3.1,<2026.4.0",
-    "simpleeval>=1.0.0,<2.0.0",
-    "trafilatura>=2.0.0",
-    "webcolors>=25.0.0,<26.0.0",
-    "wikitextparser>=1.0.3",
-    "wolframalpha>=5.0.0,<6.0.0",
-    "langconv==0.4.0",
-    # uncategorized
+    "akari-bot-core",
 ]
+
+[project.optional-dependencies]
+bots-discord = ["akari-bot-adapter-discord"]
+bots-kook = ["akari-bot-adapter-kook"]
+bots-matrix = ["akari-bot-adapter-matrix"]
+bots-milky = ["akari-bot-adapter-milky"]
+bots-onebot = ["akari-bot-adapter-onebot"]
+bots-qqbot = ["akari-bot-adapter-qqbot"]
+bots-satori = ["akari-bot-adapter-satori"]
+bots-telegram = ["akari-bot-adapter-telegram"]
+bots-web = ["akari-bot-adapter-web"]
+modules-ai = ["akari-bot-module-ai"]
+modules-arcaea = ["akari-bot-module-arcaea"]
+modules-arcaea_rss = ["akari-bot-module-arcaea_rss"]
+modules-bilibili = ["akari-bot-module-bilibili"]
+modules-bugtracker = ["akari-bot-module-bugtracker"]
+modules-captcha = ["akari-bot-module-captcha"]
+modules-chemical_code = ["akari-bot-module-chemical_code"]
+modules-coin = ["akari-bot-module-coin"]
+modules-color = ["akari-bot-module-color"]
+modules-convert = ["akari-bot-module-convert"]
+modules-core = ["akari-bot-module-core"]
+modules-cytoid = ["akari-bot-module-cytoid"]
+modules-dice = ["akari-bot-module-dice"]
+modules-emojimix = ["akari-bot-module-emojimix"]
+modules-exchange_rate = ["akari-bot-module-exchange_rate"]
+modules-github = ["akari-bot-module-github"]
+modules-hitokoto = ["akari-bot-module-hitokoto"]
+modules-idlist = ["akari-bot-module-idlist"]
+modules-image = ["akari-bot-module-image"]
+modules-ip = ["akari-bot-module-ip"]
+modules-langconv = ["akari-bot-module-langconv"]
+modules-maimai = ["akari-bot-module-maimai"]
+modules-mcmod = ["akari-bot-module-mcmod"]
+modules-mcplayer = ["akari-bot-module-mcplayer"]
+modules-mcserver = ["akari-bot-module-mcserver"]
+modules-mcv = ["akari-bot-module-mcv"]
+modules-mcv_rss = ["akari-bot-module-mcv_rss"]
+modules-minecraft_news = ["akari-bot-module-minecraft_news"]
+modules-mkey = ["akari-bot-module-mkey"]
+modules-mod_dl = ["akari-bot-module-mod_dl"]
+modules-mojang_status = ["akari-bot-module-mojang_status"]
+modules-nbnhhsh = ["akari-bot-module-nbnhhsh"]
+modules-ncmusic = ["akari-bot-module-ncmusic"]
+modules-nintendo_err = ["akari-bot-module-nintendo_err"]
+modules-oba = ["akari-bot-module-oba"]
+modules-phigros = ["akari-bot-module-phigros"]
+modules-random = ["akari-bot-module-random"]
+modules-threedsdb = ["akari-bot-module-threedsdb"]
+modules-tweet = ["akari-bot-module-tweet"]
+modules-twenty_four = ["akari-bot-module-twenty_four"]
+modules-weekly = ["akari-bot-module-weekly"]
+modules-weekly_rss = ["akari-bot-module-weekly_rss"]
+modules-whois = ["akari-bot-module-whois"]
+modules-wiki = ["akari-bot-module-wiki"]
+modules-wikilog = ["akari-bot-module-wikilog"]
+modules-wolframalpha = ["akari-bot-module-wolframalpha"]
+modules-wordle = ["akari-bot-module-wordle"]
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+akari-bot-adapter-discord = { workspace = true }
+akari-bot-adapter-kook = { workspace = true }
+akari-bot-adapter-matrix = { workspace = true }
+akari-bot-adapter-milky = { workspace = true }
+akari-bot-adapter-onebot = { workspace = true }
+akari-bot-adapter-qqbot = { workspace = true }
+akari-bot-adapter-satori = { workspace = true }
+akari-bot-adapter-telegram = { workspace = true }
+akari-bot-adapter-web = { workspace = true }
+akari-bot-core = { workspace = true }
+akari-bot-module-ai = { workspace = true }
+akari-bot-module-arcaea = { workspace = true }
+akari-bot-module-arcaea_rss = { workspace = true }
+akari-bot-module-bilibili = { workspace = true }
+akari-bot-module-bugtracker = { workspace = true }
+akari-bot-module-captcha = { workspace = true }
+akari-bot-module-chemical_code = { workspace = true }
+akari-bot-module-coin = { workspace = true }
+akari-bot-module-color = { workspace = true }
+akari-bot-module-convert = { workspace = true }
+akari-bot-module-core = { workspace = true }
+akari-bot-module-cytoid = { workspace = true }
+akari-bot-module-dice = { workspace = true }
+akari-bot-module-emojimix = { workspace = true }
+akari-bot-module-exchange_rate = { workspace = true }
+akari-bot-module-github = { workspace = true }
+akari-bot-module-hitokoto = { workspace = true }
+akari-bot-module-idlist = { workspace = true }
+akari-bot-module-image = { workspace = true }
+akari-bot-module-ip = { workspace = true }
+akari-bot-module-langconv = { workspace = true }
+akari-bot-module-maimai = { workspace = true }
+akari-bot-module-mcmod = { workspace = true }
+akari-bot-module-mcplayer = { workspace = true }
+akari-bot-module-mcserver = { workspace = true }
+akari-bot-module-mcv = { workspace = true }
+akari-bot-module-mcv_rss = { workspace = true }
+akari-bot-module-minecraft_news = { workspace = true }
+akari-bot-module-mkey = { workspace = true }
+akari-bot-module-mod_dl = { workspace = true }
+akari-bot-module-mojang_status = { workspace = true }
+akari-bot-module-nbnhhsh = { workspace = true }
+akari-bot-module-ncmusic = { workspace = true }
+akari-bot-module-nintendo_err = { workspace = true }
+akari-bot-module-oba = { workspace = true }
+akari-bot-module-phigros = { workspace = true }
+akari-bot-module-random = { workspace = true }
+akari-bot-module-threedsdb = { workspace = true }
+akari-bot-module-tweet = { workspace = true }
+akari-bot-module-twenty_four = { workspace = true }
+akari-bot-module-weekly = { workspace = true }
+akari-bot-module-weekly_rss = { workspace = true }
+akari-bot-module-whois = { workspace = true }
+akari-bot-module-wiki = { workspace = true }
+akari-bot-module-wikilog = { workspace = true }
+akari-bot-module-wolframalpha = { workspace = true }
+akari-bot-module-wordle = { workspace = true }
 
 [project.urls]
 Homepage = "https://github.com/Teahouse-Studios/akari-bot"
 Issues = "https://github.com/Teahouse-Studios/akari-bot/issues"
 
 [dependency-groups]
-dev = ["ruff>=0.15.1", "pytest>=9.0.2"]
+dev = ["coverage>=7.9.1,<8.0.0", "pre-commit>=4.0.0,<5.0.0", "pytest>=9.0.2", "ruff>=0.15.1"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]

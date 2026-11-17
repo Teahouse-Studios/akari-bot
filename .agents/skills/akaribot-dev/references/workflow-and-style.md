@@ -16,12 +16,12 @@
 使用 uv 管理依赖：
 
 ```bash
-uv sync
+uv sync --all-extras
 uv add <包名>
 uv lock
 ```
 
-新增依赖后，将其移动到 `pyproject.toml` 对应注释分组并按字母序排列。不要手写 `requirements.txt`；pre-commit 会从锁文件导出。
+根 `pyproject.toml` 的 `dependencies` 只依赖 `akari-bot-core`，平台适配器与模块的依赖写在 `packages/akari-bot-adapter-*`、`packages/akari-bot-module-*` 各自的清单里，并按 `bots-<平台>`、`modules-<模块>` 的 extra 聚合。新增依赖时同时更新成员清单与 extra，`uv run python tools/check_deps.py` 会校验一致性。依赖分层由 `uv run python tools/check_layers.py` 检查。不要手写 `requirements.txt`；pre-commit 会从锁文件导出。
 
 ## Ruff
 

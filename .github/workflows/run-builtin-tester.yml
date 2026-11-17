@@ -40,6 +40,14 @@ jobs:
           mkdir -p config
           cp -r assets/config_store/zh_cn/* config/
 
+      - name: Check dependency layers
+        shell: bash
+        env:
+          PYTHONIOENCODING: "UTF-8"
+        run: |
+          uv run python tools/check_layers.py
+          uv run python tools/check_deps.py
+
       - name: Run unit tests
         timeout-minutes: 30
         env:

@@ -1,0 +1,441 @@
+import inspect
+import re
+from pathlib import Path
+from typing import overload
+
+from apscheduler.triggers.combining import AndTrigger, OrTrigger
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+
+from core.builtins.parser.args import parse_template
+from core.builtins.types import MessageElement
+from core.builtins.config.decorator import process_config_class
+from core.constants.exceptions import InvalidTemplatePattern
+from core.loader import ModulesManager
+from core.module_runtime import ModuleRuntimeManager, RuntimeResource
+from core.scheduler import IntervalTrigger
+from core.types import Module
+from core.types.module.component_meta import *
+
+
+class Bind:
+    class Module:
+        def __init__(self, module_name: str):
+            self.module_name = module_name
+
+        def command(
+            self,
+            command_template: str | list | tuple | None = None,
+            *command_templates,
+            options_desc: dict | None = None,
+            required_admin: bool = False,
+            required_superuser: bool = False,
+            required_base_superuser: bool = False,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+            priority: int = 1,
+        ):
+            """绑定模块命令。
+
+            :param command_template: 命令模板，可传入多个模板作为同一命令的多个变体。
+            :param command_templates: 额外的命令模板。
+            :param options_desc: 选项描述，用于生成帮助文档。
+            :param required_admin: 此命令是否需要场景管理员权限。
+            :param required_superuser: 此命令是否仅超级用户可执行。
+            :param required_base_superuser: 此命令是否仅基础超级用户可执行。
+            :param available_for: 此命令支持的平台列表。
+            :param exclude_from: 此命令排除的平台列表。
+            :param load: 是否加载此命令。
+            :param priority: 匹配优先级，数值越大优先级越高。
+            """
+
+            def decorator(function):
+                nonlocal command_template
+                if isinstance(command_template, str):
+                    command_template = [command_template]
+                if command_templates:
+                    command_template += command_templates
+                if not command_template:
+                    command_template = []
+
+                try:
+                    command_template = parse_template(command_template)
+                except InvalidTemplatePattern:
+                    return
+
+                ModulesManager.bind_to_module(
+                    self.module_name,
+                    CommandMeta(
+                        function=function,
+                        command_template=command_template,
+                        options_desc=options_desc,
+                        required_admin=required_admin,
+                        required_superuser=required_superuser,
+                        required_base_superuser=required_base_superuser,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        load=load,
+                        priority=priority,
+                    ),
+                )
+                return function
+
+            return decorator
+
+        def regex(
+            self,
+            pattern: str | re.Pattern,
+            mode: str = "M",
+            flags: re.RegexFlag = re.NOFLAG,
+            desc: str | None = None,
+            required_admin: bool = False,
+            required_superuser: bool = False,
+            required_base_superuser: bool = False,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+            logging: bool = True,
+            show_typing: bool = True,
+            text_only: bool = True,
+            element_filter: tuple[MessageElement, ...] | None = None,
+            trigger_once_startup: bool = False,
+            skip_long_message_confirm: bool = False,
+        ):
+            def decorator(function):
+                ModulesManager.bind_to_module(
+                    self.module_name,
+                    RegexMeta(
+                        function=function,
+                        pattern=pattern,
+                        # 注册期归一化，匹配时不必对每条正则再 upper() 一次
+                        mode=mode.upper(),
+                        flags=flags,
+                        desc=desc,
+                        required_admin=required_admin,
+                        required_superuser=required_superuser,
+                        required_base_superuser=required_base_superuser,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        load=load,
+                        logging=logging,
+                        show_typing=show_typing,
+                        text_only=text_only,
+                        element_filter=element_filter or [],
+                        trigger_once_startup=trigger_once_startup,
+                        skip_long_message_confirm=skip_long_message_confirm,
+                    ),
+                )
+                return function
+
+            return decorator
+
+        def schedule(
+            self,
+            trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
+        ):
+            def decorator(function):
+                ModulesManager.bind_to_module(self.module_name, ScheduleMeta(function=function, trigger=trigger))
+                return function
+
+            return decorator
+
+        def hook(
+            self,
+            name: str | None = None,
+            *,
+            point: str | None = None,
+            priority: int = 100,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+            timeout: float = 5.0,
+            server_scope: bool = False,
+        ):
+            """注册具名 hook 或 parser 入口订阅。
+
+            :param name: 具名能力名；入口订阅时可作为稳定订阅 ID 后缀。
+            :param point: ``HookPoint`` 入口常量或其字符串值；与 name 同时给出时走入口索引。
+            :param priority: 入口订阅优先级，升序执行。
+            :param available_for: 入口订阅的平台限制，语义同 command。
+            :param exclude_from: 入口订阅的平台排除，语义同 command。
+            :param load: 入口订阅开关。
+            :param timeout: 入口订阅单次执行预算（秒）；<=0 不限时。
+            :param server_scope: 系统扩展作用域，免场景 enabled_modules。
+            """
+
+            def decorator(function):
+                ModulesManager.bind_to_module(
+                    self.module_name,
+                    HookMeta(
+                        function=function,
+                        name=name,
+                        point=str(point) if point is not None else None,
+                        priority=priority,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        load=load,
+                        timeout=timeout,
+                        server_scope=server_scope,
+                    ),
+                )
+                return function
+
+            return decorator
+
+        def event(
+            self,
+            name: str,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+        ):
+            def decorator(function):
+                ModulesManager.bind_to_module(
+                    self.module_name,
+                    EventMeta(
+                        function=function,
+                        name=name,
+                        available_for=available_for,
+                        exclude_from=exclude_from,
+                        load=load,
+                    ),
+                )
+                return function
+
+            return decorator
+
+        on_command = command
+        on_regex = regex
+        on_schedule = schedule
+        on_hook = hook
+        on_event = event
+
+        def state(
+            self,
+            name: str,
+            *,
+            default=None,
+            default_factory=None,
+            preserve: bool = False,
+            version: int = 1,
+            migrate=None,
+        ):
+            """Declare module-owned in-memory state managed across reloads."""
+            return ModuleRuntimeManager.state(
+                self.module_name,
+                name,
+                default=default,
+                default_factory=default_factory,
+                preserve=preserve,
+                version=version,
+                migrate=migrate,
+            )
+
+        def cache(
+            self,
+            name: str,
+            *,
+            default_factory=dict,
+            version: int = 1,
+        ):
+            """Declare an in-memory cache invalidated when its version changes."""
+            return self.state(
+                name,
+                default_factory=default_factory,
+                preserve=True,
+                version=version,
+            )
+
+        def resource(
+            self,
+            name: str,
+            factory,
+            close=None,
+            *,
+            timeout: float = 10,
+        ) -> RuntimeResource:
+            """Declare a lazy resource owned by the framework-managed runtime."""
+            return ModuleRuntimeManager.resource(
+                self.module_name,
+                name,
+                factory,
+                close,
+                timeout=timeout,
+            )
+
+        def cache_path(self, name: str, *, version: int = 1):
+            """Return a versioned module cache directory managed by the framework."""
+            return ModuleRuntimeManager.cache_path(self.module_name, name, version)
+
+        def cleanup(self, callback, *, name: str | None = None, timeout: float = 10):
+            """Register an idempotent cleanup that runs when this generation stops."""
+            return ModuleRuntimeManager.cleanup(self.module_name, callback, name=name, timeout=timeout)
+
+        def spawn(self, awaitable, *, name: str | None = None, suppress_errors=()):
+            """Create a tracked background task owned by this module runtime."""
+            return ModuleRuntimeManager.spawn(
+                self.module_name,
+                awaitable,
+                name=name,
+                suppress_errors=suppress_errors,
+            )
+
+        @overload
+        def handle(
+            self,
+            command_template: str | list | tuple | None = None,
+            *command_templates,
+            options_desc: dict | None = None,
+            required_admin: bool = False,
+            required_superuser: bool = False,
+            required_base_superuser: bool = False,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+            priority: int = 1,
+        ): ...
+
+        @overload
+        def handle(
+            self,
+            pattern: str | re.Pattern,
+            mode: str = "M",
+            flags: re.RegexFlag = re.NOFLAG,
+            desc: str | None = None,
+            required_admin: bool = False,
+            required_superuser: bool = False,
+            required_base_superuser: bool = False,
+            available_for: str | list | tuple = "*",
+            exclude_from: str | list | tuple = "",
+            load: bool = True,
+            show_typing: bool = True,
+            logging: bool = True,
+            element_filter: tuple[MessageElement, ...] | None = None,
+        ): ...
+
+        @overload
+        def handle(
+            self,
+            trigger: AndTrigger | OrTrigger | DateTrigger | CronTrigger | IntervalTrigger,
+        ): ...
+
+        def handle(self, *args, **kwargs):
+            first_key = args[0] if args else (kwargs[list(kwargs.keys())[0]] if kwargs else None)
+            if isinstance(first_key, re.Pattern):
+                return self.regex(*args, **kwargs)
+            if isinstance(
+                first_key,
+                (AndTrigger, OrTrigger, DateTrigger, CronTrigger, IntervalTrigger),
+            ):
+                return self.schedule(*args, **kwargs)
+            return self.command(*args, **kwargs)
+
+        def config(self, cls=None, secret: bool = False):
+            """声明模块的配置模板。
+
+            .. deprecated::
+                请改用 :func:`core.builtins.config.decorator.on_module_config`。
+                本方法要求配置模板反向导入模块对象（``from . import <模块变量>``），
+                同包内任何文件在顶层读取该模板都会与包的初始化互相等待而形成循环导入。
+
+            :param cls: 要装饰的配置类，为 None 时返回装饰器。
+            :param secret: 是否将该配置的值视为敏感信息进行加密存储。
+            """
+
+            def wrap(cls):
+                return process_config_class(cls, "module_" + self.module_name, secret=secret)
+
+            if cls is None:
+                return wrap
+            return wrap(cls)
+
+
+def module(
+    module_name: str,
+    alias: str | list | tuple | dict | None = None,
+    desc: str | None = None,
+    recommend_modules: str | list | tuple | None = None,
+    developers: str | list | tuple | None = None,
+    required_admin: bool = False,
+    base: bool = False,
+    doc: bool = False,
+    hidden: bool = False,
+    load: bool = True,
+    rss: bool = False,
+    regex: bool = False,
+    event: bool = False,
+    required_superuser: bool = False,
+    required_base_superuser: bool = False,
+    required_bot_permissions: str | list | tuple = (),
+    suppress_invalid_prompt: bool = False,
+    available_for: str | list | tuple = "*",
+    exclude_from: str | list | tuple = "",
+    support_languages: str | list | tuple | None = None,
+):
+    """
+    绑定一个模块。
+
+    :param module_name: 绑定的命令前缀。
+    :param alias: 此命令的别名。
+    同时被用作命令解析，当此项不为空时将会尝试解析其中的语法并储存结果在 MessageSession.parsed_msg 中。
+    :param desc: 此命令的简介。
+    :param recommend_modules: 推荐打开的其他模块。
+    :param developers: 模块作者。
+    :param required_admin: 此命令是否需要场景管理员权限。
+    :param base: 将此命令设为基础命令。设为基础命令后此命令将被强制开启。（默认为False）
+    :param doc: 此命令是否存在线上说明文件。（默认为False）
+    :param hidden: 将此命令设为隐藏命令。设为隐藏命令后此命令在帮助列表不可见。（默认为False）
+    :param load: 将此命令设置是否加载。（默认为True）
+    :param rss: 将此命令设为 RSS 命令。（默认为False）
+    :param regex: 将此命令设为正则命令。（默认为False）
+    :param event: 将此命令设为事件模块。事件模块要求平台可读取全部消息。（默认为False）
+    :param required_superuser: 将此命令设为机器人的超级用户才可执行。（默认为False）
+    :param required_base_superuser: 将此命令设为机器人的基础超级用户才可执行。（默认为False）
+    :param required_bot_permissions: 开启模块前要求机器人具备的平台权限字段。
+    :param suppress_invalid_prompt: 命令未能匹配任何模板时是否抑制语法错误提示。
+    适用于命令按平台分流、匹配不上属于预期结果的模块。（默认为False）
+    :param available_for: 此命令支持的平台列表。（默认为`*`）
+    :param exclude_from: 此命令排除的平台列表。
+    :param support_languages: 此命令支持的语言列表。
+    """
+
+    frame = inspect.currentframe().f_back
+    caller_file = frame.f_globals.get("__file__", None)
+
+    py_module_name = ""
+    if caller_file:
+        path = Path(caller_file).resolve()
+        try:
+            modules_idx = path.parts.index("modules")
+            py_module_name = path.parts[modules_idx + 1]
+        except (ValueError, IndexError):
+            py_module_name = ""
+
+    module = Module.assign(
+        module_name=module_name,
+        alias=alias,
+        desc=desc,
+        recommend_modules=recommend_modules,
+        developers=developers,
+        base=base,
+        doc=doc,
+        hidden=hidden,
+        load=load,
+        rss=rss,
+        regex=regex,
+        event=event,
+        required_admin=required_admin,
+        required_superuser=required_superuser,
+        required_base_superuser=required_base_superuser,
+        required_bot_permissions=required_bot_permissions,
+        suppress_invalid_prompt=suppress_invalid_prompt,
+        available_for=available_for,
+        exclude_from=exclude_from,
+        support_languages=support_languages,
+        _py_module_name=py_module_name,
+        _db_load=True,
+    )
+    frame = inspect.currentframe()
+    ModulesManager.add_module(module, frame.f_back.f_globals["__name__"])
+    return Bind.Module(module_name)

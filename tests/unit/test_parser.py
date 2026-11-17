@@ -10,7 +10,8 @@ from core.builtins.parser.args import (
     parse_template,
     templates_to_str,
 )
-from core.builtins.parser.command import CommandParser, _split_command
+from core.builtins.parser.args import split_command
+from core.builtins.parser.command import CommandParser
 from core.builtins.parser.message import _build_command_kwargs, _resolve_parsed_value
 from core.builtins.message.elements import MarkdownElement
 from core.builtins.bot import Bot
@@ -151,7 +152,7 @@ def _test_command_parser_preserves_newlines():
         and quoted["<text>"] == "line1\nline2"
         and after_option["<text>"] == "line1\nline2"
         and after_option["-p"] == {"<page>": "2"}
-        and _split_command('parser-test note "line1\nline2"') == ["parser-test", "note", "line1\nline2"]
+        and split_command('parser-test note "line1\nline2"') == ["parser-test", "note", "line1\nline2"]
     )
 
 
@@ -245,12 +246,12 @@ def _test_command_parser_option_missing_value():
 
 def _test_split_command_quotes():
     return (
-        _split_command('parser-test add-regex "multi word" -t') == ["parser-test", "add-regex", "multi word", "-t"]
-        and _split_command('parser-test add-regex {"a": "b"}') == ["parser-test", "add-regex", '{"a":', '"b"}']
-        and _split_command('parser-test add-regex a"b"c') == ["parser-test", "add-regex", 'a"b"c']
-        and _split_command("parser-test add-regex 'multi word'") == ["parser-test", "add-regex", "multi word"]
-        and _split_command('parser-test add-regex "unbalanced') == ["parser-test", "add-regex", '"unbalanced']
-        and _split_command(r"parser-test add-regex https://example\.test/\d+")
+        split_command('parser-test add-regex "multi word" -t') == ["parser-test", "add-regex", "multi word", "-t"]
+        and split_command('parser-test add-regex {"a": "b"}') == ["parser-test", "add-regex", '{"a":', '"b"}']
+        and split_command('parser-test add-regex a"b"c') == ["parser-test", "add-regex", 'a"b"c']
+        and split_command("parser-test add-regex 'multi word'") == ["parser-test", "add-regex", "multi word"]
+        and split_command('parser-test add-regex "unbalanced') == ["parser-test", "add-regex", '"unbalanced']
+        and split_command(r"parser-test add-regex https://example\.test/\d+")
         == [
             "parser-test",
             "add-regex",
@@ -261,12 +262,12 @@ def _test_split_command_quotes():
 
 def _test_split_command_option_quotes():
     return (
-        _split_command('parser-test search --foo="a b"') == ["parser-test", "search", "--foo=a b"]
-        and _split_command("parser-test search --lang='zh cn'") == ["parser-test", "search", "--lang=zh cn"]
-        and _split_command("parser-test search -p='3 1'") == ["parser-test", "search", "-p=3 1"]
-        and _split_command('parser-test search --foo="a b"c') == ["parser-test", "search", '--foo="a', 'b"c']
-        and _split_command('parser-test search key="a b"') == ["parser-test", "search", 'key="a', 'b"']
-        and _split_command("parser-test search --foo='a b") == ["parser-test", "search", "--foo='a", "b"]
+        split_command('parser-test search --foo="a b"') == ["parser-test", "search", "--foo=a b"]
+        and split_command("parser-test search --lang='zh cn'") == ["parser-test", "search", "--lang=zh cn"]
+        and split_command("parser-test search -p='3 1'") == ["parser-test", "search", "-p=3 1"]
+        and split_command('parser-test search --foo="a b"c') == ["parser-test", "search", '--foo="a', 'b"c']
+        and split_command('parser-test search key="a b"') == ["parser-test", "search", 'key="a', 'b"']
+        and split_command("parser-test search --foo='a b") == ["parser-test", "search", "--foo='a", "b"]
     )
 
 
