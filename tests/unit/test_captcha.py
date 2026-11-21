@@ -56,6 +56,22 @@ def _test_captcha_indexes_fit_mysql_limit():
     return True
 
 
+def _test_token_command_registered_under_captcha():
+    from core.loader import ModulesManager
+
+    captcha_module = ModulesManager.modules.get("captcha")
+    # 独立 token 模块已并入 captcha，命令需声明免启用才能在私聊直接使用。
+    if captcha_module is None or "token" in ModulesManager.modules:
+        return False
+    matches = [meta for meta in captcha_module.command_list.set if meta.available_without_enable]
+    return (
+        len(matches) == 1
+        and matches[0].function is process_token
+        and matches[0].available_for == ["QQBot"]
+        and "QQBot" in captcha_module.available_for
+    )
+
+
 def _test_emote_choices_are_valid():
     if len(CAPTCHA_EMOTES) < CAPTCHA_CHOICE_COUNT:
         return False
@@ -123,10 +139,10 @@ async def _test_captcha_event_and_private_token():
         or len(frame.rows) != CAPTCHA_BUTTON_ROWS
         or any(len(row.buttons) != CAPTCHA_BUTTONS_PER_ROW for row in frame.rows)
         or any(button.small for row in frame.rows for button in row.buttons)
-        or any(not value.startswith(f"!token {challenge.token} ") for value in button_values)
+        or any(not value.startswith(f"!captcha token {challenge.token} ") for value in button_values)
         or prompt is None
-        or prompt.kwargs["command"] != f"{command_prefix[0]}token {challenge.token}"
-        or f"```\n{command_prefix[0]}token {challenge.token}\n```" not in rendered_prompt
+        or prompt.kwargs["command"] != f"{command_prefix[0]}captcha token {challenge.token}"
+        or f"```\n{command_prefix[0]}captcha token {challenge.token}\n```" not in rendered_prompt
         or event.prefixes[0] != "!"
     ):
         return False
@@ -434,7 +450,7 @@ async def _test_emote_captcha_uses_localized_buttons():
         and rendered_welcome != welcome.key
         and prompt is not None
         and prompt.kwargs["bot_name"] == "测试机器人"
-        and f"```\n{command_prefix[0]}token {challenge.token}\n```" in rendered_prompt
+        and f"```\n{command_prefix[0]}captcha token {challenge.token}\n```" in rendered_prompt
         and image is not None
         and image.path == str(CAPTCHA_EMOTE_DIR / f"{emote_name}.gif")
         and [button.show for button in buttons] == expected_labels
@@ -1149,6 +1165,7 @@ async def test_captcha(tester: Tester):
     """captcha：验证码生成、场景前缀、事件幂等及私聊解禁。"""
     await tester.test(_test_captcha_indexes_fit_mysql_limit, "验证码数据库索引兼容 MySQL 长度限制")
     await tester.test(_test_emote_choices_are_valid, "表情验证码选项与资源映射")
+    await tester.test(_test_token_command_registered_under_captcha, "token 命令并入 captcha 且免启用")
     await tester.test(_test_captcha_event_and_private_token, "入群事件、场景前缀与私聊 token 验证")
     await tester.test(_test_wrong_button_marks_challenge_failed, "错误按钮使验证失败")
     await tester.test(_test_preparing_challenge_resumes_after_restart, "重启后继续未完成的验证挑战")

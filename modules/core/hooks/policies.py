@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from core.builtins.message.chain import MessageChain
 from core.builtins.message.internal import I18NContext
 from core.builtins.message.internal import ActionText
+from core.builtins.parser.command import command_allows_without_enable
 from core.builtins.parser.hooks import HookPoint
 from core.builtins.session.lock import ExecutionLockList
 from core.component import module
@@ -163,6 +164,7 @@ async def _module_route(ctx: "Bot.ParserHookContext"):
         not module.base
         and module_name not in (msg.session_info.enabled_modules or [])
         and msg.session_info.require_enable_modules
+        and not command_allows_without_enable(msg, module, module_name)
     ):
         if not await msg.check_permission():
             return ctx.Stop(message=I18NContext("parser.module.disabled", module=module_name))

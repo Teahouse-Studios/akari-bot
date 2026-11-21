@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from typing import Any
 
 from core.builtins.session.internal import MessageSession
+from core.builtins.session.tasks import SessionTaskManager
 from core.logger import Logger
 from core.utils.container import ExpiringTempDict
 
@@ -38,6 +39,8 @@ class PlayState:
         self._generation = object()
         playstate_dict["_status"] = True
         playstate_dict["_generation"] = self._generation
+        # 记录开启这一局的命令会话，停局时据此取消仍挂起的等待。
+        playstate_dict["_session"] = self.msg
         playstate_dict.refresh()
         Logger.info(f"[{self.channel_key}]: Enabled {self.game} by {self.sender_union_id}.")
 
@@ -47,8 +50,14 @@ class PlayState:
             return
         playstate_dict = _ps_dict[self.channel_key].get(self.game)
         if playstate_dict and playstate_dict.get("_status"):
+            # 主流程可能仍停在 wait_*：先取消 waiter，避免停局后旧的等待继续吞消息，
+            # 或在同一通道抢先完成下一局登记的等待。
+            session = playstate_dict.get("_session")
+            if session is not None:
+                SessionTaskManager.cancel_wait(session)
             playstate_dict["_status"] = False
             playstate_dict["_generation"] = None
+            playstate_dict["_session"] = None
             Logger.info(f"[{self.channel_key}]: Disabled {self.game} by {self.sender_union_id}.")
 
     @contextmanager

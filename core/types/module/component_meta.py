@@ -26,6 +26,7 @@ class CommandMeta(ModuleMeta):
     required_admin: bool = False
     required_superuser: bool = False
     required_base_superuser: bool = False
+    available_without_enable: bool = False
     available_for: list = field(default=["*"], converter=convert_list)
     exclude_from: list = field(default=[], converter=convert_list)
     load: bool = True

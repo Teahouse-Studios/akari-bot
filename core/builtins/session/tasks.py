@@ -366,10 +366,42 @@ class SessionTaskManager:
         return True
 
     @classmethod
-    async def check(cls, session: "MessageSession", *, allow_wait_fallthrough: bool = False) -> bool:
+    def cancel_wait(cls, session: "MessageSession") -> int:
+        """取消该会话登记的全部等待任务，令 ``wait_*`` 立即以取消结束。
+
+        与超时清理不同，这里直接移除任务条目：等待中的协程恢复后取不到结果，
+        会抛出 ``WaitCancelException``，由调用方正常收尾。
+        """
+        cancelled = 0
+        for target, target_tasks in list(cls._task_list.items()):
+            for sender, sender_tasks in list(target_tasks.items()):
+                task_info = sender_tasks.pop(session, None)
+                if task_info is None:
+                    continue
+                task_info["active"] = False
+                task_info["reply_ready"].set()
+                task_info["flag"].set()
+                cancelled += 1
+                if not sender_tasks:
+                    target_tasks.pop(sender, None)
+            if not target_tasks:
+                cls._task_list.pop(target, None)
+        return cancelled
+
+    @classmethod
+    async def check(
+        cls,
+        session: "MessageSession",
+        *,
+        allow_wait_fallthrough: bool = False,
+        is_command_message: bool = False,
+    ) -> bool:
         """检查新消息是否匹配任何等待中的任务或回调。
 
         :param session: 新收到的消息会话
+        :param allow_wait_fallthrough: 命中并行等待后是否仍继续普通路由
+        :param is_command_message: 消息形如命令；此类消息留给 parser 正常执行，
+            不完成允许并行路由的等待任务
         """
         handled = False
 
@@ -416,6 +448,9 @@ class SessionTaskManager:
                 continue
 
             wait_matches = [item for item in active_tasks if item[1]["type"] != "reply"]
+            if is_command_message:
+                # 命令留给 parser 路由，避免被当作等待回答消费；并行等待继续挂起。
+                wait_matches = [item for item in wait_matches if not item[1].get("allow_fallthrough", False)]
             wait_matches = [
                 item for item in wait_matches if item[1].get("matcher") is None or item[1]["matcher"](session)
             ]

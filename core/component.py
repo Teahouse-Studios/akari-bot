@@ -31,6 +31,7 @@ class Bind:
             required_admin: bool = False,
             required_superuser: bool = False,
             required_base_superuser: bool = False,
+            available_without_enable: bool = False,
             available_for: str | list | tuple = "*",
             exclude_from: str | list | tuple = "",
             load: bool = True,
@@ -48,6 +49,7 @@ class Bind:
             :param exclude_from: 此命令排除的平台列表。
             :param load: 是否加载此命令。
             :param priority: 匹配优先级，数值越大优先级越高。
+            :param available_without_enable: 场景未启用所属模块时此命令仍可执行。
             """
 
             def decorator(function):
@@ -73,6 +75,7 @@ class Bind:
                         required_admin=required_admin,
                         required_superuser=required_superuser,
                         required_base_superuser=required_base_superuser,
+                        available_without_enable=available_without_enable,
                         available_for=available_for,
                         exclude_from=exclude_from,
                         load=load,

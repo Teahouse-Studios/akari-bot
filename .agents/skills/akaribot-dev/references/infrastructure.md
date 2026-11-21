@@ -65,6 +65,7 @@ def module(
 @my_mod.command("template {{I18N:desc}}", *more_templates,
                 options_desc=None, required_admin=False,
                 required_superuser=False, required_base_superuser=False,
+                available_without_enable=False,
                 available_for="*", exclude_from="", load=True, priority=1)
 @my_mod.regex(r"pattern", mode="M", desc="...")   # 注册正则
 @my_mod.schedule(trigger)                          # 注册定时任务

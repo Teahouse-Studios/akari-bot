@@ -1947,6 +1947,119 @@ async def _test_wait_next_message_allows_parser_fallthrough():
         SessionTaskManager._task_list.clear()
 
 
+async def _test_command_message_skips_fallthrough_wait():
+    from core.builtins.message.chain import MessageChain
+    from core.builtins.session.internal import MessageSession
+
+    class IncomingSession(MessageSession):
+        async def hold(self):
+            return None
+
+    target_id = "TEST|Group|wait-next-command"
+    sender_id = "TEST|wait-next-command"
+    owner = MessageSession(
+        await SessionInfo.assign(
+            target_id=target_id,
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id=sender_id,
+            sender_from="TEST",
+        )
+    )
+    incoming = IncomingSession(
+        await SessionInfo.assign(
+            target_id=target_id,
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id=sender_id,
+            sender_from="TEST",
+            messages=MessageChain.assign("~help"),
+        )
+    )
+    flag = asyncio.Event()
+    SessionTaskManager._task_list.clear()
+    SessionTaskManager.add_task(owner, flag, task_type="wait_next", timeout=60, allow_fallthrough=True)
+    try:
+        handled = await SessionTaskManager.check(incoming, allow_wait_fallthrough=True, is_command_message=True)
+        task_info = SessionTaskManager.get()[target_id][sender_id][owner]
+        if handled or not task_info["active"] or "result" in task_info or flag.is_set():
+            return False
+        # 非命令消息仍应完成该等待，保证原有回答流程不变。
+        handled = await SessionTaskManager.check(incoming, allow_wait_fallthrough=True)
+        task_info = SessionTaskManager.get()[target_id][sender_id][owner]
+        return not handled and not task_info["active"] and task_info["result"] is incoming
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_cancel_wait_wakes_pending_waiter():
+    from core.builtins.session.internal import MessageSession
+
+    target_id = "TEST|Group|cancel-wait"
+    sender_id = "TEST|cancel-wait"
+    owner = MessageSession(
+        await SessionInfo.assign(
+            target_id=target_id,
+            target_from="TEST|Group",
+            client_name="TEST",
+            sender_id=sender_id,
+            sender_from="TEST",
+        )
+    )
+    flag = asyncio.Event()
+    SessionTaskManager._task_list.clear()
+    SessionTaskManager.add_task(owner, flag, task_type="wait_next", timeout=60, allow_fallthrough=True)
+    try:
+        if SessionTaskManager.cancel_wait(owner) != 1:
+            return False
+        await asyncio.wait_for(flag.wait(), timeout=0.5 * TIME_SCALE)
+        return not SessionTaskManager.get()
+    except TimeoutError:
+        return False
+    finally:
+        SessionTaskManager._task_list.clear()
+
+
+async def _test_parser_runs_command_during_fallthrough_wait():
+    from core.builtins.parser.args import parse_template
+    from core.builtins.parser.message import parser
+    from core.loader import ModulesManager
+    from core.tester.mock.session import MockMessageSession
+    from core.types import Module
+    from core.types.module.component_meta import CommandMeta
+
+    called = []
+
+    async def probe(msg):
+        called.append(True)
+        await msg.finish()
+
+    module = Module.assign(module_name="awne_probe", alias=None, recommend_modules=None, developers=None)
+    module.base = True
+    module._db_load = True
+    module.command_list.add(CommandMeta(function=probe, command_template=parse_template(["{{I18N:awne.help.probe}}"])))
+    ModulesManager.modules["awne_probe"] = module
+    ModulesManager._return_cache.clear()
+
+    owner = MockMessageSession("prompt")
+    await owner.async_init("prompt")
+    incoming = MockMessageSession("~awne_probe")
+    await incoming.async_init("~awne_probe")
+    flag = asyncio.Event()
+    SessionTaskManager._task_list.clear()
+    SessionTaskManager.add_task(owner, flag, task_type="wait_next", timeout=60, allow_fallthrough=True)
+    try:
+        await parser(incoming)
+        task_info = SessionTaskManager.get()["TEST|Console|0"]["TEST|0"][owner]
+        # 命令照常执行，且没有完成或消费该并行等待。
+        return called == [True] and task_info["active"] and "result" not in task_info and not flag.is_set()
+    finally:
+        ModulesManager.modules.pop("awne_probe", None)
+        ModulesManager._return_cache.clear()
+        SessionTaskManager._task_list.clear()
+        ExecutionLockList._list.clear()
+
+
 async def _test_parser_rejects_banned_callback_responder_before_task_check():
     from core.builtins.message.chain import MessageChain
     from core.builtins.parser.message import parser
@@ -3224,6 +3337,9 @@ async def test_session_task(tester: Tester):
     await tester.test(_test_parser_rejects_blocked_wait_responder_before_task_check, "全局屏蔽者不完成等待测试")
     await tester.test(_test_wait_confirm_ignores_unrelated_message, "确认等待忽略非确认消息测试")
     await tester.test(_test_wait_next_message_allows_parser_fallthrough, "下一条消息等待继续普通解析测试")
+    await tester.test(_test_command_message_skips_fallthrough_wait, "命令消息不完成并行等待测试")
+    await tester.test(_test_cancel_wait_wakes_pending_waiter, "取消等待任务唤醒 waiter 测试")
+    await tester.test(_test_parser_runs_command_during_fallthrough_wait, "并行等待期间命令正常执行测试")
     await tester.test(
         _test_parser_rejects_banned_callback_responder_before_task_check, "场景屏蔽者不执行 callback 测试"
     )

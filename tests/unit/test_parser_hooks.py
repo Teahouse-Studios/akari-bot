@@ -634,6 +634,84 @@ async def _test_recovery_target_revalidated():
         return False
 
 
+async def _test_command_allows_without_enable():
+    try:
+        from core.builtins.parser.args import parse_template
+        from core.builtins.parser.command import command_allows_without_enable
+        from core.builtins.parser.message import _validate_recovery_target
+        from core.types.module.component_meta import CommandMeta
+
+        async def handler(_msg, _token):
+            return None
+
+        def make_command_module(name: str, *, without_enable: bool) -> Module:
+            module = _make_module(name)
+            module.command_list.add(
+                CommandMeta(
+                    function=handler,
+                    command_template=parse_template(["token <token>"]),
+                    available_without_enable=without_enable,
+                )
+            )
+            return module
+
+        allowed = make_command_module("awne_allowed", without_enable=True)
+        denied = make_command_module("awne_denied", without_enable=False)
+        msg = _FakeMsg()
+        msg.session_info.enabled_modules = []
+        msg.session_info.require_enable_modules = True
+
+        msg.trigger_msg = "awne_allowed token abc"
+        assert command_allows_without_enable(msg, allowed, "awne_allowed")
+        assert not command_allows_without_enable(msg, denied, "awne_denied")
+
+        # 模板未命中时不能仅凭模块内存在免启用命令就放行。
+        msg.trigger_msg = "awne_allowed"
+        assert not command_allows_without_enable(msg, allowed, "awne_allowed")
+
+        msg.trigger_msg = "awne_allowed token abc"
+        assert await _validate_recovery_target(msg, {"awne_allowed": allowed}, "awne_allowed", msg.trigger_msg)
+        msg.trigger_msg = "awne_denied token abc"
+        assert not await _validate_recovery_target(msg, {"awne_denied": denied}, "awne_denied", msg.trigger_msg)
+        return True
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        return False
+
+
+def _test_looks_like_command_detection():
+    try:
+        from unittest.mock import patch
+
+        from core.builtins.parser.message import _looks_like_command
+        from core.loader import ModulesManager
+
+        msg = _FakeMsg()
+        modules = {"ping": _make_module("ping"), "twenty-four": _make_module("twenty-four")}
+
+        msg.as_display = lambda **_kwargs: "~ping"
+        assert _looks_like_command(msg, modules)
+
+        msg.as_display = lambda **_kwargs: "~nosuchmodule"
+        assert not _looks_like_command(msg, modules)
+
+        # `~~` 是删除线格式，parser 不按命令前缀处理。
+        msg.as_display = lambda **_kwargs: "~~ping"
+        assert not _looks_like_command(msg, modules)
+
+        msg.as_display = lambda **_kwargs: "~24"
+        with patch.object(ModulesManager, "modules_aliases", {"24": "twenty-four"}):
+            assert _looks_like_command(msg, modules)
+        return True
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        return False
+
+
 async def _test_session_ready_draft_commit():
     try:
         called = []
@@ -743,6 +821,8 @@ async def test_parser_hooks(tester: Tester):
     await tester.test(_test_named_hook_timeout_is_enforced, "具名 hook 超时约束测试")
     await tester.test(_test_event_handler_isolation, "event handler isolation")
     await tester.test(_test_recovery_target_revalidated, "recovery target revalidated")
+    await tester.test(_test_command_allows_without_enable, "免启用命令与纠错目标校验测试")
+    await tester.test(_test_looks_like_command_detection, "命令形态判定测试")
     await tester.test(_test_session_ready_draft_commit, "session.ready draft commit")
     await tester.test(_test_cleanup_cancellation_propagates, "cleanup cancellation propagates")
     await tester.test(_test_nested_same_session_dispatch_skipped, "nested same-session dispatch skipped")

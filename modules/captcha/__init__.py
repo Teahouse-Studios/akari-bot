@@ -35,7 +35,7 @@ captcha = module(
     "captcha",
     desc="{I18N:captcha.help.desc}",
     event=True,
-    available_for="QQBot|Group",
+    available_for=("QQBot", "QQBot|Group"),
     required_bot_permissions=(
         "can_send_messages",
         "can_send_proactive_messages",
@@ -43,7 +43,6 @@ captcha = module(
         "can_restrict_members",
     ),
 )
-token_module = module("token", base=True, hidden=True, available_for="QQBot")
 
 
 def make_choices(answer: int) -> list[int]:
@@ -221,8 +220,8 @@ async def member_joined(event: EventInfo):
         return
 
     prefix = event.prefixes[0]
-    command = f"{prefix}token {challenge.token}"
-    private_command = f"{command_prefix[0]}token {challenge.token}"
+    command = f"{prefix}captcha token {challenge.token}"
+    private_command = f"{command_prefix[0]}captcha token {challenge.token}"
     emote_name = captcha_emote_name(challenge.answer)
     if emote_name:
         locale = session.session_info.locale
@@ -267,8 +266,12 @@ async def member_joined(event: EventInfo):
     await _release_restriction_after_delivery_failure(session, challenge)
 
 
-@token_module.command("<token> [<answer>]", available_for="QQBot")
-async def token(msg: Bot.MessageSession, token: str, answer: int | None = None):
+@captcha.command(
+    "token <token> [<answer>] {{I18N:captcha.help.token}}",
+    available_for="QQBot",
+    available_without_enable=True,
+)
+async def _(msg: Bot.MessageSession, token: str, answer: int | None = None):
     challenge = await CaptchaChallenge.get_or_none(token=token)
     if not challenge:
         await msg.finish(I18NContext("token.message.invalid"))

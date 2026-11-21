@@ -8,7 +8,7 @@ from types import UnionType
 from typing import TYPE_CHECKING, Union, get_args, get_origin
 
 from core.builtins.message.internal import I18NContext
-from core.builtins.parser.command import CommandParser
+from core.builtins.parser.command import CommandParser, command_allows_without_enable
 from core.builtins.parser.hooks import (
     Continue,
     Handled,
@@ -116,9 +116,11 @@ async def _validate_recovery_target(
     # 有命令模板但当前客户端解析不出可用命令，视为过期建议；无模板模块允许透传
     if has_template and not _command_available_for_current_session(msg, module, command_first_word):
         return False
-    # 场景启用：非 base 且要求启用时，确认期间被禁用则放弃
+    # 场景启用：非 base 且要求启用时，确认期间被禁用则放弃。免启用命令不受影响。
     if not module.base and msg.session_info.require_enable_modules:
-        if command_first_word not in msg.session_info.enabled_modules:
+        if command_first_word not in msg.session_info.enabled_modules and not command_allows_without_enable(
+            msg, module, command_first_word
+        ):
             return False
     return True
 
@@ -189,6 +191,31 @@ async def _try_command_recovery(
     return True
 
 
+def _looks_like_command(msg: "Bot.MessageSession", modules) -> bool:
+    """判断消息是否形如一条已注册命令。
+
+    用于避免并行等待任务把命令当作回答消费；判定标准与 parser 的前缀路由一致，
+    只做不会改写会话状态的轻量检查。
+    """
+    text = normalize_space(msg.as_display(text_only=True))
+    if not text:
+        return False
+    aliases = ModulesManager.modules_aliases
+    for prefix in msg.session_info.prefixes:
+        if prefix and not text.startswith(prefix):
+            continue
+        body = text[len(prefix) :].strip()
+        if not body:
+            continue
+        first_word = body.split(maxsplit=1)[0]
+        if first_word in modules:
+            return True
+        for alias, target in aliases.items():
+            if alias.split(maxsplit=1)[0] == first_word and target.split(maxsplit=1)[0] in modules:
+                return True
+    return False
+
+
 async def parser(msg: "Bot.MessageSession"):
     """消息处理的主入口函数。
 
@@ -205,6 +232,9 @@ async def parser(msg: "Bot.MessageSession"):
         if isinstance(ready_result, Stop) and ready_result.scope == StopScope.MESSAGE:
             return
 
+        # 获取该平台和客户端的所有可用模块
+        modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
+
         # 检查是否有等待此消息的任务（如等待用户回复）。入口策略可以明确让出等待路由，
         # 但仍允许消息继续进入普通命令/正则流程。
         wait_result = await _dispatch_stage(HookPoint.SESSION_BEFORE_WAIT, msg)
@@ -215,12 +245,14 @@ async def parser(msg: "Bot.MessageSession"):
         )
         if not skip_wait_tasks:
             # 独占等待任务或 callback 会消费消息；允许并行路由的等待任务则在完成等待后
-            # 继续进入命令/正则路由。
-            if await SessionTaskManager.check(msg, allow_wait_fallthrough=True):
+            # 继续进入命令/正则路由。命令消息不参与这类等待，否则会被当作回答吞掉，
+            # 并与续跑命令争抢执行锁。
+            if await SessionTaskManager.check(
+                msg,
+                allow_wait_fallthrough=True,
+                is_command_message=_looks_like_command(msg, modules),
+            ):
                 return
-
-        # 获取该平台和客户端的所有可用模块
-        modules = ModulesManager.return_modules_list(msg.session_info.target_from, msg.session_info.client_name)
 
         # 将消息转换为易读的显示格式
         msg.trigger_msg = normalize_space(msg.as_display())

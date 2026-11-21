@@ -94,6 +94,24 @@ async def _test_play_state_running_lifecycle():
     return replacement_survived
 
 
+async def _test_play_state_disable_cancels_pending_wait():
+    msg = await _session("CHWAIT|Group|x", "CHWAIT")
+    flag = asyncio.Event()
+    SessionTaskManager._task_list.clear()
+    game = PlayState("managed_wait", msg)
+    try:
+        game.enable()
+        SessionTaskManager.add_task(msg, flag, task_type="wait_next", timeout=60, allow_fallthrough=True)
+        PlayState("managed_wait", msg).disable()
+        await asyncio.wait_for(flag.wait(), timeout=1)
+        return not game.check() and not SessionTaskManager.get()
+    except TimeoutError:
+        return False
+    finally:
+        game.disable()
+        SessionTaskManager._task_list.clear()
+
+
 async def _test_petal_quota_shared_across_platforms():
     union = await SenderUnionInfo.resolve_union("PETALA|1")
     await union.bind_id("PETALB|2")
@@ -171,6 +189,7 @@ async def test_channel_scope(tester: Tester):
     await tester.test(_test_states_isolated_across_channels, "跨通道内存态隔离测试")
     await tester.test(_test_states_shared_within_channel, "同通道内存态共享测试")
     await tester.test(_test_play_state_running_lifecycle, "游戏状态异常清理与新局隔离测试")
+    await tester.test(_test_play_state_disable_cancels_pending_wait, "停局取消进行中等待测试")
     await tester.test(_test_petal_quota_shared_across_platforms, "花瓣额度按 union 共享测试")
     await tester.test(
         _test_parser_cooldown_shared_within_channel_and_user_union,

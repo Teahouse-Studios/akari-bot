@@ -489,16 +489,18 @@ async def parser(msg: MessageSession):
     # 0. 刷新会话信息，并分发 SESSION_READY 入站策略
     await msg.session_info.refresh_info()
 
-    # 1. 分发 SESSION_BEFORE_WAIT 后检查任务队列
-    await SessionTaskManager.check(msg)
-
-    # 2. 取该平台/客户端可用的模块，把消息转成可读文本
+    # 1. 取该平台/客户端可用的模块，供命令形态判定使用
     modules = ModulesManager.return_modules_list(target_from, client_name)
+
+    # 2. 分发 SESSION_BEFORE_WAIT 后检查任务队列。命令消息不完成并行等待，留给后续路由正常执行
+    await SessionTaskManager.check(msg, allow_wait_fallthrough=True, is_command_message=...)
+
+    # 3. 把消息转成可读文本
     msg.trigger_msg = normalize_space(msg.as_display())
     await dispatch_parser_hook(HookPoint.MESSAGE_NORMALIZED, msg)
     if not msg.trigger_msg: return
 
-    # 3. 命令前缀匹配
+    # 4. 命令前缀匹配
     if in_prefix_list or disable_prefix:
         # 命令解析 → CHANNEL_CLAIM → 模块匹配 → 执行
         command_first_word = await _process_command(msg, modules, ...)

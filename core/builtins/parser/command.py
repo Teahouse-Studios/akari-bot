@@ -284,3 +284,27 @@ class CommandParser:
             if CoreConfig.debug:
                 traceback.print_exc()
             raise InvalidCommandFormatError
+
+
+def command_allows_without_enable(msg: "Bot.MessageSession", module: Module, command_first_word: str) -> bool:
+    """判断当前消息命中的命令是否声明了免场景启用。
+
+    :param msg: 触发命令的消息会话，``trigger_msg`` 须已去掉前缀。
+    :param module: 命中的模块。
+    :param command_first_word: 解析后的命令首词（模块名）。
+    :return: 命中模板且该命令 ``available_without_enable`` 为真时返回 True。
+    """
+    parser = CommandParser(
+        module,
+        msg=msg,
+        module_name=command_first_word,
+        command_prefixes=msg.session_info.prefixes,
+        include_restricted=True,
+    )
+    try:
+        parsed = parser.parse(msg.trigger_msg)
+    except InvalidCommandFormatError:
+        return False
+    if not parsed or not parsed[0]:
+        return False
+    return bool(getattr(parsed[0], "available_without_enable", False))

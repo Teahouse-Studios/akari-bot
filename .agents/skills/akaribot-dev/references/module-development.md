@@ -152,6 +152,9 @@ async def _(msg): ...
 # i18n 描述（双花括号）
 @my_mod.command("hello {{I18N:my_module.help.hello}}")
 
+# 场景未启用所属模块时仍可执行
+@my_mod.command("verify <token> {{I18N:my_module.help.verify}}", available_without_enable=True)
+
 # 带选项描述（options_desc 的值用单花括号 {I18N:...}）
 @my_mod.command(
     "search <query> [-l <lang>] {{I18N:my_module.help.search}}",
@@ -526,12 +529,12 @@ play_state.disable()  # 结束
 | 方法              | 作用                                       |
 | ----------------- | ------------------------------------------ |
 | `enable()`        | 开启游戏事件并刷新过期时间                 |
-| `disable()`       | 关闭游戏事件                               |
+| `disable()`       | 关闭游戏事件，并取消该局尚在挂起的等待     |
 | `check() -> bool` | 读取 `_status`，未开启/已过期返回 `False`  |
 | `update(**kwargs)`| 写入局内数据                               |
 | `get(key, default)`| 读取局内数据                              |
 
-> 状态是**进程内内存**（不落库），server 进程重启即丢失。`_status` 是保留键，不要用 `update(_status=...)` 覆盖。
+> 状态是**进程内内存**（不落库），server 进程重启即丢失。`_status`、`_generation` 与 `_session` 是保留键，不要用 `update()` 覆盖。`disable()` 会依据 `_session` 取消开启该局命令的等待任务，停局后主流程立即以 `WaitCancelException` 退出。
 
 ### 7.15 等待用户交互
 
@@ -573,6 +576,7 @@ answer = await msg.wait_anyone(timeout=30)
 > **超时与交互行为**：
 > - 超时不会返回 `None`，而是抛出继承自 `BaseException` 的 `WaitCancelException`（见 §12.8），由框架在外层捕获并向用户发送超时提示，模块内通常无需捕获。
 > - 进入等待前会自动释放 `ExecutionLockList` 并调用 `end_typing()`，等待期间用户可以触发其他命令。
+> - 并行等待（`wait_next_message`、`wait_anyone`，以及不支持引用的平台的 `wait_reply`）不会消费命令消息：形如 `~module ...` 的输入照常执行，等待继续挂起，因此不会把命令误当作回答。
 > - `wait_confirm` 在全局配置 `no_confirm` 为真时直接返回 `no_confirm_action`（默认 `True`），不发送消息也不等待。
 > - `confirm_token` 要求用户完全回复指定口令才通过（字符串按原文比对，`I18NContext` 按会话语言解析后比对，忽略首尾空白）；该模式不发送按钮或反应提示，也不受 `no_confirm` 影响。
 > - `append_instruction=True` 会自动追加平台相关的操作提示（反应 / 回复 / 文本）。
