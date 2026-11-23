@@ -12,5 +12,6 @@
     "target.telegram.supergroup": "supergroup",
     "target.telegram.channel": "channel",
     "target.matrix": "room",
-    "target.web.console": "console"
+    "target.web.console": "console",
+    "target.satori": "channel"
 }
