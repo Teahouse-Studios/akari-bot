@@ -12,5 +12,6 @@
     "target.telegram.supergroup": "スーパーグループ",
     "target.telegram.channel": "チャンネル",
     "target.matrix": "ルーム",
-    "target.web.console": "コンソール"
+    "target.web.console": "コンソール",
+    "target.satori": "チャンネル"
 }
