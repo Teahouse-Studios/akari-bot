@@ -1,0 +1,12 @@
+{
+    "config.comments.bot_satori_secret.satori_token": "Satori サーバーへの接続に使用するトークン。サーバーに認証が設定されていない場合は空欄にします。",
+    "config.comments.bot_satori.satori_admin_roles": "管理者として扱うギルドのロール ID または名前。",
+    "config.comments.bot_satori.satori_enable_listening_self_message": "ボット自身が送信したメッセージを監視するかどうか。",
+    "config.comments.bot_satori.satori_host": "Satori サーバーのホスト アドレス。",
+    "config.comments.bot_satori.satori_limited_emoji": "メッセージ処理に失敗した際にメッセージに付加される応答絵文字の ID。プロトコルのサポートが必要です。空欄の場合は表示されません。",
+    "config.comments.bot_satori.satori_path": "Satori サーバー API のパス プレフィックス。",
+    "config.comments.bot_satori.satori_port": "Satori サーバーのポート。",
+    "config.comments.bot_satori.satori_secure": "HTTPS と WSS で Satori サーバーに接続するかどうか。",
+    "config.comments.bot_satori.satori_timeout": "Satori API を呼び出す際のタイムアウト時間。単位は秒です。",
+    "config.comments.bot_satori.satori_typing_emoji": "メッセージ処理中にメッセージに付加される応答絵文字の ID。プロトコルのサポートが必要です。空欄の場合は表示されません。"
+}

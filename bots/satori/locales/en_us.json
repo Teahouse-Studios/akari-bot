@@ -1,0 +1,12 @@
+{
+    "config.comments.bot_satori_secret.satori_token": "The token used to connect to the Satori server. Leave it empty when the server is not configured with authentication.",
+    "config.comments.bot_satori.satori_admin_roles": "The IDs or names of the guild roles that are treated as administrators.",
+    "config.comments.bot_satori.satori_enable_listening_self_message": "Whether to listen for messages sent by the bot itself.",
+    "config.comments.bot_satori.satori_host": "The host address of the Satori server.",
+    "config.comments.bot_satori.satori_limited_emoji": "The reaction emoji ID attached to the message when message processing fails. It needs to be supported by the protocol terminal. Leave it empty to hide it.",
+    "config.comments.bot_satori.satori_path": "The path prefix of the Satori server API.",
+    "config.comments.bot_satori.satori_port": "The port of the Satori server.",
+    "config.comments.bot_satori.satori_secure": "Whether to connect to the Satori server over HTTPS and WSS.",
+    "config.comments.bot_satori.satori_timeout": "The timeout for calling the Satori API, in seconds.",
+    "config.comments.bot_satori.satori_typing_emoji": "The reaction emoji ID attached to the message while the message is being processed. It needs to be supported by the protocol terminal. Leave it empty to hide it."
+}

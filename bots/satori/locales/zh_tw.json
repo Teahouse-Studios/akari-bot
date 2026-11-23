@@ -1,0 +1,12 @@
+{
+    "config.comments.bot_satori_secret.satori_token": "連線 Satori 伺服器所使用的令牌，伺服器未設定驗證時留空。",
+    "config.comments.bot_satori.satori_admin_roles": "被視為管理員的群組角色 ID 或名稱。",
+    "config.comments.bot_satori.satori_enable_listening_self_message": "是否監聽機器人自身傳送的訊息。",
+    "config.comments.bot_satori.satori_host": "Satori 伺服器的主機位址。",
+    "config.comments.bot_satori.satori_limited_emoji": "訊息處理失敗時向訊息掛上的回應表情 ID，需協定端支援。留空則不顯示。",
+    "config.comments.bot_satori.satori_path": "Satori 伺服器 API 的路徑前綴。",
+    "config.comments.bot_satori.satori_port": "Satori 伺服器的連接埠。",
+    "config.comments.bot_satori.satori_secure": "是否以 HTTPS 與 WSS 連線 Satori 伺服器。",
+    "config.comments.bot_satori.satori_timeout": "呼叫 Satori API 的逾時時間，單位為秒。",
+    "config.comments.bot_satori.satori_typing_emoji": "處理訊息期間向訊息掛上的回應表情 ID，需協定端支援。留空則不顯示。"
+}
