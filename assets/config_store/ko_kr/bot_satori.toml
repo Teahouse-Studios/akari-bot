@@ -5,16 +5,16 @@
 [bot_satori]
 # 클라이언트 구성 섹션입니다. 여기에 입력한 값은 메시지에 일반 텍스트로 표시됩니다. 민감한 정보는 이 섹션에 입력하지 마십시오.
 enable = false # 이 클라이언트를 활성화할지 여부.
-satori_host = "127.0.0.1" # Satori 服务端的主机地址。
-satori_port = 5140 # Satori 服务端的端口。
-satori_path = "<Replace me with str value>" # Satori 服务端 API 的路径前缀。
-satori_secure = false # 是否以 HTTPS 与 WSS 连接 Satori 服务端。
-satori_timeout = 30 # 调用 Satori API 的超时时间，单位为秒。
-satori_enable_listening_self_message = false # 是否监听机器人自身发送的消息。
-satori_admin_roles = ["admin", "owner"] # 被视作管理员的群组角色 ID 或名称。
-satori_typing_emoji = "⌛" # 处理消息期间向消息挂上的表态表情 ID，需协议端支持。留空则不显示。
-satori_limited_emoji = "❌" # 消息处理失败时向消息挂上的表态表情 ID，需协议端支持。留空则不显示。
+satori_host = "127.0.0.1" # Satori 서버의 호스트 주소입니다.
+satori_port = 5140 # Satori 서버의 포트입니다.
+satori_path = "<Replace me with str value>" # Satori 서버 API의 경로 접두사입니다.
+satori_secure = false # HTTPS 및 WSS로 Satori 서버에 연결할지 여부.
+satori_timeout = 30 # Satori API 호출 제한 시간입니다. 단위는 초입니다.
+satori_enable_listening_self_message = false # 봇이 직접 보낸 메시지를 수신할지 여부.
+satori_admin_roles = ["admin", "owner"] # 관리자로 취급할 길드 역할 ID 또는 이름입니다.
+satori_typing_emoji = "⌛" # 메시지 처리 중에 메시지에 추가되는 응답 이모티콘 ID입니다. 프로토콜 지원이 필요합니다. 비워 두면 표시되지 않습니다.
+satori_limited_emoji = "❌" # 메시지 처리에 실패했을 때 메시지에 추가되는 응답 이모티콘 ID입니다. 프로토콜 지원이 필요합니다. 비워 두면 표시되지 않습니다.
 
 [bot_satori_secret]
 # 클라이언트 키 설정 섹션입니다. 이 값이 전송된 메시지에 실수로 나타날 경우 봇이 해당 메시지를 가로채려고 시도합니다. 하지만 이 값이 유출되지 않도록 각별히 주의해 주십시오.
-satori_token = "<Replace me with str value>" # 连接 Satori 服务端使用的令牌，服务端未配置鉴权时留空。
+satori_token = "<Replace me with str value>" # Satori 서버에 연결하는 데 사용하는 토큰입니다. 서버에 인증이 설정되지 않은 경우 비워 두십시오.
