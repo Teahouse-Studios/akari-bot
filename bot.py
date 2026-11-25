@@ -115,8 +115,11 @@ def pre_init():
     Logger.info("Akaribot is launching...")
     from tortoise import run_async
 
-    from core.constants import all_locales_path, cache_path, lang_list
+    from core.constants import all_locales_path, cache_path, dev_mode, lang_list
     from core.i18n import build_locale_snapshot, connect_locale_snapshot
+
+    if dev_mode:
+        Logger.warning("Developer mode is enabled. Some features may pose a risk to your server.")
 
     if cache_path.exists():
         shutil.rmtree(cache_path)
