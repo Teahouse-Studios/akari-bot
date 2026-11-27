@@ -189,6 +189,7 @@ async def _test_refused_delivery_is_silently_dropped() -> bool:
         (40054002, "机器人被禁言", target_group_prefix),
         (40034105, "主动消息失败，无权限", target_group_prefix),
         (40054004, "无好友关系", target_c2c_prefix),
+        (40054013, "用户拒收", target_c2c_prefix),
     ):
         session = _make_session(target_from)
         client = _FailingSendClient(

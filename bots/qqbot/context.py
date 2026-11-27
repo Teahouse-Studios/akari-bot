@@ -70,9 +70,9 @@ ACTION_TEXT_MAX_LENGTH = 100
 # at this adapter boundary before handing the payload to botpy.
 QQBOT_MAX_KEYBOARD_ROWS = 5
 QQBOT_MAX_KEYBOARD_COLUMNS = 10
-# 平台拒绝在当前场景投递：机器人被禁言、非群成员、无好友关系或没有主动消息权限。
+# 平台拒绝在当前场景投递：机器人被禁言、非群成员、无好友关系、用户拒收或没有主动消息权限。
 SILENT_SEND_ABORT_ERROR_CODES = frozenset(
-    {"304046", "40034101", "40034102", "40034105", "40054002", "40054003", "40054004"}
+    {"304046", "40034101", "40034102", "40034105", "40054002", "40054003", "40054004", "40054013"}
 )
 PERMISSION_CACHE_TTL = 3600
 PERMISSION_CACHE_MAX_SIZE = 4096
