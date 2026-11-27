@@ -106,6 +106,12 @@ class _FailingSendClient:
         return {"file_info": "uploaded-image"}
 
 
+class _RefusedUploadClient(_FailingSendClient):
+    async def upload_media(self, target, file_type, **kwargs):
+        self.uploads.append((target.scope, target.target_id, file_type, kwargs))
+        raise self.error
+
+
 class _CaptureSendClient:
     def __init__(self, media_image_url: str | None = "qqbot-media://image/v1/test"):
         self.media_image_url = media_image_url
@@ -179,8 +185,12 @@ async def _test_send_error_propagates_to_caller() -> bool:
 
 
 async def _test_refused_delivery_is_silently_dropped() -> bool:
-    for code, message in ((40054002, "机器人被禁言"), (40034105, "主动消息失败，无权限")):
-        session = _make_session(target_group_prefix)
+    for code, message, target_from in (
+        (40054002, "机器人被禁言", target_group_prefix),
+        (40034105, "主动消息失败，无权限", target_group_prefix),
+        (40054004, "无好友关系", target_c2c_prefix),
+    ):
+        session = _make_session(target_from)
         client = _FailingSendClient(
             ServerError(message, status=400, code=code, response={"err_code": code, "message": message})
         )
@@ -192,6 +202,27 @@ async def _test_refused_delivery_is_silently_dropped() -> bool:
             QQBotContextManager.context.pop(session.session_id, None)
         if result != [] or len(client.calls) != 1 or len(client.uploads) != 2:
             Logger.error(f"Expected a refused delivery to stop after the first attempt: {client.calls}")
+            return False
+    return True
+
+
+async def _test_refused_media_upload_is_silently_dropped() -> bool:
+    for code, message, target_from in (
+        (40034101, "机器人非群成员", target_group_prefix),
+        (40054004, "无好友关系", target_c2c_prefix),
+    ):
+        session = _make_session(target_from)
+        client = _RefusedUploadClient(
+            ServerError(message, status=400, code=code, response={"err_code": code, "message": message})
+        )
+        payload = MessageChain.assign([PlainElement.assign("hello"), ImageElement.assign(__file__)])
+        QQBotContextManager.context[session.session_id] = object()
+        try:
+            result = await _send_with_client(session, client, payload)
+        finally:
+            QQBotContextManager.context.pop(session.session_id, None)
+        if result != [] or client.calls or len(client.uploads) != 1:
+            Logger.error(f"Expected a refused media upload to be dropped silently: {client.calls}")
             return False
     return True
 
@@ -687,6 +718,7 @@ async def test_qqbot_modern_api(tester: Tester):
     await tester.test(_test_delete_translates_application_message_id, "应用层消息 ID 撤回映射测试")
     await tester.test(_test_send_error_propagates_to_caller, "发送失败向调用方上抛测试")
     await tester.test(_test_refused_delivery_is_silently_dropped, "平台拒绝投递时静默放弃剩余内容测试")
+    await tester.test(_test_refused_media_upload_is_silently_dropped, "预上传素材被拒绝时静默放弃整条消息测试")
     await tester.test(_test_audio_video_are_sent_after_the_main_message, "音视频独立预上传并在主消息后发送测试")
     await tester.test(_test_card_element_uses_qqbot_card_payload, "卡片元素使用 QQBot 图文卡片载荷测试")
     await tester.test(_test_card_image_uses_material_reference, "卡片图片上传为素材引用，上传失败保留文字内容")

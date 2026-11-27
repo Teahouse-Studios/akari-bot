@@ -70,8 +70,10 @@ ACTION_TEXT_MAX_LENGTH = 100
 # at this adapter boundary before handing the payload to botpy.
 QQBOT_MAX_KEYBOARD_ROWS = 5
 QQBOT_MAX_KEYBOARD_COLUMNS = 10
-# 平台拒绝在当前场景投递：机器人被禁言、非群成员或没有主动消息权限。
-SILENT_SEND_ABORT_ERROR_CODES = frozenset({"304046", "40034101", "40034102", "40034105", "40054002", "40054003"})
+# 平台拒绝在当前场景投递：机器人被禁言、非群成员、无好友关系或没有主动消息权限。
+SILENT_SEND_ABORT_ERROR_CODES = frozenset(
+    {"304046", "40034101", "40034102", "40034105", "40054002", "40054003", "40054004"}
+)
 PERMISSION_CACHE_TTL = 3600
 PERMISSION_CACHE_MAX_SIZE = 4096
 MESSAGE_ID_CACHE_MAX_SIZE = 4096
@@ -1055,9 +1057,16 @@ class QQBotContextManager(ContextManager):
 
         # 会话的 support_markdown 由 resolve_features() 按用户偏好置定，用户关闭 markdown 后
         # 走纯文本路径；全局配置关闭时同样如此。
-        if _force_plain or not qq_use_markdown or not session_info.support_markdown:
-            return await prepare_plain_message()
-        return await prepare_markdown_message()
+        try:
+            if _force_plain or not qq_use_markdown or not session_info.support_markdown:
+                return await prepare_plain_message()
+            return await prepare_markdown_message()
+        except ApiError as error:
+            if not _is_delivery_refused(error):
+                raise
+            # 预上传素材同样会返回拒绝投递的错误码，与发送阶段一致静默放弃整条消息。
+            Logger.warning(f"QQBot refused to deliver to {target.scope}|{target.target_id}: {error}")
+            return _PreparedMessage(target, empty_send, has_payload=False)
 
     @classmethod
     async def _process_message_send_queue(cls, queue_key: str, queue: _MessageSendQueue) -> None:
